@@ -1,0 +1,14 @@
+vendor/
+sessions/
+system/
+index.php
+.htaccess
+uploads/
+uploadimage/
+
+application/config/database.php
+composer.lock
+#application/views/portal.php
+#application/views/manage/login.php
+
+.DS_Store
