@@ -1,0 +1,108 @@
+<div class="content-wrapper">
+	<!-- Content Header (Page header) -->
+	<section class="content-header">
+		<h1>
+			<?php echo isset($title) ? '' . $title : null; ?>
+		</h1>
+		<ol class="breadcrumb">
+			<li><a href="<?php echo site_url('manage') ?>"><i class="fa fa-th"></i> Home</a></li>
+			<li class="active"><?php echo isset($title) ? '' . $title : null; ?></li>
+		</ol>
+	</section>
+
+	<!-- Main content -->
+	<section class="content">
+		<!-- Small boxes (Stat box) -->
+		<div class="row">
+			<div class="col-md-12">
+				<div class="box box-success">
+					<!-- /.box-header -->
+					<div class="box-body">
+						<div class="col-md-12 col-sm-12 col-xs-12 pull-left">
+							<br>
+							<div class="row">
+								<div class="col-md-10">
+									<table class="table table-hover">
+										<tbody>
+											<tr>
+												<td>NIP Guru</td>
+												<td>:</td>
+												<td><?php echo $barang_guru['employee_nip'] ?></td>
+											</tr>
+											<tr>
+												<td>Nama lengkap</td>
+												<td>:</td>
+												<td><?php echo $barang_guru['employee_name'] ?></td>
+											</tr>
+											<tr>
+											<tr>
+												<td>Jabatan</td>
+												<td>:</td>
+												<td><?php echo $barang_guru['position_name'] ?></td>
+											</tr>
+											<tr>
+												<td>Barang Yang dibutuhkan</td>
+												<td>:</td>
+												<td>
+													<ol>
+														<?php  
+														$barang		= $barang_guru['barang_guru_id'];
+														$data 		= $this->db->query("SELECT b.barang_name, a.jumlah FROM barang_permintaan_guru a JOIN barang b ON a.barang_id = b.barang_id WHERE a.barang_guru_id= '$barang'")->result_array();
+														foreach ($data as $string) {
+															echo '<li>'.$string['barang_name'].' ( '.$string['jumlah']. ')</li>';
+														}
+														?>
+													</ol>
+												</td>
+											</tr>
+											<tr>
+												<td>Catatan/ Keterangan Lain</td>
+												<td>:</td>
+												<td><?php echo $barang_guru['catatan'] ?></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="col-md-4">
+									<a href="<?php echo site_url('employees/barang_guru') ?>" class="btn btn-default">
+										<i class="fa fa-arrow-circle-o-left"></i> Kembali
+									</a>
+									<?php if ($this->session->userdata('uroleid') == SUPERUSER) { ?>
+									<a href="<?php echo site_url('employees/barang_guru/edit/' . $barang_guru['barang_guru_id']) ?>" class="btn btn-success">
+										<i class="fa fa-edit"></i> Edit
+									</a>
+									<a href="#delModal<?php echo $barang_guru['barang_guru_id']; ?>" data-toggle="modal" class="btn btn-danger"><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i> Hapus</a>
+									<?php } ?>
+								</div>
+							</div>
+							<!-- /.box-body -->
+						</div>
+					</div>
+				</div>
+				<!-- /.row -->
+				<div class="modal modal-default fade" id="delModal<?php echo $barang_guru['barang_guru_id']; ?>">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span></button>
+									<h3 class="modal-title"><span class="fa fa-warning"></span> Konfirmasi penghapusan</h3>
+								</div>
+								<div class="modal-body">
+									<p>Apakah anda yakin akan menghapus data ini?</p>
+								</div>
+								<div class="modal-footer">
+									<?php echo form_open('employees/student/delete/' . $barang_guru['barang_guru_id']); ?>
+									<input type="hidden" name="delName" value="<?php echo $barang_guru['student_full_name']; ?>">
+									<button type="button" class="btn btn-default pull-left" data-dismiss="modal"><span class="fa fa-close"></span> Batal</button>
+									<button type="submit" class="btn btn-danger"><span class="fa fa-check"></span> Hapus</button>
+									<?php echo form_close(); ?>
+								</div>
+							</div>
+							<!-- /.modal-content -->
+						</div>
+						<!-- /.modal-dialog -->
+					</div>
+
+				</section>
+			</div>

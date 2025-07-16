@@ -1,0 +1,23 @@
+{
+  "name": "adminsekolah/master",
+  "description": "Master Admin Sekolah",
+  "type": "project",
+  "authors": [
+      {
+          "name": "idwebrepo",
+          "email": "esekolahnet@gmail.com"
+      }
+  ],
+  "config": {
+      "platform": {
+          "php": "7.4.0"
+      }
+  },
+  "require": {
+      "php": ">=7.4",
+      "dompdf/dompdf": "*",
+      "spipu/html2pdf": "*",
+      "phpoffice/phpspreadsheet": "*"
+  },
+  "license": "proprietary"
+}

@@ -1,0 +1,147 @@
+<?php
+
+if (isset($barang_siswa)) {
+    $inputBrngSiswaIdValue = $barang_siswa['barang_siswa_id'];
+    $inputNoSuratValue    = $barang_siswa['barang_siswa_no'];
+    $inputStudentidValue  = $barang_siswa['student_id'];
+    $inputcatatanValue    = $barang_siswa['catatan'];
+} else {
+    $inputBrngSiswaIdValue = set_value('barang_siswa_id');
+    $inputNoSuratValue    = set_value('barang_siswa_no');
+    $inputStudentidValue  = set_value('student_id');
+    $inputcatatanValue    = set_value('catatan');
+}
+?>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="<?php echo media_url('js/jquery-migrate-3.0.0.min.js') ?>"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <?php echo isset($title) ? '' . $title : null; ?>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="<?php echo site_url('student') ?>"><i class="fa fa-th"></i> Home</a></li>
+            <li><a href="<?php echo site_url('student/barang_siswa') ?>">sppd</a></li>
+            <li class="active"><?php echo isset($title) ? '' . $title : null; ?></li>
+        </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <?php echo form_open_multipart(current_url()); ?>
+        <div class="row">
+            <div class="col-md-9">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <?php echo validation_errors(); ?>
+                        <?php if (isset($barang_siswa)) { ?>
+                            <input type="hidden" name="barang_siswa_id" value="<?php echo $barang_siswa['barang_siswa_id']; ?>">
+                            <input type="hidden" name="id_users" value="<?php echo $this->session->userdata('uroleid'); ?>">
+                        <?php } ?>
+
+                        <input type="hidden" name="student_id" value="<?php echo $this->session->userdata('uid_student'); ?>">
+
+                        <div class="form-group">
+                            <label>Kode Permintaan Barang<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+                            <input name="barang_siswa_no" type="text" class="form-control" value="<?php echo $barang_siswa_no; ?>" readonly='' placeholder="Kode Permintaan barang">
+                        </div>
+                        <!-- <div class="form-group">
+                            <label>Nama Siswa<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+                            <select required="" name="student_id" id="student_id" class="form-control student_id">
+                                <option value="">-Pilih Siswa-</option>
+                                <?php foreach ($student as $row) : ?>
+                                    <option value="<?php echo $row['student_id']; ?>" <?php echo ($inputStudentidValue == $row['student_id']) ? 'selected' : '' ?>><?php echo $row['student_full_name'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div> -->
+                        <div class="form-group">
+                            <label>Catatan/ Keterangan<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+                            <input name="catatan" type="text" class="form-control" value="<?php echo $inputcatatanValue ?>" placeholder="Catatan">
+                        </div>
+						<div class="form-group">
+							<?php
+							if($inputBrngSiswaIdValue != ''){
+							        echo 'Data Permintaan Barang';
+									?>
+									<ol>
+										<?php  
+										$barang		= $inputBrngSiswaIdValue;
+										$data 		= $this->db->query("SELECT b.barang_name, a.jumlah FROM barang_permintaan_siswa a JOIN barang b ON a.barang_id = b.barang_id WHERE a.barang_siswa_id= '$barang'")->result_array();
+										foreach ($data as $string) {
+											echo '<li>'.$string['barang_name'].' ( '.$string['jumlah']. ')</li>';
+										}
+										?>
+									</ol>
+									<small style="color:red;"> <b>Jika Ubah data barang, maka data yang lama akan Terhapus **</b> </small>
+									<?php
+								}
+							?>
+							<div id="p_barang">
+								<div class="barang_entry">
+									<p>
+										<label>Permintaan Barang<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+										<div class="row">
+											<div class="col-md-6">
+												<select required="" name="barang_id[]" class="form-control" style="width:100%;">
+													<option value="">-Pilih Barang-</option>
+													<?php foreach ($barang as $row) { ?>
+														<option value="<?php echo $row['barang_id']; ?>"><?php echo $row['barang_name'] ?></option>
+													<?php } ?>
+												</select>
+											</div>
+											<div class="col-md-6">
+												<input name="jumlah[]" type="text" class="form-control" value="" placeholder="Jumlah Barang">
+											</div>
+										</div>
+									</p>
+								</div>
+							</div>
+							<h6 ><a href="#" class="btn btn-xs btn-success" id="addScnt_barang"><i class="fa fa-plus"></i><b> Tambah Baris</b></a></h6>
+						</div>
+
+                        <p class="text-muted">*) Kolom wajib diisi.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <button type="submit" class="btn btn-block btn-success">Simpan</button>
+                        <a href="<?php echo site_url('student/barang_siswa'); ?>" class="btn btn-block btn-info">Batal</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php echo form_close(); ?>
+    </section>
+</div>
+
+<script>
+$(function() {
+    var scntDiv = $('#p_barang');
+    var i = $('#p_barang .barang_entry').length + 1;
+
+    $("#addScnt_barang").click(function() {
+        $('<div class="barang_entry"><p><div class="row"><div class="col-md-6"><select required="" name="barang_id[]" class="form-control" style="width:100%;"><option value="">-Pilih Barang-</option><?php foreach ($barang as $row) { ?><option value="<?php echo $row['barang_id']; ?>"><?php echo $row['barang_name'] ?></option><?php } ?></select></div><div class="col-md-6"><input name="jumlah[]" type="text" class="form-control" value="" placeholder="Jumlah Barang"></div></div></p><a href="#" class="btn btn-xs btn-danger remScnt_satuan">Hapus Baris</a></div>').appendTo(scntDiv);
+        i++;
+        return false;
+    });
+
+    $(document).on("click", ".remScnt_satuan", function() {
+        if (i > 1) {
+            $(this).closest('.barang_entry').remove();
+            i--;
+        }
+        return false;
+    });
+});
+
+$(document).ready(function() {
+    $('.student_id').select2();
+});
+
+</script>
