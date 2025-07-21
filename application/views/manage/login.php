@@ -97,8 +97,16 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
               <span class="visually-hidden">Next</span>
             </button>
           <?php else: ?>
+            <?php
+            $this->load->model(array('setting/Setting_model'));
+            $setting_logo     = $this->Setting_model->get(array('id' => 6));
+            ?>
             <center>
-              <img src="https://adminsekolah.net/wp-content/uploads/2023/07/logo-adminsekolah-baru.png" class="img-responsive" style="width:35%">
+              <?php if (isset($setting_logo) and $setting_logo['setting_value'] == NULL) { ?>
+                <img src="<?php echo media_url('img/logo.svg') ?>" class="img-responsive" style="width:50%">
+              <?php } else { ?>
+                <img src="<?php echo upload_url('school/' . $setting_logo['setting_value']) ?>" class="img-responsive" style="width:50%">
+              <?php } ?>
             </center>
           <?php endif; ?>
         </div>
@@ -132,9 +140,16 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
 
           <!-- Login Form -->
           <div class="mb-3">
-            <a href="<?= base_url() ?>" class="text-white fw-bold text-decoration-none">Login</a> |
-            <a href="<?= base_url('student_presence') ?>" target="_blank" class="text-white fw-bold text-decoration-none">Presensi Siswa</a> |
-            <a href="<?= base_url('employee_presence') ?>" target="_blank" class="text-white fw-bold text-decoration-none">Presensi Pegawai</a>
+            <a href="<?= base_url() ?>" class="text-white fw-bold text-decoration-none">Login</a>
+            <?php $sett = $this->db->query("SELECT setting_value as paket FROM setting WHERE setting_name = 'setting_package'")->row_array();
+
+            $paket = $sett['paket']; ?>
+            <?php if ($paket == 3) { ?>
+              |
+              <a href="<?= base_url('student_presence') ?>" target="_blank" class="text-white fw-bold text-decoration-none">Presensi Siswa</a> |
+              <a href="<?= base_url('employee_presence') ?>" target="_blank" class="text-white fw-bold text-decoration-none">Presensi Pegawai</a>
+            <?php } ?>
+
           </div>
 
           <!-- Flash Message -->
@@ -165,6 +180,7 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
           </div>
 
           <button type="submit" class="btn btn-light w-100 mb-3">Login</button>
+
           <?= form_close() ?>
 
           <div class="mt-3">

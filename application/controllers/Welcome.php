@@ -1,7 +1,8 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Welcome extends CI_Controller {
+class Welcome extends CI_Controller
+{
 
 	/**
 	 * Index Page for this controller.
@@ -20,22 +21,24 @@ class Welcome extends CI_Controller {
 	 */
 	public function index()
 	{
-		$this->load->view('portal');
+		redirect('manage/auth/login');
 	}
-	
-	public function tele(){
-	    $telegram_id = '494207456';
-	    $psn         = 'hello';
-	    
-	    send_telegram($telegram_id, $psn);
+
+	public function tele()
+	{
+		$telegram_id = '494207456';
+		$psn         = 'hello';
+
+		send_telegram($telegram_id, $psn);
 	}
-	
-	public function wa(){
-		
+
+	public function wa()
+	{
+
 		$this->load->helper('send');
-	    $nomor  = '6283851378225';
-	    $psn    = 'hello';
-	    
-	    send_whatsapp($nomor, $psn,'','');
+		$nomor  = '6283851378225';
+		$psn    = 'hello';
+
+		send_whatsapp($nomor, $psn, '', '');
 	}
 }
