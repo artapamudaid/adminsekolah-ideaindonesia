@@ -14,9 +14,40 @@ class Bulan_model extends CI_Model
     function get_cari_bulan($id_periode, $id_tagihan, $id_kelas)
     {
         if ($id_kelas != '0') {
-            $query = "SELECT DISTINCT `bulan_id`, `bulan_bill`, `bulan_date_pay`, `bulan_number_pay`, `bulan_status`, `bulan_input_date`, `bulan_last_update`, `student_student_id`, `student_img`, `student_nis`, `student_full_name`, `student_name_of_mother`, `student_parent_phone`, `student`.`class_class_id`, `student`.`majors_majors_id`, `majors_name`, `majors_short_name`, `class_name`, `payment_payment_id`, `period_period_id`, `period_status`, `period_start`, `period_end`, `pos_name`, `payment_type`, `user_user_id`, `user_full_name`, `month_month_id`, `month_name`, `bulan`.`student_student_id`, `bulan`.`student_student_id` FROM `bulan` LEFT JOIN `month` ON `month`.`month_id` = `bulan`.`month_month_id` LEFT JOIN `student` ON `student`.`student_id` = `bulan`.`student_student_id` LEFT JOIN `payment` ON `payment`.`payment_id` = `bulan`.`payment_payment_id` LEFT JOIN `pos` ON `pos`.`pos_id` = `payment`.`pos_pos_id` LEFT JOIN `period` ON `period`.`period_id` = `payment`.`period_period_id` LEFT JOIN `class` ON `class`.`class_id` = `student`.`class_class_id` LEFT JOIN `majors` ON `majors`.`majors_id` = `student`.`majors_majors_id` LEFT JOIN `users` ON `users`.`user_id` = `bulan`.`user_user_id` WHERE `student`.`class_class_id` = '$id_kelas' AND `payment`.`period_period_id` = '$id_periode' AND majors.majors_status = 1 AND `payment`.`payment_id` = '$id_tagihan' GROUP BY `bulan`.`student_student_id` ORDER BY `payment_payment_id`, `month_month_id` ASC";
+            $query = "SELECT DISTINCT `bulan_id`, `bulan_bill`, `bulan_date_pay`, `bulan_number_pay`, `bulan_status`, `bulan_input_date`, `bulan_last_update`, `student_student_id`, `student_img`, `student_nis`, `student_full_name`, `student_name_of_mother`, `student_parent_phone`, `student`.`class_class_id`, `student`.`majors_majors_id`, `majors_name`, `majors_short_name`, `class_name`, `payment_payment_id`, `period_period_id`, `period_status`, `period_start`, `period_end`, `pos_name`, `payment_type`, `user_user_id`, `user_full_name`, `month_month_id`, `month_name`, `bulan`.`student_student_id`, `bulan`.`student_student_id` 
+            FROM `bulan` 
+            LEFT JOIN `month` ON `month`.`month_id` = `bulan`.`month_month_id` 
+            LEFT JOIN `student` ON `student`.`student_id` = `bulan`.`student_student_id` 
+            LEFT JOIN `payment` ON `payment`.`payment_id` = `bulan`.`payment_payment_id` 
+            LEFT JOIN `pos` ON `pos`.`pos_id` = `payment`.`pos_pos_id` 
+            LEFT JOIN `period` ON `period`.`period_id` = `payment`.`period_period_id` 
+            LEFT JOIN `class` ON `class`.`class_id` = `student`.`class_class_id` 
+            LEFT JOIN `majors` ON `majors`.`majors_id` = `student`.`majors_majors_id` 
+            LEFT JOIN `users` ON `users`.`user_id` = `bulan`.`user_user_id` 
+            WHERE 
+            `student`.`class_class_id` = '$id_kelas' 
+            AND `payment`.`period_period_id` = '$id_periode' 
+            AND majors.majors_status = 1 
+            AND `payment`.`payment_id` = '$id_tagihan' 
+            -- AND student.student_status = 1
+            GROUP BY `bulan`.`student_student_id` ORDER BY `payment_payment_id`, `month_month_id` ASC";
         } else {
-            $query = "SELECT DISTINCT `bulan_id`, `bulan_bill`, `bulan_date_pay`, `bulan_number_pay`, `bulan_status`, `bulan_input_date`, `bulan_last_update`, `student_student_id`, `student_img`, `student_nis`, `student_full_name`, `student_name_of_mother`, `student_parent_phone`, `student`.`class_class_id`, `student`.`majors_majors_id`, `majors_name`, `majors_short_name`, `payment_payment_id`, `period_period_id`, `period_status`, `period_start`, `period_end`, `pos_name`, `payment_type`, `user_user_id`, `user_full_name`, `month_month_id`, `month_name`, `bulan`.`student_student_id`, `bulan`.`student_student_id` FROM `bulan` LEFT JOIN `month` ON `month`.`month_id` = `bulan`.`month_month_id` LEFT JOIN `student` ON `student`.`student_id` = `bulan`.`student_student_id` LEFT JOIN `payment` ON `payment`.`payment_id` = `bulan`.`payment_payment_id` LEFT JOIN `pos` ON `pos`.`pos_id` = `payment`.`pos_pos_id` LEFT JOIN `period` ON `period`.`period_id` = `payment`.`period_period_id` LEFT JOIN `majors` ON `majors`.`majors_id` = `student`.`majors_majors_id` LEFT JOIN `users` ON `users`.`user_id` = `bulan`.`user_user_id` WHERE `payment`.`period_period_id` = '$id_periode' AND majors.majors_status = 1 AND `payment`.`payment_id` = '$id_tagihan' GROUP BY `bulan`.`student_student_id` ORDER BY `payment_payment_id`, `month_month_id` ASC";
+            $query = "SELECT DISTINCT `bulan_id`, `bulan_bill`, `bulan_date_pay`, `bulan_number_pay`, `bulan_status`, `bulan_input_date`, `bulan_last_update`, `student_student_id`, `student_img`, `student_nis`, `student_full_name`, `student_name_of_mother`, `student_parent_phone`,`class_name`, `student`.`class_class_id`, `student`.`majors_majors_id`, `majors_name`, `majors_short_name`, `payment_payment_id`, `period_period_id`, `period_status`, `period_start`, `period_end`, `pos_name`, `payment_type`, `user_user_id`, `user_full_name`, `month_month_id`, `month_name`, `bulan`.`student_student_id`, `bulan`.`student_student_id` 
+            FROM `bulan` 
+            LEFT JOIN `month` ON `month`.`month_id` = `bulan`.`month_month_id` 
+            LEFT JOIN `student` ON `student`.`student_id` = `bulan`.`student_student_id` 
+            LEFT JOIN `class` ON `class`.`class_id` = `student`.`class_class_id` 
+            LEFT JOIN `payment` ON `payment`.`payment_id` = `bulan`.`payment_payment_id` 
+            LEFT JOIN `pos` ON `pos`.`pos_id` = `payment`.`pos_pos_id` 
+            LEFT JOIN `period` ON `period`.`period_id` = `payment`.`period_period_id` 
+            LEFT JOIN `majors` ON `majors`.`majors_id` = `student`.`majors_majors_id` 
+            LEFT JOIN `users` ON `users`.`user_id` = `bulan`.`user_user_id` 
+            WHERE 
+            `payment`.`period_period_id` = '$id_periode' 
+            AND majors.majors_status = 1 
+            AND `payment`.`payment_id` = '$id_tagihan' 
+            -- AND student.student_status = 1
+            GROUP BY `bulan`.`student_student_id` ORDER BY `payment_payment_id`, `month_month_id` ASC";
         }
         $data = $this->db->query($query)->result();
         return $data;
@@ -220,8 +251,9 @@ class Bulan_model extends CI_Model
             return $data;
         }
     }
-    
-    function cek_pembayaran($tahun,$nis){
+
+    function cek_pembayaran($tahun, $nis)
+    {
         $query = "SELECT `t`.`student_id`, `t`.`student_nis`, `t`.`student_full_name`, `s`.`pos_name`, `d`.`period_id`, `d`.`period_start`, `d`.`period_end`, `p`.`payment_id`, `p`.`payment_mode`, 
             SUM(`b`.`bulan_bill`) as `total`,
             SUM(if(`b`.`bulan_status`='1',`b`.`bulan_bill`,0)) as `dibayar`,
@@ -306,9 +338,9 @@ class Bulan_model extends CI_Model
             JOIN `month` as `m` ON `m`.`month_id` = `b`.month_month_id
             WHERE `t`.`student_nis` = '$nis' AND `d`.`period_id` = '$tahun'
             GROUP BY `p`.`payment_id`";
-        
-            $data = $this->db->query($query)->result_array();    ;
-            return $data;   
+
+        $data = $this->db->query($query)->result_array();;
+        return $data;
     }
 
     function get_jumlah($n)

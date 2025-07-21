@@ -50,15 +50,11 @@ class Report_set extends CI_Controller
 			$params['date_end'] = $q['de'];
 		}
 
-
-		$paramsPage         = $params;
 		$data['period']     = $this->Period_model->get($params);
 		$data['class']      = $this->Student_model->get_class();
 		$data['majors']     = $this->Student_model->get_majors();
 		$data['pos']        = $this->Pos_model->get();
 		$data['payment']    = $this->Payment_model->get();
-
-		$config['base_url'] = site_url('manage/report/index');
 
 		$data['title'] = 'Laporan Pembayaran Per Kelas';
 		$data['main'] = 'report/report_list';
@@ -362,6 +358,11 @@ class Report_set extends CI_Controller
 			echo "<script>alert('Maaf, ada kategori pencarian yang belum diisi. Tolang periksa lagi.');</script>";
 		} else {
 			if ($dataCek->payment_type == 'BULAN') {
+				$totalBulan = [];
+				for ($i = 1; $i <= 12; $i++) {
+					$totalBulan[$i] = 0;
+				}
+
 				echo '<div class="box box-primary box-solid">
             		    <div class="box-header with-border">
             			  <h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan Pembayaran ' . $dataHead->pos_name . ' - T.A ' . $dataHead->period_start . '/' . $dataHead->period_end . $kelas . '</h3>
@@ -372,7 +373,8 @@ class Report_set extends CI_Controller
     							<tr>
     							    <th>No.</th>
     							    <th>NIS</th>
-    								<th>Nama</th>';
+    								<th>Nama</th>
+    							    <th>Kelas</th>';
 				foreach ($dataMonth as $bln) {
 					echo '<th>' . $bln->month_name . '</th>';
 				}
@@ -383,7 +385,8 @@ class Report_set extends CI_Controller
 					echo '<tr>
     				                <td>' . $no++ . '</td>
     				                <td>' . $row->student_nis . '</td>
-    				                <td>' . $row->student_full_name . '</td>';
+    				                <td>' . $row->student_full_name . '</td>
+    				                <td>' . $row->class_name . '</td>';
 
 					$sumBulan = 0;
 					foreach ($bayarBulan as $key) {
@@ -396,6 +399,7 @@ class Report_set extends CI_Controller
 							}
 							echo '">';
 							if ($key->bulan_status == 1) {
+								$totalBulan[$key->month_month_id] += $key->bulan_bill;
 								echo "Rp " . number_format($key->bulan_bill, 0, ",", ".");
 								echo '<br>';
 								echo date_format(date_create($key->bulan_date_pay), "d/m/Y");
@@ -407,7 +411,31 @@ class Report_set extends CI_Controller
 					}
 					echo '</tr>';
 				}
-				echo '</tbody></table>
+				$totalPembayaranBulan = array_sum($totalBulan);
+
+				echo '</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="4" style="text-align:center;"><strong>Total Setiap Bulan</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[1], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[2], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[3], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[4], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[5], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[6], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[7], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[8], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[9], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[10], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[11], 0, ",", ".") . '</strong></td>' .
+					'<td> <strong>Rp ' . number_format($totalBulan[12], 0, ",", ".") . '</strong></td>' .
+					'</tr>' .
+					'<tr>
+					<td colspan="4" style="text-align:center;"><strong>Total Pembayaran ' . $dataHead->pos_name . ' - T.A ' . $dataHead->period_start . '/' . $dataHead->period_end . '</strong></td>' .
+					'<td colspan="12" style="text-align:center;"><strong>Rp ' . number_format($totalPembayaranBulan, 0, ",", ".") . '</strong></td>' .
+					'</tr>' .
+					'</tfoot>
+					</table>
     					</div>
     					<div class="box-footer">
     					    <a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/report/report_excel_bulan/' . $id_periode . '/' . $id_tagihan . '/' . $id_kelas . '"><i class="fa fa-file-excel-o"></i> Export Excel</a>
@@ -435,7 +463,9 @@ class Report_set extends CI_Controller
     							    <th>No.</th>
     							    <th>NIS</th>
     								<th>Nama</th>
+    							    <th>Kelas</th>
     								<th>Tagihan</th>
+    								<th>Dikon</th>
     								<th>Sudah Dibayar</th>
     								<th>Kekurangan</th>
     								<th>Keterangan</th>
@@ -449,7 +479,9 @@ class Report_set extends CI_Controller
     				                <td>' . $no++ . '</td>
     				                <td>' . $row->student_nis . '</td>
     				                <td>' . $row->student_full_name . '</td>
+    				                <td>' . $row->class_name . '</td>
     				                <td>' . 'Rp ' . number_format($row->bebas_bill, 0, ",", ".") . '</td>
+    				                <td>' . 'Rp ' . number_format($row->bebas_diskon, 0, ",", ".") . '</td>
     				                <td>' . 'Rp ' . number_format($row->bebas_total_pay, 0, ",", ".") . '</td>
     				                <td>' . 'Rp ' . number_format($row->kekurangan, 0, ",", ".") . '</td>
     				                <td style="color:';
@@ -470,14 +502,13 @@ class Report_set extends CI_Controller
 				}
 				echo '</tbody>
     				            <tr style="background-color: #F0F0F0;">
-                                    <td colspan="4">
+                                    <td colspan="4" style="text-align:center;">
                                         <b>Total Pembayaran Siswa</b>
                                     </td>
-                                    <td><b>Rp ' .
+                                    <td colspan="5"><b>Rp ' .
 					number_format($sumBebas, 0, ",", ".")
 					. '</b></td>
-                                    <td colspan="2">
-                                    </td>
+                                    
                                 </tr>';
 				echo '</table>
     					</div>
