@@ -2,6 +2,9 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+
 class Student_set extends CI_Controller
 {
 
@@ -456,7 +459,7 @@ class Student_set extends CI_Controller
     $this->load->view('manage/layout', $data);
   }
 
-  public function do_import()
+  public function old_do_import()
   {
     $default = "123456";
     $this->load->library('excel');
@@ -539,6 +542,115 @@ class Student_set extends CI_Controller
     }
   }
 
+  public function do_import()
+  {
+    $pass_default = '123456';
+
+    if (isset($_FILES["file"]["name"])) {
+
+      $file = $this->do_upload_xls($name = 'file', $fileName = base64_encode('imstud' . date('ymdHis')));
+
+      if ($file) {
+
+        $path = FCPATH . 'uploads/xls_tmp/';
+        $pathFile = $path . $file;
+
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $spreadsheet = $reader->load($pathFile);
+        $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+        $numrow = 1;
+        foreach ($sheet as $row) {
+
+          $student_nis            = $row['A']; //required
+          $student_nisn           = $row['B'];
+          $student_full_name      = $row['C']; //required
+          $class_class_id         = $row['D']; //required
+          $majors_majors_id       = $row['E']; //required
+          $student_parent_phone   = $row['F']; //required
+          $gender                 = $row['G'];
+          $tempat_lahir           = $row['H'];
+          $tgl_lahir              = $row['I'];
+          $hobi                   = $row['J'];
+          $student_phone          = $row['K'];
+          $alamat                 = $row['L'];
+          $ayah                   = $row['M'];
+          $ibu                    = $row['N'];
+
+          if ($numrow > 2) {
+            if (
+              empty($student_nis) ||
+              empty($student_full_name) ||
+              empty($class_class_id) ||
+              empty($majors_majors_id) ||
+              empty($student_parent_phone)
+            ) {
+              continue;
+            }
+            $q = $this->db->query("SELECT COUNT(student_nis) as nisNum FROM student WHERE student_nis = '$student_nis'")->row_array();
+
+            $nisNum = $q['nisNum'];
+
+            if (empty($student_nis) || $nisNum > 0) {
+              $this->session->set_flashdata('failed', 'Duplikasi No. Induk Siswa');
+            } else {
+
+              $hp = $this->phone_to_wa($student_parent_phone);
+              $timestamp = date('Y-m-d H:i:s');
+
+              $data = array(
+                'student_nis'             =>  $student_nis,
+                'student_full_name'       =>  $student_full_name,
+                'student_password'        =>  md5($pass_default),
+                'class_class_id'          =>  $class_class_id,
+                'majors_majors_id'        =>  $majors_majors_id,
+                'student_parent_phone'    =>  $hp,
+                'student_input_date'      => $timestamp,
+                'student_last_update'      => $timestamp
+              );
+
+              if (!empty($student_nisn)) {
+                $data['student_nisn'] = str_replace("'", "", $student_nisn);
+              }
+              if (!empty($gender)) {
+                $data['student_gender'] = $gender;
+              }
+              if (!empty($tempat_lahir)) {
+                $data['student_born_place'] = $tempat_lahir;
+              }
+              if (!empty($tgl_lahir)) {
+                $data['student_born_date'] = $tgl_lahir;
+              }
+              if (!empty($student_phone)) {
+                $data['student_phone'] = $this->phone_to_wa($student_phone);
+              }
+              if (!empty($hobi)) {
+                $data['student_hobby'] = $hobi;
+              }
+              if (!empty($alamat)) {
+                $data['student_address'] = $alamat;
+              }
+              if (!empty($ayah)) {
+                $data['student_name_of_father'] = $ayah;
+              }
+              if (!empty($ibu)) {
+                $data['student_name_of_mother'] = $ibu;
+              }
+
+              $this->db->insert('student', $data);
+
+
+              $this->session->set_flashdata('success', 'Import Data Santri Berhasil');
+            }
+          }
+          $numrow++;
+        }
+
+        unlink($pathFile);
+      }
+    }
+    redirect('manage/student');
+  }
+
   public function import()
   {
     if ($_POST) {
@@ -604,8 +716,7 @@ class Student_set extends CI_Controller
 
   private function phone_to_wa($student_parent_phone = null)
   {
-
-
+    $student_parent_phone = str_replace("'", "", $student_parent_phone);
     $student_parent_phone = str_replace(" ", "", $student_parent_phone);
     $student_parent_phone = str_replace("(", "", $student_parent_phone);
     $student_parent_phone = str_replace(")", "", $student_parent_phone);
@@ -756,8 +867,8 @@ class Student_set extends CI_Controller
 
   public function download()
   {
-    $data = file_get_contents("./media/template_excel/Template_Data_Siswa.xls");
-    $name = 'Template_Data_Siswa.xls';
+    $data = file_get_contents("./media/template_excel/Template_Data_Siswa.xlsx");
+    $name = 'Template_Data_Siswa.xlsx';
 
     $this->load->helper('download');
     force_download($name, $data);
