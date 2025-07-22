@@ -274,8 +274,8 @@
         <!-- Menu Add-Ons -->
         <?php if ($this->session->userdata('uroleid') == 3) { ?>
           <li>
-            <a href="<?php echo site_url('manage/registrasi'); ?>">
-              <i class="fa fa-users"></i> <span>Data Demonstran</span>
+            <a href="<?php echo site_url('manage/package'); ?>">
+              <i class="fa fa-star"></i> <span>Setting Modul Paket</span>
               <span class="pull-right-container"></span>
             </a>
           </li>
