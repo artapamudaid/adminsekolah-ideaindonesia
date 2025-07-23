@@ -104,7 +104,7 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body table-responsive">
-                        <table id='dtable' class='table table-hover table-responsive'>
+                        <table class='table table-hover table-responsive'>
                             <thead>
                                 <tr>
                                     <th hidden="true"></th>
@@ -123,7 +123,7 @@
                                         <td hidden="true" class="kode-entry"></td>
                                         <td colspan="2">RAKS <?php echo $dataPeriod['period_start'] . '/' . $dataPeriod['period_end'] . " - " . $dataMajors['majors_short_name'] ?></td>
 
-                                        <td></td>
+                                        <td>Rp. <?php echo number_format($total_anggaran ?? 0, 0, ',', '.')  ?></td>
                                         <td align='left'>
                                             <?php if (empty($status_approval) or $status_approval == 'PROCESS') { ?>
                                                 <button type="button" class="btn btn-success btn-xs" data-toggle="modal" data-target="#addEntry0" title="Tambah Sub Entry"><i class="fa fa-plus"></i></button>
@@ -360,23 +360,23 @@
                                         </div>
                                         <div class="col-md-6">
                                             Volume
-                                            <input type="number" name="volumeDetail" id="volumeDetail" class="nominalProcess form-control" />
+                                            <input type="text" name="volumeDetail" id="volumeDetail" class="nominalProcess form-control" />
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
                                             QTY
-                                            <input type="number" name="qty" id="qty" class="nominalProcess form-control" />
+                                            <input type="text" name="qty" id="qty" class="nominalProcess form-control" />
                                         </div>
                                         <div class="col-md-6">
                                             Unit Price
-                                            <input type="number" name="unitPrice" id="unitPrice" class="nominalProcess form-control" />
+                                            <input type="text" name="unitPrice" id="unitPrice" class="nominalProcess form-control" />
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
                                             Total Price
-                                            <input readonly type="number" name="totalPrice" id="totalPrice" class="form-control" />
+                                            <input readonly type="text" name="totalPrice" id="totalPrice" class="form-control" />
                                         </div>
                                     </div>
 
@@ -393,7 +393,7 @@
                                                 <?php } ?>
                                             </select>
                                             <!-- <input type="text" id="sourceName" placeholder="Nama Sumber Dana"> -->
-                                            <input style="width: 100px;" type="number" id="sourceTotal" placeholder="Total Dana">
+                                            <input style="width: 100px;" type="text" id="sourceTotal" placeholder="Total Dana">
                                             <button id="addSource" class="btn-success">Add Source</button>
                                         </div>
                                     </div>
@@ -416,7 +416,7 @@
                                     </div>
                                     <div class="col-md-12">
                                         Total Source
-                                        <input readonly type="number" id="totalSource" class="form-control" />
+                                        <input readonly type="text" id="totalSource" class="form-control" />
                                     </div>
                                 </div>
                             </div>
@@ -476,6 +476,10 @@
                         <?php if (empty($status_approval) or $status_approval == 'PROCESS') { ?>
                             <button type="button" class="btn btn-primary" id="simpanDetailEntry">
                                 <i class="fa fa-plus"></i> Simpan Detail Entry
+                            </button>
+
+                            <button onclick="resetInputs()" type="button" class="btn btn-warning" id="resetDetailEntry">
+                                <i class="fa fa-eraser"></i> Reset Form
                             </button>
                         <?php } ?>
 
@@ -579,11 +583,17 @@
 
                 <br />
                 <div class="row" style="margin: 2px;">
-
+                    <!-- Tombol Kirim Banyak -->
+                    <div class="col-md-12 mb-2">
+                        <button type="button" class="btn btn-info" id="btnKirimBanyak">
+                            <i class="fa fa-paper-plane"></i> Kirim Banyak
+                        </button>
+                    </div>
                     <div class="col-md-12 table-responsive">
                         <table class="table table-bordered table-hover table-striped dataTable no-footer" id="ListCoa">
                             <thead>
                                 <tr>
+                                    <th><input type="checkbox" id="checkAllDetail"></th> <!-- Checkbox untuk select all -->
                                     <th>Nama</th>
                                     <th>QTY</th>
                                     <th>Vol</th>
@@ -622,17 +632,17 @@
                     <span id="judul-send"></span>
                 </h4>
             </div>
-            <?php echo form_open('manage/raks_entry/sendRequest', array('method' => 'post')); ?>
+            <?php echo form_open('manage/raks_entry/sendRequest', array('method' => 'post', 'id' => 'formSendRequest')); ?>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
                             <label>No Permintaan</label>
                             <input type="hidden" required="" name="detail_id" id="idDetailPermintaan" class="form-control">
-                            <input type="hidden" required="" name="status" class="form-control" value="NEW">
-                            <input type="hidden" required="" name="majors_id" class="form-control" value="<?php echo $s['m'] ?>">
-                            <input type="hidden" required="" name="period_id" class="form-control" value="<?php echo $s['p'] ?>">
-                            <input type="text" required name="noPermintaan" class="form-control">
+                            <input type="hidden" required="" name="status" id="statusRequest" class="form-control" value="NEW">
+                            <input type="hidden" required="" name="majors_id" id="majorsRequest" class="form-control" value="<?php echo $s['m'] ?>">
+                            <input type="hidden" required="" name="period_id" id="periodRequest" class="form-control" value="<?php echo $s['p'] ?>">
+                            <input type="text" required name="noPermintaan" id="noPermintaan" class="form-control">
                         </div>
                     </div>
                 </div>
@@ -654,13 +664,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>QTY</label>
-                            <input id="send-inv-qty" type="number" readonly class="form-control">
+                            <input id="send-inv-qty" type="text" readonly class="form-control">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Volume</label>
-                            <input id="send-inv-volume" type="number" readonly class="form-control">
+                            <input id="send-inv-volume" type="text" readonly class="form-control">
                         </div>
                     </div>
                 </div>
@@ -668,13 +678,47 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Unit Price</label>
-                            <input id="send-inv-unitPrice" type="number" readonly class="form-control">
+                            <input id="send-inv-unitPrice" type="text" readonly class="form-control">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Total Price</label>
-                            <input id="send-inv-totalPrice" type="number" readonly class="form-control">
+                            <input id="send-inv-totalPrice" type="text" readonly class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Kirim</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+            <?php echo form_close(); ?>
+        </div>
+    </div>
+</div>
+<!-- Modal Send Detail -->
+
+<!-- Modal Send Detail -->
+<div class="modal fade" id="modalSendDetailBatch" role="dialog">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Kirim Detail Entry<br>
+                    <span id="judul-send-batch"></span>
+                </h4>
+            </div>
+            <?php echo form_open('manage/raks_entry/sendRequestBatch', array('method' => 'post', 'id' => 'formSendBatch')); ?>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>No Permintaan</label>
+                            <input type="hidden" required="" name="statusBatch" id="statusBatch" class="form-control" value="NEW">
+                            <input type="hidden" required="" name="majorsBatch" id="majorsBatch" class="form-control" value="<?php echo $s['m'] ?>">
+                            <input type="hidden" required="" name="periodBatch" id="periodBatch" class="form-control" value="<?php echo $s['p'] ?>">
+                            <input type="text" required name="noPermintaanBatch" id="noPermintaanBatch" class="form-control">
                         </div>
                     </div>
                 </div>
@@ -702,7 +746,7 @@
                 <p>Apakah anda yakin akan menghapus data beserta rinciannya?</p>
             </div>
             <div class="modal-footer">
-                <?php echo form_open('manage/raks_entry/deleteDetail', array('method' => 'post')); ?>
+                <?php echo form_open('manage/raks_entry/deleteDetail', array('method' => 'post', 'id' => 'formDeleteDetail')); ?>
                 <input type="hidden" name="del_id" id="delID">
                 <input type="hidden" required="" name="majors_id" class="form-control" value="<?php echo $s['m'] ?>">
                 <input type="hidden" required="" name="period_id" class="form-control" value="<?php echo $s['p'] ?>">
@@ -751,6 +795,82 @@
     var idEntry = 0;
     var judulEntry = '';
     var listDetailEntri = [];
+
+    $(document).ready(function() {
+        const inputs = ['#qty', '#volumeDetail', '#unitPrice', '#sourceTotal'];
+
+        inputs.forEach(id => {
+            const el = document.querySelector(id);
+            if (el) {
+                el.addEventListener('input', function() {
+                    this.value = formatAngka(this.value);
+                });
+            }
+        });
+
+        function formatAngka(value) {
+            return value.replace(/\D/g, '')
+                .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        $('#formDeleteDetail').on('submit', function(e) {
+            e.preventDefault(); // cegah redirect
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    // respon dari controller, misal angka 1 untuk sukses
+                    if (response == 1) {
+                        // tutup modal, refresh data, tampilkan notifikasi, dll
+                        $('#modalDeleteDetail').modal('hide'); // contoh jika pakai Bootstrap modal
+                        getEntryDetail(idEntry); // misal kamu ingin refresh tabel detail
+                    } else {
+                        alert('Gagal menghapus data.');
+                    }
+                },
+                error: function() {
+                    alert('Terjadi kesalahan saat menghapus.');
+                }
+            });
+        });
+
+        $('#formSendRequest').on('submit', function(e) {
+            e.preventDefault(); // cegah redirect
+
+            let idDetailRequest = $("#idDetailPermintaan").val();
+            let noPermintaanRequest = $("#noPermintaan").val();
+            let statusRequest = $("#statusRequest").val();
+            let majorsRequest = $("#majorsRequest").val();
+            let periodRequest = $("#periodRequest").val();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: {
+                    detail_id: idDetailRequest,
+                    noPermintaan: noPermintaanRequest,
+                    status: statusRequest,
+                    majors_id: majorsRequest,
+                    period_id: periodRequest
+                },
+                success: function(response) {
+                    if (response == 1) {
+                        $('#modalSendDetail').modal('hide');
+                        getEntryDetail(idEntry);
+                    } else {
+                        alert('Gagal mengirim request.');
+                    }
+                },
+                error: function() {
+                    alert('Terjadi kesalahan saat kirim request.');
+                }
+            });
+        });
+    });
+
+
     $('.settingProposal').on('click', function() {
         var id = $(this).attr('data-id');
         idEntry = id;
@@ -765,6 +885,11 @@
 
         getEntryDetail(id);
         $('#modalSettingProposal').modal('show');
+    });
+
+    $('#checkAllDetail').on('change', function() {
+        let isChecked = $(this).is(':checked');
+        $('.row-check-detail').prop('checked', isChecked);
     });
 
     function getEntryDetail(id) {
@@ -805,15 +930,20 @@
                         listDetailEntri.push(dEntry);
                         var btn = generateBtn(dEntry.idDetail, dEntry.status)
                         let row = table.insertRow();
+                        var ceklist = `<input type="checkbox" class="row-check-detail" data-id="${dEntry.idDetail}">`;
+                        if (dEntry.status != 'CREATED') {
+                            ceklist = '';
+                        }
                         row.innerHTML = `
+                            <td style="text-align:center;">${ceklist}</td>
                             <td hidden="true" class="detail-code-${dEntry.idDetail}">${dEntry.inventoryCode}</td>
                             <td hidden="true" class="detail-noPermintaan-${dEntry.idDetail}">${dEntry.noPermintaan}</td>
                             <td class="detail-nama-${dEntry.idDetail}">${dEntry.detailName}</td>
-                            <td class="detail-qty-${dEntry.idDetail}" style="text-align:right;">${dEntry.detailQty}</td>
-                            <td class="detail-volume-${dEntry.idDetail}" style="text-align:right;">${dEntry.detailVolume}</td>
-                            <td class="detail-unitPrice-${dEntry.idDetail}" style="text-align:right;">${dEntry.detailUnitPrice}</td>
-                            <td class="detail-totalPrice-${dEntry.idDetail}" style="text-align:right;">${dEntry.detailTotalPrice}</td>
-                            <td style="text-align:right;">${dEntry.detailTotalPrice}</td>
+                            <td class="detail-qty-${dEntry.idDetail}" style="text-align:right;">${formatAngka(dEntry.detailQty)}</td>
+                            <td class="detail-volume-${dEntry.idDetail}" style="text-align:right;">${formatAngka(dEntry.detailVolume)}</td>
+                            <td class="detail-unitPrice-${dEntry.idDetail}" style="text-align:right;">${formatRupiah(dEntry.detailUnitPrice)}</td>
+                            <td class="detail-totalPrice-${dEntry.idDetail}" style="text-align:right;">${formatRupiah(dEntry.detailTotalPrice)}</td>
+                            <td style="text-align:right;">${formatRupiah(dEntry.detailTotalPrice)}</td>
                             ${btn}
                         `;
                     }
@@ -824,6 +954,25 @@
             }
 
         });
+    }
+
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(angka);
+    }
+
+    function formatAngka(angka) {
+        return new Intl.NumberFormat('id-ID', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(Number(angka)); // konversi ke number
+    }
+
+    function unformatAngka(formatted) {
+        return parseInt(formatted.replace(/[^0-9]/g, ''), 10);
     }
 
     function generateBtn(id, status) {
@@ -838,7 +987,7 @@
             btn += ` <button type="button" class="btn btn-info btn-xs" onclick="sendDetail(${id})" title="Kirim Detail Entry"><i class="fa fa-send"></i></button>`;
         }
 
-        if (status == 'NEW' || status == 'SUBMITED' || status == 'APPROVED') {
+        if (status != 'CREATED') {
             btn += ` <button type="button" class="btn btn-success btn-xs" onclick="proposalDetail(${id},'${status}')" title="Proposal"><i class="fa fa-book"></i></button>`;
         }
         btn += `</td>`;
@@ -850,20 +999,96 @@
         $('#idDetailPermintaan').val(id);
         let invCode = $('.detail-code-' + id).text();
         let invName = $('.detail-nama-' + id).text();
-        let invQty = $('.detail-qty-' + id).text();
-        let invVolume = $('.detail-volume-' + id).text();
-        let invUnitPrice = $('.detail-unitPrice-' + id).text();
-        let invTotalPrice = $('.detail-totalPrice-' + id).text();
+        let invQty = unformatAngka($('.detail-qty-' + id).text());
+        let invVolume = unformatAngka($('.detail-volume-' + id).text());
+        let invUnitPrice = unformatAngka($('.detail-unitPrice-' + id).text());
+        let invTotalPrice = unformatAngka($('.detail-totalPrice-' + id).text());
 
         $("#send-inv-code").val(invCode);
         $("#send-inv-name").val(invName);
-        $("#send-inv-qty").val(invQty);
-        $("#send-inv-volume").val(invVolume);
-        $("#send-inv-unitPrice").val(invUnitPrice);
-        $("#send-inv-totalPrice").val(invTotalPrice);
+        $("#send-inv-qty").val(formatAngka(invQty));
+        $("#send-inv-volume").val(formatAngka(invVolume));
+        $("#send-inv-unitPrice").val(formatAngka(invUnitPrice));
+        $("#send-inv-totalPrice").val(formatAngka(invTotalPrice));
 
         $('#modalSendDetail').modal('show');
     }
+
+    $('#btnKirimBanyak').on('click', function() {
+        const selected = $('.row-check-detail:checked');
+
+        if (selected.length === 0) {
+            alert('Silakan centang setidaknya satu data untuk dikirim.');
+            return;
+        }
+
+        $('#modalSendDetailBatch').modal('show');
+    });
+
+    $('#formSendBatch').on('submit', function(e) {
+        e.preventDefault(); // cegah redirect
+
+        let noPermintaanBatch = $("#noPermintaanBatch").val();
+        let statusBatch = $("#statusBatch").val();
+        let majorsBatch = $("#majorsBatch").val();
+        let periodBatch = $("#periodBatch").val();
+        const listDataDetail = getDataTercentang();
+
+        console.log(listDataDetail);
+
+        // Contoh kirim AJAX ke server
+        $.ajax({
+            url: '<?php echo base_url(); ?>manage/raks_entry/sendRequestBatch',
+            type: 'POST',
+            data: {
+                noPermintaan: noPermintaanBatch,
+                status: statusBatch,
+                majors_id: majorsBatch,
+                period_id: periodBatch,
+                listEntry: listDataDetail
+            },
+            success: function(res) {
+                if (res == 1) {
+                    getEntryDetail(idEntry);
+                    $('#modalSendDetailBatch').modal('hide');
+                }
+                // console.log(res);
+                // alert('Data berhasil dikirim!');
+                // getEntryDetail(idEntry); // misalnya untuk reload tabel
+            },
+            error: function() {
+                alert('Terjadi kesalahan saat mengirim.');
+            }
+        });
+    });
+
+    function getDataTercentang() {
+        let dataTerpilih = [];
+
+        $('.row-check-detail:checked').each(function() {
+            let id = $(this).data('id');
+
+            let invCode = $('.detail-code-' + id).text().trim();
+            let invName = $('.detail-nama-' + id).text().trim();
+            let invQty = unformatAngka($('.detail-qty-' + id).text().trim());
+            let invVolume = unformatAngka($('.detail-volume-' + id).text().trim());
+            let invUnitPrice = unformatAngka($('.detail-unitPrice-' + id).text().trim());
+            let invTotalPrice = unformatAngka($('.detail-totalPrice-' + id).text().trim());
+
+            dataTerpilih.push({
+                id: id,
+                invCode: invCode,
+                invName: invName,
+                invQty: invQty,
+                invVolume: invVolume,
+                invUnitPrice: invUnitPrice,
+                invTotalPrice: invTotalPrice
+            });
+        });
+
+        return dataTerpilih;
+    }
+
 
     $('#simpanDetailEntry').on('click', function() {
         var idDetail = $('#detailId').val();
@@ -872,7 +1097,7 @@
         var jumlahDana = getTotalSumber();
         var executionTime = getExecutionTime();
 
-        var totalPrice = $('#totalPrice').val();
+        var totalPrice = unformatAngka($('#totalPrice').val());
         var totalSource = generateTotalSumber();
 
         // console.log(inputData);
@@ -898,7 +1123,8 @@
                 },
                 success: function(res) {
                     if (res == 1) {
-                        location.reload();
+                        getEntryDetail(idEntry);
+                        // location.reload();
                     }
                     // console.log(JSON.parse(res));
                 },
@@ -912,18 +1138,20 @@
 
     $('.nominalProcess').on('change', function() {
         var qty = $('#qty').val() == '' ? 0 : $('#qty').val();
-        var volume = $('#volumeDetail').val() == '' ? 0 : $('#volumeDetail').val();
-        var unitPrice = $('#unitPrice').val() == '' ? 0 : $('#unitPrice').val();
+
+        var volume = $('#volumeDetail').val() == '' ? 0 : unformatAngka($('#volumeDetail').val());
+        var unitPrice = $('#unitPrice').val() == '' ? 0 : unformatAngka($('#unitPrice').val());
         var totalPrice = parseInt(qty) * parseInt(volume) * parseInt(unitPrice);
         // console.log(totalPrice);
         if (totalPrice > 0) {
-            $('#totalPrice').val(totalPrice);
+            $('#totalPrice').val(formatAngka(totalPrice));
+            console.log(totalPrice);
         }
     });
 
     document.getElementById('addSource').addEventListener('click', function() {
         let name = document.getElementById('sourceName').value;
-        let total = document.getElementById('sourceTotal').value;
+        let total = unformatAngka(document.getElementById('sourceTotal').value);
 
         let namaSource = getNamaSumber();
         let result = namaSource.find(function(item) {
@@ -940,7 +1168,7 @@
             let row = table.insertRow();
             row.innerHTML = `
             <td><input readonly type="text" name="namaSumber[]" value="${name}"></td>
-            <td><input type="text" class="jumlahDana" name="totalSumber[]" value="${total}"></td>
+            <td><input type="text" class="jumlahDana" name="totalSumber[]" value="${formatAngka(total)}"></td>
             <td>
                 <button class="deleteSource btn-xs btn-danger"><i class="fa fa-trash"></i></button>
             </td>
@@ -974,16 +1202,21 @@
 
     function getInputData() {
         let form = document.getElementById('formInputData');
-
         let formData = {};
 
         form.querySelectorAll('input').forEach(function(input) {
-            formData[input.name] = input.value;
+            let name = input.name;
+            let value = input.value;
+
+            // Bersihkan format ribuan jika field terkait uang/angka
+            if (['qty', 'unitPrice', 'totalPrice', 'volumeDetail'].includes(name)) {
+                value = value.replace(/\./g, '');
+            }
+
+            formData[name] = value;
         });
 
-        let jsonData = JSON.stringify(formData);
-
-        return JSON.parse(jsonData);
+        return formData;
     }
 
     function getNamaSumber() {
@@ -1002,10 +1235,10 @@
         let total = 0;
 
         sumberInputs.forEach(function(input) {
-            total += parseInt(input.value);
+            total += parseInt(unformatAngka(input.value));
         });
 
-        $('#totalSource').val(total);
+        $('#totalSource').val(formatAngka(total));
         return total;
     }
 
@@ -1014,7 +1247,7 @@
         let sumberValues = [];
 
         sumberInputs.forEach(function(input) {
-            sumberValues.push(parseInt(input.value));
+            sumberValues.push(parseInt(unformatAngka(input.value)));
         });
 
         return sumberValues;
@@ -1048,11 +1281,11 @@
 
         $('#inventoryCode').val(result.inventoryCode);
         $('#detailName').val(result.detailName);
-        $('#qty').val(result.detailQty);
-        $('#volumeDetail').val(result.detailVolume);
-        $('#unitPrice').val(result.detailUnitPrice);
-        $('#totalPrice').val(result.detailTotalPrice);
-        $('#totalSource').val(result.detailTotalPrice);
+        $('#qty').val(formatAngka(result.detailQty));
+        $('#volumeDetail').val(formatAngka(result.detailVolume));
+        $('#unitPrice').val(formatAngka(result.detailUnitPrice));
+        $('#totalPrice').val(formatAngka(result.detailTotalPrice));
+        $('#totalSource').val(formatAngka(result.detailTotalPrice));
 
         var dataSource = result.dataSource;
         var source = dataSource.split('[--]').map(function(item) {
@@ -1068,7 +1301,7 @@
             let row = table.insertRow();
             row.innerHTML = `
             <td><input type="text" name="namaSumber[]" value="${nama}"></td>
-            <td><input type="text" class="jumlahDana" name="totalSumber[]" value="${nominal}"></td>
+            <td><input type="text" class="jumlahDana" name="totalSumber[]" value="${formatAngka(nominal)}"></td>
             <td>
                 <button class="deleteSource btn-xs btn-danger"><i class="fa fa-trash"></i></button>
             </td>
@@ -1115,10 +1348,17 @@
         }
 
         if (status == "SUBMITED") {
-            let btnApprove = `<button type="button" class="btn btn-success" data-detail="${id}" id="approveProposal">Approve Proposal</button>`;
+            let btnApprove = `<button type="button" class="btn btn-success" data-detail="${id}">Proposal Telah Dikirim</button>`;
             $("#buttonApprove").html(btnApprove);
-            let btnDisapprove = `<button type="button" class="btn btn-danger" data-detail="${id}" id="disapproveProposal">Disapprove Proposal</button>`;
-            $("#buttonDisapprove").html(btnDisapprove);
+        } else if (status == "KEPALA SEKOLAH") {
+            let btnApprove = `<button type="button" class="btn btn-success" data-detail="${id}">Proposal Disetujui Kepala Sekolah</button>`;
+            $("#buttonApprove").html(btnApprove);
+        } else if (status == "KEPALA AKADEMIK") {
+            let btnApprove = `<button type="button" class="btn btn-success" data-detail="${id}">Proposal Disetujui Kepala Akademik</button>`;
+            $("#buttonApprove").html(btnApprove);
+        } else if (status == "FINANCE") {
+            let btnApprove = `<button type="button" class="btn btn-success" data-detail="${id}">Proposal Disetujui Finance</button>`;
+            $("#buttonApprove").html(btnApprove);
         }
 
         if (noPermintaan != '') {
@@ -1190,9 +1430,14 @@
         inputsExecution.forEach(function(input) {
             input.checked = false;
         });
+
+        let listSource = document.getElementById('listSource');
+        listSource.innerHTML = '';
+        document.getElementById("totalSource").value = "";
     }
 
     function openTab(evt, tabName) {
+        console.log(123);
         // Declare all variables
         var i, tabcontent, tablinks;
 

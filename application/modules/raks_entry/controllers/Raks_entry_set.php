@@ -58,6 +58,7 @@ class Raks_entry_set extends CI_Controller
             $idPeriode = $params['period_id'];
             $data['dataPeriod'] = $this->db->query("SELECT period_start, period_end FROM period WHERE period_id = $idPeriode")->row_array();
             $data['raks_entry'] = $this->Raks_entry_model->get_entry($params['majors_id'], $params['period_id']);
+            $data['total_anggaran'] = $this->Raks_entry_model->get_total_anggaran($params['majors_id'], $params['period_id']);
             // echo json_encode($data['raks_entry']);
             // exit;
             $data['status_approval'] = $this->Raks_entry_model->get_entry_status($params['majors_id'], $params['period_id']);
@@ -121,6 +122,8 @@ class Raks_entry_set extends CI_Controller
             $params['majors_id']    = $this->input->post('majors_id');
             $params['period_id']    = $this->input->post('period_id');
             $params['user']         = $this->session->userdata('uid');
+            $params['kode_sort']    = $this->generate_kode_sort($this->input->post('kode'));
+
             // echo json_encode($params);
             // exit;
 
@@ -130,6 +133,15 @@ class Raks_entry_set extends CI_Controller
         } else {
             redirect('manage/raks_entry/?m=' .  $params['majors_id'] . "&p=" . $params['period_id']);
         }
+    }
+
+    function generate_kode_sort($kode)
+    {
+        $parts = explode('.', $kode);
+        $padded = array_map(function ($part) {
+            return str_pad($part, 3, '0', STR_PAD_LEFT);
+        }, $parts);
+        return implode('.', $padded);
     }
 
     public function edit_entry()
@@ -185,7 +197,7 @@ class Raks_entry_set extends CI_Controller
     {
         if ($_POST) {
             $entry_id       = $this->input->post('entry_id');
-            $detail_id       = $this->input->post('detail_id');
+            $detail_id      = $this->input->post('detail_id');
             $majors_id      = $this->input->post('majors_id');
             $period_id      = $this->input->post('period_id');
             $entryDetail    = $this->input->post('dataEntry');
@@ -256,9 +268,11 @@ class Raks_entry_set extends CI_Controller
             $params['majors_id'] = $this->input->post('majors_id');
             $params['period_id'] = $this->input->post('period_id');
 
-            redirect('manage/raks_entry/?m=' .  $params['majors_id'] . "&p=" . $params['period_id']);
+            echo 1;
+            // redirect('manage/raks_entry/?m=' .  $params['majors_id'] . "&p=" . $params['period_id']);
         } else {
-            redirect('manage/raks_entry');
+            echo 0;
+            // redirect('manage/raks_entry');
         }
     }
 
@@ -283,7 +297,33 @@ class Raks_entry_set extends CI_Controller
         $req['user']            = $this->session->userdata('uid');
         $this->Raks_entry_model->saveRequest($req);
 
-        redirect('manage/raks_entry/?m=' .  $params['majors_id'] . "&p=" . $params['period_id']);
+        echo 1;
+        // redirect('manage/raks_entry/?m=' .  $params['majors_id'] . "&p=" . $params['period_id']);
+    }
+
+    function sendRequestBatch()
+    {
+        $status           = $this->input->post('status');
+        $noPermintaan     = $this->input->post('noPermintaan');
+
+        $listEntry     = $this->input->post('listEntry');
+
+        if (!empty($listEntry)) {
+            $listId = array();
+            for ($i = 0; $i < count($listEntry); $i++) {
+                $id         = $listEntry[$i]['id'];
+                array_push($listId, (int)$id);
+
+                $req['id']              = 0;
+                $req['detail_id']       = $id;
+                $req['noPermintaan']    =  $noPermintaan;
+                $req['user']            = $this->session->userdata('uid');
+                $this->Raks_entry_model->saveRequest($req);
+            }
+            $this->Raks_entry_model->updateStatusDetail($listId, $status);
+        }
+
+        echo 1;
     }
 
     function saveRequest()
@@ -346,35 +386,6 @@ class Raks_entry_set extends CI_Controller
                 $this->Raks_entry_model->updateStatusDetail($params['detail_id'], 'SUBMITED');
             }
             echo $res;
-        }
-    }
-    function approveRequest()
-    {
-        if ($_POST) {
-            $idDetail   = $this->input->post('idDetail');
-            $this->Raks_entry_model->updateStatusDetail($idDetail, 'APPROVED');
-            $res = ['status' => 'success', 'message' => 'Approved berhasil.'];
-            echo json_encode($res);
-        }
-    }
-
-    function disapproveRequest()
-    {
-        $majors_id =  $this->input->post('majors_id');
-        $period_id = $this->input->post('period_id');
-        if ($_POST) {
-            $params = [
-                "detail_id"         => $this->input->post('detail_id'),
-                "noPermintaan"      => $this->input->post('noPermintaan'),
-                "notes"             => $this->input->post('notes')
-            ];
-
-            $dis = $this->Raks_entry_model->saveRequest($params);
-            if ($dis) {
-                $this->Raks_entry_model->updateStatusDetail($params['detail_id'], 'NEW');
-            }
-            $this->session->set_flashdata('success', 'Disapprove request berhasil');
-            redirect('manage/raks_entry/?m=' .  $majors_id . "&p=" . $period_id);
         }
     }
 
