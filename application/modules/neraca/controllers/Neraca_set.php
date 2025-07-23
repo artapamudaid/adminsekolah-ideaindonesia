@@ -17,6 +17,9 @@ class Neraca_set extends CI_Controller
 	{
 
 		$data['majors'] = $this->Student_model->get_majors();
+		$data['tahun'] = $this->db->query("SELECT period_start FROM period")->result_array();
+		// echo json_encode($data['tahun']);
+		// exit;
 
 		$data['title'] = 'Laporan Neraca';
 		$data['main'] = 'neraca/neraca_list';
@@ -53,7 +56,8 @@ class Neraca_set extends CI_Controller
 
 		echo '<div class="box box-primary box-solid">
     		    <div class="box-header with-border">
-    			  <h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan Neraca Per ' . pretty_date($_REQUEST['end'], 'd F Y', false)
+    			  <h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan Neraca Per '
+			. pretty_date($_REQUEST['end'], 'd F Y', false)
 			. '</h3>
     			</div>
     			<div class="box-body table-responsive">
@@ -83,13 +87,13 @@ class Neraca_set extends CI_Controller
 			echo '
 			              <tr>
 			                <td colspan="2">' . $row['account_description'] . '</td>
-			                <td>' . 'Rp ' . number_format($row['saldo'] ?? 0, 0, ",", ".") . '</td>
+			                <td>' . 'Rp ' . number_format($row['saldo'], 0, ",", ".") . '</td>
 					    </tr>';
 			$sumAktiva += $row['saldo'];
 		}
 		echo '<tr style="background-color: #fcfdff;">
 		                <td colspan = "2" align = "right"><strong>Total Aktiva</strong></td>
-		                <td>' . 'Rp ' . number_format($sumAktiva ?? 0, 0, ",", ".") . '</td>
+		                <td>' . 'Rp ' . number_format($sumAktiva, 0, ",", ".") . '</td>
     				    </tr>
     			        </table>
     			    </div>
@@ -103,13 +107,13 @@ class Neraca_set extends CI_Controller
 			echo '
 									  <tr>
 										<td colspan="2">' . $row['account_description'] . '</td>
-										<td>' . 'Rp ' . number_format($row['saldo'] ?? 0, 0, ",", ".") . '</td>
+										<td>' . 'Rp ' . number_format($row['saldo'], 0, ",", ".") . '</td>
 									</tr>';
 			$sumPasiva += $row['saldo'];
 		}
 		echo '<tr style="background-color: #fcfdff;">
 									<td colspan = "2" align = "right"><strong>Total Hutang</strong></td>
-									<td>' . 'Rp ' . number_format($sumPasiva ?? 0, 0, ",", ".") . '</td>
+									<td>' . 'Rp ' . number_format($sumPasiva, 0, ",", ".") . '</td>
 									</tr>
 									</table>
 									<table class="table table-responsive" style="white-space: nowrap;">';
@@ -119,19 +123,19 @@ class Neraca_set extends CI_Controller
 			echo '
 													  <tr>
 														<td colspan="2">' . $row['account_description'] . '</td>
-														<td>' . 'Rp ' . number_format($row['saldo'] ?? 0, 0, ",", ".") . '</td>
+														<td>' . 'Rp ' . number_format($row['saldo'], 0, ",", ".") . '</td>
 													</tr>';
 			$sumModal += $row['saldo'];
 		}
 		echo '<tr style="background-color: #fcfdff;">
 													<td colspan = "2" align = "right"><strong>Total Modal</strong></td>
-													<td>' . 'Rp ' . number_format($sumModal ?? 0, 0, ",", ".") . '</td>
+													<td>' . 'Rp ' . number_format($sumModal, 0, ",", ".") . '</td>
 													</tr>
 													</table>';
 		echo '<table class="table table-responsive" style="white-space: nowrap;">
 		<tr style="background-color: #fcfdff;">
 													<td colspan = "2" align = "right"><strong>Total Laba/Rugi</strong></td>
-													<td>' . 'Rp ' . number_format($laba_rugi['nominal'] ?? 0, 0, ",", ".") . '</td>
+													<td>' . 'Rp ' . number_format($laba_rugi['nominal'], 0, ",", ".") . '</td>
 													</tr>
 													</table>';
 
@@ -148,12 +152,12 @@ class Neraca_set extends CI_Controller
 				<tr>
 				<td>
 				<div class="md-6 pull-right" style="font-weight: bold">
-				<font size="4">' . 'Rp ' . number_format($sumAktiva ?? 0, 0, ",", ".") . '</font>
+				<font size="4">' . 'Rp ' . number_format($sumAktiva, 0, ",", ".") . '</font>
 				</div>
 				</td>
 				<td>
 				<div class="md-6 pull-right" style="font-weight: bold">
-				<font size="4">' . 'Rp ' . number_format($sumPasiva + $sumModal + $laba_rugi['nominal'] ?? 0, 0, ",", ".") . '</font>
+				<font size="4">' . 'Rp ' . number_format($sumPasiva + $sumModal + $laba_rugi['nominal'], 0, ",", ".") . '</font>
 				</div>
 				</td>
 				</tr>
@@ -169,7 +173,7 @@ class Neraca_set extends CI_Controller
 		        <tr>
 				    <td>
 				        <div class="pull-right">
-    					    <a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/neraca/export_xls/?unit=' . $_REQUEST['majors_id'] . '&end=' . $_REQUEST['end'] . '"><span class="fa fa-file-excel-o"></span> Cetak Excel
+    					    <a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/neraca/export_xls/?unit=' . $_REQUEST['majors_id'] . '&start=' . $_REQUEST['start'] . '&end=' . $_REQUEST['end'] . '"><span class="fa fa-file-excel-o"></span> Cetak Excel
     					    </a>
     					</div>
 				    </td>

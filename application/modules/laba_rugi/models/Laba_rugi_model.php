@@ -23,15 +23,16 @@ class Laba_rugi_model extends CI_Model
             $query = $this->db->get();
             return $query->num_rows();
         } elseif ($aksi == 'countall') {
-            $this->db->from('jurnal_umum_detail');
+            $this->db->from('v_laporan_jurnal');
             if ($this->session->userdata('umajorsid') > 0) {
-                $this->db->join('jurnal_umum b', 'a.id_jurnal = b.id');
-                $this->db->where('b.sekolah_id', $this->session->userdata('umajorsid'));
+                // $this->db->join('jurnal_umum b', 'a.id_jurnal = b.id');
+                // $this->db->where('b.sekolah_id', $this->session->userdata('umajorsid'));
+                $this->db->where('idMajors', $this->session->userdata('umajorsid'));
             }
-            $this->db->like('account_code', '4-', 'after');
-            $this->db->or_like('account_code', '5-', 'after');
-            $this->db->or_like('account_code', '6-', 'after');
-            $this->db->or_like('account_code', '7-', 'after');
+            $this->db->like('akunBayar', '4-', 'after');
+            $this->db->or_like('akunBayar', '5-', 'after');
+            $this->db->or_like('akunBayar', '6-', 'after');
+            $this->db->or_like('akunBayar', '7-', 'after');
             return $this->db->count_all_results();
         } else {
             $this->_get_query();
@@ -44,9 +45,9 @@ class Laba_rugi_model extends CI_Model
     {
         $get = $this->input->get();
 
-        $param_order    = array('a.account_code', 'c.account_description', 'a.debet', 'a.kredit');
-        $param_search   = array('a.account_code', 'c.account_description', 'a.debet', 'a.kredit');
-        $orderby        = 'a.account_code';
+        $param_order    = array('a.akunBayar', 'a.jenisBayar', 'a.pemasukan', 'a.pengeluaran');
+        $param_search   = array('a.akunBayar', 'a.jenisBayar', 'a.pemasukan', 'a.pengeluaran');
+        $orderby        = 'a.akunBayar';
         $orderby_value  = 'ASC';
         $i              = 0;
 
@@ -54,17 +55,15 @@ class Laba_rugi_model extends CI_Model
         $yesterday      = date('Y-m-d', strtotime("yesterday"));
         $global_filter  = 0;
 
-        $this->db->select("b.id, b.keterangan, a.account_code, c.account_description, SUM(a.kredit) AS kredit,  SUM(a.debet) AS debet");
-        $this->db->from("jurnal_umum_detail a");
-        $this->db->join('jurnal_umum b', 'a.id_jurnal = b.id');
-        $this->db->join('account c', 'a.account_code = c.account_code');
+        $this->db->select("a.keterangan, a.akunBayar, a.jenisBayar, SUM(a.pengeluaran) AS kredit,  SUM(a.pemasukan) AS debet");
+        $this->db->from("v_laporan_jurnal a");
 
-        $this->db->like('c.account_code', '4-', 'after');
-        $this->db->or_like('c.account_code', '5-', 'after');
-        $this->db->or_like('c.account_code', '6-', 'after');
-        $this->db->or_like('c.account_code', '7-', 'after');
+        $this->db->like('a.akunBayar', '4-', 'after');
+        $this->db->or_like('a.akunBayar', '5-', 'after');
+        $this->db->or_like('a.akunBayar', '6-', 'after');
+        $this->db->or_like('a.akunBayar', '7-', 'after');
 
-        $this->db->group_by('c.account_code');
+        $this->db->group_by('a.akunBayar');
 
         foreach ($param_search as $item) {
             if ($get['search']['value'] != '') {
@@ -83,11 +82,11 @@ class Laba_rugi_model extends CI_Model
         }
 
         if ($get['columns'][1]['search']['value'] > 0) {
-            $this->db->where('b.sekolah_id', $get['columns'][1]['search']['value']);
+            $this->db->where('a.idMajors', $get['columns'][1]['search']['value']);
         }
 
         if ($this->session->userdata('umajorsid') > 0) {
-            $this->db->where('b.sekolah_id', $this->session->userdata('umajorsid'));
+            $this->db->where('a.idMajors', $this->session->userdata('umajorsid'));
         }
 
         if (isset($get['order'])) {
@@ -96,6 +95,63 @@ class Laba_rugi_model extends CI_Model
             $this->db->order_by($orderby, $orderby_value);
         }
     }
+
+    // private function _get_query_old()
+    // {
+    //     $get = $this->input->get();
+
+    //     $param_order    = array('a.account_code', 'c.account_description', 'a.debet', 'a.kredit');
+    //     $param_search   = array('a.account_code', 'c.account_description', 'a.debet', 'a.kredit');
+    //     $orderby        = 'a.account_code';
+    //     $orderby_value  = 'ASC';
+    //     $i              = 0;
+
+    //     $today          = date('Y-m-d');
+    //     $yesterday      = date('Y-m-d', strtotime("yesterday"));
+    //     $global_filter  = 0;
+
+    //     $this->db->select("b.id, b.keterangan, a.account_code, c.account_description, SUM(a.kredit) AS kredit,  SUM(a.debet) AS debet");
+    //     $this->db->from("jurnal_umum_detail a");
+    //     $this->db->join('jurnal_umum b', 'a.id_jurnal = b.id');
+    //     $this->db->join('account c', 'a.account_code = c.account_code');
+
+    //     $this->db->like('c.account_code', '4-', 'after');
+    //     $this->db->or_like('c.account_code', '5-', 'after');
+    //     $this->db->or_like('c.account_code', '6-', 'after');
+    //     $this->db->or_like('c.account_code', '7-', 'after');
+
+    //     $this->db->group_by('c.account_code');
+
+    //     foreach ($param_search as $item) {
+    //         if ($get['search']['value'] != '') {
+    //             $global_filter = 1;
+    //             if ($i === 0) {
+    //                 $this->db->group_start();
+    //                 $this->db->like($item, $get['search']['value']);
+    //             } else {
+    //                 $this->db->or_like($item, $get['search']['value']);
+    //             }
+    //             if (count($param_search) - 1 == $i) {
+    //                 $this->db->group_end();
+    //             }
+    //         }
+    //         $i++;
+    //     }
+
+    //     if ($get['columns'][1]['search']['value'] > 0) {
+    //         $this->db->where('b.sekolah_id', $get['columns'][1]['search']['value']);
+    //     }
+
+    //     if ($this->session->userdata('umajorsid') > 0) {
+    //         $this->db->where('b.sekolah_id', $this->session->userdata('umajorsid'));
+    //     }
+
+    //     if (isset($get['order'])) {
+    //         $this->db->order_by($param_order[$get['order']['0']['column']], $get['order']['0']['dir']);
+    //     } else if ($orderby != '') {
+    //         $this->db->order_by($orderby, $orderby_value);
+    //     }
+    // }
 
     public function _jurnal($idd)
     {
@@ -127,28 +183,28 @@ class Laba_rugi_model extends CI_Model
         }
 
         if (!empty($kategori) && $kategori == 'PENDAPATAN') {
-            $this->db->like('kd_aktiva', '4-', 'after');
-            $this->db->or_like('kd_aktiva', '6-', 'after');
+            $this->db->like('akunBayar', '4-', 'after');
+            $this->db->or_like('akunBayar', '6-', 'after');
         }
 
-        if (!empty($kategori) && $kategori == 'BIAYA') {
-            $this->db->or_like('kd_aktiva', '5-', 'after');
-            $this->db->or_like('kd_aktiva', '7-', 'after');
-        }
+        // if (!empty($kategori) && $kategori == 'BIAYA') {
+        //     $this->db->or_like('akunBayar', '5-', 'after');
+        //     $this->db->or_like('akunBayar', '7-', 'after');
+        // }
 
-        $this->db->select('*');
-        $this->db->from('v_laba_rugi');
-        $this->db->where('DATE(tanggal) >= ', '' . $tgl_dari . '');
-        $this->db->where('DATE(tanggal) <= ', '' . $tgl_samp . '');
+        $this->db->select('akunBayar, jenisBayar, SUM(penerimaan) AS debet, SUM(pengeluaran) AS kredit');
+        $this->db->from('v_laporan_jurnal');
+        // $this->db->where('DATE(tanggal) >= ', '' . $tgl_dari . '');
+        // $this->db->where('tanggal <= ', '' . $tgl_samp . '');
 
         $majors_id = NULL;
         if ($majors_id != "") {
             $majors_id = $_REQUEST['majors_id'];
-            $this->db->where('majors_id', $majors_id);
+            // $this->db->where('idMajors', $majors_id);
         }
 
         $this->db->order_by('tanggal', 'ASC');
-        $this->db->group_by('kd_aktiva');
+        $this->db->group_by('akunBayar');
         // $this->db->limit($limit, $start);
         $query = $this->db->get();
         if ($query->num_rows() > 0) {

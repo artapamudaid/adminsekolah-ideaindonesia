@@ -12,7 +12,9 @@ class Laba_rugi_set extends CI_Controller
         }
 
         $this->load->model(array(
-            'student/Student_model', 'period/Period_model', 'setting/Setting_model'
+            'student/Student_model',
+            'period/Period_model',
+            'setting/Setting_model'
         ));
     }
 
@@ -70,8 +72,8 @@ class Laba_rugi_set extends CI_Controller
 
         echo '<div class="box box-primary box-solid">
     		    <div class="box-header with-border">
-    			  <h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan Laba Rugi per ' .
-            pretty_date($_REQUEST['start'], 'd F Y', false) . ' Sampai ' . pretty_date($_REQUEST['end'], 'd F Y', false)
+    			  <h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan Laba Rugi' .
+            ' Per ' . pretty_date($_REQUEST['end'], 'd F Y', false)
             . '</h3>
     			</div>
     			<div class="box-body table-responsive">
@@ -81,11 +83,11 @@ class Laba_rugi_set extends CI_Controller
         foreach ($pendapatan as $row) {
             echo '
 			              <tr>
-			                <td colspan="2">' . $row['jns_trans'] . '</td>
-			                <td>' . 'Rp ' . number_format($row['kredit'], 0, ",", ".") . '</td>
+			                <td colspan="2">' . $row['jenisBayar'] . '</td>
+			                <td>' . 'Rp ' . number_format($row['debet'], 0, ",", ".") . '</td>
                             <td></td>
 					    </tr>';
-            $sumPendapatan += $row['kredit'];
+            $sumPendapatan += $row['debet'];
         }
         echo '<tr style="background-color: #fcfdff;">
 		                <td colspan = "2" align = "right"><strong>Total Penerimaan</strong></td>
@@ -97,11 +99,11 @@ class Laba_rugi_set extends CI_Controller
         foreach ($biaya as $row) {
             echo '
                                   <tr>
-                                    <td colspan="2">' . $row['jns_trans'] . '</td>
-                                    <td>' . 'Rp ' . number_format($row['debet'], 0, ",", ".") . '</td>
+                                    <td colspan="2">' . $row['jenisBayar'] . '</td>
+                                    <td>' . 'Rp ' . number_format($row['kredit'], 0, ",", ".") . '</td>
                                     <td></td>
                                 </tr>';
-            $sumBiaya += $row['debet'];
+            $sumBiaya += $row['kredit'];
         }
         echo '<tr style="background-color: #fcfdff;">
                                 <td colspan = "2" align = "right"><strong>Total Pengeluaran</strong></td>

@@ -29,11 +29,19 @@
 									</select>
 								</div>
 							</div>
+							<!-- <div class="col-md-2">
+								<div class="form-group">
+									<div class="input-group date " data-date="" data-date-format="yyyy-mm-dd">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+										<input class="form-control" type="text" name="start" id="start" readonly="readonly" placeholder="Tanggal Awal">
+									</div>
+								</div>
+							</div> -->
 							<div class="col-md-2">
 								<div class="form-group">
 									<div class="input-group date " data-date="" data-date-format="yyyy-mm-dd">
 										<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-										<input class="form-control" type="text" name="end" id="end" readonly="readonly" placeholder="Tanggal">
+										<input class="form-control" type="text" name="end" id="end" readonly="readonly" placeholder="Tanggal Akhir">
 									</div>
 								</div>
 							</div>
@@ -53,6 +61,7 @@
 
 <script>
 	function cari_data() {
+		// var start = $("#start").val();
 		var end = $("#end").val();
 		var majors_id = $("#majors_id").val();
 		//alert(id_jurusan+id_kelas);
@@ -61,6 +70,7 @@
 				url: '<?php echo base_url(); ?>manage/neraca/get_neraca',
 				type: 'POST',
 				data: {
+					// 'start': start,
 					'end': end,
 					'majors_id': majors_id,
 				},
