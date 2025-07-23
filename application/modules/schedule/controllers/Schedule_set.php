@@ -45,8 +45,6 @@ class Schedule_set extends CI_Controller
     $data['lesson']         = $this->Lesson_model->get($param);
     $data['jam_pelajaran']  = $this->Jam_pelajaran_model->get();
     $data['schedules']      = $this->Schedule_model->get($params);
-    echo json_encode($data['schedules']);
-    exit;
     $data['semester']       = $this->Semester_model->get(array('semester_status' => 1));
     $data['setting_logo']   = $this->Setting_model->get(array('id' => 6));
     $config['base_url']     = site_url('manage/schedule/index');
