@@ -36,7 +36,7 @@ class Student_model extends CI_Model
         }
 
         if (isset($params['nis'])) {
-            $this->db->where('student.student_nis', $params['nis']);
+            $this->db->where('student_nis', $params['nis']);
         }
 
         if (isset($params['password'])) {
@@ -50,7 +50,11 @@ class Student_model extends CI_Model
         if (isset($params['status'])) {
             $this->db->where('student.student_status', $params['status']);
         } else {
-            $this->db->where('student.student_status', '1');
+            if (isset($params['id']) or isset($params['student_id']) or isset($params['student_nis'])) {
+                $this->db->where_in('student.student_status', ['0', '1', '2', '3', '4']);
+            } else {
+                $this->db->where('student.student_status', '1');
+            }
         }
 
         if (isset($params['date'])) {
@@ -69,7 +73,7 @@ class Student_model extends CI_Model
             $this->db->like('class_name', $params['class_name']);
         }
 
-        if ($this->session->userdata('umajorsid') != '0' and !empty($this->session->userdata('umajorsid'))) {
+        if ($this->session->userdata('umajorsid') != '0') {
             $this->db->where('majors_id', $this->session->userdata('umajorsid'));
         }
 
@@ -258,7 +262,11 @@ class Student_model extends CI_Model
         if (isset($params['status'])) {
             $this->db->where('student.student_status', $params['status']);
         } else {
-            $this->db->where('student.student_status', '1');
+            if (isset($params['id']) or isset($params['student_id']) or isset($params['student_nis'])) {
+                $this->db->where_in('student.student_status', ['0', '1', '2', '3', '4']);
+            } else {
+                $this->db->where('student.student_status', '1');
+            }
         }
 
         if (isset($params['date'])) {
