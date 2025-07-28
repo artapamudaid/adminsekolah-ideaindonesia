@@ -65,6 +65,9 @@ class Pelanggaran_set extends CI_Controller
         $in_use = $this->db->get_where('konseling', ['pelanggaran_id' => $id])->num_rows();
         if ($in_use == 0) {
             $this->db->delete('pelanggaran', ['id' => $id]);
+            $this->session->set_flashdata('success', 'pelanggaran berhasil disimpan.');
+        } else {
+            $this->session->set_flashdata('failed', 'pelanggaran masih digunakan di konseling.');
         }
         redirect('manage/pelanggaran');
     }
