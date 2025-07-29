@@ -38,7 +38,11 @@ class Dashboard_set extends CI_Controller
         $id = $this->session->userdata('uid');
         $uRole = $this->session->userdata('uroleid');
 
-        $roleDashboard = [1, 2, 4, 3, 6, 9];
+        $hasDashboard       = false;
+        $cekAksesDashboard  = $this->db->query("SELECT hak_akses_id FROM hak_akses WHERE menu_id = 1 AND role_id = $uRole LIMIT 1")->row();
+        if ($cekAksesDashboard) {
+            $hasDashboard = true;
+        }
 
         $data['user']           = count($this->Users_model->get());
 
@@ -58,7 +62,7 @@ class Dashboard_set extends CI_Controller
         $month                  = $this->db->query("SELECT month_id FROM month WHERE month_name = '$mon'")->row_array();
         $data['monthActive']    = $month['month_id'];
 
-        if (in_array($uRole, $roleDashboard)) {
+        if ($hasDashboard) {
             // $data['kas']            = $this->db->query("SELECT kas_noref, kas_debit, kas_kredit, kas_month_id, kas_majors_id, kas_input_date FROM kas WHERE kas_period = '$periodActive'")->result_array();
             $data['kasTotal']          = $this->db->query(
                 "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
