@@ -1024,7 +1024,7 @@ class Student_set extends CI_Controller
   // satuan
   function printPdf($id = NULL)
   {
-    $this->load->helper(array('dompdf'));
+    $this->load->library('dompdflib');
     $this->load->helper(array('tanggal'));
     $this->load->model('student/Student_model');
     $this->load->model('setting/Setting_model');
@@ -1039,21 +1039,28 @@ class Student_set extends CI_Controller
     $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
     $data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
     $data['student'] = $this->Student_model->get(array('id' => $id));
-    $this->barcode2($data['student']['student_nis'], '');
+    $data['barcode_nis'] = str_replace('/', '-', $data['student']['student_nis']);
+    $this->barcode2($data['barcode_nis'], '');
 
     // var_dump($data);
     // exit;
 
-    $this->load->library('ciqrcode'); //load library
+    // $this->load->library('ciqrcode'); //load library
 
-    $nis                = $data['student']['student_nis'];
-    $params['data']     = $nis; //data isian qr code
-    $params['level']    = 'H'; //tingkat enkripsi H (high)
-    $params['size']     = 4; //ukuran
-    $params['savename'] = FCPATH . 'media/qrcode/' . $nis . '.png'; // nama file
-    $this->ciqrcode->generate($params); //run generate qr code dan save ke direktori diatas
+    // $nis                = $data['student']['student_nis'];
+    // $params['data']     = $nis; //data isian qr code
+    // $params['level']    = 'H'; //tingkat enkripsi H (high)
+    // $params['size']     = 4; //ukuran
+    // $params['savename'] = FCPATH . 'media/qrcode/' . $nis . '.png'; // nama file
+    // $this->ciqrcode->generate($params); //run generate qr code dan save ke direktori diatas
     $html = $this->load->view('student/student_pdf', $data, true);
-    $data = pdf_create($html, $data['student']['student_full_name'], TRUE, 'B6', 'potrait');
+    // $data = pdf_create($html, $data['student']['student_full_name'], TRUE, 'B6', 'potrait');
+
+    $paper = 'B6';
+
+    $orientation = "potrait";
+    $html = $this->load->view('student/student_pdf', $data, true);
+    $this->dompdflib->generate($html, $data['student']['student_full_name'], $paper, $orientation);
   }
 
   private function barcode2($sparepart_code, $barcode_type = 39, $scale = 6, $fontsize = 1, $thickness = 30, $dpi = 72)
