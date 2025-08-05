@@ -136,20 +136,12 @@ class Schedule_set extends CI_Controller
   // Delete to database
   public function delete($id = NULL)
   {
-
     if ($_POST) {
-
       $majors_id  = $this->input->post('majors_id');
       $class_id   = $this->input->post('class_id');
 
-      $check = $this->db->query("SELECT COUNT(*) AS num FROM `jurnal` WHERE jurnal_schedule_id = '$id'")->row_array();
-
-      if ($check['num'] < 1) {
-        $this->Schedule_model->delete($id);
-        $this->session->set_flashdata('success', 'Hapus Jadwal Pelajaran berhasil');
-      } else {
-        $this->session->set_flashdata('delete', 'Gagal Menghapus Jadwal Pelajaran');
-      }
+      $this->Schedule_model->delete($id);
+      $this->session->set_flashdata('success', 'Hapus Jadwal Pelajaran berhasil');
       redirect('manage/schedule?n=' . $majors_id . '&r=' . $class_id);
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Gagal Menghapus Jadwal Pelajaran');
