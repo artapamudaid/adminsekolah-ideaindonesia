@@ -333,6 +333,8 @@ class Payment_set extends CI_Controller
         for ($i = 0; $i < $cpt; $i++) {
           if ($title[$i] == '0') {
             $param['bulan_status'] = '1';
+          } else {
+            $param['bulan_status'] = '0';
           }
           $param['bulan_bill'] = $title[$i];
           $param['month_id'] = $month[$i];
@@ -396,6 +398,8 @@ class Payment_set extends CI_Controller
 
             if ($title[$i] == '0') {
               $param['bulan_status'] = '1';
+            } else {
+              $param['bulan_status'] = '0';
             }
 
             $param['bulan_bill'] = $title[$i];
@@ -461,6 +465,8 @@ class Payment_set extends CI_Controller
           for ($i = 0; $i < $cpt; $i++) {
             if ($title[$i] == '0') {
               $param['bulan_status'] = '1';
+            } else {
+              $param['bulan_status'] = '0';
             }
 
             $param['bulan_bill'] = $title[$i];
@@ -510,6 +516,8 @@ class Payment_set extends CI_Controller
       for ($i = 0; $i < $cpt; $i++) {
         if ($title[$i] == '0') {
           $param['bulan_status'] = '1';
+        } else {
+          $param['bulan_status'] = '0';
         }
         $param['bulan_id'] = $bulan_id[$i];
         $param['bulan_bill'] = $title[$i];
