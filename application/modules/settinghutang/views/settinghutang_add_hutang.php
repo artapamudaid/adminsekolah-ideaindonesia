@@ -1,5 +1,3 @@
-
-
 <div class="content-wrapper">
 	<!-- Content Header (Page header) -->
 	<section class="content-header">
@@ -11,191 +9,105 @@
 			<li class="active"><?php echo isset($title) ? '' . $title : null; ?></li>
 		</ol>
 	</section>
-		<section class="content">
-			<div class="row">
-				<div class="box-body">
-					<?php echo form_open_multipart(current_url(), array('class' => 'form-horizontal')); ?>
-					<?php echo validation_errors(); ?>
+	<section class="content">
+		<div class="row">
+			<div class="box-body">
+				<?php echo form_open_multipart(current_url(), array('class' => 'form-horizontal')); ?>
+				<?php echo validation_errors(); ?>
 
-					<div class="col-md-6">
-						<div class="box box-danger">
-							<div class="box-header">
-								<h3 class="box-title">Informasi Hutang</h3>
-							</div>
-							<div class="box-body">
-								<div class="form-group">
-									<label for="" class="col-sm-4 control-label">Setting Hutang</label>
-									<div class="col-sm-8">
-										<input type="text" class="form-control" value="<?php echo $settinghutang['poshutang_name'].' - T.A '.$settinghutang['period_start'].'/'.$settinghutang['period_end'] ?>" readonly="">
-									</div>
+				<div class="col-md-6">
+					<div class="box box-danger">
+						<div class="box-header">
+							<h3 class="box-title">Informasi Hutang</h3>
+						</div>
+						<div class="box-body">
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">Jenis Bayar</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" value="<?php echo $settinghutang['poshutang_name'] ?>" readonly="">
 								</div>
-								<div class="form-group">						
-									<label for="" class="col-sm-4 control-label">Tahun Ajaran</label>
-									<div class="col-sm-8">
-										<input type="text" class="form-control" value="<?php echo $settinghutang['period_start'].'/'.$settinghutang['period_end'] ?>" readonly="">
-									</div>
+							</div>
+							<div class="form-group">
+								<label for="" class="col-sm-4 control-label">Tahun Ajaran</label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" value="<?php echo $settinghutang['period_start'] . '/' . $settinghutang['period_end'] ?>" readonly="">
 								</div>
 							</div>
 						</div>
-
 					</div>
-					<div class="col-md-6">
 
-						<div class="box box-success">
-							<div class="box-header">
-								<h3 class="box-title">Jumlah Hutang</h3>
-							</div>
-							<div class="box-body table-responsive">
-
-								<table class="table">
-									<tbody>
-									    <tr>
-									        <td>
-									            <input type="hidden" name="kas_period" class="form-control" 
-									            value="<?php echo $settinghutang['settinghutang_period_id'] ?>">
-									        </td>
-									        <td>
-									            <input type="hidden" name="kas_note" class="form-control" 
-									            value="<?php echo $settinghutang['majors_short_name'].' - '.$settinghutang['poshutang_name'].' - T.A '.$settinghutang['period_start'].'/'.$settinghutang['period_end'] ?>">
-									        </td>
-									        <td>
-									            <input type="hidden" name="kas_majors_id" class="form-control" 
-									            value="<?php echo $settinghutang['majors_id'] ?>">
-									        </td>
-									    </tr>
-										<tr>
-											<td><strong>No. Ref Hutang</strong></td>
-											<td><input type="text" name="hutang_noref" id="hutang_noref" readonly="" class="form-control" value="<?php echo $noref ?>">
-											</td>
-										</tr>
-										<tr>
-											<td><strong>Tanggal Hutang</strong></td>
-											<td>
-											    <div class="input-group date " data-date="" data-date-format="yyyy-mm-dd">
-                                    			<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-                                    			<input class="form-control" required="" type="text" name="kas_date" id="kas_date" 
-                                    			placeholder="Tanggal Hutang" value="<?php echo date('Y-m-d')?>">
-											</td>
-										</tr>
-										<tr>
-											<td><strong>Posisi Kreditur</strong></td>
-											<td>
-										<select id="position_id" name="position_id" class="form-control" onchange="get_employee()">
-        								<option value="">-- Pilih Posisi --</option>
-        								<?php foreach($position as $row) { ?>
-        								<option value="<?php echo $row['position_id'] ?>"><?php echo $row['position_name'] ?></option>
-        									<?php } ?>
-        								</select>
-											</td>
-										</tr>
-										<tr>
-											<td><strong>Nama Kreditur</strong></td>
-											<td>
-											    <div id="show_employee">
-												<select name="employee_id" class="form-control">
-													<option value="">-- Pilih Kreditur --</option>
-												</select>
-												</div>
-											</td>
-										</tr>
-										<tr>
-											<td><strong>Nominal Hutang (Rp.)</strong></td>
-											<td><input type="text" name="hutang_bill" id="hutang_bill" placeholder="Masukan Jumlah Hutang" required="" class="form-control" onkeyup="count_hutang()">
-											</td>
-										</tr>
-										<tr>
-											<td><strong>Dicicil (berapa kali)</strong></td>
-											<td><input type="text" name="cicil" id="cicil" placeholder="Masukan Jumlah Hutang" required="" class="form-control" onkeyup="count_hutang()">
-											</td>
-										</tr>
-										<tr>
-											<td><strong>Nominal per Cicilan (Rp.)</strong></td>
-											<td><input type="text" name="hutang_pay_bill" id="hutang_pay_bill" placeholder="Masukan Jumlah Hutang" readonly="" class="form-control">
-											</td>
-										</tr>
-										<tr>
-											<td><strong>Masuk ke Kas</strong></td>
-											<td>
-											    <select required="" name="kas_account_id" id="kas_account_id" class="form-control">
-                                    			    <option value="">-- Pilih Akun Kas --</option>
-                                    			    <?php
-                                    			    foreach($dataKas as $row){
-                                    			    ?>
-                                                		<option value="<?php echo $row['account_id'] ?>" <?php echo($dataKasActive['account_id']==$row['account_id']) ? 'selected' : '' ?> > 
-                                                		<?php echo $row['account_code'].' - '.$row['account_description'];
-                                                		?>
-                                                		 </option>
-                                                	<?php	 
-                                        			 }
-                                    			    ?>
-                                    			</select>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-							<div class="box-footer">
-								<button type="submit" class="btn btn-success">Simpan</button>
-								<a href="<?php echo site_url('manage/settinghutang/view_hutang/'. $settinghutang['settinghutang_id']) ?>" class="btn btn-default">Cancel</a>
-							</div>
-						</div>
-					</div>					
-					<?php echo form_close(); ?>
 				</div>
-			</div>		
-		</section>
+				<div class="col-md-6">
+
+					<div class="box box-success">
+						<div class="box-header">
+							<h3 class="box-title">Jumlah Hutang</h3>
+						</div>
+						<div class="box-body table-responsive">
+							<input type="hidden" name="majors_id" value="<?= $settinghutang['majors_id'] ?>">
+							<input type="hidden" name="hutang_settinghutang_id" value="<?= $settinghutang['settinghutang_id'] ?>">
+							<input type="hidden" name="poshutang_account_id" value="<?= $settinghutang['poshutang_account_id'] ?>">
+							<table class="table">
+								<tbody>
+									<tr>
+										<td><strong>No. Ref Hutang</strong></td>
+										<td><input type="text" name="hutang_noref" id="hutang_noref" readonly="" class="form-control" value="<?php echo $noref ?>">
+										</td>
+									</tr>
+									<tr>
+										<td><strong>Tanggal Hutang</strong></td>
+										<td>
+											<div class="input-group date " data-date="" data-date-format="yyyy-mm-dd">
+												<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+												<input class="form-control" type="text" name="hutang_date" id="hutang_date" readonly="readonly" placeholder="Tanggal Hutang">
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td><strong>Nama Kreditur</strong></td>
+										<td>
+											<input type="text" name="hutang_kreditur" class="form-control" required>
+										</td>
+									</tr>
+									<tr>
+										<td><strong>Nominal Hutang (Rp.)</strong></td>
+										<td><input type="number" name="hutang_bill" id="hutang_bill" placeholder="Masukan Jumlah Hutang" required="" class="form-control">
+										</td>
+									</tr>
+									<tr>
+										<td><strong>Akun Penerimaan Hutang</strong></td>
+										<td>
+											<select name="hutang_account_id" id="hutang_account_id" required="" class="form-control">
+												<option value="">-- Pilih Akun Kas</option>
+												<?php foreach ($account as $val) { ?>
+													<option value="<?= $val['account_id'] ?>"><?= $val['account_code'] . ' - ' . $val['account_description'] ?></option>
+												<?php } ?>
+											</select>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="box-footer">
+							<button type="submit" class="btn btn-success">Simpan</button>
+							<a href="<?php echo site_url('manage/settinghutang/view_hutang/' . $settinghutang['settinghutang_id']) ?>" class="btn btn-default">Cancel</a>
+						</div>
+					</div>
+				</div>
+				<?php echo form_close(); ?>
+			</div>
+		</div>
+	</section>
 </div>
 
 <script>
+	set_default();
 
-    set_default();
-    
-    function get_employee(){
-    	var id_position = $('#position_id').val();
-    	
-    	$.ajax({
-            url: '<?php echo base_url(); ?>manage/settinghutang/get_people',
-            type: 'POST',
-            data: {
-                    'id_position' : id_position,
-                },
-            success: function(msg){
-                $("#show_employee").html(msg);        
-            },
-            error: function(msg){
-                alert('msg');
-            }
-        });
-        
-    }
-    
-    function set_default(){
-        
-        if($('#hutang_bill').val() == ''){
-            $('#hutang_bill').val('0');
-        }
-        
-        if($('#cicil').val() == ''){
-            $('#cicil').val('0');
-        }
-        
-        if($('#hutang_pay_bill').val() == ''){
-            $('#hutang_pay_bill').val('0');
-        }
-        
-    }
-    
-    function count_hutang(){
-        
-        var hutang_bill     = $('#hutang_bill').val();
-        var cicil           = $('#cicil').val();
-        
-        if(hutang_bill != '' && cicil != ''){
-            if(cicil != '0'){
-                var hutang_pay_bill = hutang_bill/cicil;
-                $('#hutang_pay_bill').val(hutang_pay_bill);
-            }
-        }
-    }
-    
+	function set_default() {
+
+		if ($('#hutang_bill').val() == '') {
+			$('#hutang_bill').val('0');
+		}
+
+	}
 </script>

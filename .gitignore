@@ -14,3 +14,5 @@ composer.lock
 #application/views/manage/login.php
 
 .DS_Store
+media/barcode_hutang/*
+media/barcode_transaction/*
