@@ -566,7 +566,7 @@ class Student_set extends CI_Controller
           $student_full_name      = $row['C']; //required
           $class_class_id         = $row['D']; //required
           $majors_majors_id       = $row['E']; //required
-          $student_parent_phone   = $row['F']; //required
+          $student_parent_phone   = $row['F'];
           $gender                 = $row['G'];
           $tempat_lahir           = $row['H'];
           $tgl_lahir              = $row['I'];
@@ -581,8 +581,7 @@ class Student_set extends CI_Controller
               empty($student_nis) ||
               empty($student_full_name) ||
               empty($class_class_id) ||
-              empty($majors_majors_id) ||
-              empty($student_parent_phone)
+              empty($majors_majors_id)
             ) {
               continue;
             }
@@ -593,8 +592,6 @@ class Student_set extends CI_Controller
             if (empty($student_nis) || $nisNum > 0) {
               $this->session->set_flashdata('failed', 'Duplikasi No. Induk Siswa');
             } else {
-
-              $hp = $this->phone_to_wa($student_parent_phone);
               $timestamp = date('Y-m-d H:i:s');
 
               $data = array(
@@ -603,10 +600,14 @@ class Student_set extends CI_Controller
                 'student_password'        =>  md5($pass_default),
                 'class_class_id'          =>  $class_class_id,
                 'majors_majors_id'        =>  $majors_majors_id,
-                'student_parent_phone'    =>  $hp,
                 'student_input_date'      => $timestamp,
                 'student_last_update'      => $timestamp
               );
+
+              if (!empty($student_parent_phone)) {
+                $hp = $this->phone_to_wa($student_parent_phone);
+                $data['student_parent_phone'] = str_replace("'", "", $hp);
+              }
 
               if (!empty($student_nisn)) {
                 $data['student_nisn'] = str_replace("'", "", $student_nisn);
@@ -721,6 +722,7 @@ class Student_set extends CI_Controller
     $student_parent_phone = str_replace("(", "", $student_parent_phone);
     $student_parent_phone = str_replace(")", "", $student_parent_phone);
     $student_parent_phone = str_replace(".", "", $student_parent_phone);
+    $student_parent_phone = str_replace("-", "", $student_parent_phone);
 
     if (!preg_match('/[^+0-9]/', trim($student_parent_phone))) {
       if (substr(trim($student_parent_phone), 0, 1) == '+') {
