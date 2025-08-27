@@ -547,106 +547,120 @@ class Student_set extends CI_Controller
     $pass_default = '123456';
 
     if (isset($_FILES["file"]["name"])) {
-
       $file = $this->do_upload_xls($name = 'file', $fileName = base64_encode('imstud' . date('ymdHis')));
 
       if ($file) {
-
         $path = FCPATH . 'uploads/xls_tmp/';
         $pathFile = $path . $file;
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $spreadsheet = $reader->load($pathFile);
         $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
-        $numrow = 1;
-        foreach ($sheet as $row) {
 
-          $student_nis            = $row['A']; //required
-          $student_nisn           = $row['B'];
-          $student_full_name      = $row['C']; //required
-          $class_class_id         = $row['D']; //required
-          $majors_majors_id       = $row['E']; //required
-          $student_parent_phone   = $row['F'];
-          $gender                 = $row['G'];
-          $tempat_lahir           = $row['H'];
-          $tgl_lahir              = $row['I'];
-          $hobi                   = $row['J'];
-          $student_phone          = $row['K'];
-          $alamat                 = $row['L'];
-          $ayah                   = $row['M'];
-          $ibu                    = $row['N'];
+        //Ambil semua NIS dari DB sekali saja
+        $existingNis = $this->db->select('student_nis')->get('student')->result_array();
+        $existingNis = array_flip(array_column($existingNis, 'student_nis'));
+
+        $numrow = 1;
+        $imported = 0;
+        $duplicated = 0;
+        foreach ($sheet as $row) {
+          $student_nis          = $row['A']; // required
+          $student_nisn         = $row['B'];
+          $student_full_name    = $row['C']; // required
+          $class_class_id       = isset($row['D']) ? (int)trim($row['D']) : 0;
+          $majors_majors_id     = isset($row['E']) ? (int)trim($row['E']) : 0;
+          $student_parent_phone = $row['F'];
+          $gender               = $row['G'];
+          $tempat_lahir         = $row['H'];
+          $tgl_lahir            = $row['I'];
+          $hobi                 = $row['J'];
+          $student_phone        = $row['K'];
+          $alamat               = $row['L'];
+          $ayah                 = $row['M'];
+          $ibu                  = $row['N'];
 
           if ($numrow > 2) {
+            // Validasi awal
             if (
               empty($student_nis) ||
               empty($student_full_name) ||
-              empty($class_class_id) ||
-              empty($majors_majors_id)
+              $class_class_id === 0 ||
+              $majors_majors_id === 0
             ) {
+              $numrow++;
               continue;
             }
-            $q = $this->db->query("SELECT COUNT(student_nis) as nisNum FROM student WHERE student_nis = '$student_nis'")->row_array();
 
-            $nisNum = $q['nisNum'];
-
-            if (empty($student_nis) || $nisNum > 0) {
-              $this->session->set_flashdata('failed', 'Duplikasi No. Induk Siswa');
-            } else {
-              $timestamp = date('Y-m-d H:i:s');
-
-              $data = array(
-                'student_nis'             =>  $student_nis,
-                'student_full_name'       =>  $student_full_name,
-                'student_password'        =>  md5($pass_default),
-                'class_class_id'          =>  $class_class_id,
-                'majors_majors_id'        =>  $majors_majors_id,
-                'student_input_date'      => $timestamp,
-                'student_last_update'      => $timestamp
-              );
-
-              if (!empty($student_parent_phone)) {
-                $hp = $this->phone_to_wa($student_parent_phone);
-                $data['student_parent_phone'] = str_replace("'", "", $hp);
-              }
-
-              if (!empty($student_nisn)) {
-                $data['student_nisn'] = str_replace("'", "", $student_nisn);
-              }
-              if (!empty($gender)) {
-                $data['student_gender'] = $gender;
-              }
-              if (!empty($tempat_lahir)) {
-                $data['student_born_place'] = $tempat_lahir;
-              }
-              if (!empty($tgl_lahir)) {
-                $data['student_born_date'] = $tgl_lahir;
-              }
-              if (!empty($student_phone)) {
-                $data['student_phone'] = $this->phone_to_wa($student_phone);
-              }
-              if (!empty($hobi)) {
-                $data['student_hobby'] = $hobi;
-              }
-              if (!empty($alamat)) {
-                $data['student_address'] = $alamat;
-              }
-              if (!empty($ayah)) {
-                $data['student_name_of_father'] = $ayah;
-              }
-              if (!empty($ibu)) {
-                $data['student_name_of_mother'] = $ibu;
-              }
-
-              $this->db->insert('student', $data);
-
-
-              $this->session->set_flashdata('success', 'Import Data Santri Berhasil');
+            // Cek duplikat via array_flip (lebih cepat daripada query per row)
+            if (isset($existingNis[$student_nis])) {
+              $duplicated++;
+              $numrow++;
+              continue;
             }
+
+            $timestamp = date('Y-m-d H:i:s');
+
+            $data = [
+              'student_nis'        => $student_nis,
+              'student_full_name'  => $student_full_name,
+              'student_password'   => md5($pass_default), // bisa ganti password_hash
+              'class_class_id'     => $class_class_id,
+              'majors_majors_id'   => $majors_majors_id,
+              'student_input_date' => $timestamp,
+              'student_last_update' => $timestamp
+            ];
+
+            if (!empty($student_parent_phone)) {
+              $hp = $this->phone_to_wa($student_parent_phone);
+              $data['student_parent_phone'] = str_replace("'", "", $hp);
+            }
+            if (!empty($student_nisn)) {
+              $data['student_nisn'] = str_replace("'", "", $student_nisn);
+            }
+            if (!empty($gender)) {
+              $data['student_gender'] = $gender;
+            }
+            if (!empty($tempat_lahir)) {
+              $data['student_born_place'] = $tempat_lahir;
+            }
+            if (!empty($tgl_lahir)) {
+              $data['student_born_date'] = $tgl_lahir;
+            }
+            if (!empty($student_phone)) {
+              $data['student_phone'] = $this->phone_to_wa($student_phone);
+            }
+            if (!empty($hobi)) {
+              $data['student_hobby'] = $hobi;
+            }
+            if (!empty($alamat)) {
+              $data['student_address'] = $alamat;
+            }
+            if (!empty($ayah)) {
+              $data['student_name_of_father'] = $ayah;
+            }
+            if (!empty($ibu)) {
+              $data['student_name_of_mother'] = $ibu;
+            }
+
+            // Insert ke DB
+            $this->db->insert('student', $data);
+
+            // Tambahkan ke daftar existing supaya row selanjutnya tahu
+            $existingNis[$student_nis] = true;
+
+            $imported++;
           }
           $numrow++;
         }
 
         unlink($pathFile);
+
+        // Flash message akumulatif
+        $this->session->set_flashdata(
+          'success',
+          "$imported siswa berhasil diimport, $duplicated duplikat diabaikan."
+        );
       }
     }
     redirect('manage/student');
