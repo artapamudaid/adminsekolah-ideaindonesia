@@ -42,7 +42,7 @@ class Lesson_model extends CI_Model
             $this->db->order_by('lesson.lesson_name', 'asc');
         }
 
-        $this->db->select('lesson_id, lesson_name, lesson_code, lesson_teacher, employee_name');
+        $this->db->select('lesson_id, lesson_name, lesson_code, lesson_teacher, employee_id, employee_name');
 
         $this->db->join('employee', 'employee.employee_id = lesson.lesson_teacher', 'left');
 
