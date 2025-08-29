@@ -346,7 +346,9 @@
 				'<select class="form-control" name="schedule_lesson[]">' +
 				'<option value="">-- Pilih Mata Pelajaran --</option>' +
 				'<?php foreach ($lesson as $row) : ?>' +
-				'<option value="<?php echo $row['lesson_id'] ?>"><?php echo $row['lesson_code'] . ' - ' . str_replace("'", "", $row['employee_name']) ?></option>' +
+				'<option value="<?php echo $row['lesson_id'] ?>">' +
+				'<?php echo htmlspecialchars($row['lesson_code'] . " - " . $row["employee_name"], ENT_QUOTES); ?>' +
+				'</option>' +
 				'<?php endforeach; ?>' +
 				'</select>' +
 				'<a href="#" class="btn btn-xs btn-danger remScnt_lesson">Hapus Baris</a>' +
@@ -358,7 +360,9 @@
 				'<select class="form-control" name="schedule_jampel[]">' +
 				'<option value="">-- Pilih Jam Pelajaran --</option>' +
 				'<?php foreach ($jam_pelajaran as $row) : ?>' +
-				'<option value="<?php echo $row['jam_pelajaran_id'] ?>"><?php echo $row['jam_pelajaran_name'] . ' (' . $row['jam_pelajaran_start'] . ' S/d ' . $row['jam_pelajaran_end'] . ' )' ?></option>' +
+				'<option value="<?php echo $row['jam_pelajaran_id'] ?>">' +
+				'<?php echo htmlspecialchars($row['jam_pelajaran_name'] . " (" . $row['jam_pelajaran_start'] . " S/d " . $row['jam_pelajaran_end'] . ")", ENT_QUOTES); ?>' +
+				'</option>' +
 				'<?php endforeach; ?>' +
 				'</select>' +
 				'</div>' +
