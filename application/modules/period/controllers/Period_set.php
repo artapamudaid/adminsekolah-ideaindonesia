@@ -66,6 +66,8 @@ class Period_set extends CI_Controller
         $params['period_id'] = $this->input->post('period_id');
       } else {
         $start = $this->input->post('period_start');
+        $params['period_status'] = 0;
+
         $cekPeriod = $this->db->query(
           "SELECT * 
               FROM period
@@ -80,7 +82,6 @@ class Period_set extends CI_Controller
 
       $params['period_start'] = $this->input->post('period_start');
       $params['period_end'] = $this->input->post('period_end');
-      $params['period_status'] = 0;
 
       $status = $this->Period_model->add($params);
       $paramsupdate['period_id'] = $status;
@@ -97,7 +98,7 @@ class Period_set extends CI_Controller
         )
       );
 
-      if ($this->input->post('generate_payment')) {
+      if (!$this->input->post('period_id') and $this->input->post('generate_payment')) {
         $generatePayment = $this->input->post('generate_payment');
         if ($generatePayment == 'YA') {
           $pos = $this->Pos_model->get();
