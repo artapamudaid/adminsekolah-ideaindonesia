@@ -22,6 +22,7 @@ class Arus_kas_model extends CI_Model
         $this->db->where("(c.account_code LIKE '$account_code_like' OR c.account_code LIKE '$account_code_like2') $unit");
         $this->db->select("SUM(jurnal_umum_detail.kredit) AS total_kredit,  SUM(jurnal_umum_detail.debet) AS total_debet");
         $this->db->join('account c', 'jurnal_umum_detail.account_code = c.account_code');
+        $this->db->join('jurnal_umum ju', 'jurnal_umum_detail.id_jurnal = ju.id');
 
         return $this->db->get("jurnal_umum_detail")->row_array();
     }
