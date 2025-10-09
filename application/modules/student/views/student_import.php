@@ -30,7 +30,7 @@
 							<div class="box-body">
 								<div class="form-group">
 									<label>Masukkan File (.xlsx)</label>
-									<input type="file" name="file" required="">
+									<input type="file" name="file" required="" accept=".xlsx">
 								</div>
 								<div class="form-group">
 									<button type="submit" class="btn btn-success btn-sm btn-flat">Import</button>

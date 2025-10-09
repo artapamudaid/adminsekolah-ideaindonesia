@@ -73,8 +73,11 @@ class Student_model extends CI_Model
             $this->db->like('class_name', $params['class_name']);
         }
 
-        if ($this->session->userdata('umajorsid') != '0') {
-            $this->db->where('majors_id', $this->session->userdata('umajorsid'));
+        $umajors = $this->session->userdata('umajorsid');
+        if ($umajors) {
+            if ($this->session->userdata('umajorsid') != '0') {
+                $this->db->where('majors_id', $this->session->userdata('umajorsid'));
+            }
         }
 
         if (isset($params['name_like'])) {

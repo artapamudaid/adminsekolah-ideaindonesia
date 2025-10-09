@@ -602,7 +602,7 @@ class Student_set extends CI_Controller
             $timestamp = date('Y-m-d H:i:s');
 
             $data = [
-              'student_nis'        => $student_nis,
+              'student_nis'        => trim($student_nis),
               'student_full_name'  => $student_full_name,
               'student_password'   => md5($pass_default), // bisa ganti password_hash
               'class_class_id'     => $class_class_id,
