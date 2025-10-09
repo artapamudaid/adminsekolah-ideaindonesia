@@ -209,7 +209,7 @@ class Banking_set extends CI_Controller
       $totalTrs = $banking->totalTransaksi + $nominal;
 
       if ($limit > 0) {
-        if (!$is_confirmed && ($nominal > $limit || $totalTrs > $limit)) {
+        if (!$is_confirmed && $limit > 0 && ($nominal > $limit || $totalTrs > $limit)) {
           // Minta konfirmasi dulu
           return $this->output
             ->set_content_type('application/json')
