@@ -121,6 +121,10 @@
 			$dformat = date_format($tanggal, 'dmYHis');
 			?>
 			<?php
+			$norefKas = trim($bcode['kas_noref']);
+			$dataKas = $this->db->query("SELECT account.account_description FROM kas JOIN account ON account.account_id = kas.kas_account_id WHERE kas_noref = '$norefKas'")->row();
+			$akun_kas = $dataKas->account_description;
+
 			$arrContextOptions = array(
 				"ssl" => array(
 					"verify_peer" => false,
@@ -225,6 +229,7 @@
 			<th style="border-top: 1px solid; border-bottom: 1px solid;">Akun Kas</th>
 			<th colspan="2" style="border-top: 1px solid; border-bottom: 1px solid; text-align: center">Jumlah Pembayaran</th>
 		</tr>
+		<!-- Bulan -->
 		<?php
 		$i = 1;
 		foreach ($bulan as $row) :
@@ -235,14 +240,36 @@
 				<td style="border-bottom: 1px solid;padding-top: 10px; padding-bottom: 10px;"><?php echo $i ?></td>
 				<td style="border-bottom: 1px solid;"><?php echo $namePay . ' - (' . $row['month_name'] . ' ' . $mont . ')' ?></td>
 				<td style="border-bottom: 1px solid"><?php echo 'Rp. ' . number_format($row['bulan_bill'], 0, ',', '.') ?></td>
-				<td style="border-bottom: 1px solid;"><?php echo $row['account_description'] ?></td>
+				<td style="border-bottom: 1px solid;"><?php echo $row['account_description'] ?? $akun_kas ?></td>
 				<td style="border-bottom: 1px solid;">Rp. </td>
 				<td style="border-bottom: 1px solid; text-align: right;"><?php echo number_format($row['bulan_bill'], 0, ',', '.') ?></td>
 			</tr>
 		<?php
 			$i++;
 		endforeach ?>
+		<!-- BUlan -->
 
+		<!-- Paket -->
+		<?php
+		$i = 1;
+		foreach ($paket as $row) :
+			$namePay = $row['name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'];
+			$mont = ($row['month_month_id'] <= 6) ? $row['period_start'] : $row['period_end'];
+		?>
+			<tr>
+				<td style="border-bottom: 1px solid;padding-top: 10px; padding-bottom: 10px;"><?php echo $i ?></td>
+				<td style="border-bottom: 1px solid;"><?php echo $namePay . ' - (' . $row['month_name'] . ' ' . $mont . ')' ?></td>
+				<td style="border-bottom: 1px solid"><?php echo 'Rp. ' . number_format($row['total'], 0, ',', '.') ?></td>
+				<td style="border-bottom: 1px solid;"><?php echo $akun_kas ?></td>
+				<td style="border-bottom: 1px solid;">Rp. </td>
+				<td style="border-bottom: 1px solid; text-align: right;"><?php echo number_format($row['total'], 0, ',', '.') ?></td>
+			</tr>
+		<?php
+			$i++;
+		endforeach ?>
+		<!-- Paket -->
+
+		<!-- Bebas -->
 		<?php
 		$j = $i;
 		foreach ($free as $row) :
@@ -252,13 +279,14 @@
 				<td style="border-bottom: 1px solid;padding-top: 10px; padding-bottom: 10px;"><?php echo $j ?></td>
 				<td style="border-bottom: 1px solid;"><?php echo $namePayFree . ' - (' . $row['bebas_pay_desc'] . ')' ?></td>
 				<td style="border-bottom: 1px solid;"><?php echo 'Rp. ' . number_format($row['bebas_bill'], 0, ',', '.') ?></td>
-				<td style="border-bottom: 1px solid;"><?php echo $row['account_description'] ?></td>
+				<td style="border-bottom: 1px solid;"><?php echo $row['account_description'] ?? $akun_kas ?></td>
 				<td style="border-bottom: 1px solid;">Rp. </td>
 				<td style="border-bottom: 1px solid; text-align: right;"><?php echo number_format($row['bebas_pay_bill'], 0, ',', '.') ?></td>
 			</tr>
 		<?php
 			$j++;
 		endforeach ?>
+		<!-- Bebas -->
 
 		<tr>
 			<td colspan="3" style="text-align: center;padding-top: 5px; padding-bottom: 5px;"></td>
