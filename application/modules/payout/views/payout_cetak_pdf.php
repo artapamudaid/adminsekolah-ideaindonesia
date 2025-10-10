@@ -168,21 +168,6 @@
 			</td>
 		</tr>
 	</table>
-	<!--<p class="name-school"><?php echo $setting_school['setting_value'] ?></p>
-	<p class="unit">
-	<?php
-	$num = count($unit);
-	if ($num > 1) {
-		foreach ($unit as $row) {
-			$data  = $row['majors_short_name'];
-			$Pecah = explode(" ", $data);
-			for ($i = 0; $i < count($Pecah); $i++) {
-				echo $Pecah[$i] . " ";
-			}
-		}
-	} ?></p>
-	<p class="alamat"><?php echo $setting_address['setting_value'] ?><br>
-		<?php echo $setting_phone['setting_value'] ?></p>-->
 	<hr>
 	<table style="padding-top: -5px; padding-bottom: 5px">
 		<tbody>
