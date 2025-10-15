@@ -363,4 +363,42 @@ class Bebas_model extends CI_Model
     $status = $this->db->affected_rows();
     return $status;
   }
+
+  public function get_bebas_with_last_payment($data = array())
+  {
+    // Subquery untuk ambil last payment per bebas_id
+    $subquery = "
+            SELECT bebas_bebas_id, MAX(bebas_pay_input_date) AS lastPaymentDate
+            FROM bebas_pay
+            GROUP BY bebas_bebas_id
+        ";
+
+    $this->db->select("
+            ps.pos_name,
+            p.period_start,
+            p.period_end,
+            b.bebas_id,
+            b.payment_payment_id,
+            b.bebas_bill,
+            b.bebas_diskon,
+            b.bebas_total_pay,
+            b.bebas_last_update,
+            bp.lastPaymentDate
+        ");
+    $this->db->from('bebas b');
+    $this->db->join('payment py', 'py.payment_id = b.payment_payment_id');
+    $this->db->join('pos ps', 'ps.pos_id = py.pos_pos_id');
+    $this->db->join('period p', 'p.period_id = py.period_period_id');
+    $this->db->join("($subquery) bp", 'bp.bebas_bebas_id = b.bebas_id', 'left');
+
+    // Filter berdasarkan parameter
+    if (!empty($data['student_id'])) {
+      $this->db->where('b.student_student_id', $data['student_id']);
+    }
+    if (!empty($data['period_id'])) {
+      $this->db->where('py.period_period_id', $data['period_id']);
+    }
+
+    return $this->db->get()->result_array();
+  }
 }

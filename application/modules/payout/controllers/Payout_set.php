@@ -232,7 +232,7 @@ class Payout_set extends CI_Controller
     $data['period'] = $this->Period_model->get($params);
     $data['siswa']  = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
     $data['bulan']  = $this->Bulan_model->get($pay);
-    $data['bebas']  = $this->Bebas_model->get($pay);
+    $data['bebas']  = $this->Bebas_model->get_bebas_with_last_payment($pay);
     $data['majors'] = $this->Student_model->get_majors();
     $data['unit']   = $this->Student_model->get_majors(array('status' => 1));
 
