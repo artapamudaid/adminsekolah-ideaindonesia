@@ -2051,7 +2051,7 @@
 									<th>NIS</th>
 									<th>Nama</th>
 									<th>Unit Sekolah</th>
-									<th>Semester</th>
+									<th>Kelas</th>
 									<th>Aksi</th>
 								</tr>
 								</thead>
