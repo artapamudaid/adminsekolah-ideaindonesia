@@ -59,6 +59,84 @@ class Kredit_set extends CI_Controller
 		$this->load->view('manage/layout', $data);
 	}
 
+	public function list_kredit()
+	{
+		$ds         = $this->input->post('ds');
+		$de         = $this->input->post('de');
+		$majors_id  = $this->input->post('majors');
+
+		$data = array();
+
+		// Date start
+		if (isset($ds) && !empty($ds) && $ds != '') {
+			$data['date_start'] = $ds;
+		}
+
+		if (isset($de) && !empty($de) && $ds != '') {
+			$data['date_end'] = $de;
+		}
+
+		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
+			$data['majors_id'] = $majors_id;
+		}
+
+		$param = $_POST['param'];
+
+		$draw 	= $_REQUEST['draw'];
+		$length = $_REQUEST['length'];
+		$start 	= $_REQUEST['start'];
+		$search = $_REQUEST['search']["value"];
+
+		if ($search != "") {
+			$data['search'] = $search;
+		}
+
+		// Menangani sorting
+		$order_column_index = $_REQUEST['order'][0]['column']; // Index kolom yang diklik
+		$order_dir = $_REQUEST['order'][0]['dir']; // Arah sorting (asc/desc)
+		$data['order_dir'] = $order_dir;
+
+		$columns = ['kredit_date', 'kredit_kas_noref', 'accDesc', 'account_description', 'kredit_desc', 'kredit_value', 'kredit_tax', 'kredit_item', 'kredit_value', 'kredit_date'];
+
+		// Pastikan index yang dikirimkan oleh DataTables sesuai dengan daftar kolom yang kita punya
+		$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tanggal';
+		$data['order_column'] = $order_column;
+
+		$output 				= array();
+		$output['draw']   		= $draw;
+		$output['recordsTotal'] = $output['recordsFiltered'] = 0;
+		$output['data'] 		= array();
+
+		$totalTrx = $this->Kredit_model->count_trx($data);
+
+		if ($totalTrx) {
+			$list_kredit = $this->Kredit_model->list_kredit($length, $start, $search, $data);
+			$output['recordsTotal'] = $output['recordsFiltered'] = $totalTrx['totalBaris'];
+
+			$detaKredit = array();
+			foreach ($list_kredit->result() as $r) {
+				$row = array();
+				$row[] = pretty_date($r->kredit_date, 'Y-m-d', false);
+				$row[] = $r->kredit_kas_noref;
+				$row[] = '[' . $r->accDesc . ']';
+				$row[] = $r->account_code . ' - ' . $r->account_description;
+				$row[] = $r->kredit_desc;
+				$row[] = 'Rp. ' . number_format($r->kredit_value, 0, ',', '.');
+				$row[] = $r->kredit_tax . ' %';
+				$row[] = $r->kredit_item;
+				$row[] = 'Rp. ' . number_format($r->kredit_value + ($r->kredit_value * ($r->kredit_tax / 100)), 0, ',', '.');
+				$row[] = '
+					<a href="' . site_url('manage/kredit/cetakTrx/' . $r->kredit_kas_noref) . '" class="btn btn-xs btn-default" data-toggle="tooltip" title="Cetak Tranksaksi" target="_blank"><i class="fa fa-print"></i></a>
+					<a href="' . site_url('manage/kredit/edit/' . $r->kredit_id) . '" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a>
+					<a class="btn btn-xs btn-danger btnDellKredit" data-kredit="' . $r->kredit_id . '" data-noref="' . $r->kredit_kas_noref . '" data-gaji="' . $r->kredit_gaji_id . '" ><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></a>
+				';
+				$detaKredit[] = $row;
+			}
+			$output['data'] = $detaKredit;
+		}
+
+		echo json_encode($output);
+	}
 
 	public function trx()
 	{

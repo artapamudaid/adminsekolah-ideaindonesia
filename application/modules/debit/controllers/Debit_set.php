@@ -59,6 +59,83 @@ class Debit_set extends CI_Controller
         $this->load->view('manage/layout', $data);
     }
 
+    public function list_debit()
+    {
+        $ds         = $this->input->post('ds');
+        $de         = $this->input->post('de');
+        $majors_id  = $this->input->post('majors');
+
+        $data = array();
+
+        // Date start
+        if (isset($ds) && !empty($ds) && $ds != '') {
+            $data['date_start'] = $ds;
+        }
+
+        if (isset($de) && !empty($de) && $ds != '') {
+            $data['date_end'] = $de;
+        }
+
+        if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
+            $data['majors_id'] = $majors_id;
+        }
+
+        $param = $_POST['param'];
+
+        $draw     = $_REQUEST['draw'];
+        $length   = $_REQUEST['length'];
+        $start    = $_REQUEST['start'];
+        $search   = $_REQUEST['search']["value"];
+
+        if ($search != "") {
+            $data['search'] = $search;
+        }
+
+        // Menangani sorting
+        $order_column_index = $_REQUEST['order'][0]['column'];
+        $order_dir = $_REQUEST['order'][0]['dir'];
+        $data['order_dir'] = $order_dir;
+
+        $columns = ['debit_date', 'debit_kas_noref', 'accDesc', 'account_description', 'debit_desc', 'debit_value', 'debit_tax', 'debit_item', 'debit_value', 'debit_date'];
+
+        $order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'debit_date';
+        $data['order_column'] = $order_column;
+
+        $output = array();
+        $output['draw'] = $draw;
+        $output['recordsTotal'] = $output['recordsFiltered'] = 0;
+        $output['data'] = array();
+
+        $totalTrx = $this->Debit_model->count_trx($data);
+
+        if ($totalTrx) {
+            $list_debit = $this->Debit_model->list_debit($length, $start, $search, $data);
+            $output['recordsTotal'] = $output['recordsFiltered'] = $totalTrx['totalBaris'];
+
+            $dataDebit = array();
+            foreach ($list_debit->result() as $r) {
+                $row = array();
+                $row[] = pretty_date($r->debit_date, 'Y-m-d', false);
+                $row[] = $r->debit_kas_noref;
+                $row[] = '[' . $r->accDesc . ']';
+                $row[] = $r->account_code . ' - ' . $r->account_description;
+                $row[] = $r->debit_desc;
+                $row[] = 'Rp. ' . number_format($r->debit_value, 0, ',', '.');
+                $row[] = $r->debit_tax . ' %';
+                $row[] = $r->debit_item;
+                $row[] = 'Rp. ' . number_format($r->debit_value + ($r->debit_value * ($r->debit_tax / 100)), 0, ',', '.');
+                $row[] = '
+                <a href="' . site_url('manage/debit/cetakTrx/' . $r->debit_kas_noref) . '" class="btn btn-xs btn-default" data-toggle="tooltip" title="Cetak Transaksi" target="_blank"><i class="fa fa-print"></i></a>
+                <a href="' . site_url('manage/debit/edit/' . $r->debit_id) . '" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a>
+                <a class="btn btn-xs btn-danger btnDellDebit" data-debit="' . $r->debit_id . '" data-noref="' . $r->debit_kas_noref . '"><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></a>
+            ';
+                $dataDebit[] = $row;
+            }
+            $output['data'] = $dataDebit;
+        }
+
+        echo json_encode($output);
+    }
 
     public function trx()
     {
