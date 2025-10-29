@@ -8,10 +8,12 @@ class Billing_model extends CI_Model
     {
         parent::__construct();
     }
-	
-	function get_student($params = array()) {
 
-        $this->db->select('
+    function get_student($params = array())
+    {
+
+        $this->db->select(
+            '
 			student.student_id,
 			student.student_nis,
 			student.student_nisn,
@@ -27,15 +29,15 @@ class Billing_model extends CI_Model
 			majors.majors_short_name,
 			SUM(COALESCE(CASE WHEN bulan.bulan_status = 0 THEN bulan.bulan_bill ELSE 0 END, 0)) AS total_bulan_bill,
 			(COALESCE(bebas.bebas_bill, 0) - COALESCE(bebas.bebas_diskon, 0) - COALESCE(bebas.bebas_total_pay, 0)) AS bebas_sisa'
-		);
+        );
 
-		$this->db->from('student');
-		$this->db->join('class', 'class.class_id = student.class_class_id', 'left');
-		$this->db->join('majors', 'majors.majors_id = student.majors_majors_id', 'left');
-		$this->db->join('bulan', 'bulan.student_student_id = student.student_id', 'left');
-		$this->db->join('bebas', 'bebas.student_student_id = student.student_id', 'left');
-		$this->db->join('payment as paybul', 'paybul.payment_id = bulan.payment_payment_id', 'left');
-		$this->db->join('payment as paybeb', 'paybeb.payment_id = bebas.payment_payment_id', 'left');
+        $this->db->from('student');
+        $this->db->join('class', 'class.class_id = student.class_class_id', 'left');
+        $this->db->join('majors', 'majors.majors_id = student.majors_majors_id', 'left');
+        $this->db->join('bulan', 'bulan.student_student_id = student.student_id', 'left');
+        $this->db->join('bebas', 'bebas.student_student_id = student.student_id', 'left');
+        $this->db->join('payment as paybul', 'paybul.payment_id = bulan.payment_payment_id', 'left');
+        $this->db->join('payment as paybeb', 'paybeb.payment_id = bebas.payment_payment_id', 'left');
 
         if (isset($params['class_id'])) {
             $this->db->where('class_class_id', $params['class_id']);
@@ -46,35 +48,34 @@ class Billing_model extends CI_Model
         }
 
         if (isset($params['period_id'])) {
-			$this->db->group_start();
-			$this->db->group_start();
-			if (isset($params['month_start']) and isset($params['month_end'])) {
-				$this->db->where('month_month_id >=', $params['month_start']);
-				$this->db->where('month_month_id <=', $params['month_end']);
-			}
+            $this->db->group_start();
+            $this->db->group_start();
+            if (isset($params['month_start']) and isset($params['month_end'])) {
+                $this->db->where('month_month_id >=', $params['month_start']);
+                $this->db->where('month_month_id <=', $params['month_end']);
+            }
             $this->db->where('paybul.period_period_id', $params['period_id']);
-			$this->db->group_end();
-			$this->db->or_where('paybeb.period_period_id', $params['period_id']);
-			$this->db->group_end();
+            $this->db->group_end();
+            $this->db->or_where('paybeb.period_period_id', $params['period_id']);
+            $this->db->group_end();
         }
 
-		// Group by all non-aggregated columns
-		$this->db->group_by('student.student_id');
+        // Group by all non-aggregated columns
+        $this->db->group_by('student.student_id');
 
-		if ($params['status'] == 'belum') {
-			$this->db->having('(total_bulan_bill + bebas_sisa)  >', 0);
-		} else if ($params['status'] == 'lunas') {
-			$this->db->having('(total_bulan_bill + bebas_sisa)  =', 0);
-		}
+        if ($params['status'] == 'belum') {
+            $this->db->having('(total_bulan_bill + bebas_sisa)  >', 0);
+        } else if ($params['status'] == 'lunas') {
+            $this->db->having('(total_bulan_bill + bebas_sisa)  =', 0);
+        }
 
-		$this->db->order_by('majors.majors_id', 'ASC');
-		$this->db->order_by('class.class_name', 'ASC');
-		$this->db->order_by('student.student_nis', 'ASC');
+        $this->db->order_by('majors.majors_id', 'ASC');
+        $this->db->order_by('class.class_name', 'ASC');
+        $this->db->order_by('student.student_nis', 'ASC');
 
-		$query = $this->db->get();
-		
-		return $query->result_array();
+        $query = $this->db->get();
 
+        return $query->result_array();
     }
 
     function get_tagihan_bulan($params = array())
@@ -92,6 +93,10 @@ class Billing_model extends CI_Model
 
         if (isset($params['class_id'])) {
             $this->db->where('student.class_class_id', $params['class_id']);
+        }
+
+        if (isset($params['student_status'])) {
+            $this->db->where_in('student.student_status', $params['student_status']);
         }
 
         if (isset($params['majors_id'])) {
@@ -157,6 +162,10 @@ class Billing_model extends CI_Model
             $this->db->where('student.class_class_id', $params['class_id']);
         }
 
+        if (isset($params['student_status'])) {
+            $this->db->where_in('student.student_status', $params['student_status']);
+        }
+
         if (isset($params['majors_id'])) {
             $this->db->where('student.majors_majors_id', $params['majors_id']);
         }
@@ -206,6 +215,10 @@ class Billing_model extends CI_Model
 
         if (isset($params['class_id'])) {
             $this->db->where('student.class_class_id', $params['class_id']);
+        }
+
+        if (isset($params['student_status'])) {
+            $this->db->where_in('student.student_status', $params['student_status']);
         }
 
         if (isset($params['majors_id'])) {

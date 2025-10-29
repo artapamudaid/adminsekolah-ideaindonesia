@@ -72,6 +72,7 @@ header("Expires: 0");
 				$billP = 0;
 
 				$params = array();
+				$params['student_status']    = [1]; //hanya siswa aktif
 				$params['period_id']    = $q['p'];
 				$params['class_id']     = $q['c'];
 				$params['majors_id']    = $q['k'];

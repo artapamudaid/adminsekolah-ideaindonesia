@@ -78,7 +78,7 @@
 									</select>
 								</div>
 							</div>
-							
+
 							<div class="col-md-2">
 								<div class="form-group">
 									<label>Status</label>
@@ -281,6 +281,7 @@
 											$billF = 0;
 											$billP = 0;
 											$params = array();
+											$params['student_status']    = [1]; //hanya siswa aktif
 											$params['period_id']    = $q['p'];
 											$params['class_id']     = $q['c'];
 											$params['majors_id']    = $q['k'];
