@@ -132,7 +132,7 @@
 													JOIN jam_pelajaran ON jam_pelajaran.jam_pelajaran_id = schedule.schedule_jampel
 													JOIN period ON period.period_id = semester.semester_period_id
 													WHERE schedule_day = '$day_id' AND schedule_class_id = '$id_kelas' AND semester_status = '1' AND period_status = '1'
-													ORDER BY jam_pelajaran_name ASC")->result_array();
+													ORDER BY jam_pelajaran_start ASC")->result_array();
 						?>
 							<div class="col-md-4">
 
@@ -159,7 +159,7 @@
 												?>
 													<tr>
 														<td><?php echo $no++ ?></td>
-														<td><?php echo $jadwal['lesson_name'] ?></td>
+														<td><?php echo $jadwal['lesson_name'] . '(' . $jadwal['lesson_code'] . ')' ?></td>
 														<td><?php echo $jadwal['teacher'] ?></td>
 														<?php
 														$id_time = $jadwal['schedule_jampel'];
