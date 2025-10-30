@@ -93,7 +93,6 @@ class Kesehatan_set extends CI_Controller
 
   function printBook()
   {
-    $this->load->helper(array('dompdf'));
     $this->load->helper(array('tanggal'));
     $this->load->helper(array('terbilang'));
     $this->load->model('student/Student_model');
@@ -134,6 +133,10 @@ class Kesehatan_set extends CI_Controller
     $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
+    $data['setting_website']        = $this->Setting_model->get(array('id' => 91));
+
+    $this->load->library('dompdflib');
 
     $file_pdf = 'Buku_Kesehatan_' . $siswa['student_full_name'] . '_' . date('Y-m-d');
     $paper = 'A4';
@@ -145,7 +148,6 @@ class Kesehatan_set extends CI_Controller
 
   function cetakSurat($id)
   {
-    $this->load->helper(array('dompdf'));
     $this->load->model('student/Student_model');
     $this->load->model('setting/Setting_model');
 
@@ -167,6 +169,10 @@ class Kesehatan_set extends CI_Controller
     $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
+    $data['setting_website']        = $this->Setting_model->get(array('id' => 91));
+
+    $this->load->library('dompdflib');
 
     $file_pdf = 'Surat_Keterangan_Sakit_' . $nama . '_' . date('Y-m-d');
     $paper = 'A4';

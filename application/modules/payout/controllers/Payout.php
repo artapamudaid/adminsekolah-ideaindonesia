@@ -106,6 +106,9 @@ class Payout extends CI_Controller
     $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
+    $data['setting_website']        = $this->Setting_model->get(array('id' => 91));
+
     $tanggal = date_create(base64_decode($f['d']));
     $dformat = date_format($tanggal, 'dmYHis');
 

@@ -11,8 +11,11 @@
 			<td style='width: 187mm;' valign='middle'>
 				<div style='font-weight: bold; padding-bottom: 5px; font-size: 14pt;'><?php echo $setting_school['setting_value'] ?>
 				</div>
-				<span style='font-size: 8pt;'><?php echo $setting_address['setting_value'] ?>, Telp.
-					<?php echo $setting_phone['setting_value'] ?></span>
+				<span style='font-size: 8pt;'><?php echo $setting_address['setting_value'] ?>
+					<?php echo '<br> Telp: ' . $setting_phone['setting_value'] ?>
+					<?php echo ' | Email: ' . $setting_email['setting_value'] ?>
+					<?php echo ' | Website: ' . $setting_website['setting_value'] ?>
+				</span>
 			</td>
 		</tr>
 	</table>
@@ -141,45 +144,45 @@
 			<th align='center' style='font-size: 10pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
 		</tr>
 		<?php
-			$billBulanLama = 0;
-			$billBebasLama = 0;
-			foreach ($bulanLama as $row) {
-				?>
-				<tr valign='top'>
-					<td align='center' style='padding: 1px; font-size: 10pt; '></td>
-					<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'].' - T.A '.$row['period_start'].'/'.$row['period_end'].'-'.$row['month_name'] ?>
-					</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '>
-						<?php echo number_format($row['bulan_bill'],0,",",".") ?>
-					</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '></td>
-				</tr>
-				<?php $billBulanLama += $row['bulan_bill']; ?>
-		<?php 
-			};
-		foreach($bebasLama as $row) { 
+		$billBulanLama = 0;
+		$billBebasLama = 0;
+		foreach ($bulanLama as $row) {
 		?>
-				<tr valign='top'>
-					<td align='center' style='padding: 1px; font-size: 10pt; '></td>
-					<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'].' - T.A '.$row['period_start'].'/'.$row['period_end'] ?>
-					</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '>
-						<?php echo number_format($row['bebas_bill']-$row['bebas_total_pay'],0,",",".") ?>
-					</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '></td>
-				</tr>
-				<?php $billBebasLama += $row['bebas_bill']-$row['bebas_total_pay']; ?>
+			<tr valign='top'>
+				<td align='center' style='padding: 1px; font-size: 10pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>
+					<?php echo number_format($row['bulan_bill'], 0, ",", ".") ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '></td>
+			</tr>
+			<?php $billBulanLama += $row['bulan_bill']; ?>
+		<?php
+		};
+		foreach ($bebasLama as $row) {
+		?>
+			<tr valign='top'>
+				<td align='center' style='padding: 1px; font-size: 10pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>
+					<?php echo number_format($row['bebas_bill'] - $row['bebas_total_pay'], 0, ",", ".") ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '></td>
+			</tr>
+			<?php $billBebasLama += $row['bebas_bill'] - $row['bebas_total_pay']; ?>
 		<?php } ?>
 		<tr>
 			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
 			<td align="left" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
 				<b>Total Tagihan Siswa</b>
 			</td>
-					<td align='right' style='border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt; '>Rp</td>
+			<td align='right' style='border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt; '>Rp</td>
 			<td align="right" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
-				<b><?php echo number_format($billBulanLama+$billBebasLama,0,",",".") ?></b>
+				<b><?php echo number_format($billBulanLama + $billBebasLama, 0, ",", ".") ?></b>
 			</td>
 			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
 		</tr>
@@ -188,12 +191,12 @@
 	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
 		<tr>
 			<td align='left' style='font-size: 10pt; padding: 1px;'>
-				<b><?php echo 'Total Keseluruhan : Rp ' . number_format($billBulan+$billBebas+$billBulanLama+$billBebasLama,0,",",".") ?></b>
+				<b><?php echo 'Total Keseluruhan : Rp ' . number_format($billBulan + $billBebas + $billBulanLama + $billBebasLama, 0, ",", ".") ?></b>
 			</td>
 		</tr>
 	</table>
 	<br>
-	
+
 	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
 		<tr>
 			<td align='left' style='font-size: 8pt; padding: 1px;'>

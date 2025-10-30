@@ -145,7 +145,12 @@
 			<td style="padding-top:10px;">
 				<span class="name-school"><?php echo $setting_school['setting_value'] ?></span>
 				<br>
-				<span class="alamat"><?php echo $setting_address['setting_value'] ?><?php echo ' Telp. ' . $setting_phone['setting_value'] ?><?php echo '<br> Email : ' . $setting_email['setting_value'] ?></span>
+				<span class="alamat">
+					<?php echo $setting_address['setting_value'] ?>
+					<?php echo '<br> Telp: ' . $setting_phone['setting_value'] ?>
+					<?php echo ' | Email: ' . $setting_email['setting_value'] ?>
+					<?php echo ' | Website: ' . $setting_website['setting_value'] ?>
+				</span>
 			</td>
 		</tr>
 	</table>
