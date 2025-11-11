@@ -560,6 +560,8 @@ class Report_set extends CI_Controller
 		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
 		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
 		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+		$data['setting_email']          = $this->Setting_model->get(array('id' => 90));
+		$data['setting_website']        = $this->Setting_model->get(array('id' => 91));
 
 		$this->load->library('html2pdflib');
 
@@ -567,9 +569,9 @@ class Report_set extends CI_Controller
 
 		$html = $this->load->view('report/report_cetak_bulan', $data, TRUE);
 
-		$paper = 'A4';
-		$orientation = 'P';
-		$download = TRUE;
+		$paper = 'F4';
+		$orientation = 'L';
+		$download = FALSE;
 
 		$this->html2pdflib->generate($html, $filename, $download, $paper, $orientation);
 	}
@@ -605,6 +607,8 @@ class Report_set extends CI_Controller
 		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
 		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
 		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+		$data['setting_email']          = $this->Setting_model->get(array('id' => 90));
+		$data['setting_website']        = $this->Setting_model->get(array('id' => 91));
 
 		$file_pdf = 'Laporan_Pembayaran_' . $dHead->pos_name . '- TA' . $dHead->period_start . '-' . $dHead->period_end . '_Kelas_' . $dataKelas . '_' . pretty_date(date('Y-m-d'), 'd F Y', false);
 
@@ -790,6 +794,124 @@ class Report_set extends CI_Controller
 		$data['title'] = 'Rekapitulasi';
 		$data['main'] = 'report/report_bill_list';
 		$this->load->view('manage/layout', $data);
+	}
+
+	public function report_bill_detail()
+	{
+		$q = $this->input->get(NULL, TRUE);
+
+		$data['q'] = $q;
+
+		$params     = array();
+		$param      = array();
+		$stu        = array();
+		$free       = array();
+		$bul        = 'BULAN';
+		$id_kelas   = $q['c'];
+		$id_periode = $q['p'];
+
+
+		if (isset($q['p']) && !empty($q['p']) && $q['p'] != '') {
+			$params['period_id'] = $q['p'];
+			$param['period_id'] = $q['p'];
+			$stu['period_id'] = $q['p'];
+			$free['period_id'] = $q['p'];
+			$data['looping'] = $this->Bulan_model->get_jumlah($q['c']);
+		}
+
+		if (isset($q['c']) && !empty($q['c']) && $q['c'] != '') {
+			$params['class_id'] = $q['c'];
+			$param['class_id'] = $q['c'];
+			$stu['class_id'] = $q['c'];
+			$free['class_id'] = $q['c'];
+			$data['looping'] = $this->Bulan_model->get_jumlah($q['c']);
+		}
+
+		if (isset($q['k']) && !empty($q['k']) && $q['k'] != '') {
+			$params['majors_id'] = $q['k'];
+			$param['majors_id'] = $q['k'];
+			$stu['majors_id'] = $q['k'];
+			$free['majors_id'] = $q['k'];
+			$data['looping'] = $this->Bulan_model->get_jumlah($q['c']);
+
+			$param['paymentt'] = TRUE;
+			$params['grup'] = TRUE;
+			$stu['group'] = TRUE;
+
+			$id_majors = $q['k'];
+
+			$data['student'] = $this->Report_model->list_student($stu);
+			// echo json_encode($data['student']);
+			// exit;
+
+			// Pembayaran Bulan
+			$data['bulan'] = $this->Bulan_model->get($free);
+			$data['month'] = $this->Bulan_model->get($params);
+			$data['py'] = $this->Bulan_model->get($param);
+
+			$looping['jml'] = COUNT($data['py']);
+			$data['looping'] = $looping;
+
+			$arrayPaymentBulan = array();
+			foreach ($data['py'] as  $value) {
+				array_push($arrayPaymentBulan, $value['payment_payment_id']);
+			}
+			$data['arrayPaymentBulan'] = $arrayPaymentBulan;
+
+			$dataBulan = [];
+			foreach ($data['bulan'] as $item) {
+				$kategori = $item['payment_payment_id'];
+				if (!isset($groupedData[$kategori])) {
+					$groupedData[$kategori] = [];
+				}
+				$dataBulan[$kategori][] = $item;
+			}
+			$data['dataBulan'] = $dataBulan;
+			// echo json_encode($arrayPaymentBulan);
+			// exit;
+			// Pembayaran Bulan
+
+			// Pembayaran Bebas
+			$data['bebas'] = $this->Bebas_model->get($params);
+			$data['free'] = $this->Bebas_model->get($free);
+			$data['jmlPaymentFree'] = COUNT($data['bebas']);
+
+			$arrayPaymentBebas = array();
+			foreach ($data['bebas'] as $key => $value) {
+				array_push($arrayPaymentBebas, $value['payment_payment_id']);
+			}
+			$data['arrayPaymentBebas'] = $arrayPaymentBebas;
+
+			$dataFree = [];
+			foreach ($data['free'] as $item) {
+				$kategori = $item['payment_payment_id'];
+				if (!isset($groupedData[$kategori])) {
+					$groupedData[$kategori] = [];
+				}
+				$dataFree[$kategori][] = $item;
+			}
+			$data['dataFree'] = $dataFree;
+			// Pembayaran Bebas
+		}
+
+		$data['dataKelas']  = $this->db->query("SELECT class_name FROM class WHERE class_id='$id_kelas'")->row();
+		$data['dataHead']   = $this->db->query("SELECT * FROM period WHERE period_id = '$id_periode'")->row();
+
+		$data['period'] = $this->Period_model->get($params);
+		$data['class'] = $this->Student_model->get_class($params);
+		$data['majors'] = $this->Student_model->get_majors($params);
+
+		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
+		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+
+		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
+
+		$this->load->view('report/report_bill_excel', $data);
 	}
 
 	public function report_mutasi()
@@ -1308,6 +1430,7 @@ class Report_set extends CI_Controller
 		$this->load->view('report/jurnal/excel_rekap_jurnal', $data);
 	}
 
+	// Laporan Kas Tunai
 	public function report_date()
 	{
 
@@ -1320,344 +1443,318 @@ class Report_set extends CI_Controller
 
 		$data['majors'] = $this->Student_model->get_majors();
 
-		$data['title'] = 'Laporan Jurnal (Kas Tunai)';
+		$data['title'] = 'Laporan Kas Tunai';
 		$data['main'] = 'report/report_date_list';
 		$this->load->view('manage/layout', $data);
 	}
 
 	public function search_report_date()
 	{
-
 		$ds         = $this->input->post('ds');
 		$de         = $this->input->post('de');
 		$majors_id  = $this->input->post('majors_id');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
 
-		if ($start >= '7') {
-			$yearstart 	= date("Y", strtotime($ds));
-		} else {
-			$yearstart 	= date("Y", strtotime($ds)) - 1;
+		$data = array();
+		$data['namaKas'] = 'Tunai';
+		// Date start
+		if (isset($ds) && !empty($ds) && $ds != '') {
+			$data['date_start'] = $ds;
 		}
 
-		if ($end >= '7') {
-			$yearend	= date("Y", strtotime($de)) + 1;
-		} else {
-			$yearend	= date("Y", strtotime($de));
+		if (isset($de) && !empty($de) && $ds != '') {
+			$data['date_end'] = $de;
 		}
 
-		$period = $this->db->query("SELECT period_id FROM period WHERE period_start = $yearstart AND period_end = $yearend;")->row_array();
-
-		if ($period['period_id'] != '') {
-			$period_id  = $period['period_id'];
-
-			if ($start == '1') {
-				$monthStart = '7';
-			} else if ($start == '2') {
-				$monthStart = '8';
-			} else if ($start == '3') {
-				$monthStart = '9';
-			} else if ($start == '4') {
-				$monthStart = '10';
-			} else if ($start == '5') {
-				$monthStart = '11';
-			} else if ($start == '6') {
-				$monthStart = '12';
-			} else if ($start == '7') {
-				$monthStart = '1';
-			} else if ($start == '8') {
-				$monthStart = '2';
-			} else if ($start == '9') {
-				$monthStart = '3';
-			} else if ($start == '10') {
-				$monthStart = '4';
-			} else if ($start == '11') {
-				$monthStart = '5';
-			} else if ($start == '12') {
-				$monthStart = '6';
-			}
-
-			if ($end == '1') {
-				$monthEnd = '7';
-			} else if ($end == '2') {
-				$monthEnd = '8';
-			} else if ($end == '3') {
-				$monthEnd = '9';
-			} else if ($end == '4') {
-				$monthEnd = '10';
-			} else if ($end == '5') {
-				$monthEnd = '11';
-			} else if ($end == '6') {
-				$monthEnd = '12';
-			} else if ($end == '7') {
-				$monthEnd = '1';
-			} else if ($end == '8') {
-				$monthEnd = '2';
-			} else if ($end == '9') {
-				$monthEnd = '3';
-			} else if ($end == '10') {
-				$monthEnd = '4';
-			} else if ($end == '11') {
-				$monthEnd = '5';
-			} else if ($end == '12') {
-				$monthEnd = '6';
-			}
-
-			$interval = $monthStart - 1;
-
-			$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-			$qLast = $this->db->query($last)->row_array();
-
-			//$data['q'] = $q;
-
-			$params = array();
-			$param = array();
-
-			// Date start
-			if (isset($ds) && !empty($ds) && $ds != '') {
-				$params['date_start'] = $ds;
-				$param['date_start'] =  $ds;
-			}
-
-			// Date end
-			if (isset($de) && !empty($de) && $de != '') {
-				$params['date_end'] = $de;
-				// $param['date_end'] = $qLast['yesterday'];
-			}
-
-			if (isset($period_id) && !empty($period_id) && $period_id != '') {
-				$params['period_id'] = $period_id;
-				// $param['period_id'] = $period_id;
-			}
-
-			if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-				$params['account_majors_id'] = $majors_id;
-				$param['account_majors_id'] = $majors_id;
-
-				$saldoAwal = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-			} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-				$params['kas_noref'] = 'isi';
-				$param['kas_noref'] = 'isi';
-
-				$saldoAwal = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-			}
-
-			$params['status'] = 1;
-			$param['status'] = 1;
-
-			$bulan  = $this->Bulan_model->get_kas($params);
-			$free   = $this->Bebas_pay_model->get_kas($params);
-			$gaji   = $this->Kredit_model->gaji_kas($params);
-			$kredit = $this->Kredit_model->get_kas($params);
-			$debit  = $this->Debit_model->get_kas($params);
-
-			$bulanLast  = $this->Bulan_model->get_last_kas($param);
-			$freeLast   = $this->Bebas_pay_model->get_last_kas($param);
-			$gajiLast = $this->Kredit_model->gaji_last_kas($param);
-			$kreditLast = $this->Kredit_model->get_last_kas($param);
-			$debitLast  = $this->Debit_model->get_last_kas($param);
-
-			$sumBulanLast = 0;
-			foreach ($bulanLast as $row) {
-				$sumBulanLast += $row['bulan_bill'];
-			}
-			$sumFreeLast = 0;
-			foreach ($freeLast as $row) {
-				$sumFreeLast += $row['bebas_pay_bill'];
-			}
-			$sumGajiLast = 0;
-			foreach ($gajiLast as $row) {
-				$sumGajiLast += $row['kredit_value'];
-			}
-			$sumKreditLast = 0;
-			foreach ($kreditLast as $row) {
-				$sumKreditLast += $row['kredit_value'];
-			}
-			$sumDebitLast = 0;
-			foreach ($debitLast as $row) {
-				$sumDebitLast += $row['debit_value'];
-			}
-
-			echo '<div class="box box-primary box-solid">
-							<div class="box-header with-border">
-							<h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan per Tanggal ' . pretty_date($ds, 'd/m/Y', FALSE) . ' Sampai ' . pretty_date($de, 'd/m/Y', FALSE) . '</h3>
-							</div>
-							<div class="box-body table-responsive">
-							<table class="table table-responsive table-hover table-bordered" id="xtable" style="white-space: nowrap;">
-									<thead>
-									<tr>
-										<th>Order</th>
-										<th>Tanggal</th>
-										<th>Kode Akun</th>
-										<th>Keterangan</th>
-										<th>NIS</th>
-										<th>Nama Siswa</th>
-										<th>Kelas</th>
-										<th>Penerimaan</th>
-										<th>Pengeluaran</th>
-									</tr>
-									</thead>
-									<tbody>';
-			$no       = 1;
-			$sumBulan = 0;
-			foreach ($bulan as $row) {
-				echo '
-									<tr>
-										<td>' . pretty_date($row['bulan_date_pay'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['bulan_date_pay'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] . '</td>
-										<td>' . $row['student_nis'] . '</td>
-										<td>' . $row['student_full_name'] . '</td>
-										<td>' . $row['class_name'] . '</td>
-										<td>' . 'Rp ' . number_format($row['bulan_bill'], 0, ",", ".") . '</td>
-										<td> - </td>
-									</tr>';
-				$sumBulan += $row['bulan_bill'];
-			}
-			$sumFree = 0;
-			foreach ($free as $row) {
-				echo '<tr>
-										<td>' . pretty_date($row['bebas_pay_input_date'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['bebas_pay_input_date'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '</td>
-										<td>' . $row['student_nis'] . '</td>
-										<td>' . $row['student_full_name'] . '</td>
-										<td>' . $row['class_name'] . '</td>
-										<td>' . 'Rp ' . number_format($row['bebas_pay_bill'], 0, ",", ".") . '</td>
-										<td> - </td>
-									</tr>';
-				$sumFree += $row['bebas_pay_bill'];
-			}
-			$sumGaji = 0;
-			foreach ($gaji as $row) {
-				echo '<tr>
-										<td>' . pretty_date($row['kredit_date'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['kredit_date'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['kredit_desc'] . '</td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td>' . 'Rp ' . number_format($row['kredit_value'], 0, ",", ".") . '</td>
-									</tr>';
-				$sumGaji += $row['kredit_value'];
-			}
-			$sumKredit = 0;
-			foreach ($kredit as $row) {
-				echo '<tr>
-										<td>' . pretty_date($row['kredit_date'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['kredit_date'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['kredit_desc'] . '</td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td>' . 'Rp ' . number_format($row['kredit_value'], 0, ",", ".") . '</td>
-									</tr>';
-				$sumKredit += $row['kredit_value'];
-			}
-			$sumDebit = 0;
-			foreach ($debit as $row) {
-				echo '<tr>
-										<td>' . pretty_date($row['debit_date'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['debit_date'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['debit_desc'] . '</td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td>' . 'Rp ' . number_format($row['debit_value'], 0, ",", ".") . '</td>
-										<td> - </td>
-									</tr>';
-				$sumDebit += $row['debit_value'];
-			}
-			$sumA = $sumBulan + $sumFree + $sumDebit;
-			$sumB = $sumKredit + $sumGaji;
-
-
-			echo '
-									</tbody>
-									<tr style="background-color: #E2F7FF;">
-										<td colspan = "6" align = "right"><strong>Sub Total</strong></td>
-										<td>' . 'Rp ' . number_format($sumA, 0, ",", ".") . '</td>
-										<td>' . 'Rp ' . number_format($sumB, 0, ",", ".") . '</td>
-									</tr>';
-			$sumLastA = $sumBulanLast + $sumFreeLast + $sumDebitLast;
-			$sumLastB = $sumKreditLast + $sumGajiLast;
-			echo '<tr style="background-color: #F0B2B2;">
-										<td colspan = "6" align = "right"><strong>Saldo Awal</strong></td>
-										<td>' . 'Rp ' . number_format($sumLastA, 0, ",", ".") . '</td>
-										<td>' . 'Rp ' . number_format($sumLastB, 0, ",", ".") . '</td>
-									</tr>';
-			echo '<tr style="background-color: #F0B2B2;">
-										<td colspan = "6" align = "right"><strong>Total Saldo Awal</strong></td>
-										<td colspan = "2" align = "center">' . 'Rp ' . number_format(($saldoAwal['nominal'] + $sumLastA) - $sumLastB, 0, ",", ".") . '</td>
-									</tr>';
-			echo '<tr style="background-color: #FFFCBE;">
-										<td colspan = "6" align = "right"><strong>Total (Sub Total + Saldo Awal)</strong></td>
-										<td>' . 'Rp ' . number_format($saldoAwal['nominal'] + $sumLastA + $sumA, 0, ",", ".") . '</td>
-										<td>' . 'Rp ' . number_format($sumLastB + $sumB, 0, ",", ".") . '</td>
-									</tr>';
-			echo '<tr style="background-color: #c2d2f6;">
-										<td colspan = "6" align = "right"><strong>Saldo Akhir</strong></td>
-										<td colspan = "2" align = "center">' . 'Rp ' . number_format(($saldoAwal['nominal'] + $sumLastA + $sumA) - ($sumLastB + $sumB), 0, ",", ".") . '</td>
-									</tr>';
-			echo '</table>
-							</div>
-							<div class="box-footer">
-							<table class="table">
-								<tr>
-									<td>
-										<div class="md-6">
-											<a class="btn btn-danger" target="_blank" href="' . base_url() . 'manage/report/cetak_detail_kas/' . $ds . '/' . $de . '/' . $period_id . '/' . $majors_id . '"><span class="fa fa-file-pdf-o"></span> PDF Per Jenis Anggaran
-											</a>
-											<a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/report/excel_detail_kas/' . $ds . '/' . $de . '/' . $period_id . '/' . $majors_id . '"><span class="fa fa-file-excel-o"></span> Excel Per Jenis Anggaran
-											</a>
-										</div>
-									</td>
-									<td>
-										<div class="pull-right">
-											<a class="btn btn-danger" target="_blank" href="' . base_url() . 'manage/report/cetak_rekap_kas/' . $ds . '/' . $de . '/' . $period_id . '/' . $majors_id . '"><span class="fa fa-file-pdf-o"></span> PDF Rekap Laporan
-											</a>
-											<a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/report/excel_rekap_kas/' . $ds . '/' . $de . '/' . $period_id . '/' . $majors_id . '"><span class="fa fa-file-excel-o"></span> Excel Rekap Laporan
-											</a>
-										</div>
-									</td>
-								</tr>
-							</table>
-							</div>
-							</div>
-						</div>';
-			echo '
-							<script>
-								$(document).ready(function(){
-									$("#xtable").DataTable({
-										"order": [[ 0, "asc" ]],
-										"columnDefs": [
-										{
-											"targets": [ 0 ],
-											"visible": false,
-											"searchable": false
-										}
-									]
-									} );
-								});
-							</script>
-							';
-		} else {
-			echo "<script>";
-			echo "alert('Bulan ajaran dimulai dari bulan Juli sampai Juni. Silahkan sesuaikan lagi pencarian data anda.');";
-			echo "</script>";
+		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
+			$data['majors_id'] = $majors_id;
 		}
+
+		$param = $_POST['param'];
+
+		$draw = $_REQUEST['draw'];
+		$length = $_REQUEST['length'];
+		$start = $_REQUEST['start'];
+		$search = $_REQUEST['search']["value"];
+
+		if ($search != "") {
+			$data['search'] = $search;
+		}
+
+		// Menangani sorting
+		$order_column_index = $_REQUEST['order'][0]['column']; // Index kolom yang diklik
+		$order_dir = $_REQUEST['order'][0]['dir']; // Arah sorting (asc/desc)
+		$data['order_dir'] = $order_dir;
+
+		$columns = ['namaKas', 'tanggal', 'akunBayar', 'keterangan', 'nis', 'nama', 'kelas', 'penerimaan', 'pengeluaran'];
+
+		// Pastikan index yang dikirimkan oleh DataTables sesuai dengan daftar kolom yang kita punya
+		$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tanggal';
+		$data['order_column'] = $order_column;
+
+		$output = array();
+		$output['draw']   = $draw;
+		$output['recordsTotal'] = $output['recordsFiltered'] = 0;
+		$output['data'] = array();
+
+		$output['totalPenerimaan'] = 0;
+		$output['totalPengeluaran'] = 0;
+
+		$output['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$output['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$totalTrx = $this->Report_model->count_trx($data);
+
+		if ($totalTrx) {
+			$output['totalPenerimaan'] = $totalTrx['totalPenerimaan'] ?? 0;
+			$output['totalPengeluaran'] = $totalTrx['totalPengeluaran'] ?? 0;
+
+			if ($search != "") {
+				$laporanJurnal = $this->Report_model->get_laporan_jurnal($length, $start, $search, $data);
+				$output['recordsTotal'] = $output['recordsFiltered'] = $totalTrx['totalBaris'];
+			} else {
+				$laporanJurnal = $this->Report_model->get_laporan_jurnal($length, $start, $search, $data);
+				$output['recordsTotal'] = $output['recordsFiltered'] = $totalTrx['totalBaris'];
+			}
+
+			foreach ($laporanJurnal->result_array() as $dt) {
+				$penerimaan = '-';
+				$pengeluaran = '-';
+				if ($dt['penerimaan'] != 0) {
+					$penerimaan = 'Rp ' . number_format($dt['penerimaan'], 0, ",", ".");
+				}
+				if ($dt['pengeluaran'] != 0) {
+					$pengeluaran = 'Rp ' . number_format($dt['pengeluaran'], 0, ",", ".");
+				}
+
+				$output['data'][] = array(
+					$dt['namaKas'],
+					$dt['tanggal'],
+					$dt['akunBayar'],
+					$dt['keterangan'],
+					$dt['nis'],
+					$dt['nama'],
+					$dt['kelas'],
+					$penerimaan,
+					$pengeluaran
+				);
+			}
+		}
+
+		echo json_encode($output);
 	}
 
+	public function cetak_detail_kas()
+	{
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$majors_id  = $this->uri->segment('6');
+
+		$data = array();
+
+		$data['date_start']      = $ds;
+		$data['date_end'] 	     = $de;
+		if ($majors_id != 'all') {
+			$data['majors_id']  	 = $majors_id;
+		}
+		$data['namaKas'] 		 = 'Tunai';
+
+
+		$data['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$data['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$laporanJurnal = $this->Report_model->get_laporan_jurnal(NULL, NULL, NULL, $data);
+		$dataJurnal = [];
+		foreach ($laporanJurnal->result_array() as $item) {
+			$kategori = $item['jenisBayar'];
+			if (!isset($groupedData[$kategori])) {
+				$groupedData[$kategori] = [];
+			}
+			$dataJurnal[$kategori][] = $item;
+		}
+
+		$data['data_jurnal'] = $dataJurnal;
+
+		if ($majors_id == "all") {
+			$data['unit'] = "Semua Unit";
+		} else {
+			$majors  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id='$majors_id'")->row_array();
+			$data['unit'] = $majors['majors_short_name'];
+		}
+
+		$setting = $this->db->query("SELECT setting_name, setting_value FROM setting WHERE setting_name IN ('setting_school','setting_district','setting_city','setting_address','setting_phone','setting_nip_bendahara','setting_nama_bendahara')")->result();
+
+		foreach ($setting as $value) {
+			$data[$value->setting_name] = $value->setting_value;
+		}
+
+		// $this->load->view('report/tunai/cetak_detail_tunai', $data, FALSE);
+		$html = $this->load->view('report/tunai/cetak_detail_tunai', $data, TRUE);
+
+		$this->load->library('dompdflib');
+
+		$filename = 'Laporan Kas Tunai Per Jenis Akun Tanggal ' . pretty_date($ds, 'd-m-Y', FALSE) . ' Sampai ' . pretty_date($de, 'd-m-Y', FALSE) . '.pdf';
+
+		$paper = 'A4';
+		$orientation = 'P';
+		$stream = TRUE;
+
+		$this->dompdflib->generate($html, $filename, $paper, $orientation, $stream);
+		// $this->dompdflib->download($html, $filename, $paper, $orientation, $stream);
+	}
+
+	public function excel_detail_kas()
+	{
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$majors_id  = $this->uri->segment('6');
+
+		$data = array();
+
+		$data['date_start']      = $ds;
+		$data['date_end'] 	     = $de;
+		if ($majors_id != 'all') {
+			$data['majors_id']  	 = $majors_id;
+		}
+		$data['namaKas'] 		 = 'Tunai';
+
+
+		$data['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$data['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$laporanJurnal = $this->Report_model->get_laporan_jurnal(NULL, NULL, NULL, $data);
+		$dataJurnal = [];
+		foreach ($laporanJurnal->result_array() as $item) {
+			$kategori = $item['jenisBayar'];
+			if (!isset($groupedData[$kategori])) {
+				$groupedData[$kategori] = [];
+			}
+			$dataJurnal[$kategori][] = $item;
+		}
+
+		$data['data_jurnal'] = $dataJurnal;
+
+		if ($majors_id == "all") {
+			$data['unit'] = "Semua Unit";
+		} else {
+			$majors  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id='$majors_id'")->row_array();
+			$data['unit'] = $majors['majors_short_name'];
+		}
+
+		$setting = $this->db->query("SELECT setting_name, setting_value FROM setting WHERE setting_name IN ('setting_school','setting_district','setting_city','setting_address','setting_phone','setting_nip_bendahara','setting_nama_bendahara')")->result();
+
+		foreach ($setting as $value) {
+			$data[$value->setting_name] = $value->setting_value;
+		}
+
+		// $this->load->view('report/tunai/cetak_detail_tunai', $data, FALSE);
+		$this->load->view('report/tunai/excel_detail_tunai', $data);
+	}
+
+	public function cetak_rekap_kas()
+	{
+
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$majors_id  = $this->uri->segment('6');
+
+		$data = array();
+
+		$data['date_start']      = $ds;
+		$data['date_end'] 	     = $de;
+		if ($majors_id != 'all') {
+			$data['majors_id']  	 = $majors_id;
+		}
+		$data['namaKas'] 		 = 'Tunai';
+
+		$data['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$data['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$laporanJurnal = $this->Report_model->rekap_jurnal($data);
+		$data['data_jurnal'] = $laporanJurnal;
+
+		if ($majors_id == "all") {
+			$data['unit'] = "Semua Unit";
+		} else {
+			$majors  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id='$majors_id'")->row_array();
+			$data['unit'] = $majors['majors_short_name'];
+		}
+
+		$setting = $this->db->query("SELECT setting_name, setting_value FROM setting WHERE setting_name IN ('setting_school','setting_district','setting_city','setting_address','setting_phone','setting_nip_bendahara','setting_nama_bendahara')")->result();
+
+		foreach ($setting as $value) {
+			$data[$value->setting_name] = $value->setting_value;
+		}
+
+		// $this->load->view('report/tunai/cetak_rekap_tunai', $data);
+		$html = $this->load->view('report/tunai/cetak_rekap_tunai', $data, TRUE);
+
+		$this->load->library('dompdflib');
+
+		$filename = 'Laporan Rekap Kas Tunai Tanggal ' . pretty_date($ds, 'd-m-Y', FALSE) . ' Sampai ' . pretty_date($de, 'd-m-Y', FALSE) . '.pdf';
+
+		$paper = 'A4';
+		$orientation = 'P';
+		$stream = TRUE;
+
+		$this->dompdflib->generate($html, $filename, $paper, $orientation, $stream);
+		// $this->dompdflib->download($html, $filename, $paper, $orientation, $stream);
+	}
+
+	public function excel_rekap_kas()
+	{
+
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$majors_id  = $this->uri->segment('6');
+
+		$data = array();
+
+		$data['date_start']      = $ds;
+		$data['date_end'] 	     = $de;
+		if ($majors_id != 'all') {
+			$data['majors_id']  	 = $majors_id;
+		}
+		$data['namaKas'] 		 = 'Tunai';
+
+		$data['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$data['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$laporanJurnal = $this->Report_model->rekap_jurnal($data);
+		$data['data_jurnal'] = $laporanJurnal;
+
+		if ($majors_id == "all") {
+			$data['unit'] = "Semua Unit";
+		} else {
+			$majors  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id='$majors_id'")->row_array();
+			$data['unit'] = $majors['majors_short_name'];
+		}
+
+		$setting = $this->db->query("SELECT setting_name, setting_value FROM setting WHERE setting_name IN ('setting_school','setting_district','setting_city','setting_address','setting_phone','setting_nip_bendahara','setting_nama_bendahara')")->result();
+
+		foreach ($setting as $value) {
+			$data[$value->setting_name] = $value->setting_value;
+		}
+
+		$this->load->view('report/tunai/excel_rekap_tunai', $data);
+	}
+	// Laporan Kas Tunai
+
+	// Laporan Kas Bank
 	public function report_bank()
 	{
 
@@ -1674,6 +1771,313 @@ class Report_set extends CI_Controller
 		$data['main'] = 'report/report_bank_list';
 		$this->load->view('manage/layout', $data);
 	}
+
+	public function search_report_bank()
+	{
+		$ds         = $this->input->post('ds');
+		$de         = $this->input->post('de');
+		$majors_id  = $this->input->post('majors_id');
+
+		$data = array();
+		$data['namaKas'] = 'Bank';
+		// Date start
+		if (isset($ds) && !empty($ds) && $ds != '') {
+			$data['date_start'] = $ds;
+		}
+
+		if (isset($de) && !empty($de) && $ds != '') {
+			$data['date_end'] = $de;
+		}
+
+		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
+			$data['majors_id'] = $majors_id;
+		}
+
+		$param = $_POST['param'];
+
+		$draw = $_REQUEST['draw'];
+		$length = $_REQUEST['length'];
+		$start = $_REQUEST['start'];
+		$search = $_REQUEST['search']["value"];
+
+		if ($search != "") {
+			$data['search'] = $search;
+		}
+
+		// Menangani sorting
+		$order_column_index = $_REQUEST['order'][0]['column']; // Index kolom yang diklik
+		$order_dir = $_REQUEST['order'][0]['dir']; // Arah sorting (asc/desc)
+		$data['order_dir'] = $order_dir;
+
+		$columns = ['namaKas', 'tanggal', 'akunBayar', 'keterangan', 'nis', 'nama', 'kelas', 'penerimaan', 'pengeluaran'];
+
+		// Pastikan index yang dikirimkan oleh DataTables sesuai dengan daftar kolom yang kita punya
+		$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tanggal';
+		$data['order_column'] = $order_column;
+
+		$output = array();
+		$output['draw']   = $draw;
+		$output['recordsTotal'] = $output['recordsFiltered'] = 0;
+		$output['data'] = array();
+
+		$output['totalPenerimaan'] = 0;
+		$output['totalPengeluaran'] = 0;
+
+		$output['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$output['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$totalTrx = $this->Report_model->count_trx($data);
+
+		if ($totalTrx) {
+			$output['totalPenerimaan'] = $totalTrx['totalPenerimaan'] ?? 0;
+			$output['totalPengeluaran'] = $totalTrx['totalPengeluaran'] ?? 0;
+
+			if ($search != "") {
+				$laporanJurnal = $this->Report_model->get_laporan_jurnal($length, $start, $search, $data);
+				$output['recordsTotal'] = $output['recordsFiltered'] = $totalTrx['totalBaris'];
+			} else {
+				$laporanJurnal = $this->Report_model->get_laporan_jurnal($length, $start, $search, $data);
+				$output['recordsTotal'] = $output['recordsFiltered'] = $totalTrx['totalBaris'];
+			}
+
+			foreach ($laporanJurnal->result_array() as $dt) {
+				$penerimaan = '-';
+				$pengeluaran = '-';
+				if ($dt['penerimaan'] != 0) {
+					$penerimaan = 'Rp ' . number_format($dt['penerimaan'], 0, ",", ".");
+				}
+				if ($dt['pengeluaran'] != 0) {
+					$pengeluaran = 'Rp ' . number_format($dt['pengeluaran'], 0, ",", ".");
+				}
+
+				$output['data'][] = array(
+					$dt['namaKas'],
+					$dt['tanggal'],
+					$dt['akunBayar'],
+					$dt['keterangan'],
+					$dt['nis'],
+					$dt['nama'],
+					$dt['kelas'],
+					$penerimaan,
+					$pengeluaran
+				);
+			}
+		}
+
+		echo json_encode($output);
+	}
+
+	public function cetak_detail_bank()
+	{
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$majors_id  = $this->uri->segment('6');
+
+		$data = array();
+
+		$data['date_start']      = $ds;
+		$data['date_end'] 	     = $de;
+		if ($majors_id != 'all') {
+			$data['majors_id']  	 = $majors_id;
+		}
+		$data['namaKas'] 		 = 'Bank';
+
+
+		$data['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$data['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$laporanJurnal = $this->Report_model->get_laporan_jurnal(NULL, NULL, NULL, $data);
+		$dataJurnal = [];
+		foreach ($laporanJurnal->result_array() as $item) {
+			$kategori = $item['jenisBayar'];
+			if (!isset($groupedData[$kategori])) {
+				$groupedData[$kategori] = [];
+			}
+			$dataJurnal[$kategori][] = $item;
+		}
+
+		$data['data_jurnal'] = $dataJurnal;
+
+		if ($majors_id == "all") {
+			$data['unit'] = "Semua Unit";
+		} else {
+			$majors  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id='$majors_id'")->row_array();
+			$data['unit'] = $majors['majors_short_name'];
+		}
+
+		$setting = $this->db->query("SELECT setting_name, setting_value FROM setting WHERE setting_name IN ('setting_school','setting_district','setting_city','setting_address','setting_phone','setting_nip_bendahara','setting_nama_bendahara')")->result();
+
+		foreach ($setting as $value) {
+			$data[$value->setting_name] = $value->setting_value;
+		}
+
+		// $this->load->view('report/bank/cetak_detail_bank', $data, FALSE);
+		$html = $this->load->view('report/bank/cetak_detail_bank', $data, TRUE);
+
+		$this->load->library('dompdflib');
+
+		$filename = 'Laporan Kas Bank Per Jenis Akun Tanggal ' . pretty_date($ds, 'd-m-Y', FALSE) . ' Sampai ' . pretty_date($de, 'd-m-Y', FALSE) . '.pdf';
+
+		$paper = 'A4';
+		$orientation = 'P';
+		$stream = TRUE;
+
+		$this->dompdflib->generate($html, $filename, $paper, $orientation, $stream);
+		// $this->dompdflib->download($html, $filename, $paper, $orientation, $stream);
+	}
+
+	public function excel_detail_bank()
+	{
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$majors_id  = $this->uri->segment('6');
+
+		$data = array();
+
+		$data['date_start']      = $ds;
+		$data['date_end'] 	     = $de;
+		if ($majors_id != 'all') {
+			$data['majors_id']  	 = $majors_id;
+		}
+		$data['namaKas'] 		 = 'Bank';
+
+
+		$data['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$data['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$laporanJurnal = $this->Report_model->get_laporan_jurnal(NULL, NULL, NULL, $data);
+		$dataJurnal = [];
+		foreach ($laporanJurnal->result_array() as $item) {
+			$kategori = $item['jenisBayar'];
+			if (!isset($groupedData[$kategori])) {
+				$groupedData[$kategori] = [];
+			}
+			$dataJurnal[$kategori][] = $item;
+		}
+
+		$data['data_jurnal'] = $dataJurnal;
+
+		if ($majors_id == "all") {
+			$data['unit'] = "Semua Unit";
+		} else {
+			$majors  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id='$majors_id'")->row_array();
+			$data['unit'] = $majors['majors_short_name'];
+		}
+
+		$setting = $this->db->query("SELECT setting_name, setting_value FROM setting WHERE setting_name IN ('setting_school','setting_district','setting_city','setting_address','setting_phone','setting_nip_bendahara','setting_nama_bendahara')")->result();
+
+		foreach ($setting as $value) {
+			$data[$value->setting_name] = $value->setting_value;
+		}
+
+		// $this->load->view('report/tunai/cetak_detail_tunai', $data, FALSE);
+		$this->load->view('report/bank/excel_detail_bank', $data);
+	}
+
+	public function cetak_rekap_bank()
+	{
+
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$majors_id  = $this->uri->segment('6');
+
+		$data = array();
+
+		$data['date_start']      = $ds;
+		$data['date_end'] 	     = $de;
+		if ($majors_id != 'all') {
+			$data['majors_id']  	 = $majors_id;
+		}
+		$data['namaKas'] 		 = 'Bank';
+
+		$data['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$data['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$laporanJurnal = $this->Report_model->rekap_jurnal($data);
+		$data['data_jurnal'] = $laporanJurnal;
+
+		if ($majors_id == "all") {
+			$data['unit'] = "Semua Unit";
+		} else {
+			$majors  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id='$majors_id'")->row_array();
+			$data['unit'] = $majors['majors_short_name'];
+		}
+
+		$setting = $this->db->query("SELECT setting_name, setting_value FROM setting WHERE setting_name IN ('setting_school','setting_district','setting_city','setting_address','setting_phone','setting_nip_bendahara','setting_nama_bendahara')")->result();
+
+		foreach ($setting as $value) {
+			$data[$value->setting_name] = $value->setting_value;
+		}
+
+		// $this->load->view('report/tunai/cetak_rekap_tunai', $data);
+		$html = $this->load->view('report/bank/cetak_rekap_bank', $data, TRUE);
+
+		$this->load->library('dompdflib');
+
+		$filename = 'Laporan Rekap Kas Bank Tanggal ' . pretty_date($ds, 'd-m-Y', FALSE) . ' Sampai ' . pretty_date($de, 'd-m-Y', FALSE) . '.pdf';
+
+		$paper = 'A4';
+		$orientation = 'P';
+		$stream = TRUE;
+
+		$this->dompdflib->generate($html, $filename, $paper, $orientation, $stream);
+		// $this->dompdflib->download($html, $filename, $paper, $orientation, $stream);
+	}
+
+	public function excel_rekap_bank()
+	{
+
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$majors_id  = $this->uri->segment('6');
+
+		$data = array();
+
+		$data['date_start']      = $ds;
+		$data['date_end'] 	     = $de;
+		if ($majors_id != 'all') {
+			$data['majors_id']  	 = $majors_id;
+		}
+		$data['namaKas'] 		 = 'Bank';
+
+		$data['saldoAwal'] = 0;
+		$saldoAwal = $this->Report_model->getSaldoAwal($data);
+		if ($saldoAwal) {
+			$data['saldoAwal'] = $saldoAwal['saldoAwal'] ?? 0;
+		}
+
+		$laporanJurnal = $this->Report_model->rekap_jurnal($data);
+		$data['data_jurnal'] = $laporanJurnal;
+
+		if ($majors_id == "all") {
+			$data['unit'] = "Semua Unit";
+		} else {
+			$majors  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id='$majors_id'")->row_array();
+			$data['unit'] = $majors['majors_short_name'];
+		}
+
+		$setting = $this->db->query("SELECT setting_name, setting_value FROM setting WHERE setting_name IN ('setting_school','setting_district','setting_city','setting_address','setting_phone','setting_nip_bendahara','setting_nama_bendahara')")->result();
+
+		foreach ($setting as $value) {
+			$data[$value->setting_name] = $value->setting_value;
+		}
+
+		$this->load->view('report/bank/excel_rekap_bank', $data);
+	}
+
+	// Laporan Kas Bank
 
 	public function cari_bank()
 	{
@@ -1692,381 +2096,6 @@ class Report_set extends CI_Controller
 		echo '</select>
 			</div>
 		</div>';
-	}
-
-	public function search_report_bank()
-	{
-
-		$ds         = $this->input->post('ds');
-		$de         = $this->input->post('de');
-		// $period_id  = $this->input->post('period_id');
-		$majors_id  = $this->input->post('majors_id');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		if ($start >= '7') {
-			$yearstart 	= date("Y", strtotime($ds));
-		} else {
-			$yearstart 	= date("Y", strtotime($ds)) - 1;
-		}
-
-		if ($end >= '7') {
-			$yearend	= date("Y", strtotime($de)) + 1;
-		} else {
-			$yearend	= date("Y", strtotime($de));
-		}
-
-		$period = $this->db->query("SELECT period_id FROM period WHERE period_start = $yearstart AND period_end = $yearend;")->row_array();
-
-		if ($period['period_id'] != '') {
-
-			if ($start == '1') {
-				$monthStart = '7';
-			} else if ($start == '2') {
-				$monthStart = '8';
-			} else if ($start == '3') {
-				$monthStart = '9';
-			} else if ($start == '4') {
-				$monthStart = '10';
-			} else if ($start == '5') {
-				$monthStart = '11';
-			} else if ($start == '6') {
-				$monthStart = '12';
-			} else if ($start == '7') {
-				$monthStart = '1';
-			} else if ($start == '8') {
-				$monthStart = '2';
-			} else if ($start == '9') {
-				$monthStart = '3';
-			} else if ($start == '10') {
-				$monthStart = '4';
-			} else if ($start == '11') {
-				$monthStart = '5';
-			} else if ($start == '12') {
-				$monthStart = '6';
-			}
-
-			if ($end == '1') {
-				$monthEnd = '7';
-			} else if ($end == '2') {
-				$monthEnd = '8';
-			} else if ($end == '3') {
-				$monthEnd = '9';
-			} else if ($end == '4') {
-				$monthEnd = '10';
-			} else if ($end == '5') {
-				$monthEnd = '11';
-			} else if ($end == '6') {
-				$monthEnd = '12';
-			} else if ($end == '7') {
-				$monthEnd = '1';
-			} else if ($end == '8') {
-				$monthEnd = '2';
-			} else if ($end == '9') {
-				$monthEnd = '3';
-			} else if ($end == '10') {
-				$monthEnd = '4';
-			} else if ($end == '11') {
-				$monthEnd = '5';
-			} else if ($end == '12') {
-				$monthEnd = '6';
-			}
-
-			$interval = $monthStart - 1;
-
-			$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-			$qLast = $this->db->query($last)->row_array();
-
-			//$data['q'] = $q;
-
-			$params = array();
-			$param = array();
-
-			// Date start
-			if (isset($ds) && !empty($ds) && $ds != '') {
-				$params['date_start'] = $ds;
-				$param['date_start'] = $ds;
-			}
-
-			// Date end
-			if (isset($de) && !empty($de) && $de != '') {
-				$params['date_end'] = $de;
-				// $param['date_end'] = $qLast'yesterday'];
-			}
-
-			if (isset($period_id) && !empty($period_id) && $period_id != '') {
-				$params['period_id'] = $period_id;
-				// $param['period_id'] = $period_id;
-			}
-
-			if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-				$params['account_majors_id'] = $majors_id;
-				$param['account_majors_id'] = $majors_id;
-
-				$saldoAwal = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-			} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-				$params['kas_noref'] = 'isi';
-				$param['kas_noref'] = 'isi';
-
-				$saldoAwal = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-			}
-
-			$params['status'] = 1;
-			$param['status'] = 1;
-
-			$bulan  = $this->Bulan_model->get_bank($params);
-			$free   = $this->Bebas_pay_model->get_bank($params);
-			$kredit = $this->Kredit_model->get_bank($params);
-			$gaji = $this->Kredit_model->gaji_bank($params);
-			$debit  = $this->Debit_model->get_bank($params);
-
-			$bulanLast  = $this->Bulan_model->get_last_bank($param);
-			$freeLast   = $this->Bebas_pay_model->get_last_bank($param);
-			$kreditLast = $this->Kredit_model->get_last_bank($param);
-			$gajiLast = $this->Kredit_model->gaji_last_bank($param);
-			$debitLast  = $this->Debit_model->get_last_bank($param);
-			//$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-
-			$sumBulanLast = 0;
-			foreach ($bulanLast as $row) {
-				$sumBulanLast += $row['bulan_bill'];
-			}
-			$sumFreeLast = 0;
-			foreach ($freeLast as $row) {
-				$sumFreeLast += $row['bebas_pay_bill'];
-			}
-			$sumKreditLast = 0;
-			foreach ($kreditLast as $row) {
-				$sumKreditLast += $row['kredit_value'];
-			}
-			$sumGajiLast = 0;
-			foreach ($gajiLast as $row) {
-				$sumGajiLast += $row['kredit_value'];
-			}
-			$sumDebitLast = 0;
-			foreach ($debitLast as $row) {
-				$sumDebitLast += $row['debit_value'];
-			}
-
-			echo '<div class="box box-primary box-solid">
-							<div class="box-header with-border">
-							<h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan per Tanggal ' . pretty_date($ds, 'd/m/Y', FALSE) . ' Sampai ' . pretty_date($de, 'd/m/Y', FALSE) . '</h3>
-							</div>
-							<div class="box-body table-responsive">
-							<table class="table table-responsive table-hover table-bordered" id="xtable" style="white-space: nowrap;">
-									<thead>
-									<tr>
-										<th>Order</th>
-										<th>Tanggal</th>
-										<th>Kode Akun</th>
-										<th>Keterangan</th>
-										<th>NIS</th>
-										<th>Nama Siswa</th>
-										<th>Kelas</th>
-										<th>Penerimaan</th>
-										<th>Pengeluaran</th>
-									</tr>
-									</thead>
-									<tbody>';
-			$no       = 1;
-			$sumBulan = 0;
-			foreach ($bulan as $row) {
-				echo '
-									<tr>
-										<td>' . pretty_date($row['bulan_date_pay'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['bulan_date_pay'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] . '</td>
-										<td>' . $row['student_nis'] . '</td>
-										<td>' . $row['student_full_name'] . '</td>
-										<td>' . $row['class_name'] . '</td>
-										<td>' . 'Rp ' . number_format($row['bulan_bill'], 0, ",", ".") . '</td>
-										<td> - </td>
-									</tr>';
-				$sumBulan += $row['bulan_bill'];
-			}
-			$sumFree = 0;
-			foreach ($free as $row) {
-				echo '<tr>
-										<td>' . pretty_date($row['bebas_pay_input_date'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['bebas_pay_input_date'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '</td>
-										<td>' . $row['student_nis'] . '</td>
-										<td>' . $row['student_full_name'] . '</td>
-										<td>' . $row['class_name'] . '</td>
-										<td>' . 'Rp ' . number_format($row['bebas_pay_bill'], 0, ",", ".") . '</td>
-										<td> - </td>
-									</tr>';
-				$sumFree += $row['bebas_pay_bill'];
-			}
-			$sumKredit = 0;
-			foreach ($kredit as $row) {
-				echo '<tr>
-										<td>' . pretty_date($row['kredit_date'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['kredit_date'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['kredit_desc'] . '</td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td>' . 'Rp ' . number_format($row['kredit_value'], 0, ",", ".") . '</td>
-									</tr>';
-				$sumKredit += $row['kredit_value'];
-			}
-			$sumGaji = 0;
-			foreach ($gaji as $row) {
-				echo '<tr>
-										<td>' . pretty_date($row['kredit_date'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['kredit_date'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['kredit_desc'] . '</td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td>' . 'Rp ' . number_format($row['kredit_value'], 0, ",", ".") . '</td>
-									</tr>';
-				$sumGaji += $row['kredit_value'];
-			}
-			$sumDebit = 0;
-			foreach ($debit as $row) {
-				echo '<tr>
-										<td>' . pretty_date($row['debit_date'], 'Ymd', FALSE) . '</td>
-										<td>' . pretty_date($row['debit_date'], 'd/m/Y', FALSE) . '</td>
-										<td>' . $row['account_code'] . '</td>
-										<td>' . $row['debit_desc'] . '</td>
-										<td> - </td>
-										<td> - </td>
-										<td> - </td>
-										<td>' . 'Rp ' . number_format($row['debit_value'], 0, ",", ".") . '</td>
-										<td> - </td>
-									</tr>';
-				$sumDebit += $row['debit_value'];
-			}
-
-			// echo'
-			// </tbody>
-			// <tr style="background-color: #E2F7FF;">
-			// <td colspan = "7" align = "right"><strong>Sub bulan</strong></td>
-			// <td>'.'Rp '.number_format($sumBulan,0,",",".").'</td>
-			// </tr>
-			// <tr style="background-color: #E2F7FF;">
-			// 	<td colspan = "7" align = "right"><strong>Sub bebas</strong></td>
-			// 	<td>'.'Rp '.number_format($sumFree,0,",",".").'</td>
-			// </tr>
-			// <tr style="background-color: #E2F7FF;">
-			// 	<td colspan = "7" align = "right"><strong>Sub debit</strong></td>
-			// 	<td>'.'Rp '.number_format($sumDebit,0,",",".").'</td>
-			// </tr>
-			// <tr style="background-color: #E2F7FF;">
-			// 	<td colspan = "7" align = "right"><strong>Sub Kredit</strong></td>
-			// 	<td>'.'Rp '.number_format($sumKredit,0,",",".").'</td>
-			// </tr>
-			// <tr style="background-color: #E2F7FF;">
-			// 	<td colspan = "7" align = "right"><strong>Sub Gaji</strong></td>
-			// 	<td>'.'Rp '.number_format($sumGaji,0,",",".").'</td>
-			// </tr>
-			// ';
-
-			// echo '<tr style="background-color: #F0B2B2;">
-			// 		<td colspan = "7" align = "right"><strong>Saldo bulan akhir</strong></td>
-			// 		<td>'.'Rp '.number_format($sumBulanLast,0,",",".").'</td>
-			// 	</tr>';
-			// echo '<tr style="background-color: #F0B2B2;">
-			// 		<td colspan = "7" align = "right"><strong>Saldo bebas akhir</strong></td>
-			// 		<td>'.'Rp '.number_format($sumFreeLast,0,",",".").'</td>
-			// 	</tr>';
-			// echo '<tr style="background-color: #F0B2B2;">
-			// 		<td colspan = "7" align = "right"><strong>Saldo Debit akhir</strong></td>
-			// 		<td>'.'Rp '.number_format($sumDebitLast,0,",",".").'</td>
-			// 	</tr>';
-			// echo '<tr style="background-color: #F0B2B2;">
-			// 		<td colspan = "7" align = "right"><strong>Saldo kredit akhir</strong></td>
-			// 		<td>'.'Rp '.number_format($sumKreditLast,0,",",".").'</td>
-			// 	</tr>';
-			// echo '<tr style="background-color: #F0B2B2;">
-			// 		<td colspan = "7" align = "right"><strong>Saldo gaji akhir</strong></td>
-			// 		<td>'.'Rp '.number_format($sumGajiLast,0,",",".").'</td>
-			// 	</tr>';
-
-			$sumA = $sumBulan + $sumFree + $sumDebit;
-			$sumB = $sumKredit + $sumGaji;
-			echo '
-									</tbody>
-									<tr style="background-color: #E2F7FF;">
-										<td colspan = "6" align = "right"><strong>Sub Total</strong></td>
-										<td>' . 'Rp ' . number_format($sumA, 0, ",", ".") . '</td>
-										<td>' . 'Rp ' . number_format($sumB, 0, ",", ".") . '</td>
-									</tr>';
-			$sumLastA = $sumBulanLast + $sumFreeLast + $sumDebitLast;
-			$sumLastB = $sumKreditLast + $sumGajiLast;
-			echo '<tr style="background-color: #F0B2B2;">
-										<td colspan = "6" align = "right"><strong>Saldo Awal</strong></td>
-										<td>' . 'Rp ' . number_format($saldoAwal['nominal'] + $sumLastA - $sumLastB, 0, ",", ".") . '</td>
-										<td> - </td>
-									</tr>';
-			echo '<tr style="background-color: #FFFCBE;">
-										<td colspan = "6" align = "right"><strong>Total (Sub Total + Saldo Awal)</strong></td>
-										<td>' . 'Rp ' . number_format($saldoAwal['nominal'] + $sumLastA + $sumA, 0, ",", ".") . '</td>
-										<td>' . 'Rp ' . number_format($sumLastB + $sumB, 0, ",", ".") . '</td>
-									</tr>';
-			echo '<tr style="background-color: #c2d2f6;">
-										<td colspan = "6" align = "right"><strong>Saldo Akhir</strong></td>
-										<td>' . 'Rp ' . number_format(($saldoAwal['nominal'] + $sumLastA + $sumA) - ($sumLastB + $sumB), 0, ",", ".") . '</td>
-										<td> - </td>
-									</tr>';
-			echo '</table>
-							</div>
-							<div class="box-footer">
-							<table class="table">
-								<tr>
-									<td>
-										<div class="md-6">
-											<a class="btn btn-danger" target="_blank" href="' . base_url() . 'manage/report/cetak_detail_bank/' . $ds . '/' . $de . '/' . $majors_id . '"><span class="fa fa-file-pdf-o"></span> PDF Per Jenis Anggaran
-											</a>
-											<a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/report/excel_detail_bank/' . $ds . '/' . $de . '/' . $majors_id . '"><span class="fa fa-file-excel-o"></span> Excel Per Jenis Anggaran
-											</a>
-										</div>
-									</td>
-									<td>
-										<div class="pull-right">
-											<a class="btn btn-danger" target="_blank" href="' . base_url() . 'manage/report/cetak_rekap_bank/' . $ds . '/' . $de . '/' . '/' . $majors_id . '"><span class="fa fa-file-pdf-o"></span> PDF Rekap Laporan
-											</a>
-											<a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/report/excel_rekap_bank/' . $ds . '/' . $de . '/'  . '/' . $majors_id . '"><span class="fa fa-file-excel-o"></span> Excel Rekap Laporan
-											</a>
-										</div>
-									</td>
-								</tr>
-							</table>
-							</div>
-							</div>
-						</div>';
-			echo '
-							<script>
-								$(document).ready(function(){
-									$("#xtable").DataTable({
-										"order": [[ 0, "asc" ]],
-										"columnDefs": [
-										{
-											"targets": [ 0 ],
-											"visible": false,
-											"searchable": false
-										}
-									]
-									} );
-								});
-							</script>
-							';
-		} else {
-			echo "<script>";
-			echo "alert('Bulan ajaran dimulai dari bulan Juli sampai Juni. Silahkan sesuaikan lagi pencarian data anda.');";
-			echo "</script>";
-		}
 	}
 
 	public function cetak_detail_jurnum()
@@ -2618,1084 +2647,6 @@ class Report_set extends CI_Controller
 		$this->load->view('report/excel_rekap_jurnum', $data);
 	}
 
-
-	public function cetak_detail_kas()
-	{
-		//ob_start();
-
-		$ds         = $this->uri->segment('4');
-		$de         = $this->uri->segment('5');
-		$period_id  = $this->uri->segment('6');
-		$majors_id  = $this->uri->segment('7');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		$data['dataPeriod']       = $this->db->query("SELECT * FROM period WHERE period_id = '$period_id'")->row_array();
-
-		if ($start == '1') {
-			$monthStart = '7';
-		} else if ($start == '2') {
-			$monthStart = '8';
-		} else if ($start == '3') {
-			$monthStart = '9';
-		} else if ($start == '4') {
-			$monthStart = '10';
-		} else if ($start == '5') {
-			$monthStart = '11';
-		} else if ($start == '6') {
-			$monthStart = '12';
-		} else if ($start == '7') {
-			$monthStart = '1';
-		} else if ($start == '8') {
-			$monthStart = '2';
-		} else if ($start == '9') {
-			$monthStart = '3';
-		} else if ($start == '10') {
-			$monthStart = '4';
-		} else if ($start == '11') {
-			$monthStart = '5';
-		} else if ($start == '12') {
-			$monthStart = '6';
-		}
-
-		if ($end == '1') {
-			$monthEnd = '7';
-		} else if ($end == '2') {
-			$monthEnd = '8';
-		} else if ($end == '3') {
-			$monthEnd = '9';
-		} else if ($end == '4') {
-			$monthEnd = '10';
-		} else if ($end == '5') {
-			$monthEnd = '11';
-		} else if ($end == '6') {
-			$monthEnd = '12';
-		} else if ($end == '7') {
-			$monthEnd = '1';
-		} else if ($end == '8') {
-			$monthEnd = '2';
-		} else if ($end == '9') {
-			$monthEnd = '3';
-		} else if ($end == '10') {
-			$monthEnd = '4';
-		} else if ($end == '11') {
-			$monthEnd = '5';
-		} else if ($end == '12') {
-			$monthEnd = '6';
-		}
-
-		$interval = $monthStart - 1;
-
-		$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-		$qLast = $this->db->query($last)->row_array();
-
-		//$data['q'] = $q;
-
-		$params = array();
-		$param = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$params['date_start'] = $ds;
-			$param['date_start'] = $ds;
-		}
-
-		// Date end
-		if (isset($de) && !empty($de) && $de != '') {
-			$params['date_end'] = $de;
-			// $param['date_end'] = $qLast['yesterday'];
-		}
-
-		if (isset($period_id) && !empty($period_id) && $period_id != '') {
-			$params['period_id'] = $period_id;
-			// $param['period_id'] = $period_id;
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$params['account_majors_id'] = $majors_id;
-			$param['account_majors_id'] = $majors_id;
-
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-			$params['kas_noref'] = 'isi';
-			$param['kas_noref'] = 'isi';
-
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		}
-
-		$params['urutan'] = "ada";
-		$params['status'] = 1;
-		$param['status'] = 1;
-
-		$data['bulan']  = $this->Report_model->get_rekap_bulan_kas($params);
-		$data['free']   = $this->Report_model->get_rekap_bebas_kas($params);
-		$data['kredit'] = $this->Report_model->get_rekap_kredit_kas($params);
-		$data['gaji']   = $this->Report_model->get_rekap_gaji_kas($params);
-		$data['debit']  = $this->Report_model->get_rekap_debit_kas($params);
-
-		$data['bulanLast']  = $this->Report_model->get_rekap_bulan_last_kas($param);
-		$data['freeLast']   = $this->Report_model->get_rekap_bebas_last_kas($param);
-		$data['kreditLast'] = $this->Report_model->get_rekap_kredit_last_kas($param);
-		$data['gajiLast']   = $this->Report_model->get_rekap_gaji_last_kas($param);
-		$data['debitLast']  = $this->Report_model->get_rekap_debit_last_kas($param);
-
-		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$this->load->library('html2pdflib');
-
-		$filename = 'Laporan Per Jenis Anggaran Kas Tunai per Tanggal ' . pretty_date($ds, 'd/m/Y', FALSE) . ' Sampai ' . pretty_date($de, 'd/m/Y', FALSE) . '.pdf';
-
-		$html = $this->load->view('report/cetak_detail_kas', $data, TRUE);
-
-		$paper = 'A4';
-		$orientation = 'P';
-		$download = TRUE;
-
-		$this->html2pdflib->generate($html, $filename, $download, $paper, $orientation);
-	}
-
-	public function excel_detail_kas()
-	{
-		$ds         = $this->uri->segment('4');
-		$de         = $this->uri->segment('5');
-		$period_id  = $this->uri->segment('6');
-		$majors_id  = $this->uri->segment('7');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		$data['dataPeriod']       = $this->db->query("SELECT * FROM period WHERE period_id = '$period_id'")->row_array();
-
-		if ($start == '1') {
-			$monthStart = '7';
-		} else if ($start == '2') {
-			$monthStart = '8';
-		} else if ($start == '3') {
-			$monthStart = '9';
-		} else if ($start == '4') {
-			$monthStart = '10';
-		} else if ($start == '5') {
-			$monthStart = '11';
-		} else if ($start == '6') {
-			$monthStart = '12';
-		} else if ($start == '7') {
-			$monthStart = '1';
-		} else if ($start == '8') {
-			$monthStart = '2';
-		} else if ($start == '9') {
-			$monthStart = '3';
-		} else if ($start == '10') {
-			$monthStart = '4';
-		} else if ($start == '11') {
-			$monthStart = '5';
-		} else if ($start == '12') {
-			$monthStart = '6';
-		}
-
-		if ($end == '1') {
-			$monthEnd = '7';
-		} else if ($end == '2') {
-			$monthEnd = '8';
-		} else if ($end == '3') {
-			$monthEnd = '9';
-		} else if ($end == '4') {
-			$monthEnd = '10';
-		} else if ($end == '5') {
-			$monthEnd = '11';
-		} else if ($end == '6') {
-			$monthEnd = '12';
-		} else if ($end == '7') {
-			$monthEnd = '1';
-		} else if ($end == '8') {
-			$monthEnd = '2';
-		} else if ($end == '9') {
-			$monthEnd = '3';
-		} else if ($end == '10') {
-			$monthEnd = '4';
-		} else if ($end == '11') {
-			$monthEnd = '5';
-		} else if ($end == '12') {
-			$monthEnd = '6';
-		}
-
-		$interval = $monthStart - 1;
-
-		$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-		$qLast = $this->db->query($last)->row_array();
-
-		//$data['q'] = $q;
-
-		$params = array();
-		$param = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$params['date_start'] = $ds;
-			$param['date_start'] = $ds;
-		}
-
-		// Date end
-		if (isset($de) && !empty($de) && $de != '') {
-			$params['date_end'] = $de;
-			// $param['date_end'] = $qLast['yesterday'];
-		}
-
-		if (isset($period_id) && !empty($period_id) && $period_id != '') {
-			$params['period_id'] = $period_id;
-			// $param['period_id'] = $period_id;
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$params['account_majors_id'] = $majors_id;
-			$param['account_majors_id'] = $majors_id;
-
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-			$params['kas_noref'] = 'isi';
-			$param['kas_noref'] = 'isi';
-
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		}
-
-		$params['urutan'] = "ada";
-		$params['status'] = 1;
-		$param['status'] = 1;
-
-		$data['bulan']  = $this->Report_model->get_rekap_bulan_kas($params);
-		$data['free']   = $this->Report_model->get_rekap_bebas_kas($params);
-		$data['kredit'] = $this->Report_model->get_rekap_kredit_kas($params);
-		$data['gaji']   = $this->Report_model->get_rekap_gaji_kas($params);
-		$data['debit']  = $this->Report_model->get_rekap_debit_kas($params);
-
-		$data['bulanLast']  = $this->Report_model->get_rekap_bulan_last_kas($param);
-		$data['freeLast']   = $this->Report_model->get_rekap_bebas_last_kas($param);
-		$data['kreditLast'] = $this->Report_model->get_rekap_kredit_last_kas($param);
-		$data['gajiLast'] = $this->Report_model->get_rekap_gaji_last_kas($param);
-		$data['debitLast']  = $this->Report_model->get_rekap_debit_last_kas($param);
-
-		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$this->load->view('report/excel_detail_kas', $data);
-	}
-
-	public function cetak_rekap_kas()
-	{
-		//ob_start();
-
-		$ds         = $this->uri->segment('4');
-		$de         = $this->uri->segment('5');
-		$period_id  = $this->uri->segment('6');
-		$majors_id  = $this->uri->segment('7');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		$data['dataPeriod']       = $this->db->query("SELECT * FROM period WHERE period_id = '$period_id'")->row_array();
-
-		if ($start == '1') {
-			$monthStart = '7';
-		} else if ($start == '2') {
-			$monthStart = '8';
-		} else if ($start == '3') {
-			$monthStart = '9';
-		} else if ($start == '4') {
-			$monthStart = '10';
-		} else if ($start == '5') {
-			$monthStart = '11';
-		} else if ($start == '6') {
-			$monthStart = '12';
-		} else if ($start == '7') {
-			$monthStart = '1';
-		} else if ($start == '8') {
-			$monthStart = '2';
-		} else if ($start == '9') {
-			$monthStart = '3';
-		} else if ($start == '10') {
-			$monthStart = '4';
-		} else if ($start == '11') {
-			$monthStart = '5';
-		} else if ($start == '12') {
-			$monthStart = '6';
-		}
-
-		if ($end == '1') {
-			$monthEnd = '7';
-		} else if ($end == '2') {
-			$monthEnd = '8';
-		} else if ($end == '3') {
-			$monthEnd = '9';
-		} else if ($end == '4') {
-			$monthEnd = '10';
-		} else if ($end == '5') {
-			$monthEnd = '11';
-		} else if ($end == '6') {
-			$monthEnd = '12';
-		} else if ($end == '7') {
-			$monthEnd = '1';
-		} else if ($end == '8') {
-			$monthEnd = '2';
-		} else if ($end == '9') {
-			$monthEnd = '3';
-		} else if ($end == '10') {
-			$monthEnd = '4';
-		} else if ($end == '11') {
-			$monthEnd = '5';
-		} else if ($end == '12') {
-			$monthEnd = '6';
-		}
-
-		$interval = $monthStart - 1;
-
-		$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-		$qLast = $this->db->query($last)->row_array();
-
-		//$data['q'] = $q;
-
-		$params = array();
-		$param = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$params['date_start'] = $ds;
-			$param['date_start'] = $ds;
-		}
-
-		// Date end
-		if (isset($de) && !empty($de) && $de != '') {
-			$params['date_end'] = $de;
-			// $param['date_end'] = $qLast['yesterday'];
-		}
-
-		if (isset($period_id) && !empty($period_id) && $period_id != '') {
-			$params['period_id'] = $period_id;
-			// $param['period_id'] = $period_id;
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$params['account_majors_id'] = $majors_id;
-			$param['account_majors_id'] = $majors_id;
-
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-			$params['kas_noref'] = 'isi';
-			$param['kas_noref'] = 'isi';
-
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		}
-
-		$params['urutan'] = "ada";
-		$params['status'] = 1;
-		$param['status'] = 1;
-
-		$data['bulan']  = $this->Report_model->get_rekap_bulan_kas($params);
-		$data['free']   = $this->Report_model->get_rekap_bebas_kas($params);
-		$data['kredit'] = $this->Report_model->get_rekap_kredit_kas($params);
-		$data['gaji']  = $this->Report_model->get_rekap_gaji_kas($params);
-		$data['debit']  = $this->Report_model->get_rekap_debit_kas($params);
-
-		$data['bulanLast']  = $this->Report_model->get_rekap_bulan_last_kas($param);
-		$data['freeLast']   = $this->Report_model->get_rekap_bebas_last_kas($param);
-		$data['kreditLast'] = $this->Report_model->get_rekap_kredit_last_kas($param);
-		$data['gajiLast']  = $this->Report_model->get_rekap_gaji_last_kas($param);
-		$data['debitLast']  = $this->Report_model->get_rekap_debit_last_kas($param);
-
-		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$this->load->library('html2pdflib');
-
-		$filename = 'Rekap Laporan Kas Tunai per Tanggal ' . pretty_date($ds, 'd/m/Y', FALSE) . ' Sampai ' . pretty_date($de, 'd/m/Y', FALSE) . '.pdf';
-
-		$html = $this->load->view('report/cetak_rekap_kas', $data, TRUE);
-
-		$paper = 'A4';
-		$orientation = 'P';
-		$download = TRUE;
-
-		$this->html2pdflib->generate($html, $filename, $download, $paper, $orientation);
-	}
-
-	public function excel_rekap_kas()
-	{
-
-
-		$ds         = $this->uri->segment('4');
-		$de         = $this->uri->segment('5');
-		$period_id  = $this->uri->segment('6');
-		$majors_id  = $this->uri->segment('7');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		$data['dataPeriod']       = $this->db->query("SELECT * FROM period WHERE period_id = '$period_id'")->row_array();
-
-		if ($start == '1') {
-			$monthStart = '7';
-		} else if ($start == '2') {
-			$monthStart = '8';
-		} else if ($start == '3') {
-			$monthStart = '9';
-		} else if ($start == '4') {
-			$monthStart = '10';
-		} else if ($start == '5') {
-			$monthStart = '11';
-		} else if ($start == '6') {
-			$monthStart = '12';
-		} else if ($start == '7') {
-			$monthStart = '1';
-		} else if ($start == '8') {
-			$monthStart = '2';
-		} else if ($start == '9') {
-			$monthStart = '3';
-		} else if ($start == '10') {
-			$monthStart = '4';
-		} else if ($start == '11') {
-			$monthStart = '5';
-		} else if ($start == '12') {
-			$monthStart = '6';
-		}
-
-		if ($end == '1') {
-			$monthEnd = '7';
-		} else if ($end == '2') {
-			$monthEnd = '8';
-		} else if ($end == '3') {
-			$monthEnd = '9';
-		} else if ($end == '4') {
-			$monthEnd = '10';
-		} else if ($end == '5') {
-			$monthEnd = '11';
-		} else if ($end == '6') {
-			$monthEnd = '12';
-		} else if ($end == '7') {
-			$monthEnd = '1';
-		} else if ($end == '8') {
-			$monthEnd = '2';
-		} else if ($end == '9') {
-			$monthEnd = '3';
-		} else if ($end == '10') {
-			$monthEnd = '4';
-		} else if ($end == '11') {
-			$monthEnd = '5';
-		} else if ($end == '12') {
-			$monthEnd = '6';
-		}
-
-		$interval = $monthStart - 1;
-
-		$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-		$qLast = $this->db->query($last)->row_array();
-
-		//$data['q'] = $q;
-
-		$params = array();
-		$param = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$params['date_start'] = $ds;
-			$param['date_start'] = $ds;
-		}
-
-		// Date end
-		if (isset($de) && !empty($de) && $de != '') {
-			$params['date_end'] = $de;
-			// $param['date_end'] = $qLast['yesterday'];
-		}
-
-		if (isset($period_id) && !empty($period_id) && $period_id != '') {
-			$params['period_id'] = $period_id;
-			// $param['period_id'] = $period_id;
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$params['account_majors_id'] = $majors_id;
-			$param['account_majors_id'] = $majors_id;
-
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-			$params['kas_noref'] = 'isi';
-			$param['kas_noref'] = 'isi';
-
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Tunai%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		}
-
-		$params['urutan'] = "ada";
-		$params['status'] = 1;
-		$param['status']  = 1;
-
-		$data['bulan']  = $this->Report_model->get_rekap_bulan_kas($params);
-		$data['free']   = $this->Report_model->get_rekap_bebas_kas($params);
-		$data['kredit'] = $this->Report_model->get_rekap_kredit_kas($params);
-		$data['gaji']   = $this->Report_model->get_rekap_gaji_kas($params);
-		$data['debit']  = $this->Report_model->get_rekap_debit_kas($params);
-
-		$data['bulanLast']  = $this->Report_model->get_rekap_bulan_last_kas($param);
-		$data['freeLast']   = $this->Report_model->get_rekap_bebas_last_kas($param);
-		$data['kreditLast'] = $this->Report_model->get_rekap_kredit_last_kas($param);
-		$data['gajiLast']   = $this->Report_model->get_rekap_gaji_last_kas($param);
-		$data['debitLast']  = $this->Report_model->get_rekap_debit_last_kas($param);
-
-		$data['setting_nip_bendahara']  = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city']           = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district']       = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school']         = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address']        = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone']          = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$this->load->view('report/excel_rekap_kas', $data);
-	}
-
-	public function cetak_detail_bank()
-	{
-		//ob_start();
-
-		$ds         = $this->uri->segment('4');
-		$de         = $this->uri->segment('5');
-		$majors_id  = $this->uri->segment('6');
-
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		// $data['dataPeriod']       = $this->db->query("SELECT * FROM period WHERE period_id = '$period_id'")->row_array();
-
-		if ($start == '1') {
-			$monthStart = '7';
-		} else if ($start == '2') {
-			$monthStart = '8';
-		} else if ($start == '3') {
-			$monthStart = '9';
-		} else if ($start == '4') {
-			$monthStart = '10';
-		} else if ($start == '5') {
-			$monthStart = '11';
-		} else if ($start == '6') {
-			$monthStart = '12';
-		} else if ($start == '7') {
-			$monthStart = '1';
-		} else if ($start == '8') {
-			$monthStart = '2';
-		} else if ($start == '9') {
-			$monthStart = '3';
-		} else if ($start == '10') {
-			$monthStart = '4';
-		} else if ($start == '11') {
-			$monthStart = '5';
-		} else if ($start == '12') {
-			$monthStart = '6';
-		}
-
-		if ($end == '1') {
-			$monthEnd = '7';
-		} else if ($end == '2') {
-			$monthEnd = '8';
-		} else if ($end == '3') {
-			$monthEnd = '9';
-		} else if ($end == '4') {
-			$monthEnd = '10';
-		} else if ($end == '5') {
-			$monthEnd = '11';
-		} else if ($end == '6') {
-			$monthEnd = '12';
-		} else if ($end == '7') {
-			$monthEnd = '1';
-		} else if ($end == '8') {
-			$monthEnd = '2';
-		} else if ($end == '9') {
-			$monthEnd = '3';
-		} else if ($end == '10') {
-			$monthEnd = '4';
-		} else if ($end == '11') {
-			$monthEnd = '5';
-		} else if ($end == '12') {
-			$monthEnd = '6';
-		}
-
-		$interval = $monthStart - 1;
-
-		$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-		$qLast = $this->db->query($last)->row_array();
-
-		//$data['q'] = $q;
-
-		$params = array();
-		$param = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$params['date_start'] = $ds;
-			$param['date_start'] = $qLast['last_month'];
-		}
-
-		// Date end
-		if (isset($de) && !empty($de) && $de != '') {
-			$params['date_end'] = $de;
-			$param['date_end'] = $qLast['yesterday'];
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$params['account_majors_id'] = $majors_id;
-			$param['account_majors_id'] = $majors_id;
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-			$params['kas_noref'] = 'isi';
-			$param['kas_noref'] = 'isi';
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		}
-
-		$params['urutan'] = "ada";
-		$params['status'] = 1;
-		$param['status'] = 1;
-
-		$data['bulan']  = $this->Report_model->get_rekap_bulan_bank($params);
-		$data['free']   = $this->Report_model->get_rekap_bebas_bank($params);
-		$data['kredit'] = $this->Report_model->get_rekap_kredit_bank($params);
-		$data['gaji']   = $this->Report_model->get_rekap_gaji_bank($params);
-		$data['debit']  = $this->Report_model->get_rekap_debit_bank($params);
-
-		$data['bulanLast']  = $this->Report_model->get_rekap_bulan_last_bank($param);
-		$data['freeLast']   = $this->Report_model->get_rekap_bebas_last_bank($param);
-		$data['kreditLast'] = $this->Report_model->get_rekap_kredit_last_bank($param);
-		$data['gajiLast'] = $this->Report_model->get_rekap_gaji_last_bank($param);
-		$data['debitLast']  = $this->Report_model->get_rekap_debit_last_bank($param);
-
-		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$this->load->library('html2pdflib');
-
-		$filename = 'Laporan Per Jenis Anggaran Kas Bank per Tanggal ' . pretty_date($ds, 'd/m/Y', FALSE) . ' Sampai ' . pretty_date($de, 'd/m/Y', FALSE) . '.pdf';
-
-		$html = $this->load->view('report/cetak_detail_bank', $data, TRUE);
-
-		$paper = 'A4';
-		$orientation = 'P';
-		$download = TRUE;
-
-		$this->html2pdflib->generate($html, $filename, $download, $paper, $orientation);
-	}
-
-	public function excel_detail_bank()
-	{
-		$ds         = $this->uri->segment('4');
-		$de         = $this->uri->segment('5');
-		$majors_id  = $this->uri->segment('6');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		// $data['dataPeriod']       = $this->db->query("SELECT * FROM period WHERE period_id = '$period_id'")->row_array();
-
-		if ($start == '1') {
-			$monthStart = '7';
-		} else if ($start == '2') {
-			$monthStart = '8';
-		} else if ($start == '3') {
-			$monthStart = '9';
-		} else if ($start == '4') {
-			$monthStart = '10';
-		} else if ($start == '5') {
-			$monthStart = '11';
-		} else if ($start == '6') {
-			$monthStart = '12';
-		} else if ($start == '7') {
-			$monthStart = '1';
-		} else if ($start == '8') {
-			$monthStart = '2';
-		} else if ($start == '9') {
-			$monthStart = '3';
-		} else if ($start == '10') {
-			$monthStart = '4';
-		} else if ($start == '11') {
-			$monthStart = '5';
-		} else if ($start == '12') {
-			$monthStart = '6';
-		}
-
-		if ($end == '1') {
-			$monthEnd = '7';
-		} else if ($end == '2') {
-			$monthEnd = '8';
-		} else if ($end == '3') {
-			$monthEnd = '9';
-		} else if ($end == '4') {
-			$monthEnd = '10';
-		} else if ($end == '5') {
-			$monthEnd = '11';
-		} else if ($end == '6') {
-			$monthEnd = '12';
-		} else if ($end == '7') {
-			$monthEnd = '1';
-		} else if ($end == '8') {
-			$monthEnd = '2';
-		} else if ($end == '9') {
-			$monthEnd = '3';
-		} else if ($end == '10') {
-			$monthEnd = '4';
-		} else if ($end == '11') {
-			$monthEnd = '5';
-		} else if ($end == '12') {
-			$monthEnd = '6';
-		}
-
-		$interval = $monthStart - 1;
-
-		$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-		$qLast = $this->db->query($last)->row_array();
-
-		//$data['q'] = $q;
-
-		$params = array();
-		$param = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$params['date_start'] = $ds;
-			$param['date_start'] = $qLast['last_month'];
-		}
-
-		// Date end
-		if (isset($de) && !empty($de) && $de != '') {
-			$params['date_end'] = $de;
-			$param['date_end'] = $qLast['yesterday'];
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$params['account_majors_id'] = $majors_id;
-			$param['account_majors_id'] = $majors_id;
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-			$params['kas_noref'] = 'isi';
-			$param['kas_noref'] = 'isi';
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		}
-
-		$params['urutan'] = "ada";
-		$params['status'] = 1;
-		$param['status'] = 1;
-
-		$data['bulan']  = $this->Report_model->get_rekap_bulan_bank($params);
-		$data['free']   = $this->Report_model->get_rekap_bebas_bank($params);
-		$data['kredit'] = $this->Report_model->get_rekap_kredit_bank($params);
-		$data['gaji']   = $this->Report_model->get_rekap_gaji_bank($params);
-		$data['debit']  = $this->Report_model->get_rekap_debit_bank($params);
-
-		$data['bulanLast']  = $this->Report_model->get_rekap_bulan_last_bank($param);
-		$data['freeLast']   = $this->Report_model->get_rekap_bebas_last_bank($param);
-		$data['kreditLast'] = $this->Report_model->get_rekap_kredit_last_bank($param);
-		$data['gajiLast']   = $this->Report_model->get_rekap_gaji_last_bank($param);
-		$data['debitLast']  = $this->Report_model->get_rekap_debit_last_bank($param);
-
-		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$this->load->view('report/excel_detail_bank', $data);
-	}
-
-	public function cetak_rekap_bank()
-	{
-		//ob_start();
-
-		$ds         = $this->uri->segment('4');
-		$de         = $this->uri->segment('5');
-		$majors_id  = $this->uri->segment('6');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		// $data['dataPeriod']       = $this->db->query("SELECT * FROM period WHERE period_id = '$period_id'")->row_array();
-
-		if ($start == '1') {
-			$monthStart = '7';
-		} else if ($start == '2') {
-			$monthStart = '8';
-		} else if ($start == '3') {
-			$monthStart = '9';
-		} else if ($start == '4') {
-			$monthStart = '10';
-		} else if ($start == '5') {
-			$monthStart = '11';
-		} else if ($start == '6') {
-			$monthStart = '12';
-		} else if ($start == '7') {
-			$monthStart = '1';
-		} else if ($start == '8') {
-			$monthStart = '2';
-		} else if ($start == '9') {
-			$monthStart = '3';
-		} else if ($start == '10') {
-			$monthStart = '4';
-		} else if ($start == '11') {
-			$monthStart = '5';
-		} else if ($start == '12') {
-			$monthStart = '6';
-		}
-
-		if ($end == '1') {
-			$monthEnd = '7';
-		} else if ($end == '2') {
-			$monthEnd = '8';
-		} else if ($end == '3') {
-			$monthEnd = '9';
-		} else if ($end == '4') {
-			$monthEnd = '10';
-		} else if ($end == '5') {
-			$monthEnd = '11';
-		} else if ($end == '6') {
-			$monthEnd = '12';
-		} else if ($end == '7') {
-			$monthEnd = '1';
-		} else if ($end == '8') {
-			$monthEnd = '2';
-		} else if ($end == '9') {
-			$monthEnd = '3';
-		} else if ($end == '10') {
-			$monthEnd = '4';
-		} else if ($end == '11') {
-			$monthEnd = '5';
-		} else if ($end == '12') {
-			$monthEnd = '6';
-		}
-
-		$interval = $monthStart - 1;
-
-		$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-		$qLast = $this->db->query($last)->row_array();
-
-		//$data['q'] = $q;
-
-		$params = array();
-		$param = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$params['date_start'] = $ds;
-			$param['date_start'] = $qLast['last_month'];
-		}
-
-		// Date end
-		if (isset($de) && !empty($de) && $de != '') {
-			$params['date_end'] = $de;
-			$param['date_end'] = $qLast['yesterday'];
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$params['account_majors_id'] = $majors_id;
-			$param['account_majors_id'] = $majors_id;
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-			$params['kas_noref'] = 'isi';
-			$param['kas_noref'] = 'isi';
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		}
-
-		$params['urutan'] = "ada";
-		$params['status'] = 1;
-		$param['status'] = 1;
-
-		$data['bulan']  = $this->Report_model->get_rekap_bulan_bank($params);
-		$data['free']   = $this->Report_model->get_rekap_bebas_bank($params);
-		$data['kredit'] = $this->Report_model->get_rekap_kredit_bank($params);
-		$data['gaji']  = $this->Report_model->get_rekap_gaji_bank($params);
-		$data['debit']  = $this->Report_model->get_rekap_debit_bank($params);
-
-		$data['bulanLast']  = $this->Report_model->get_rekap_bulan_last_bank($param);
-		$data['freeLast']   = $this->Report_model->get_rekap_bebas_last_bank($param);
-		$data['kreditLast'] = $this->Report_model->get_rekap_kredit_last_bank($param);
-		$data['gajiLast']  = $this->Report_model->get_rekap_gaji_last_bank($param);
-		$data['debitLast']  = $this->Report_model->get_rekap_debit_last_bank($param);
-
-		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$this->load->library('html2pdflib');
-
-		$filename = 'Rekap Laporan Kas Bank per Tanggal ' . pretty_date($ds, 'd/m/Y', FALSE) . ' Sampai ' . pretty_date($de, 'd/m/Y', FALSE) . '.pdf';
-
-		$html = $this->load->view('report/cetak_rekap_bank', $data, TRUE);
-
-		$paper = 'A4';
-		$orientation = 'P';
-		$download = TRUE;
-
-		$this->html2pdflib->generate($html, $filename, $download, $paper, $orientation);
-	}
-
-	public function excel_rekap_bank()
-	{
-
-		$ds         = $this->uri->segment('4');
-		$de         = $this->uri->segment('5');
-		$majors_id  = $this->uri->segment('6');
-		$createDS   = date_create($ds);
-		$createDE   = date_create($de);
-		$start      = date_format($createDS, "n");
-		$end        = date_format($createDE, "n");
-
-		// $data['dataPeriod']       = $this->db->query("SELECT * FROM period WHERE period_id = '$period_id'")->row_array();
-
-		if ($start == '1') {
-			$monthStart = '7';
-		} else if ($start == '2') {
-			$monthStart = '8';
-		} else if ($start == '3') {
-			$monthStart = '9';
-		} else if ($start == '4') {
-			$monthStart = '10';
-		} else if ($start == '5') {
-			$monthStart = '11';
-		} else if ($start == '6') {
-			$monthStart = '12';
-		} else if ($start == '7') {
-			$monthStart = '1';
-		} else if ($start == '8') {
-			$monthStart = '2';
-		} else if ($start == '9') {
-			$monthStart = '3';
-		} else if ($start == '10') {
-			$monthStart = '4';
-		} else if ($start == '11') {
-			$monthStart = '5';
-		} else if ($start == '12') {
-			$monthStart = '6';
-		}
-
-		if ($end == '1') {
-			$monthEnd = '7';
-		} else if ($end == '2') {
-			$monthEnd = '8';
-		} else if ($end == '3') {
-			$monthEnd = '9';
-		} else if ($end == '4') {
-			$monthEnd = '10';
-		} else if ($end == '5') {
-			$monthEnd = '11';
-		} else if ($end == '6') {
-			$monthEnd = '12';
-		} else if ($end == '7') {
-			$monthEnd = '1';
-		} else if ($end == '8') {
-			$monthEnd = '2';
-		} else if ($end == '9') {
-			$monthEnd = '3';
-		} else if ($end == '10') {
-			$monthEnd = '4';
-		} else if ($end == '11') {
-			$monthEnd = '5';
-		} else if ($end == '12') {
-			$monthEnd = '6';
-		}
-
-		$interval = $monthStart - 1;
-
-		$last = "SELECT '$ds' - INTERVAL '$interval' MONTH as last_month, '$ds' - INTERVAL '1' DAY as yesterday";
-
-		$qLast = $this->db->query($last)->row_array();
-
-		//$data['q'] = $q;
-
-		$params = array();
-		$param = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$params['date_start'] = $ds;
-			$param['date_start'] = $qLast['last_month'];
-		}
-
-		// Date end
-		if (isset($de) && !empty($de) && $de != '') {
-			$params['date_end'] = $de;
-			$param['date_end'] = $qLast['yesterday'];
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$params['account_majors_id'] = $majors_id;
-			$param['account_majors_id'] = $majors_id;
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_majors_id = '$majors_id' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		} else if (isset($majors_id) && !empty($majors_id) && $majors_id == 'all') {
-			$params['kas_noref'] = 'isi';
-			$param['kas_noref'] = 'isi';
-			$data['saldoAwal'] = $this->db->query("SELECT SUM(saldo_awal.saldo_awal_debit) AS nominal FROM `saldo_awal` JOIN account ON saldo_awal.saldo_awal_account =account.account_id WHERE account.account_category = '2' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Bank%' AND account.account_note IN (SELECT account_id FROM account WHERE account.account_category = '0' AND account.account_code LIKE '1%' AND account.account_description LIKE '%Aktiva%')")->row_array();
-		}
-
-		$params['urutan'] = "ada";
-		$params['status'] = 1;
-		$param['status'] = 1;
-
-		$data['bulan']  = $this->Report_model->get_rekap_bulan_bank($params);
-		$data['free']   = $this->Report_model->get_rekap_bebas_bank($params);
-		$data['kredit'] = $this->Report_model->get_rekap_kredit_bank($params);
-		$data['gaji']  = $this->Report_model->get_rekap_gaji_bank($params);
-		$data['debit']  = $this->Report_model->get_rekap_debit_bank($params);
-
-		$data['bulanLast']  = $this->Report_model->get_rekap_bulan_last_bank($param);
-		$data['freeLast']   = $this->Report_model->get_rekap_bebas_last_bank($param);
-		$data['kreditLast'] = $this->Report_model->get_rekap_kredit_last_bank($param);
-		$data['gajiLast']  = $this->Report_model->get_rekap_gaji_last_bank($param);
-		$data['debitLast']  = $this->Report_model->get_rekap_debit_last_bank($param);
-
-		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$this->load->view('report/excel_rekap_bank', $data);
-	}
-
 	public function search_report_tagihan()
 	{
 		$id_periode     = $this->input->post('id_periode');
@@ -3960,78 +2911,6 @@ class Report_set extends CI_Controller
 		header('Cache-Control: max-age=0');
 		$objWriter->save('php://output');
 		exit();
-	}
-
-
-	// Rekapituliasi
-	public function report_bill_detail()
-	{
-		$q = $this->input->get(NULL, TRUE);
-
-		$data['q'] = $q;
-
-		$params     = array();
-		$param      = array();
-		$stu        = array();
-		$free       = array();
-		$bul        = 'BULAN';
-		$id_kelas   = $q['c'];
-		$id_periode = $q['p'];
-
-
-		if (isset($q['p']) && !empty($q['p']) && $q['p'] != '') {
-			$params['period_id'] = $q['p'];
-			$param['period_id'] = $q['p'];
-			$stu['period_id'] = $q['p'];
-			$free['period_id'] = $q['p'];
-			$data['looping'] = $this->Bulan_model->get_jumlah($q['c']);
-		}
-
-		if (isset($q['c']) && !empty($q['c']) && $q['c'] != '') {
-			$params['class_id'] = $q['c'];
-			$param['class_id'] = $q['c'];
-			$stu['class_id'] = $q['c'];
-			$free['class_id'] = $q['c'];
-			$data['looping'] = $this->Bulan_model->get_jumlah($q['c']);
-		}
-
-		if (isset($q['k']) && !empty($q['k']) && $q['k'] != '') {
-			$params['majors_id'] = $q['k'];
-			$param['majors_id'] = $q['k'];
-			$stu['majors_id'] = $q['k'];
-			$free['majors_id'] = $q['k'];
-			$data['looping'] = $this->Bulan_model->get_jumlah($q['c']);
-		}
-
-		$data['dataKelas']  = $this->db->query("SELECT class_name FROM class WHERE class_id='$id_kelas'")->row();
-		$data['dataHead']   = $this->db->query("SELECT * FROM period WHERE period_id = '$id_periode'")->row();
-
-		$param['paymentt'] = TRUE;
-		$params['grup'] = TRUE;
-		$stu['group'] = TRUE;
-
-
-		$data['period'] = $this->Period_model->get($params);
-		$data['class'] = $this->Student_model->get_class($params);
-		$data['majors'] = $this->Student_model->get_majors($params);
-		$data['student'] = $this->Bulan_model->get($stu);
-		$data['bulan'] = $this->Bulan_model->get($free);
-		$data['month'] = $this->Bulan_model->get($params);
-		$data['py'] = $this->Bulan_model->get($param);
-		$data['bebas'] = $this->Bebas_model->get($params);
-		$data['free'] = $this->Bebas_model->get($free);
-
-		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
-		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
-
-		$this->load->view('report/report_bill_excel', $data);
 	}
 
 	public function cari_kas()
