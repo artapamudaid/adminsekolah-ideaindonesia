@@ -8,7 +8,24 @@
 <body>
 	<table style='border-bottom: 2px solid black; padding-bottom: 10px; width: 190mm;'>
 		<tr valign='top'>
-			<td style='width: 187mm;' valign='middle'>
+			<td style='width: 15mm;'>
+				<?php
+				$arrContextOptions = array(
+					"ssl" => array(
+						"verify_peer" => false,
+						"verify_peer_name" => false,
+					),
+				);
+
+				$path = upload_url('school/' . logo());
+				$type = pathinfo($path, PATHINFO_EXTENSION);
+				$data = file_get_contents($path, false, stream_context_create($arrContextOptions));
+				$base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+				?>
+
+				<img src="<?php echo $base64 ?>" style="height: 60px;">
+			</td>
+			<td style='width: 160mm;' valign='middle'>
 				<div style='font-weight: bold; padding-bottom: 5px; font-size: 14pt;'><?php echo $setting_school['setting_value'] ?>
 				</div>
 				<span style='font-size: 8pt;'><?php echo $setting_address['setting_value'] ?>
