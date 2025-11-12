@@ -112,7 +112,7 @@ class Payout_set extends CI_Controller
     }
 
     $data['cashb'] = 0;
-    foreach ($data['beb'] as $row) {
+    foreach ($data['free'] as $row) {
       $data['cashb'] += $row['bebas_pay_bill'];
     }
 
