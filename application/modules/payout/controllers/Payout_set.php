@@ -86,17 +86,17 @@ class Payout_set extends CI_Controller
     $cashback['student_id']             = $siswa['student_id'];
     $logs['student_id']                 = $siswa['student_id'];
     $cashback['date']                   = date('Y-m-d');
-    $cashback['bebas_pay_input_date']   = date('Y-m-d');
+    $cashback['last_update']            = date('Y-m-d');
 
     $paramsPage = $params;
     $data['periodActive']   = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
     $data['period']         = $this->Period_model->get($params);
     $data['siswa']          = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
-    $data['bulan']          = $this->Bulan_model->get(array('student_id' => $siswa['student_id']));
+    // $data['bulan']          = $this->Bulan_model->get(array('student_id' => $siswa['student_id']));
     $data['bebasPay']       = $this->Bebas_model->get($pay);
-    $data['free']           = $this->Bebas_pay_model->get($params);
-    $data['bill']           = $this->Bulan_model->get_total($params);
-    $data['month']          = $this->Bulan_model->get_total($cashback);
+    // $data['free']           = $this->Bebas_pay_model->get($params);
+    // $data['bill']           = $this->Bulan_model->get_total($params);
+    // $data['month']          = $this->Bulan_model->get_total($cashback);
     $data['log']            = $this->Log_trx_model->get_history($logs);
     $data['trx']            = $this->Log_trx_model->get_trx($logs);
 
@@ -105,31 +105,28 @@ class Payout_set extends CI_Controller
     //Transaksi Yang belum disimpan / untuk migrasi
     $data['pending']        = $this->Payout_model->list_transaksi_tertunda($siswa['student_nis'], $data['noref']);
 
-    // cashback
-    $data['cash'] = 0;
-    foreach ($data['month'] as $row) {
-      $data['cash'] += $row['total'];
-    }
+    //Total Pembayaran Bulan  
+    $totalBayarBulan = $this->Bulan_model->get_total_bulan($cashback);
+    $data['cash'] = $totalBayarBulan;
 
-    $data['cashb'] = 0;
-    foreach ($data['free'] as $row) {
-      $data['cashb'] += $row['bebas_pay_bill'];
-    }
+    //Total Pembayaran Bebas  
+    $totalBayarBebas = $this->Bebas_pay_model->get_total($cashback);
+    $data['cashb'] = $totalBayarBebas;
 
-    $data['total'] = 0;
-    foreach ($data['bill'] as $key) {
-      $data['total'] += $key['total'];
-    }
+    // $data['total'] = 0;
+    // foreach ($data['bill'] as $key) {
+    //   $data['total'] += $key['total'];
+    // }
 
-    $data['pay'] = 0;
-    foreach ($data['in'] as $row) {
-      $data['pay'] += $row['total'];
-    }
+    // $data['pay'] = 0;
+    // foreach ($data['in'] as $row) {
+    //   $data['pay'] += $row['total'];
+    // }
 
-    $data['pay_bill'] = 0;
-    foreach ($data['dom'] as $row) {
-      $data['pay_bill'] += $row['bebas_pay_bill'];
-    }
+    // $data['pay_bill'] = 0;
+    // foreach ($data['dom'] as $row) {
+    //   $data['pay_bill'] += $row['bebas_pay_bill'];
+    // }
 
 
 
@@ -659,7 +656,7 @@ class Payout_set extends CI_Controller
       $param['bebas_pay_desc']        = $this->input->post('bebas_pay_desc');
       $param['user_user_id']          = $this->session->userdata('uid');
       $param['bebas_pay_input_date']  = $this->input->post('bebas_pay_date');
-      $param['bebas_pay_last_update'] = $this->input->post('bebas_pay_date');
+      $param['bebas_pay_last_update'] = date('Y-m-d H:i:s');
 
       $data['bill'] = $this->Bebas_pay_model->get(array('bebas_id' => $this->input->post('bebas_id')));
       $data['bebas'] = $this->Bebas_model->get(array('payment_id' => $this->input->post('payment_payment_id'), 'student_nis' => $this->input->post('student_nis')));
@@ -1479,7 +1476,7 @@ class Payout_set extends CI_Controller
           'bulan_account_id'    => $kas,
           'bulan_noref'         => $noref,
           'bulan_date_pay'      => $trx_date,
-          'bulan_last_update'   => $trx_date,
+          'bulan_last_update'   => date('Y-m-d H:i:s'),
           'bulan_status'        => 1,
           'user_user_id'        => $this->session->userdata('uid')
         );
@@ -1577,7 +1574,7 @@ class Payout_set extends CI_Controller
         'bulan_noref'         => $kas_noref,
         'bulan_bill'          => $data['value'],
         'bulan_date_pay'      => $payout_date,
-        'bulan_last_update'   => $payout_date,
+        'bulan_last_update'   => date('Y-m-d H:i:s'),
         'bulan_status'        => 1,
         'user_user_id'        => $this->session->userdata('uid')
       );
@@ -1648,7 +1645,7 @@ class Payout_set extends CI_Controller
         'bulan_noref'       => NULL,
         'bulan_status'      => 0,
         'bulan_date_pay'    => date('Y-m-d'),
-        'bulan_last_update' => date('Y-m-d'),
+        'bulan_last_update' => date('Y-m-d H:i:s'),
         'user_user_id'      => NULL
       );
 
@@ -1740,7 +1737,7 @@ class Payout_set extends CI_Controller
       'bulan_noref'         => $kas_noref,
       'bulan_bill'          => $payout_value,
       'bulan_date_pay'      => $payout_date,
-      'bulan_last_update'   => $payout_date,
+      'bulan_last_update'   => date('Y-m-d H:i:s'),
       'bulan_status'        => 1,
       'user_user_id'        => $this->session->userdata('uid')
     );
@@ -1802,8 +1799,8 @@ class Payout_set extends CI_Controller
       'bulan_account_id'  => NULL,
       'bulan_noref'       => NULL,
       'bulan_status'      => 0,
-      'bulan_date_pay'    => date('Y-m-d'),
-      'bulan_last_update' => date('Y-m-d'),
+      'bulan_date_pay'    => NULL,
+      'bulan_last_update' => date('Y-m-d H:i:s'),
       'user_user_id'      => NULL
     );
 

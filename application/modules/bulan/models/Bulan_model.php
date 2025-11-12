@@ -2323,60 +2323,35 @@ class Bulan_model extends CI_Model
     // Add and update to database
     function add($data = array())
     {
+        // mapping antara key array dan nama kolom di database
+        $map = [
+            'bulan_id'          => 'bulan_id',
+            'student_id'        => 'student_student_id',
+            'payment_id'        => 'payment_payment_id',
+            'month_id'          => 'month_month_id',
+            'bulan_bill'        => 'bulan_bill',
+            'bulan_number_pay'  => 'bulan_number_pay',
+            'bulan_status'      => 'bulan_status',
+            'bulan_date_pay'    => 'bulan_date_pay',
+            'bulan_account_id'  => 'bulan_account_id',
+            'bulan_noref'       => 'bulan_noref',
+            'user_user_id'      => 'user_user_id',
+            'bulan_input_date'  => 'bulan_input_date',
+            'bulan_last_update' => 'bulan_last_update'
+        ];
 
-        if (isset($data['bulan_id'])) {
-            $this->db->set('bulan_id', $data['bulan_id']);
+        foreach ($map as $key => $column) {
+            if (array_key_exists($key, $data)) { // <– ini beda dari isset()
+                $value = $data[$key];
+                if (is_null($value)) {
+                    $this->db->set($column, 'NULL', FALSE);
+                } else {
+                    $this->db->set($column, $value);
+                }
+            }
         }
 
-        if (isset($data['student_id'])) {
-            $this->db->set('student_student_id', $data['student_id']);
-        }
-
-        if (isset($data['payment_id'])) {
-            $this->db->set('payment_payment_id', $data['payment_id']);
-        }
-
-        if (isset($data['month_id'])) {
-            $this->db->set('month_month_id', $data['month_id']);
-        }
-
-        if (isset($data['bulan_bill'])) {
-            $this->db->set('bulan_bill', $data['bulan_bill']);
-        }
-
-        if (isset($data['bulan_number_pay'])) {
-            $this->db->set('bulan_number_pay', $data['bulan_number_pay']);
-        }
-
-        if (isset($data['bulan_status'])) {
-            $this->db->set('bulan_status', $data['bulan_status']);
-        }
-
-        if (isset($data['bulan_date_pay'])) {
-            $this->db->set('bulan_date_pay', $data['bulan_date_pay']);
-        }
-
-        if (isset($data['bulan_account_id'])) {
-            $this->db->set('bulan_account_id', $data['bulan_account_id']);
-        }
-
-        if (isset($data['bulan_noref'])) {
-            $this->db->set('bulan_noref', $data['bulan_noref']);
-        }
-
-        if (isset($data['user_user_id'])) {
-            $this->db->set('user_user_id', $data['user_user_id']);
-        }
-
-        if (isset($data['bulan_input_date'])) {
-            $this->db->set('bulan_input_date', $data['bulan_input_date']);
-        }
-
-        if (isset($data['bulan_last_update'])) {
-            $this->db->set('bulan_last_update', $data['bulan_last_update']);
-        }
-
-        if (isset($data['bulan_id'])) {
+        if (!empty($data['bulan_id'])) {
             $this->db->where('bulan_id', $data['bulan_id']);
             $this->db->update('bulan');
             $id = $data['bulan_id'];
@@ -2387,6 +2362,30 @@ class Bulan_model extends CI_Model
 
         $status = $this->db->affected_rows();
         return ($status == 0) ? FALSE : $id;
+    }
+
+    public function get_total_bulan($param = array())
+    {
+        $this->db->select('SUM(bulan_bill) AS total');
+        $this->db->from('bulan');
+
+        if (!empty($param['noref'])) {
+            $this->db->where('bulan_noref', $param['noref']);
+        }
+
+        // Hanya ambil yang status = 1
+        $this->db->where('bulan_status', 1);
+
+        if (!empty($param['last_update'])) {
+            $this->db->where('DATE(bulan_last_update)', $param['last_update']);
+        }
+
+        $this->db->group_by('bulan_noref');
+
+        $query = $this->db->get();
+        $row = $query->row();
+
+        return $row ? $row->total : 0;
     }
 
     // Get month from database
