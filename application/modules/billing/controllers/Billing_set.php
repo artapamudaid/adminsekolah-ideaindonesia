@@ -98,8 +98,15 @@ class Billing_set extends CI_Controller
 		$id_santri              = $this->uri->segment('7');
 
 		$student                = $this->Student_model->get(array('id' => $id_santri));
+		$periodSekarang = $this->db->query("SELECT period_id AS id, period_start FROM period WHERE period_id = '$id_periode'")->row_array();
+		$periodLama = $this->db->query("SELECT period_id FROM period WHERE period_start < '" . $periodSekarang['period_start'] . "'")->result_array();
 
 		$params = array();
+
+		$periodActive = $this->db->query("SELECT period_id AS id FROM period WHERE period_status = 1")->row_array();
+		if ($periodActive['id'] != $periodSekarang['id']) {
+			$month_end       = 12;
+		}
 
 		$params['student_id']   = $id_santri;
 		$params['period_id']    = $id_periode;
@@ -116,10 +123,6 @@ class Billing_set extends CI_Controller
 		$data['bulan'] = $this->Billing_model->get_tagihan_bulan($params);
 		$data['bebas'] = $this->Billing_model->get_tagihan_bebas($params);
 		$data['paket'] = $this->Billing_model->get_tagihan_paket($params);
-
-		$periodSekarang = $this->db->query("SELECT period_start FROM period WHERE period_id = '$id_periode'")->row_array();
-
-		$periodLama = $this->db->query("SELECT period_id FROM period WHERE period_start < '" . $periodSekarang['period_start'] . "'")->result_array();
 
 		$periode    = array();
 		foreach ($periodLama as $row) {
