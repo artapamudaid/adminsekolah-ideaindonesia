@@ -114,6 +114,8 @@ class Debit_set extends CI_Controller
 
             $dataDebit = array();
             foreach ($list_debit->result() as $r) {
+                $balance_id = $r->balance_id;
+
                 $row = array();
                 $row[] = pretty_date($r->debit_date, 'Y-m-d', false);
                 $row[] = $r->debit_kas_noref;
@@ -124,11 +126,19 @@ class Debit_set extends CI_Controller
                 $row[] = $r->debit_tax . ' %';
                 $row[] = $r->debit_item;
                 $row[] = 'Rp. ' . number_format($r->debit_value + ($r->debit_value * ($r->debit_tax / 100)), 0, ',', '.');
-                $row[] = '
-                <a href="' . site_url('manage/debit/cetakTrx/' . $r->debit_kas_noref) . '" class="btn btn-xs btn-default" data-toggle="tooltip" title="Cetak Transaksi" target="_blank"><i class="fa fa-print"></i></a>
-                <a href="' . site_url('manage/debit/edit/' . $r->debit_id) . '" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a>
-                <a class="btn btn-xs btn-danger btnDellDebit" data-debit="' . $r->debit_id . '" data-noref="' . $r->debit_kas_noref . '"><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></a>
-            ';
+
+                if (!empty($balance_id)) {
+                    $row[] = '
+                        <a href="' . site_url('manage/debit/cetakTrx/' . $r->debit_kas_noref) . '" class="btn btn-xs btn-default" data-toggle="tooltip" title="Cetak Transaksi" target="_blank"><i class="fa fa-print"></i></a>';
+                } else {
+                    $row[] = '
+                        <a href="' . site_url('manage/debit/cetakTrx/' . $r->debit_kas_noref) . '" class="btn btn-xs btn-default" data-toggle="tooltip" title="Cetak Transaksi" target="_blank"><i class="fa fa-print"></i></a>
+                        <a href="' . site_url('manage/debit/edit/' . $r->debit_id) . '" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a>
+                        <a class="btn btn-xs btn-danger btnDellDebit" data-debit="' . $r->debit_id . '" data-noref="' . $r->debit_kas_noref . '"><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></a>
+                    ';
+                }
+
+
                 $dataDebit[] = $row;
             }
             $output['data'] = $dataDebit;

@@ -584,7 +584,18 @@ class Kredit_set extends CI_Controller
 	{
 		if ($_POST) {
 
-			$kredit = $this->db->query("SELECT kredit_kas_noref, kredit_desc, kredit_value FROM kredit WHERE kredit_id = '$id'")->row_array();
+			$id = $this->input->post('delKredit');
+
+			$kredit = $this->db->query(
+				"SELECT kredit_kas_noref, kredit_desc, kredit_value, akun.account_code AS kodeAkun, kas.account_code AS kodeKas
+				FROM kredit 
+				JOIN account akun ON akun.account_id = kredit.kredit_account_id
+                JOIN account kas  ON kas.account_id = kredit.kredit_kas_account_id
+				WHERE kredit_id = '$id'"
+			)->row_array();
+
+			$kodeAkun   = $kredit['kodeAkun'];
+			$kodeKas    = $kredit['kodeKas'];
 
 			$this->Logs_model->add_trx(
 				array(
@@ -615,7 +626,20 @@ class Kredit_set extends CI_Controller
 			$cek  = $this->db->query("SELECT COUNT(kredit_id) AS nums FROM kredit WHERE kredit_kas_noref = '$noref'")->row_array();
 			if ($cek['nums'] == '0') {
 				$this->db->query("DELETE FROM kas WHERE kas_noref = '$noref'");
+				$idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
+
+				// Delete Jurnal
+				$this->db->query("DELETE FROM jurnal_umum WHERE noref = '$noref'");
+				$this->db->query("DELETE FROM jurnal_umum_detail WHERE id_jurnal = '$idJurnal'");
+			} else {
+				$idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
+				// Delete Akun Jurnal
+				$this->db->query("DELETE FROM jurnal_umum_detail WHERE id_jurnal = '$idJurnal' AND account_code = '$kodeAkun'");
+
+				// Update total Jurnal
+				$this->Kredit_model->update_detail_jurnal_kas($idJurnal, $kodeKas, $total['sumKredit']);
 			}
+
 			// activity log
 			$this->load->model('logs/Logs_model');
 			$this->Logs_model->add(
@@ -627,6 +651,28 @@ class Kredit_set extends CI_Controller
 					'log_info' => 'ID:' . $id . ';Title:' . $this->input->post('delName')
 				)
 			);
+
+			// cek apakah ini termasuk trasnfer kas???
+			$tf = $this->db->query(
+				"SELECT lt1.log_tf_balance_id AS balance_id, debit.debit_id, debit.debit_kas_noref AS debitNoref, a.account_code AS debitMasuk, b.account_code AS debitKeluar, a.account_majors_id AS debitMajors
+					FROM log_tf lt1
+					JOIN log_tf lt2 ON lt2.log_tf_balance_id = lt1.log_tf_balance_id AND lt2.log_tf_debit_id IS NOT NULL
+					JOIN debit ON debit.debit_id = lt2.log_tf_debit_id
+					JOIN account a ON a.account_id = debit.debit_kas_account_id
+					JOIN account b ON b.account_id = debit.debit_account_id
+					WHERE lt1.log_tf_kredit_id = ?",
+				array($id)
+			)->row_array();
+
+			if (!empty($tf) && !empty($tf['balance_id'])) {
+				$debitNoref  = $tf['debitNoref'];
+				$debitId  = $tf['debit_id'];
+
+				$this->db->query("DELETE FROM debit WHERE debit_id = '$debitId'");
+				$this->db->query("DELETE FROM kas WHERE kas_noref = '$debitNoref'");
+				$this->db->query("DELETE FROM jurnal_umum WHERE noref = '$debitNoref'");
+			}
+
 			$this->session->set_flashdata('success', 'Hapus Kas Keluar berhasil');
 			redirect('manage/kredit');
 		} elseif (!$_POST) {

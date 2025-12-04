@@ -67,7 +67,7 @@ class Debit_model extends CI_Model
 		IF(debit_tax_id != 0, tax_number, 0) AS debit_tax, 
 		IF(debit_item_id != 0, item_name, 'Tidak Ada') as debit_item, 
 		debit_desc, debit_account_id, account.account_id, account.account_code, 
-		account.account_description, tax_id, item_id, debit_input_date, debit_last_update");
+		account.account_description, tax_id, item_id, debit_input_date, debit_last_update, log_tf.log_tf_balance_id AS balance_id");
 
 		$this->db->select('acc.account_id AS accID, acc.account_code AS accCode, acc.account_description AS accDesc');
 		$this->db->from('debit');
@@ -75,6 +75,7 @@ class Debit_model extends CI_Model
 		$this->db->join('account AS acc', 'acc.account_id = debit.debit_kas_account_id');
 		$this->db->join('tax', 'tax.tax_id = debit.debit_tax_id', 'left');
 		$this->db->join('item', 'item.item_id = debit.debit_item_id', 'left');
+		$this->db->join('log_tf', 'log_tf.log_tf_debit_id = debit.debit_id', 'left');
 
 		if (isset($data['search'])) {
 			$search = $data['search'];

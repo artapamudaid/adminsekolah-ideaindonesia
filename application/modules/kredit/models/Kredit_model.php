@@ -1589,6 +1589,40 @@ class Kredit_model extends CI_Model
 		$res = $this->db->get('kredit');
 		return $res->result_array();
 	}
+
+	function update_detail_jurnal_akun($idJurnal, $kodeAkun, $data = array())
+	{
+		$this->db->where('id_jurnal', $idJurnal);
+		$this->db->where('account_code', $kodeAkun);
+
+		if (isset($data['kode_baru'])) {
+			$this->db->set('account_code', $data['kode_baru']);
+		}
+
+		// Ini untuk KODE AKUN set DEBET karena transaksinya KAS KELUAR
+		if (isset($data['value_baru'])) {
+			$this->db->set('debet', $data['value_baru']);
+		}
+
+		$this->db->update('jurnal_umum_detail');
+
+		$status = $this->db->affected_rows();
+		return ($status == 0) ? FALSE : $idJurnal;
+	}
+
+	function update_detail_jurnal_kas($idJurnal, $kodeAkunKas, $total)
+	{
+		$this->db->where('id_jurnal', $idJurnal);
+		$this->db->where('account_code', $kodeAkunKas);
+
+		// Ini untuk KODE KAS set KREDIT karena transaksinya KAS KELUAR
+		$this->db->set('kredit', $total);
+
+		$this->db->update('jurnal_umum_detail');
+
+		$status = $this->db->affected_rows();
+		return ($status == 0) ? FALSE : $idJurnal;
+	}
 }
 
 /* End of file kredit_model.php */
