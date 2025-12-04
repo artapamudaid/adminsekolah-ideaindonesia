@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title><?php echo 'Tagihan Pembayaran ' . $student['student_full_name'] . ' Kelas ' . $student['class_name'] ?></title>
+</head>
+
+<body>
+	<table style='border-bottom: 2px solid black; padding-bottom: 10px; width: 190mm;'>
+		<tr valign='top'>
+			<td style='width: 15mm;'>
+				<?php
+				$arrContextOptions = array(
+					"ssl" => array(
+						"verify_peer" => false,
+						"verify_peer_name" => false,
+					),
+				);
+
+				$path = upload_url('school/' . logo());
+				$type = pathinfo($path, PATHINFO_EXTENSION);
+				$data = file_get_contents($path, false, stream_context_create($arrContextOptions));
+				$base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+				?>
+
+				<img src="<?php echo $base64 ?>" style="height: 60px;">
+			</td>
+			<td style='width: 160mm;' valign='middle'>
+				<div style='font-weight: bold; padding-bottom: 5px; font-size: 14pt;'><?php echo $setting_school['setting_value'] ?>
+				</div>
+				<span style='font-size: 8pt;'><?php echo $setting_address['setting_value'] ?>
+					<?php echo '<br> Telp: ' . $setting_phone['setting_value'] ?>
+					<?php echo ' | Email: ' . $setting_email['setting_value'] ?>
+					<?php echo ' | Website: ' . $setting_website['setting_value'] ?>
+				</span>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
+		<tr>
+			<td style='width: 35mm; font-size: 8pt;'></td>
+			<td style='width: 5mm; font-size: 8pt;'></td>
+			<td style='width: 150mm; font-size: 8pt;'></td>
+		</tr>
+		<tr>
+			<td colspan='3' style='font-size: 8pt;'>Hal : Pemberitahuan Pembayaran Uang Pembelajaran<br><br></td>
+		</tr>
+		<tr>
+			<td colspan='3' style='font-size: 8pt;'>Kepada Yth. <br> bapak/ibu Orang Tua/Wali Ananda : <br><br></td>
+		</tr>
+		<tr>
+			<td style='font-size: 8pt;'>Nama</td>
+			<td style='font-size: 8pt;'>:</td>
+			<td style='font-size: 8pt;'><?php echo $student['student_full_name'] ?></td>
+		</tr>
+		<tr valign='top'>
+			<td style='font-size: 8pt;'>NIS</td>
+			<td style='font-size: 8pt;'>:</td>
+			<td style='font-size: 8pt;'><?php echo $student['student_nis'] ?></td>
+		</tr>
+		<tr valign='top'>
+			<td style='font-size: 8pt;'>Kelas</td>
+			<td style='font-size: 8pt;'>:</td>
+			<td style='font-size: 8pt;'><?php echo $student['class_name'] ?></td>
+		</tr>
+		<tr valign='top'>
+			<td style='font-size: 8pt;'>Tahun Ajaran</td>
+			<td style='font-size: 8pt;'>:</td>
+			<td style='font-size: 8pt;'><?php echo $period['period_start'] . '/' . $period['period_end']; ?></td>
+		</tr>
+		<tr>
+			<td colspan='3' style='font-size: 8pt;'><br> </td>
+		</tr>
+		<tr>
+			<td colspan='3' style='font-size: 8pt;'>Dengan ini kami memberitahukan bahwa bapak/ibu dari ananda tersebut diatas masih memiliki tunggakan dengan rincian sebagai berikut : </td>
+		</tr>
+	</table>
+	<br>
+	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
+		<tr>
+			<th align='center' style='font-size: 8pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='center' style='font-size: 8pt; width: 110mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nama Tunggakan</th>
+			<th align='center' style='font-size: 8pt; width: 10mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'></th>
+			<th align='center' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nominal</th>
+			<th align='center' style='font-size: 8pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
+		</tr>
+		<?php
+		$billBulan = 0;
+		$billBebas = 0;
+		$billPaket = 0;
+		foreach ($bulan as $row) {
+		?>
+			<tr valign='top'>
+				<td align='center' style='padding: 1px; font-size: 8pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 8pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '>
+					<?php echo number_format($row['bulan_bill'], 0, ",", ".") ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '></td>
+			</tr>
+			<?php $billBulan += $row['bulan_bill']; ?>
+		<?php
+		};
+		foreach ($paket as $row) {
+		?>
+			<tr valign='top'>
+				<td align='center' style='padding: 1px; font-size: 8pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 8pt; '><?php echo $row['name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '>
+					<?php echo number_format($row['paket_bill'], 0, ",", ".") ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '></td>
+			</tr>
+			<?php $billPaket += $row['paket_bill']; ?>
+		<?php
+		};
+		foreach ($bebas as $row) {
+		?>
+			<tr valign='top'>
+				<td align='center' style='padding: 1px; font-size: 8pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 8pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '>
+					<?php echo number_format($row['bebas_bill'] - $row['bebas_total_pay'], 0, ",", ".") ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 8pt; '></td>
+			</tr>
+			<?php $billBebas += $row['bebas_bill'] - $row['bebas_total_pay']; ?>
+		<?php } ?>
+		<tr>
+			<td align='right' style='padding: 1px; font-size: 8pt; '></td>
+			<td align="left" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 8pt;">
+				<b>Total Tagihan Siswa</b>
+			</td>
+			<td align='right' style='border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 8pt; '>Rp</td>
+			<td align="right" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 8pt;">
+				<b><?php echo number_format($billPaket + $billBulan + $billBebas, 0, ",", ".") ?></b>
+			</td>
+			<td align='right' style='padding: 1px; font-size: 8pt; '></td>
+		</tr>
+	</table>
+	<br>
+	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
+		<tr>
+			<td style='width: 190mm; font-size: 10pt;'>Tagihan Tahun Ajaran Lama : </td>
+		</tr>
+	</table>
+	<br>
+	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
+		<tr>
+			<th align='center' style='font-size: 10pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='center' style='font-size: 10pt; width: 110mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nama Tunggakan</th>
+			<th align='center' style='font-size: 10pt; width: 10mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'></th>
+			<th align='center' style='font-size: 10pt; width: 30mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nominal</th>
+			<th align='center' style='font-size: 10pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
+		</tr>
+		<?php
+		$billBulanLama = 0;
+		$billBebasLama = 0;
+		foreach ($bulanLama as $row) {
+		?>
+			<tr valign='top'>
+				<td align='center' style='padding: 1px; font-size: 10pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>
+					<?php echo number_format($row['bulan_bill'], 0, ",", ".") ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '></td>
+			</tr>
+			<?php $billBulanLama += $row['bulan_bill']; ?>
+		<?php
+		};
+		foreach ($bebasLama as $row) {
+		?>
+			<tr valign='top'>
+				<td align='center' style='padding: 1px; font-size: 10pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>
+					<?php echo number_format($row['bebas_bill'] - $row['bebas_total_pay'], 0, ",", ".") ?>
+				</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '></td>
+			</tr>
+			<?php $billBebasLama += $row['bebas_bill'] - $row['bebas_total_pay']; ?>
+		<?php } ?>
+		<tr>
+			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
+			<td align="left" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
+				<b>Total Tagihan Siswa</b>
+			</td>
+			<td align='right' style='border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt; '>Rp</td>
+			<td align="right" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
+				<b><?php echo number_format($billBulanLama + $billBebasLama, 0, ",", ".") ?></b>
+			</td>
+			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
+		</tr>
+	</table>
+	<br>
+	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
+		<tr>
+			<td align='left' style='font-size: 10pt; padding: 1px;'>
+				<b><?php echo 'Total Keseluruhan : Rp ' . number_format($billBulan + $billBebas + $billBulanLama + $billBebasLama, 0, ",", ".") ?></b>
+			</td>
+		</tr>
+	</table>
+	<br>
+
+	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
+		<tr>
+			<td align='left' style='font-size: 8pt; padding: 1px;'>
+				Kami mohon dengan sangat kepada bapak/ibu untuk segera melunasi tunggakan biaya diatas. Mohon kerjasamanya. <br><br>
+				Demikian surat pemberitahuan ini kami sampaikan atas perhatian dan kerjasamanya kami ucapkan terima kasih. Apabila ada kekeliruan dengan surat pemberitahuan ini. Kami mohon bapak/ibu melakukan konfirmasi ke bagian keuangan dengan membawa tanda bukti.<br><br>
+			</td>
+		</tr>
+		<tr>
+			<td align='left' style='font-size: 8pt; padding: 1px;'>
+				Atas perhatian dan partisipasinya kami ucapkan terima kasih. <br><br>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
+		<tr>
+			<th align='center' style='font-size: 8pt; width: 5mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='center' style='font-size: 8pt; width: 25mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='center' style='font-size: 8pt; width: 40mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='left' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='left' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='left' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='center' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px;'></th>
+		</tr>
+		<tr>
+			<td colspan='5' align='right' style='font-size: 8pt; padding: 1px;'></td>
+			<td colspan='2' style='font-size: 8pt; padding: 1px;' align='center'><?php echo $setting_city['setting_value'] ?>, <?php echo pretty_date(date('Y-m-d'), 'd F Y', false) ?></td>
+		</tr>
+		<tr>
+			<td colspan='3' align='right' style='font-size: 8pt; padding: 1px; border-top: 0px solid black; border-bottom: 0px solid black;'><br><br></td>
+			<td colspan='4' style='font-size: 8pt; padding: 1px;' align='right'><br><br></td>
+			<td align='right' style='font-size: 8pt; padding: 1px;'><br><br></td>
+		</tr>
+		<tr>
+			<td colspan='3' align='right' style='font-size: 8pt; padding: 1px;'><br><br></td>
+			<td colspan='4' style='font-size: 8pt; padding: 1px;' align='right'><br><br></td>
+			<td align='right' style='font-size: 8pt; padding: 1px;'><br><br></td>
+		</tr>
+		<tr>
+			<td colspan='5' align='right' style='font-size: 8pt; padding: 1px;'></td>
+			<td colspan='2' style='font-size: 8pt; padding: 1px;' align='center'><?php
+																					echo ucfirst($setting_nama_bendahara['setting_value']); ?><br><?php
+																																					echo 'NIP. ' . $setting_nip_bendahara['setting_value']; ?></td>
+			<td align='right' style='font-size: 8pt; padding: 1px;'></td>
+		</tr>
+	</table>
+</body>
+
+</html>

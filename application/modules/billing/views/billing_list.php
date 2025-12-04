@@ -1,3 +1,47 @@
+<style>
+	/* Header tabel tetap kelihatan saat scroll */
+	#rincianTagihan thead th {
+		position: sticky;
+		top: 0;
+		background: #fff;
+		z-index: 10;
+	}
+
+	/* Biar footer tetap terlihat */
+	#rincianTagihan .modal-footer {
+		position: sticky;
+		bottom: 0;
+		background: #fff;
+		z-index: 15;
+		border-top: 1px solid #ddd;
+	}
+
+	/* Tabel lebih rapi */
+	#rincianTagihan table th,
+	#rincianTagihan table td {
+		padding: 6px 10px;
+		font-size: 13px;
+		vertical-align: middle;
+	}
+
+	/* Perbaiki tampilan modal agar tidak memanjang */
+	#rincianTagihan .modal-dialog {
+		max-width: 600px;
+	}
+
+	#rincianTagihan #listRincian tr td:first-child {
+		padding-left: 8px;
+	}
+
+	#rincianTagihan #listRincian tr td:last-child {
+		padding-right: 8px;
+	}
+
+	#rincianTagihan #listRincian tr td {
+		vertical-align: middle;
+	}
+</style>
+
 <div class="content-wrapper">
 	<!-- Content Header (Page header) -->
 	<section class="content-header">
@@ -20,8 +64,8 @@
 							<div class="col-md-2">
 								<div class="form-group">
 									<label>Tahun Ajaran</label>
-									<select class="form-control" name="p" required="">
-										<option value="">-- Pilih T.A. --</option>
+									<select class="form-control" name="p" id="periodeID" required="">
+										<option value="">-- PILIH TAHUN AJARAN --</option>
 										<?php foreach ($period as $row) : ?>
 											<option <?php echo (isset($q['p']) and $q['p'] == $row['period_id']) ? 'selected' : '' ?> value="<?php echo $row['period_id'] ?>"><?php echo $row['period_start'] . '/' . $row['period_end'] ?></option>
 										<?php endforeach; ?>
@@ -31,8 +75,8 @@
 							<div class="col-md-2">
 								<div class="form-group">
 									<label>Unit Sekolah</label>
-									<select class="form-control" name="k" id="majors_id" onchange="get_kelas()" required="">
-										<option value="">-- Pilih Unit --</option>
+									<select class="form-control" name="k" id="majors_id" onchange="get_kelas()" required>
+										<option value="">-- PILIH UNIT --</option>
 										<?php foreach ($majors as $row) : ?>
 											<option <?php echo (isset($q['k']) and $q['k'] == $row['majors_id']) ? 'selected' : '' ?> value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
 										<?php endforeach; ?>
@@ -43,8 +87,8 @@
 								<div class="col-md-2">
 									<div class="form-group">
 										<label>Kelas</label>
-										<select class="form-control" name="c" id="class_id" required="">
-											<option value="">-- Pilih Kelas --</option>
+										<select class="form-control" name="c" id="class_id">
+											<option value="">-- Semua Kelas --</option>
 											<?php if (isset($q['k'])) { ?>
 												<?php foreach ($class as $row) : ?>
 													<option <?php echo (isset($q['c']) and $q['c'] == $row['class_id']) ? 'selected' : '' ?> value="<?php echo $row['class_id'] ?>"><?php echo $row['class_name'] ?></option>
@@ -58,10 +102,18 @@
 							<div class="col-md-2">
 								<div class="form-group">
 									<label>Dari Bulan</label>
-									<select class="form-control" name="d" id="dari_id" required="">
+									<select class="form-control" name="d" id="dari_id">
 										<option value="">-- Dari Bulan --</option>
 										<?php foreach ($from as $row) : ?>
-											<option <?php echo (isset($q['d']) and $q['d'] == $row['month_id']) ? 'selected' : '' ?> value="<?php echo $row['month_id'] ?>"><?php echo $row['month_name'] ?></option>
+											<?php
+											$selected = '';
+											if (isset($q['d']) and $q['d'] == $row['month_id']) {
+												$selected = 'selected';
+											} elseif ($row['month_id'] == 1) {
+												$selected = 'selected';
+											}
+											?>
+											<option <?php echo $selected ?> value="<?php echo $row['month_id'] ?>"><?php echo $row['month_name'] ?></option>
 										<?php endforeach; ?>
 									</select>
 								</div>
@@ -73,25 +125,20 @@
 									<select class="form-control" name="s" id="sampai_id">
 										<option value="">-- Sampai Bulan --</option>
 										<?php foreach ($to as $row) : ?>
-											<option <?php echo (isset($q['s']) and $q['s'] == $row['month_id']) ? 'selected' : '' ?> value="<?php echo $row['month_id'] ?>"><?php echo $row['month_name'] ?></option>
+											<?php
+											$selected = '';
+											if (isset($q['s']) and $q['s'] == $row['month_id']) {
+												$selected = 'selected';
+											} elseif ($row['month_id'] == 12) {
+												$selected = 'selected';
+											}
+											?>
+											<option <?php echo $selected ?> value="<?php echo $row['month_id'] ?>"><?php echo $row['month_name'] ?></option>
 										<?php endforeach; ?>
 									</select>
 								</div>
 							</div>
-
 							<div class="col-md-2">
-								<div class="form-group">
-									<label>Status</label>
-									<select class="form-control" name="x" id="status">
-										<option value="all" <?= (isset($q['x']) and $q['x'] == 'all') ? 'selected' : '' ?>>Semua</option>
-										<option value="lunas" <?= (isset($q['x']) and $q['x'] == 'lunas') ? 'selected' : '' ?>>Lunas</option>
-										<option value="belum" <?= (isset($q['x']) and $q['x'] == 'belum') ? 'selected' : '' ?>>Belum Lunas</option>
-									</select>
-								</div>
-							</div>
-						</div>
-						<div class="row">
-							<div class="col-md-12">
 								<div style="margin-top:25px;">
 									<button type="submit" class="btn btn-primary">Cari</button>
 									<?php if ($q and !empty($student)) { ?>
@@ -104,13 +151,13 @@
 						</form>
 					</div>
 				</div>
-				<?php if ($q and !empty($student)) { ?>
+				<?php if ($q and !empty($tagihan_siswa)) { ?>
 					<div class="box box-info">
 						<div class="box-body table-responsive">
 							<table id="dtable" class="table table-responsive table-bordered" style="white-space: nowrap;">
 								<thead>
 									<tr>
-										<th><input type="checkbox" id="selectall" value="checkbox" name="checkbox"></th>
+										<!-- <th><input type="checkbox" id="selectall" value="checkbox" name="checkbox"></th> -->
 										<th>No. </th>
 										<th>NIS</th>
 										<th>Nama</th>
@@ -121,193 +168,30 @@
 								</thead>
 								<tbody>
 									<?php
-
 									$no = 1;
-									foreach ($student as $row) :
-										$billMonth = 0;
-										$billFree = 0;
-										$billPaket = 0;
-										$params = array();
-										$params['student_id']   = $row['student_id'];
-										$params['period_id']    = $q['p'];
-										$params['class_id']     = $q['c'];
-										$params['majors_id']    = $q['k'];
-										$params['month_start']  = $q['d'];
-										$params['month_end']    = $q['s'];
-
-										$month = $this->Billing_model->get_tagihan_bulan($params);
-										$free  = $this->Billing_model->get_tagihan_bebas($params);
-										$paket = $this->Billing_model->get_tagihan_paket($params);
-									?>
+									$totalTagihan = 0;
+									foreach ($tagihan_siswa as $row) : ?>
 										<tr>
-											<td>
-												<input type="checkbox" class="checkbox" name="msg[]" value="<?php echo $row['student_id']; ?>">
-											</td>
 											<td><?php echo $no++ ?></td>
-											<td><?php echo $row['student_nis'] ?></td>
-											<td><?php echo $row['student_full_name'] ?></td>
-											<td><?php echo $row['class_name'] ?></td>
-											<td>
-												<?php
-												foreach ($month as $mon) {
-													$billMonth += $mon['bulan_bill'];
-												}
-												foreach ($free as $fr) {
-													$billFree += $fr['bebas_bill'] - $fr['bebas_total_pay'];
-												}
-												foreach ($paket as $pak) {
-													$billPaket += $pak['paket_bill'];
-												}
-												echo 'Rp ' . number_format($billPaket + $billMonth + $billFree, 0, ",", ".");
-												?>
-											</td>
-											<td><a data-toggle="collapse" href="#collapse<?php echo $row['student_id']; ?>"><button class="btn btn-info btn-sm"><i class="fa fa-list"></i> Rician</button></a>
+											<td class="nis_santri"><?php echo $row['student_nis'] ?></td>
+											<td class="nama_santri"><?php echo $row['student_full_name'] ?></td>
+											<td class="kelas_santri"><?php echo $row['class_name'] ?></td>
+											<td style="text-align: right;"><?php echo 'Rp ' . number_format($row['total_tagihan'], 0, ",", "."); ?></td>
+											<td><button data-student="<?php echo $row['student_id'] ?>" class="btnRincian btn btn-info btn-sm"><i class="fa fa-list"></i> Rician</button>
 												<a href="<?php echo site_url('manage/billing/print_bill/' . $q['p'] . '/' . $q['d'] . '/' . $q['s'] . '/' . $row['student_id']) ?>" target="_blank"><button class="btn btn-danger btn-sm"><i class="fa fa-file-pdf-o"></i> Cetak</button></a>
 											</td>
 										</tr>
-										<tr id="collapse<?php echo $row['student_id']; ?>" class="collapse">
-											<td></td>
-											<td colspan="6">
-												<table id="dtable" class="table table-no-bordered table-responsive" style="white-space: nowrap;">
-													<thead>
-														<th>
-															Rician Tagihan
-														</th>
-														<th>
-														</th>
-														<th>
-															Nominal
-														</th>
-														<th>
-															<?php echo str_repeat("&nbsp;", 100); ?>
-														</th>
-													</thead>
-													<tbody>
-														<?php
 
-														$billBulan = 0;
-														$billBebas = 0;
-														$billPaket = 0;
-														$params = array();
-														$params['student_id']   = $row['student_id'];
-														$params['period_id']    = $q['p'];
-														$params['class_id']     = $q['c'];
-														$params['majors_id']    = $q['k'];
-														$params['month_start']  = $q['d'];
-														$params['month_end']    = $q['s'];
-
-														$bulan = $this->Billing_model->get_tagihan_bulan($params);
-														$bebas = $this->Billing_model->get_tagihan_bebas($params);
-														$pack  = $this->Billing_model->get_tagihan_paket($params);
-
-														foreach ($bulan as $row) : ?>
-															<tr>
-																<td><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] ?>
-																</td>
-																<td align="right">
-																	Rp
-																</td>
-																<td align="right">
-																	<?php echo number_format($row['bulan_bill'], 0, ",", ".") ?>
-																</td>
-																<td>
-																	<?php echo str_repeat("&nbsp;", 100); ?>
-																</td>
-																<?php $billBulan += $row['bulan_bill']; ?>
-															</tr>
-														<?php endforeach; ?>
-														<?php foreach ($bebas as $row) : ?>
-															<tr>
-																<td><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] ?>
-																</td>
-																<td align="right">
-																	Rp
-																</td>
-																<td align="right">
-																	<?php echo number_format($row['bebas_bill'] - $row['bebas_total_pay'], 0, ",", ".") ?>
-																</td>
-																<td>
-																	<?php echo str_repeat("&nbsp;", 100); ?>
-																</td>
-																<?php $billBebas += $row['bebas_bill'] - $row['bebas_total_pay']; ?>
-															</tr>
-														<?php endforeach ?>
-														<?php foreach ($pack as $row) : ?>
-															<tr>
-																<td><?php echo $row['name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] ?>
-																</td>
-																<td align="right">
-																	Rp
-																</td>
-																<td align="right">
-																	<?php echo number_format($row['paket_bill'], 0, ",", ".") ?>
-																</td>
-																<td>
-																	<?php echo str_repeat("&nbsp;", 100); ?>
-																</td>
-																<?php $billPaket += $row['paket_bill']; ?>
-															</tr>
-														<?php endforeach ?>
-														<tr style="background-color: #f0f0f0">
-															<td><b><?php echo 'Total Tagihan' ?></b>
-															</td>
-															<td align="right">
-																Rp
-															</td>
-															<td align="right">
-																<?php echo number_format($billPaket + $billBulan + $billBebas, 0, ",", ".") ?>
-															</td>
-															<td>
-																<?php echo str_repeat("&nbsp;", 100); ?>
-															</td>
-														</tr>
-													</tbody>
-												</table>
-											</td>
-										</tr>
-									<?php endforeach ?>
 									<?php
-									$kelas = $this->Student_model->get_class(array('id' => $q['c']));
+										$totalTagihan += $row['total_tagihan'];
+									endforeach;
 									?>
-									<tr style="background-color: #f0f0f0;">
-										<td>
-										</td>
-										<td colspan="4" align="center">
-											<b>Total Tagihan Kelas <?php echo $kelas['class_name'] ?></b>
-										</td>
-										<td colspan="2">
-											<?php
-											$billM = 0;
-											$billF = 0;
-											$billP = 0;
-											$params = array();
-											$params['student_status']    = [1]; //hanya siswa aktif
-											$params['period_id']    = $q['p'];
-											$params['class_id']     = $q['c'];
-											$params['majors_id']    = $q['k'];
-											$params['month_start']  = $q['d'];
-											$params['month_end']    = $q['s'];
-
-											$m = $this->Billing_model->get_tagihan_bulan($params);
-											$f  = $this->Billing_model->get_tagihan_bebas($params);
-											$p = $this->Billing_model->get_tagihan_paket($params);
-											foreach ($m as $m) {
-												$billM += $m['bulan_bill'];
-											}
-
-											foreach ($f as $f) {
-												$billF += $f['bebas_bill'] - $f['bebas_total_pay'];
-											}
-
-											foreach ($p as $p) {
-												$billP += $p['bulan_bill'];
-											}
-
-											echo "Rp " . number_format($billP + $billM + $billF, 0, ",", ".")
-											?>
-										</td>
-									</tr>
 								</tbody>
+								<tfoot>
+									<th colspan="4" style="text-align: center;">Total</th>
+									<th style="text-align: right;"><?php echo 'Rp ' . number_format($totalTagihan, 0, ",", "."); ?></th>
+									<th></th>
+								</tfoot>
 							</table>
 						</div>
 						<!-- /.box-body -->
@@ -318,7 +202,185 @@
 	</section>
 	<!-- /.content -->
 </div>
+
+<div class="modal fade" id="rincianTagihan" role="dialog">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Rincian Tagihan Santri</h4>
+			</div>
+
+			<!-- Bagian identitas santri -->
+			<div class="px-3 pt-2 pb-0">
+				<table style="width: 100%; margin-bottom: 10px;">
+					<tr>
+						<th style="text-align:left; width:25%;">NIS</th>
+						<th>:</th>
+						<td id="nisSantri"></td>
+					</tr>
+					<tr>
+						<th style="text-align:left;">Nama</th>
+						<th>:</th>
+						<td id="namaSantri"></td>
+					</tr>
+					<tr>
+						<th style="text-align:left;">Kelas</th>
+						<th>:</th>
+						<td id="kelasSantri"></td>
+					</tr>
+				</table>
+			</div>
+
+			<!-- Bagian scrollable -->
+			<div class="modal-body p-0">
+				<div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+					<table id="dtable" class="table table-striped table-hover mb-0">
+						<thead>
+							<tr>
+								<th>Rincian Tagihan</th>
+								<th style="text-align: right;">Nominal</th>
+							</tr>
+						</thead>
+						<tbody id="listRincian">
+							<!-- Data tagihan dimasukkan lewat JS -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- Sticky footer total -->
+			<div class="modal-footer" style="justify-content: space-between;">
+				<strong>Total Tagihan:</strong>
+				<strong id="totalRincian" style="text-align: right;">Rp 0</strong>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
 <script>
+	$(".btnRincian").click(function() {
+		const row = $(this).closest('tr');
+		const nis = row.find('.nis_santri').text().trim();
+		const nama = row.find('.nama_santri').text().trim();
+		const kelas = row.find('.kelas_santri').text().trim();
+
+		$("#nisSantri").text(nis);
+		$("#namaSantri").text(nama);
+		$("#kelasSantri").text(kelas);
+
+		var student = $(this).attr("data-student");
+		var period = $("#periodeID").val();
+		var bulan_a = $("#dari_id").val();
+		var bulan_b = $("#sampai_id").val();
+
+		const dataTagihan = {
+			student: student,
+			period: period,
+			month_start: bulan_a,
+			month_end: bulan_b
+		};
+
+		console.log(dataTagihan);
+
+		$.ajax({
+			url: '<?php echo base_url(); ?>manage/billing/rincian_tagihan',
+			type: 'POST',
+			data: dataTagihan,
+			success: function(res) {
+				var dataTagihan = JSON.parse(res);
+				const tbody = document.getElementById("listRincian");
+				$("#listRincian").html('');
+
+				if (dataTagihan.length > 0) {
+					let grandTotal = 0;
+					let currentTA = '';
+					let subtotal = 0;
+
+					for (let i = 0; i < dataTagihan.length; i++) {
+						const item = dataTagihan[i];
+						const ta = `T.A ${item.period_start}/${item.period_end}`;
+
+						// Kalau masuk ke T.A baru dan sebelumnya sudah ada subtotal, tampilkan total per T.A
+						if (currentTA !== '' && ta !== currentTA) {
+							const trSubtotal = document.createElement("tr");
+							trSubtotal.innerHTML = `
+                    <td style="text-align:right; font-weight:bold;">Total ${currentTA}</td>
+                    <td style="text-align:right; font-weight:bold;">Rp ${toRupiah(subtotal)}</td>
+                `;
+							trSubtotal.style.borderTop = "2px solid #ccc";
+							tbody.appendChild(trSubtotal);
+
+							// Reset subtotal untuk T.A berikutnya
+							subtotal = 0;
+						}
+
+						// Jika T.A baru, tampilkan header-nya
+						if (ta !== currentTA) {
+							currentTA = ta;
+							const trGroup = document.createElement("tr");
+							const tdGroup = document.createElement("td");
+							tdGroup.colSpan = 2;
+							tdGroup.innerHTML = `<strong>${ta}</strong>`;
+							tdGroup.style.background = "#f7f7f7";
+							tdGroup.style.borderTop = "2px solid #ddd";
+							tdGroup.style.paddingTop = "6px";
+							tdGroup.style.paddingBottom = "6px";
+							trGroup.appendChild(tdGroup);
+							tbody.appendChild(trGroup);
+						}
+
+						// Baris rincian tagihan
+						const tr = document.createElement("tr");
+						const tdKeterangan = document.createElement("td");
+						tdKeterangan.textContent = item.keterangan;
+
+						const tdJumlah = document.createElement("td");
+						tdJumlah.style.textAlign = "right";
+						tdJumlah.textContent = toRupiah(item.total);
+
+						tr.appendChild(tdKeterangan);
+						tr.appendChild(tdJumlah);
+						tbody.appendChild(tr);
+
+						subtotal += parseInt(item.total);
+						grandTotal += parseInt(item.total);
+					}
+
+					// Tambahkan total untuk T.A terakhir
+					if (currentTA !== '') {
+						const trSubtotal = document.createElement("tr");
+						trSubtotal.innerHTML = `
+                <td style="text-align:right; font-weight:bold;">Total ${currentTA}</td>
+                <td style="text-align:right; font-weight:bold;">Rp ${toRupiah(subtotal)}</td>
+            `;
+						trSubtotal.style.borderTop = "2px solid #ccc";
+						tbody.appendChild(trSubtotal);
+					}
+
+					// Update total keseluruhan
+					$("#totalRincian").text('Rp ' + toRupiah(grandTotal));
+
+				} else {
+					$("#listRincian").html('<td style="text-align:center;" colspan="2">Tidak ada Tagihan</td>');
+					$("#totalRincian").text('Rp 0');
+				}
+			},
+			error: function(msg) {
+				alert('msg');
+			}
+		});
+
+		$("#rincianTagihan").modal("show");
+	});
+
+	function toRupiah(angka) {
+		return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+	}
+
 	function get_kelas() {
 		var id_majors = $("#majors_id").val();
 		//alert(id_jurusan+id_kelas);
@@ -327,6 +389,7 @@
 			type: 'POST',
 			data: {
 				'id_majors': id_majors,
+				'allClass': 1,
 			},
 			success: function(msg) {
 				$("#td_kelas").html(msg);
