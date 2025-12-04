@@ -579,8 +579,17 @@ class Debit_set extends CI_Controller
     public function delete($id = NULL)
     {
         if ($_POST) {
+            $id = $this->input->post('delDebit');
+            $debit = $this->db->query(
+                "SELECT debit_kas_noref, debit_desc, debit_value , akun.account_code AS kodeAkun, kas.account_code AS kodeKas
+                FROM debit
+                JOIN account akun ON akun.account_id = debit.debit_account_id
+                JOIN account kas  ON kas.account_id = debit.debit_kas_account_id
+                WHERE debit_id = '$id'"
+            )->row_array();
 
-            $debit = $this->db->query("SELECT debit_kas_noref, debit_desc, debit_value FROM debit WHERE debit_id = '$id'")->row_array();
+            $kodeAkun   = $debit['kodeAkun'];
+            $kodeKas    = $debit['kodeKas'];
 
             $this->Logs_model->add_trx(
                 array(
@@ -601,10 +610,22 @@ class Debit_set extends CI_Controller
             $cek  = $this->db->query("SELECT COUNT(debit_id) AS nums FROM debit WHERE debit_kas_noref = '$noref'")->row_array();
             if ($cek['nums'] == '0') {
                 $this->db->query("DELETE FROM kas WHERE kas_noref = '$noref'");
+
+                // Delete Jurnal
+                $idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
+                $this->db->query("DELETE FROM jurnal_umum WHERE noref = '$noref'");
+                $this->db->query("DELETE FROM jurnal_umum_detail WHERE id_jurnal = '$idJurnal'");
             } else {
                 $total = $this->db->query("SELECT SUM(debit_value) as sumDebit FROM debit WHERE debit_kas_noref = '$noref'")->row_array();
 
                 $this->db->query("UPDATE kas SET kas_debit = '" . $total['sumDebit'] . "' WHERE kas_noref = '$noref'");
+
+                $idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
+                // Delete Akun Jurnal
+                $this->db->query("DELETE FROM jurnal_umum_detail WHERE id_jurnal = '$idJurnal' AND account_code = '$kodeAkun'");
+
+                // Update total Jurnal
+                $this->Debit_model->update_detail_jurnal_kas($idJurnal, $kodeKas, $total['sumDebit']);
             }
             // activity log
             $this->load->model('logs/Logs_model');

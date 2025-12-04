@@ -1049,6 +1049,40 @@ class Debit_model extends CI_Model
 			return $res->result_array();
 		}
 	}
+
+	function update_detail_jurnal_akun($idJurnal, $kodeAkun, $data = array())
+	{
+		$this->db->where('id_jurnal', $idJurnal);
+		$this->db->where('account_code', $kodeAkun);
+
+		if (isset($data['kode_baru'])) {
+			$this->db->set('account_code', $data['kode_baru']);
+		}
+
+		// Ini untuk KODE AKUN set KREDIT karena transaksinya KAS MASUK
+		if (isset($data['value_baru'])) {
+			$this->db->set('kredit', $data['value_baru']);
+		}
+
+		$this->db->update('jurnal_umum_detail');
+
+		$status = $this->db->affected_rows();
+		return ($status == 0) ? FALSE : $idJurnal;
+	}
+
+	function update_detail_jurnal_kas($idJurnal, $kodeAkunKas, $total)
+	{
+		$this->db->where('id_jurnal', $idJurnal);
+		$this->db->where('account_code', $kodeAkunKas);
+
+		// Ini untuk KODE KAS set DEBET karena transaksinya KAS MASUK
+		$this->db->set('debet', $total);
+
+		$this->db->update('jurnal_umum_detail');
+
+		$status = $this->db->affected_rows();
+		return ($status == 0) ? FALSE : $idJurnal;
+	}
 }
 
 /* End of file debit_model.php */
