@@ -28,11 +28,13 @@ class Neraca_set extends CI_Controller
 
 	public function export_xls()
 	{
+		$majors = $_GET['unit'];
+		$end 	= $_GET['end'];
 
-		$data['aktiva'] 	= $this->Neraca_model->get_aktiva();
-		$data['pasiva'] 	= $this->Neraca_model->get_pasiva();
-		$data['modal'] 		= $this->Neraca_model->get_modal();
-		$data['laba_rugi'] 	= $this->Neraca_model->get_laba_rugi();
+		$data['aktiva'] 	= $this->Neraca_model->get_aktiva($end, $majors);
+		$data['pasiva'] 	= $this->Neraca_model->get_pasiva($end, $majors);
+		$data['modal'] 		= $this->Neraca_model->get_modal($end, $majors);
+		$data['laba_rugi'] 	= $this->Neraca_model->get_laba_rugi($end, $majors);
 
 		$data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
 		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
@@ -48,16 +50,17 @@ class Neraca_set extends CI_Controller
 
 	public function get_neraca()
 	{
+		$majors = $_REQUEST['majors_id'];
+		$end 	= $_REQUEST['end'];
 
-		$aktiva 	= $this->Neraca_model->get_aktiva();
-		$pasiva 	= $this->Neraca_model->get_pasiva();
-		$modal 		= $this->Neraca_model->get_modal();
-		$laba_rugi 	= $this->Neraca_model->get_laba_rugi();
+		$aktiva 	= $this->Neraca_model->get_aktiva($end, $majors);
+		$pasiva 	= $this->Neraca_model->get_pasiva($end, $majors);
+		$modal 		= $this->Neraca_model->get_modal($end, $majors);
+		$laba_rugi 	= $this->Neraca_model->get_laba_rugi($end, $majors);
 
 		echo '<div class="box box-primary box-solid">
     		    <div class="box-header with-border">
-    			  <h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan Neraca Per '
-			. pretty_date($_REQUEST['end'], 'd F Y', false)
+    			  <h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan Neraca Sampai Tanggal ' . pretty_date($_REQUEST['end'], 'd F Y', false)
 			. '</h3>
     			</div>
     			<div class="box-body table-responsive">
@@ -173,7 +176,7 @@ class Neraca_set extends CI_Controller
 		        <tr>
 				    <td>
 				        <div class="pull-right">
-    					    <a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/neraca/export_xls/?unit=' . $_REQUEST['majors_id'] . '&start=' . $_REQUEST['start'] . '&end=' . $_REQUEST['end'] . '"><span class="fa fa-file-excel-o"></span> Cetak Excel
+    					    <a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/neraca/export_xls/?unit=' . $_REQUEST['majors_id'] . '&end=' . $_REQUEST['end'] . '"><span class="fa fa-file-excel-o"></span> Cetak Excel
     					    </a>
     					</div>
 				    </td>

@@ -8,336 +8,144 @@ class Neraca_model extends CI_Model
         parent::__construct();
     }
 
-    // function get_aktiva()
-    // {
-    //     if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
-    //         $start = $_REQUEST['start'];
-    //         $end = $_REQUEST['end'];
-    //     } else {
-    //         $start = date('Y') . '-01-01';
-    //         $end = date('Y') . '-12-31';
-    //     }
-
-    //     $majors_id = NULL;
-    //     if (isset($_REQUEST['majors_id'])) {
-    //         $majors_id = $_REQUEST['majors_id'];
-    //     }
-
-    //     $whereMajors = NULL;
-    //     if ($majors_id != "all") {
-    //         $whereMajors = "AND a.account_majors_id = '$majors_id' AND a.account_category != 0";
-    //     } else {
-    //         $whereMajors = "AND a.account_category != 0";
-    //     }
-
-    //     $where = "AND (c.tanggal BETWEEN '$start' AND '$end' OR c.tanggal IS NULL)";
-
-    //     $saldo = "COALESCE(d.saldo_awal_nominal, 0) +
-    //     COALESCE(SUM(CASE WHEN c.tanggal BETWEEN '$start' AND '$end' THEN COALESCE(b.debet, 0) ELSE 0 END), 0) -
-    //     COALESCE(SUM(CASE WHEN c.tanggal BETWEEN '$start' AND '$end' THEN COALESCE(b.kredit, 0) ELSE 0 END), 0) AS saldo";
-
-    //     $query = $this->db->query("SELECT 
-    //     a.account_code, 
-    //     a.account_description, 
-    //     $saldo
-    //     FROM 
-    //         account a 
-    //     LEFT JOIN 
-    //         jurnal_umum_detail b ON b.account_code = a.account_code 
-    //     LEFT JOIN 
-    //         jurnal_umum c ON c.id = b.id_jurnal 
-    // 	$where 
-    //     LEFT JOIN 
-    //         saldo_awal d ON d.saldo_awal_account = a.account_id 
-    // 	WHERE a.account_code LIKE '1%'
-    //     $whereMajors
-    // 	GROUP BY a.account_code, a.account_description, d.saldo_awal_nominal");
-
-    //     return $query->result_array();
-    // }
-
-    function get_aktiva()
+    function get_aktiva($end = null, $majors_id = null)
     {
-        // Ambil rentang tanggal dari request, default ke tahun berjalan jika tidak tersedia
-        if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
-            $start = $_REQUEST['start'];
-            $end = $_REQUEST['end'];
-        } else {
-            $start = date('Y') . '-01-01';
+        // Default end = akhir tahun berjalan
+        if (empty($end)) {
             $end = date('Y') . '-12-31';
         }
 
-        // Ambil majors_id dari request jika ada
-        $majors_id = isset($_REQUEST['majors_id']) ? $_REQUEST['majors_id'] : NULL;
-
-        // Filter berdasarkan majors
-        $whereMajors = "";
+        // Filter majors
         if ($majors_id != "all") {
             $whereMajors = "AND a.account_majors_id = '$majors_id' AND a.account_category != 0";
         } else {
             $whereMajors = "AND a.account_category != 0";
         }
 
-        // Jalankan query
         $query = $this->db->query("
             SELECT 
                 a.account_code, 
                 a.account_description,
                 COALESCE(d.saldo_awal_nominal, 0) +
                 COALESCE(SUM(CASE 
-                    WHEN c.tanggal <= '$end' 
-                    THEN COALESCE(c.penerimaan, 0) 
-                    ELSE 0 
+                    WHEN c.tanggal <= '$end' THEN COALESCE(c.penerimaan, 0) ELSE 0 
                 END), 0) -
                 COALESCE(SUM(CASE 
-                    WHEN c.tanggal <= '$end' 
-                    THEN COALESCE(c.pengeluaran, 0) 
-                    ELSE 0 
+                    WHEN c.tanggal <= '$end' THEN COALESCE(c.pengeluaran, 0) ELSE 0 
                 END), 0) AS saldo
-            FROM 
-                account a 
-            LEFT JOIN 
-                v_laporan_jurnal c ON c.kodeKas = a.account_code AND (c.tanggal <= '$end' OR c.tanggal IS NULL)
-            LEFT JOIN 
-                saldo_awal d ON d.saldo_awal_account = a.account_id 
-            WHERE 
-                a.account_code LIKE '1%' 
-                $whereMajors
-            GROUP BY 
-                a.account_code, 
-                a.account_description, 
-                d.saldo_awal_nominal
+            FROM account a 
+            LEFT JOIN v_laporan_jurnal c 
+                ON c.kodeKas = a.account_code AND (c.tanggal <= '$end' OR c.tanggal IS NULL)
+            LEFT JOIN saldo_awal d 
+                ON d.saldo_awal_account = a.account_id 
+            WHERE a.account_code LIKE '1%' 
+            $whereMajors
+            GROUP BY a.account_code, a.account_description, d.saldo_awal_nominal
         ");
 
         return $query->result_array();
     }
 
-
-    // function get_pasiva()
-    // {
-
-    //     if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
-    //         $start = $_REQUEST['start'];
-    //         $end = $_REQUEST['end'];
-    //     } else {
-    //         $start = date('Y') . '-01-01';
-    //         $end = date('Y') . '-12-31';
-    //     }
-
-    //     $majors_id = NULL;
-    //     if (isset($_REQUEST['majors_id'])) {
-    //         $majors_id = $_REQUEST['majors_id'];
-    //     }
-
-    //     $whereMajors = NULL;
-    //     if ($majors_id != "all") {
-    //         $whereMajors = "AND a.account_majors_id = '$majors_id' AND a.account_category != 0";
-    //     } else {
-    //         $whereMajors = "AND a.account_category != 0";
-    //     }
-
-    //     $where = "AND (c.tanggal BETWEEN '$start' AND '$end' OR c.tanggal IS NULL)";
-
-    //     $saldo = "COALESCE(d.saldo_awal_nominal, 0) +
-    //     COALESCE(SUM(CASE WHEN c.tanggal BETWEEN '$start' AND '$end' THEN COALESCE(b.kredit, 0) ELSE 0 END), 0) -
-    //     COALESCE(SUM(CASE WHEN c.tanggal BETWEEN '$start' AND '$end' THEN COALESCE(b.debet, 0) ELSE 0 END), 0) AS saldo";
-
-    //     $query = $this->db->query("SELECT 
-    //     a.account_code, 
-    //     a.account_description, 
-    //     $saldo
-    //     FROM 
-    //         account a 
-    //     LEFT JOIN 
-    //         jurnal_umum_detail b ON b.account_code = a.account_code 
-    //     LEFT JOIN 
-    //         jurnal_umum c ON c.id = b.id_jurnal 
-    // 	$where 
-    //     LEFT JOIN 
-    //         saldo_awal d ON d.saldo_awal_account = a.account_id 
-    // 	WHERE a.account_code LIKE '2%'
-    //     $whereMajors
-    // 	GROUP BY a.account_code, a.account_description, d.saldo_awal_nominal");
-
-    //     return $query->result_array();
-    // }
-
-    function get_pasiva()
+    function get_pasiva($end = null, $majors_id = null)
     {
-        // Ambil rentang tanggal dari request, default ke tahun berjalan jika tidak diset
-        if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
-            $start = $_REQUEST['start'];
-            $end = $_REQUEST['end'];
-        } else {
-            $start = date('Y') . '-01-01';
+        if (empty($end)) {
             $end = date('Y') . '-12-31';
         }
 
-        // Ambil majors_id dari request jika ada
-        $majors_id = isset($_REQUEST['majors_id']) ? $_REQUEST['majors_id'] : NULL;
-
-        // Filter berdasarkan majors
-        $whereMajors = "";
         if ($majors_id != "all") {
             $whereMajors = "AND a.account_majors_id = '$majors_id' AND a.account_category != 0";
         } else {
             $whereMajors = "AND a.account_category != 0";
         }
 
-        // Query pasiva berdasarkan data v_laporan_jurnal
         $query = $this->db->query("
-        SELECT 
-            a.account_code, 
-            a.account_description,
-            COALESCE(d.saldo_awal_nominal, 0) +
-            COALESCE(SUM(CASE 
-                WHEN c.tanggal <= '$end' 
-                THEN COALESCE(c.pengeluaran, 0) 
-                ELSE 0 
-            END), 0) -
-            COALESCE(SUM(CASE 
-                WHEN c.tanggal <= '$end' 
-                THEN COALESCE(c.penerimaan, 0) 
-                ELSE 0 
-            END), 0) AS saldo
-        FROM 
-            account a 
-        LEFT JOIN 
-            v_laporan_jurnal c ON c.kodeKas = a.account_code AND (c.tanggal <= '$end' OR c.tanggal IS NULL)
-        LEFT JOIN 
-            saldo_awal d ON d.saldo_awal_account = a.account_id 
-        WHERE 
-            a.account_code LIKE '2%' 
+            SELECT 
+                a.account_code, 
+                a.account_description,
+                COALESCE(d.saldo_awal_nominal, 0) +
+                COALESCE(SUM(CASE 
+                    WHEN c.tanggal <= '$end' THEN COALESCE(c.penerimaan, 0) ELSE 0 
+                END), 0) -
+                COALESCE(SUM(CASE 
+                    WHEN c.tanggal <= '$end' THEN COALESCE(c.pengeluaran, 0) ELSE 0 
+                END), 0) AS saldo
+            FROM account a 
+            LEFT JOIN v_laporan_jurnal c 
+                ON c.akunBayar = a.account_code AND (c.tanggal <= '$end' OR c.tanggal IS NULL)
+            LEFT JOIN saldo_awal d 
+                ON d.saldo_awal_account = a.account_id 
+            WHERE a.account_code LIKE '2%' 
             $whereMajors
-        GROUP BY 
-            a.account_code, 
-            a.account_description, 
-            d.saldo_awal_nominal
-    ");
+            GROUP BY a.account_code, a.account_description, d.saldo_awal_nominal
+        ");
 
         return $query->result_array();
     }
 
-    function get_modal()
+    function get_modal($end = null, $majors_id = null)
     {
-
-        if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
-            $start = $_REQUEST['start'];
-            $end = $_REQUEST['end'];
-        } else {
-            $start = date('Y') . '-01-01';
+        if (empty($end)) {
             $end = date('Y') . '-12-31';
         }
 
-        $majors_id = NULL;
-        if (isset($_REQUEST['majors_id'])) {
-            $majors_id = $_REQUEST['majors_id'];
-        }
-
-        $whereMajors = NULL;
         if ($majors_id != "all") {
             $whereMajors = "AND a.account_majors_id = '$majors_id' AND a.account_category != 0";
         } else {
             $whereMajors = "AND a.account_category != 0";
         }
 
-        $where = "AND (c.tanggal BETWEEN '$start' AND '$end' OR c.tanggal IS NULL)";
+        $whereTanggal = "AND (c.tanggal <= '$end' OR c.tanggal IS NULL)";
 
-        $saldo = "COALESCE(d.saldo_awal_nominal, 0) +
-        COALESCE(SUM(CASE WHEN c.tanggal BETWEEN '$start' AND '$end' THEN COALESCE(b.debet, 0) ELSE 0 END), 0) -
-        COALESCE(SUM(CASE WHEN c.tanggal BETWEEN '$start' AND '$end' THEN COALESCE(b.kredit, 0) ELSE 0 END), 0) AS saldo";
+        $saldo = "
+            COALESCE(d.saldo_awal_nominal, 0) +
+            COALESCE(SUM(CASE WHEN c.tanggal <= '$end' THEN COALESCE(b.debet, 0) ELSE 0 END), 0) -
+            COALESCE(SUM(CASE WHEN c.tanggal <= '$end' THEN COALESCE(b.kredit, 0) ELSE 0 END), 0) AS saldo
+        ";
 
-        $query = $this->db->query("SELECT 
-        a.account_code, 
-        a.account_description, 
-        $saldo
-        FROM 
-            account a 
-        LEFT JOIN 
-            jurnal_umum_detail b ON b.account_code = a.account_code 
-        LEFT JOIN 
-            jurnal_umum c ON c.id = b.id_jurnal 
-		$where 
-        LEFT JOIN 
-            saldo_awal d ON d.saldo_awal_account = a.account_id 
-		WHERE a.account_code LIKE '3%'
-        $whereMajors
-		GROUP BY a.account_code, a.account_description, d.saldo_awal_nominal");
+        $query = $this->db->query("
+            SELECT a.account_code, a.account_description, $saldo
+            FROM account a 
+            LEFT JOIN jurnal_umum_detail b ON b.account_code = a.account_code 
+            LEFT JOIN jurnal_umum c ON c.id = b.id_jurnal 
+            $whereTanggal
+            LEFT JOIN saldo_awal d ON d.saldo_awal_account = a.account_id 
+            WHERE a.account_code LIKE '3%'
+            $whereMajors
+            GROUP BY a.account_code, a.account_description, d.saldo_awal_nominal
+        ");
 
         return $query->result_array();
     }
 
-    // function get_laba_rugi()
-    // {
-
-    //     if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
-    //         $start = $_REQUEST['start'];
-    //         $end = $_REQUEST['end'];
-    //     } else {
-    //         $start = date('Y') . '-01-01';
-    //         $end = date('Y') . '-12-31';
-    //     }
-
-    //     $majors_id = NULL;
-    //     if (isset($_REQUEST['majors_id'])) {
-    //         $majors_id = $_REQUEST['majors_id'];
-    //     }
-
-    //     $whereMajors = NULL;
-    //     if ($majors_id != "all") {
-    //         $whereMajors = "AND majors_id = '$majors_id'";
-    //     }
-
-    //     $where = "WHERE tanggal BETWEEN '$start' AND '$end'";
-
-    //     $query = $this->db->query("SELECT SUM(kredit) - SUM(debet) AS nominal
-    // 	FROM v_laba_rugi $where $whereMajors");
-
-    //     return $query->row_array();
-    // }
-
-    function get_laba_rugi()
+    function get_laba_rugi($end = null, $majors_id = null)
     {
-        // Ambil rentang tanggal dari request
-        if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
-            $start = $_REQUEST['start'];
-            $end = $_REQUEST['end'];
-        } else {
-            $start = date('Y') . '-01-01';
+        if (empty($end)) {
             $end = date('Y') . '-12-31';
         }
 
-        // Ambil majors_id dari request
-        $majors_id = isset($_REQUEST['majors_id']) ? $_REQUEST['majors_id'] : NULL;
-
-        // Filter berdasarkan majors jika bukan "all"
         $whereMajors = "";
         if ($majors_id != "all") {
             $whereMajors = "AND c.idMajors = '$majors_id'";
         }
 
-        // Query untuk hitung laba rugi berdasarkan akunBayar
         $query = $this->db->query("
             SELECT 
                 SUM(CASE 
-                    WHEN c.akunBayar LIKE '4%' THEN COALESCE(c.penerimaan, 0) 
+                    WHEN c.akunBayar LIKE '4%' THEN COALESCE(c.penerimaan, 0)
                     ELSE 0 
                 END) -
                 SUM(CASE 
-                    WHEN c.akunBayar LIKE '5%' THEN COALESCE(c.pengeluaran, 0) 
+                    WHEN c.akunBayar LIKE '5%' THEN COALESCE(c.pengeluaran, 0)
                     ELSE 0 
                 END) AS nominal
-            FROM 
-                v_laporan_jurnal c
-            WHERE 
-                c.tanggal <= '$end'
-                AND (c.akunBayar LIKE '4%' OR c.akunBayar LIKE '5%')
-                $whereMajors
+            FROM v_laporan_jurnal c
+            WHERE c.tanggal <= '$end'
+            AND (c.akunBayar LIKE '4%' OR c.akunBayar LIKE '5%')
+            $whereMajors
         ");
 
         return $query->row_array();
     }
-
 
     function get_aktiva_unit($period_id, $majors_id, $start, $end)
     {

@@ -61,7 +61,7 @@
 
 <script>
 	function cari_data() {
-		// var start = $("#start").val();
+		//var start = $("#start").val();
 		var end = $("#end").val();
 		var majors_id = $("#majors_id").val();
 		//alert(id_jurusan+id_kelas);
@@ -70,7 +70,7 @@
 				url: '<?php echo base_url(); ?>manage/neraca/get_neraca',
 				type: 'POST',
 				data: {
-					// 'start': start,
+					//'start': start,
 					'end': end,
 					'majors_id': majors_id,
 				},

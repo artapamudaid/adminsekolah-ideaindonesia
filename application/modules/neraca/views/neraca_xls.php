@@ -1,6 +1,6 @@
 <?php
 header("Content-type: application/octet-stream");
-header("Content-Disposition: attachment; filename=Laporan-Neraca-per-Tanggal-" . pretty_date($_REQUEST['start'], 'd-m-Y', FALSE) . "-Sampai-" . pretty_date($_REQUEST['end'], 'd-m-Y', FALSE) . ".xls");
+header("Content-Disposition: attachment; filename=Laporan-Neraca-Sampai-Tanggal-" . pretty_date($_GET['end'], 'd-m-Y', FALSE) . ".xls");
 header("Pragma: no-cache");
 header("Expires: 0");
 
@@ -18,9 +18,9 @@ header("Expires: 0");
 <br>
 <table cellpadding='0' cellspacing='0' style='width: 190mm;'>
     <tr>
-        <div style='font-weight: bold; width: 24mm; font-size: 12pt; text-align: left'>Tanggal : </td>
-            <td style='font-size: 12pt; text-align: left'><?php echo pretty_date($_REQUEST['start'], 'd F Y', false) . 's/d' . pretty_date($_REQUEST['end'], 'd F Y', false) ?></td>
-            <td colspan='5' style='font-size: 8pt; text-align: left'></td>
+        <td style='font-weight: bold; width: 24mm; font-size: 12pt; text-align: left'>Laporan Neraca Sampai Tanggal <?php echo pretty_date($_GET['end'], 'd F Y', false) ?></td>
+        <td style='font-size: 12pt; text-align: left'></td>
+        <td colspan='5' style='font-size: 8pt; text-align: left'></td>
     </tr>
 </table>
 <br>
