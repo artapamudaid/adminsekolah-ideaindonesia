@@ -16,9 +16,6 @@
 			<div class="col-md-12">
 				<div class="box">
 					<div class="box-header">
-						<!-- <a href="<?php echo site_url('manage/debit/trx') ?>"><button type="button" class="btn btn-success btn-sm"><i class="fa fa-plus"></i> Tambah</button></a> -->
-						<br>
-						<br>
 						<div class="box-body table-responsive">
 							<table>
 								<tr>
