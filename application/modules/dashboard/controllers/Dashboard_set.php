@@ -87,7 +87,12 @@ class Dashboard_set extends CI_Controller
 
             $data['student']        = $this->db->query("SELECT student_status, majors_majors_id FROM student")->result_array();
             $data['employee']       = $this->db->query("SELECT employee_category FROM employee")->result_array();
-            $data['banking']        = $this->db->query("SELECT banking_debit, banking_kredit, banking_date FROM banking WHERE banking_date BETWEEN '$year-01-01' AND '$year-12-31'")->result_array();
+
+            $banking                = $this->db->query("SELECT SUM(banking_debit) AS total_setor, SUM(banking_kredit) AS total_tarik FROM banking")->row_array();
+
+            $data['total_setoran'] = (int)$banking['total_setor'] ?? 0;
+            $data['total_penarikan'] = (int)$banking['total_tarik'] ?? 0;
+
             $data['information']    = $this->Information_model->get(array('information_publish' => 1));
             $data['majors']         = $this->Student_model->get_majors();
             $data['numStudents']    = $this->db->query("SELECT COUNT(student_id) as numbers
@@ -95,33 +100,13 @@ class Dashboard_set extends CI_Controller
                                                     GROUP BY majors_majors_id
                                                     ORDER BY majors_majors_id ASC")->result_array();
 
-            $data['lastPayments']   = $this->db->query("SELECT student.student_full_name
-                                                    FROM log_trx
-                                                    JOIN student ON student.student_id = log_trx.student_student_id
-                                                    WHERE date(log_trx.log_trx_input_date) = CURRENT_DATE
-                                                    GROUP BY date(log_trx.log_trx_input_date)
-                                                    ORDER BY log_trx.log_trx_input_date DESC
-                                                    LIMIT 5")->result_array();
-
-            $data['total_banking_period'] = 0;
-            foreach ($data['banking'] as $row) {
-                $data['total_banking_period'] += $row['banking_debit'] - $row['banking_kredit'];
-            }
-
-            $data['total_banking_month'] = 0;
-            foreach ($data['banking'] as $row) {
-                $date = date_create($row['banking_date']);
-                if (date_format($date, "F") == date('F')) {
-                    $data['total_banking_month'] += $row['banking_debit'] - $row['banking_kredit'];
-                }
-            }
-
-            $data['total_banking_today'] = 0;
-            foreach ($data['banking'] as $row) {
-                if ($row['banking_date'] == date('Y-m-d')) {
-                    $data['total_banking_today'] += $row['banking_debit'] - $row['banking_kredit'];
-                }
-            }
+            $data['lastPayments']   = $this->db->query("SELECT s.student_full_name, MAX(l.log_trx_input_date) AS last_payment
+                                                            FROM log_trx l
+                                                            JOIN student s ON s.student_id = l.student_student_id
+                                                            WHERE DATE(l.log_trx_input_date) = CURRENT_DATE
+                                                            GROUP BY l.student_student_id, s.student_full_name
+                                                            ORDER BY last_payment DESC
+                                                            LIMIT 5")->result_array();
 
             $data['total_pay_period'] = 0;
             $data['total_debit_period'] = 0;

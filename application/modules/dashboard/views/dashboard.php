@@ -76,12 +76,12 @@
                     <div class="info-box-content">
                         <span class="info-box-text"><strong>Tabungan Siswa</strong></span>
                         <span class="info-box-number" style="opacity: 0;">kosong</span>
-                        <span class="info-box-text dash-text">Hari ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_banking_today, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Bulan ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_banking_month, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Tahun ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_banking_period, 0, ',', '.') ?></span>
+                        <span class="info-box-text dash-text">Setoran</span>
+                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_setoran, 0, ',', '.') ?></span>
+                        <span class="info-box-text dash-text">Penarikan</span>
+                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_penarikan, 0, ',', '.') ?></span>
+                        <span class="info-box-text dash-text">Saldo</span>
+                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_setoran - $total_penarikan, 0, ',', '.') ?></span>
                     </div>
                 </div>
             </div>
