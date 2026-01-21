@@ -59,96 +59,96 @@
 			<div class="col-md-12">
 				<div class="box box-success">
 					<div class="box-header">
-						<?php echo form_open(current_url(), array('method' => 'get')) ?>
 						<div class="row">
-							<div class="col-md-2">
-								<div class="form-group">
-									<label>Tahun Ajaran</label>
-									<select class="form-control" name="p" id="periodeID" required="">
-										<option value="">-- PILIH TAHUN AJARAN --</option>
-										<?php foreach ($period as $row) : ?>
-											<option <?php echo (isset($q['p']) and $q['p'] == $row['period_id']) ? 'selected' : '' ?> value="<?php echo $row['period_id'] ?>"><?php echo $row['period_start'] . '/' . $row['period_end'] ?></option>
-										<?php endforeach; ?>
-									</select>
-								</div>
-							</div>
-							<div class="col-md-2">
-								<div class="form-group">
-									<label>Unit Sekolah</label>
-									<select class="form-control" name="k" id="majors_id" onchange="get_kelas()" required>
-										<option value="">-- PILIH UNIT --</option>
-										<?php foreach ($majors as $row) : ?>
-											<option <?php echo (isset($q['k']) and $q['k'] == $row['majors_id']) ? 'selected' : '' ?> value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
-										<?php endforeach; ?>
-									</select>
-								</div>
-							</div>
-							<div id="td_kelas">
+							<form action="<?= current_url(); ?>" method="get">
 								<div class="col-md-2">
 									<div class="form-group">
-										<label>Kelas</label>
-										<select class="form-control" name="c" id="class_id">
-											<option value="">-- Semua Kelas --</option>
-											<?php if (isset($q['k'])) { ?>
-												<?php foreach ($class as $row) : ?>
-													<option <?php echo (isset($q['c']) and $q['c'] == $row['class_id']) ? 'selected' : '' ?> value="<?php echo $row['class_id'] ?>"><?php echo $row['class_name'] ?></option>
-												<?php endforeach; ?>
-											<?php } ?>
+										<label>Tahun Ajaran</label>
+										<select class="form-control" name="p" id="periodeID" required="">
+											<option value="">-- PILIH TAHUN AJARAN --</option>
+											<?php foreach ($period as $row) : ?>
+												<option <?php echo (isset($q['p']) and $q['p'] == $row['period_id']) ? 'selected' : '' ?> value="<?php echo $row['period_id'] ?>"><?php echo $row['period_start'] . '/' . $row['period_end'] ?></option>
+											<?php endforeach; ?>
 										</select>
 									</div>
 								</div>
-							</div>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label>Unit Sekolah</label>
+										<select class="form-control" name="k" id="majors_id" onchange="get_kelas()" required>
+											<option value="">-- PILIH UNIT --</option>
+											<?php foreach ($majors as $row) : ?>
+												<option <?php echo (isset($q['k']) and $q['k'] == $row['majors_id']) ? 'selected' : '' ?> value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
+								</div>
+								<div id="td_kelas">
+									<div class="col-md-2">
+										<div class="form-group">
+											<label>Kelas</label>
+											<select class="form-control" name="c" id="class_id">
+												<option value="">-- Semua Kelas --</option>
+												<?php if (isset($q['k'])) { ?>
+													<?php foreach ($class as $row) : ?>
+														<option <?php echo (isset($q['c']) and $q['c'] == $row['class_id']) ? 'selected' : '' ?> value="<?php echo $row['class_id'] ?>"><?php echo $row['class_name'] ?></option>
+													<?php endforeach; ?>
+												<?php } ?>
+											</select>
+										</div>
+									</div>
+								</div>
 
-							<div class="col-md-2">
-								<div class="form-group">
-									<label>Dari Bulan</label>
-									<select class="form-control" name="d" id="dari_id">
-										<option value="">-- Dari Bulan --</option>
-										<?php foreach ($from as $row) : ?>
-											<?php
-											$selected = '';
-											if (isset($q['d']) and $q['d'] == $row['month_id']) {
-												$selected = 'selected';
-											} elseif ($row['month_id'] == 1) {
-												$selected = 'selected';
-											}
-											?>
-											<option <?php echo $selected ?> value="<?php echo $row['month_id'] ?>"><?php echo $row['month_name'] ?></option>
-										<?php endforeach; ?>
-									</select>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label>Dari Bulan</label>
+										<select class="form-control" name="d" id="dari_id">
+											<option value="">-- Dari Bulan --</option>
+											<?php foreach ($from as $row) : ?>
+												<?php
+												$selected = '';
+												if (isset($q['d']) and $q['d'] == $row['month_id']) {
+													$selected = 'selected';
+												} elseif (!isset($q['d']) and $row['month_id'] == 1) {
+													$selected = 'selected';
+												}
+												?>
+												<option <?php echo $selected ?> value="<?php echo $row['month_id'] ?>"><?php echo $row['month_name'] ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
 								</div>
-							</div>
 
-							<div class="col-md-2">
-								<div class="form-group">
-									<label>Sampai Bulan</label>
-									<select class="form-control" name="s" id="sampai_id">
-										<option value="">-- Sampai Bulan --</option>
-										<?php foreach ($to as $row) : ?>
-											<?php
-											$selected = '';
-											if (isset($q['s']) and $q['s'] == $row['month_id']) {
-												$selected = 'selected';
-											} elseif ($row['month_id'] == 12) {
-												$selected = 'selected';
-											}
-											?>
-											<option <?php echo $selected ?> value="<?php echo $row['month_id'] ?>"><?php echo $row['month_name'] ?></option>
-										<?php endforeach; ?>
-									</select>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label>Sampai Bulan</label>
+										<select class="form-control" name="s" id="sampai_id">
+											<option value="">-- Sampai Bulan --</option>
+											<?php foreach ($to as $row) : ?>
+												<?php
+												$selected = '';
+												if (isset($q['s']) and $q['s'] == $row['month_id']) {
+													$selected = 'selected';
+												} elseif (!isset($q['s']) and $row['month_id'] == 12) {
+													$selected = 'selected';
+												}
+												?>
+												<option <?php echo $selected ?> value="<?php echo $row['month_id'] ?>"><?php echo $row['month_name'] ?></option>
+											<?php endforeach; ?>
+										</select>
+									</div>
 								</div>
-							</div>
-							<div class="col-md-2">
-								<div style="margin-top:25px;">
-									<button type="submit" class="btn btn-primary">Cari</button>
-									<?php if ($q and !empty($student)) { ?>
-										<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/billing/billing_excel' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Excel</a>
-										<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/billing/billing_excel_rekap' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Rekap Excel</a>
-									<?php } ?>
+								<div class="col-md-2">
+									<div style="margin-top:25px;">
+										<button type="submit" class="btn btn-primary">Cari</button>
+										<?php if ($q and !empty($tagihan_siswa)) { ?>
+											<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/billing/billing_excel' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i>Detail Excel</a>
+											<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/billing/billing_excel_rekap' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Rekap Excel</a>
+										<?php } ?>
+									</div>
 								</div>
-							</div>
+							</form>
 						</div>
-						</form>
 					</div>
 				</div>
 				<?php if ($q and !empty($tagihan_siswa)) { ?>

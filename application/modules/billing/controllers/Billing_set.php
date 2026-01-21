@@ -3,6 +3,11 @@
 if (!defined('BASEPATH'))
 	exit('No direct script access allowed');
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+
 class Billing_set extends CI_Controller
 {
 
@@ -346,36 +351,229 @@ class Billing_set extends CI_Controller
 
 		$params = array();
 
+		$namaPeriode = "Semua Tahun Ajaran";
 		if (isset($q['p']) && !empty($q['p']) && $q['p'] != '') {
 			$params['period_id'] = $q['p'];
+			if ($q['p'] != 'all') {
+				$idPeriodSelected 		=  $q['p'];
+				$periodSelected 		= $this->db->query("SELECT period_id, period_start, period_end FROM period WHERE period_id = $idPeriodSelected")->row_array();
+				$params['period_start'] = $periodSelected['period_start'];
+
+				$namaPeriode = $periodSelected['period_start'] . "/" . $periodSelected['period_end'];
+			}
 		}
 
+		$namaKelas = 'Semua Kelas';
 		if (isset($q['c']) && !empty($q['c']) && $q['c'] != '') {
 			$params['class_id']  = $q['c'];
+			$idKelas = $q['c'];
+			$dataKelas = $this->db->query("SELECT class_name FROM class WHERE class_id = $idKelas")->row_array();
+			$namaKelas = $dataKelas['class_name'];
 		}
 
+		$namaUnit = '';
 		if (isset($q['k']) && !empty($q['k']) && $q['k'] != '') {
 			$params['majors_id'] = $q['k'];
+			$idUnit =  $q['k'];
+			$dataUnit = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = $idUnit")->row_array();
+			$namaUnit = $dataUnit['majors_short_name'];
 		}
 
-		if (isset($q['d']) && !empty($q['d']) && $q['d'] != '') {
-			$params['month_start'] = $q['d'];
+		$dataBulan = [
+			1  => 'Juli',
+			2  => 'Agustus',
+			3  => 'September',
+			4  => 'Oktober',
+			5  => 'November',
+			6  => 'Desember',
+			7  => 'Januari',
+			8  => 'Februari',
+			9  => 'Maret',
+			10 => 'April',
+			11 => 'Mei',
+			12 => 'Juni',
+		];
+
+		$bulanA = '';
+		$bulanB = '';
+
+		$pBulan = '';
+		// bulan awal
+		if (!empty($q['d'])) {
+			$params['month_start'] = (int)$q['d'];
+			$bulanA = $dataBulan[(int)$q['d']] ?? '';
+			$pBulan = $bulanA;
 		}
 
-		if (isset($q['s']) && !empty($q['s']) && $q['s'] != '') {
-			$params['month_end'] = $q['s'];
+		// bulan akhir
+		if (!empty($q['s'])) {
+			$params['month_end'] = (int)$q['s'];
+			$bulanB = $dataBulan[(int)$q['s']] ?? '';
+			if ($bulanA != $bulanB) {
+				$pBulan .= '-' . $bulanB;
+			}
 		}
 
-		$data['period']     = $this->Period_model->get($params);
-		$data['class']      = $this->Student_model->get_class($params);
-		$data['majors']     = $this->Student_model->get_majors($params);
-		$data['from']       = $this->Bulan_model->get_month($params);
-		$data['to']         = $this->Bulan_model->get_month($params);
-		$data['student']    = $this->Student_model->get($params);
+		$raw = $this->Billing_model->get_tagihan_siswa_dengan_rincian($params);
 
-		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
+		$dataTagihan = [];
 
-		$this->load->view('billing/billing_xls', $data);
+		foreach ($raw as $row) {
+			$sid = $row['student_id'];
+
+			if (!isset($dataTagihan[$sid])) {
+				$dataTagihan[$sid] = [
+					'header' => [
+						'student_id' => $row['student_id'],
+						'student_nis' => $row['student_nis'],
+						'student_full_name' => $row['student_full_name'],
+						'class_name' => $row['class_name'],
+						'majors_short_name' => $row['majors_short_name'],
+						'total_tagihan' => 0
+					],
+					'detail' => []
+				];
+			}
+
+			if (!is_null($row['total'])) {
+				$dataTagihan[$sid]['detail'][] = [
+					'period_start' => $row['period_start'],
+					'period_end' => $row['period_end'],
+					'idBulan' => $row['idBulan'],
+					'keterangan' => $row['keterangan'],
+					'total' => (float)$row['total']
+				];
+
+				$dataTagihan[$sid]['header']['total_tagihan'] += (float)$row['total'];
+			}
+		}
+
+
+		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+
+
+		while (ob_get_level()) {
+			ob_end_clean();
+		}
+
+		//=========================
+		// PHP SPREADSHEET
+		// =========================
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->getActiveSheet();
+		$sheet->setTitle('Rincian Tagihan');
+
+		// ================== HEADER SEKOLAH ==================
+		$sheet->mergeCells('A1:E1');
+		$sheet->setCellValue('A1', $data['setting_school']['setting_value']);
+		$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+		$sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+
+		$sheet->mergeCells('A2:E2');
+		$sheet->setCellValue(
+			'A2',
+			$data['setting_address']['setting_value'] . ', Telp. ' . $data['setting_phone']['setting_value']
+		);
+		$sheet->getStyle('A2')->getFont()->setSize(8);
+
+
+		// =========================
+		// HEADER JUDUL
+		// =========================
+		$sheet->mergeCells('A4:E4');
+		$sheet->setCellValue('A4', 'LAPORAN DETAIL TAGIHAN SISWA');
+		$sheet->getStyle('A4')->getFont()->setBold(true)->setSize(12);
+		$sheet->getStyle('A4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+
+		// =========================
+		// Detail Filter
+		// =========================
+		$sheet->mergeCells('A6:B6');
+		$sheet->setCellValue('A6', 'Unit');
+		$sheet->setCellValue('C6', ': ' . $namaUnit);
+
+		$sheet->mergeCells('A7:B7');
+		$sheet->setCellValue('A7', 'Kelas');
+		$sheet->setCellValue('C7', ': ' . $namaKelas);
+
+		$sheet->mergeCells('A8:B8');
+		$sheet->setCellValue('A8', 'Tahun Ajaran');
+		$sheet->setCellValue('C8', ': ' . $namaPeriode);
+
+		$sheet->mergeCells('A9:B9');
+		$sheet->setCellValue('A9', 'Bulan');
+		$sheet->setCellValue('C9', ': ' . $pBulan);
+
+
+
+		/*
+		|--------------------------------------------------------------------------
+		| HEADER KOLOM
+		|--------------------------------------------------------------------------
+		*/
+		$sheet->setCellValue('A11', 'No.')
+			->setCellValue('B11', 'NIS')
+			->setCellValue('C11', 'Nama')
+			->setCellValue('D11', 'Kelas')
+			->setCellValue('E11', 'Total Tagihan');
+
+		/*
+		|--------------------------------------------------------------------------
+		| STYLE HEADER
+		|--------------------------------------------------------------------------
+		*/
+		$sheet->getStyle('A10:G11')->getFont()->setBold(true);
+		$sheet->getStyle('A10:G11')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+		$sheet->getRowDimension(1)->setRowHeight(25);
+
+		// Auto width kolom
+		foreach (range('A', 'G') as $col) {
+			$sheet->getColumnDimension($col)->setAutoSize(true);
+		}
+
+		$row = 12;
+		$noSiswa = 1;
+		foreach ($dataTagihan as $siswa) {
+			// header siswa
+			$sheet->setCellValue("A{$row}", $noSiswa++);
+			$sheet->setCellValue("B{$row}", $siswa['header']['student_nis']);
+			$sheet->setCellValue("C{$row}", $siswa['header']['student_full_name']);
+			$sheet->setCellValue("D{$row}", $siswa['header']['class_name']);
+			$sheet->setCellValue("E{$row}", $siswa['header']['total_tagihan']);
+			$row++;
+
+			// rincian
+			foreach ($siswa['detail'] as $d) {
+				$sheet->setCellValue("C{$row}", $d['keterangan']);
+				$sheet->setCellValue("D{$row}", $d['total']);
+				$row++;
+			}
+		}
+
+		/*
+        |--------------------------------------------------------------------------
+        | OUTPUT FILE (DOWNLOAD)
+        |--------------------------------------------------------------------------
+        */
+		$filename = "Laporan_Detail_Tagihan.xlsx";
+
+		// Header download
+
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+		header('Pragma: public');
+
+		$writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+		$writer->save('php://output');
+		exit;
 	}
 
 	public function billing_excel_rekap()
@@ -386,36 +584,189 @@ class Billing_set extends CI_Controller
 
 		$params = array();
 
+		$namaPeriode = "Semua Tahun Ajaran";
 		if (isset($q['p']) && !empty($q['p']) && $q['p'] != '') {
 			$params['period_id'] = $q['p'];
+			if ($q['p'] != 'all') {
+				$idPeriodSelected 		=  $q['p'];
+				$periodSelected 		= $this->db->query("SELECT period_id, period_start, period_end FROM period WHERE period_id = $idPeriodSelected")->row_array();
+				$params['period_start'] = $periodSelected['period_start'];
+
+				$namaPeriode = $periodSelected['period_start'] . "/" . $periodSelected['period_end'];
+			}
 		}
 
+		$namaKelas = 'Semua Kelas';
 		if (isset($q['c']) && !empty($q['c']) && $q['c'] != '') {
 			$params['class_id']  = $q['c'];
+			$idKelas = $q['c'];
+			$dataKelas = $this->db->query("SELECT class_name FROM class WHERE class_id = $idKelas")->row_array();
+			$namaKelas = $dataKelas['class_name'];
 		}
 
+		$namaUnit = '';
 		if (isset($q['k']) && !empty($q['k']) && $q['k'] != '') {
 			$params['majors_id'] = $q['k'];
+			$idUnit =  $q['k'];
+			$dataUnit = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = $idUnit")->row_array();
+			$namaUnit = $dataUnit['majors_short_name'];
 		}
 
-		if (isset($q['d']) && !empty($q['d']) && $q['d'] != '') {
-			$params['month_start'] = $q['d'];
+		$dataBulan = [
+			1  => 'Juli',
+			2  => 'Agustus',
+			3  => 'September',
+			4  => 'Oktober',
+			5  => 'November',
+			6  => 'Desember',
+			7  => 'Januari',
+			8  => 'Februari',
+			9  => 'Maret',
+			10 => 'April',
+			11 => 'Mei',
+			12 => 'Juni',
+		];
+
+		$bulanA = '';
+		$bulanB = '';
+
+		$pBulan = '';
+		// bulan awal
+		if (!empty($q['d'])) {
+			$params['month_start'] = (int)$q['d'];
+			$bulanA = $dataBulan[(int)$q['d']] ?? '';
+			$pBulan = $bulanA;
 		}
 
-		if (isset($q['s']) && !empty($q['s']) && $q['s'] != '') {
-			$params['month_end'] = $q['s'];
+		// bulan akhir
+		if (!empty($q['s'])) {
+			$params['month_end'] = (int)$q['s'];
+			$bulanB = $dataBulan[(int)$q['s']] ?? '';
+			if ($bulanA != $bulanB) {
+				$pBulan .= '-' . $bulanB;
+			}
 		}
 
-		$data['period']     = $this->Period_model->get($params);
-		$data['class']      = $this->Student_model->get_class($params);
-		$data['majors']     = $this->Student_model->get_majors($params);
-		$data['from']       = $this->Bulan_model->get_month($params);
-		$data['to']         = $this->Bulan_model->get_month($params);
-		$data['student']    = $this->Student_model->get($params);
+		$tagihan_siswa   = $this->Billing_model->get_tagihan_siswa($params);
 
-		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
+		$data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+		$data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+		$data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
-		$this->load->view('billing/billing_xls_rekap', $data);
+
+		while (ob_get_level()) {
+			ob_end_clean();
+		}
+
+		//=========================
+		// PHP SPREADSHEET
+		// =========================
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->getActiveSheet();
+		$sheet->setTitle('Rincian Tagihan');
+
+		// ================== HEADER SEKOLAH ==================
+		$sheet->mergeCells('A1:E1');
+		$sheet->setCellValue('A1', $data['setting_school']['setting_value']);
+		$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+		$sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+
+		$sheet->mergeCells('A2:E2');
+		$sheet->setCellValue(
+			'A2',
+			$data['setting_address']['setting_value'] . ', Telp. ' . $data['setting_phone']['setting_value']
+		);
+		$sheet->getStyle('A2')->getFont()->setSize(8);
+
+
+		// =========================
+		// HEADER JUDUL
+		// =========================
+		$sheet->mergeCells('A4:E4');
+		$sheet->setCellValue('A4', 'LAPORAN DETAIL TAGIHAN SISWA');
+		$sheet->getStyle('A4')->getFont()->setBold(true)->setSize(12);
+		$sheet->getStyle('A4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+
+		// =========================
+		// Detail Filter
+		// =========================
+		$sheet->mergeCells('A6:B6');
+		$sheet->setCellValue('A6', 'Unit');
+		$sheet->setCellValue('C6', ': ' . $namaUnit);
+
+		$sheet->mergeCells('A7:B7');
+		$sheet->setCellValue('A7', 'Kelas');
+		$sheet->setCellValue('C7', ': ' . $namaKelas);
+
+		$sheet->mergeCells('A8:B8');
+		$sheet->setCellValue('A8', 'Tahun Ajaran');
+		$sheet->setCellValue('C8', ': ' . $namaPeriode);
+
+		$sheet->mergeCells('A9:B9');
+		$sheet->setCellValue('A9', 'Bulan');
+		$sheet->setCellValue('C9', ': ' . $pBulan);
+
+
+
+		/*
+		|--------------------------------------------------------------------------
+		| HEADER KOLOM
+		|--------------------------------------------------------------------------
+		*/
+		$sheet->setCellValue('A11', 'No.')
+			->setCellValue('B11', 'NIS')
+			->setCellValue('C11', 'Nama')
+			->setCellValue('D11', 'Kelas')
+			->setCellValue('E11', 'Total Tagihan');
+
+		/*
+		|--------------------------------------------------------------------------
+		| STYLE HEADER
+		|--------------------------------------------------------------------------
+		*/
+		$sheet->getStyle('A10:G11')->getFont()->setBold(true);
+		$sheet->getStyle('A10:G11')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+		$sheet->getRowDimension(1)->setRowHeight(25);
+
+		// Auto width kolom
+		foreach (range('A', 'G') as $col) {
+			$sheet->getColumnDimension($col)->setAutoSize(true);
+		}
+
+		$row = 12;
+		$noSiswa = 1;
+		foreach ($tagihan_siswa as $siswa) {
+			// header siswa
+			$sheet->setCellValue("A{$row}", $noSiswa++);
+			$sheet->setCellValue("B{$row}", $siswa['student_nis']);
+			$sheet->setCellValue("C{$row}", $siswa['student_full_name']);
+			$sheet->setCellValue("D{$row}", $siswa['class_name']);
+			$sheet->setCellValue("E{$row}", $siswa['total_tagihan']);
+			$row++;
+		}
+
+		/*
+        |--------------------------------------------------------------------------
+        | OUTPUT FILE (DOWNLOAD)
+        |--------------------------------------------------------------------------
+        */
+		$filename = "Laporan_Rekap_Tagihan.xlsx";
+
+		// Header download
+
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+		header('Pragma: public');
+
+		$writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+		$writer->save('php://output');
+		exit;
 	}
 
 	// pos view in list

@@ -169,6 +169,93 @@ class Billing_model extends CI_Model
         return $query->result_array();
     }
 
+    public function get_tagihan_siswa_dengan_rincian($params = [])
+    {
+        $period_id     = $params['period_id'] ?? null;
+        $period_start  = $params['period_start'] ?? null;
+        $month_start   = (int)($params['month_start'] ?? 1);
+        $month_end     = (int)($params['month_end'] ?? 12);
+
+        // =========================
+        // FILTER SISWA
+        // =========================
+        $whereStudent = [];
+        $whereStudent[] = "std.student_status = 1";
+
+        if (!empty($params['class_id'])) {
+            $classIds = array_map('intval', (array)$params['class_id']);
+            $whereStudent[] = "std.class_class_id IN (" . implode(',', $classIds) . ")";
+        }
+
+        if (!empty($params['majors_id'])) {
+            $majorsIds = array_map('intval', (array)$params['majors_id']);
+            $whereStudent[] = "std.majors_majors_id IN (" . implode(',', $majorsIds) . ")";
+        }
+
+        $whereStudentSql = implode(' AND ', $whereStudent);
+
+        // =========================
+        // FILTER PERIODE TAGIHAN
+        // =========================
+        if ($period_id === 'all') {
+            $wherePeriod = "
+            (
+                vts.idBulan = 0
+                OR (
+                    vts.period_start = " . $this->db->escape($period_start) . "
+                    AND vts.idBulan BETWEEN {$month_start} AND {$month_end}
+                )
+                OR vts.period_start <> " . $this->db->escape($period_start) . "
+            )
+        ";
+        } else {
+            $wherePeriod = "
+            vts.period_start <= " . $this->db->escape($period_start) . "
+            AND (
+                vts.idBulan = 0
+                OR (
+                    vts.period_start = " . $this->db->escape($period_start) . "
+                    AND vts.idBulan BETWEEN {$month_start} AND {$month_end}
+                )
+                OR vts.period_start < " . $this->db->escape($period_start) . "
+            )
+        ";
+        }
+
+        // =========================
+        // QUERY BESAR
+        // =========================
+        $sql = "
+            SELECT
+                std.student_id,
+                std.student_nis,
+                std.student_full_name,
+                cls.class_name,
+                mjr.majors_short_name,
+
+                vts.period_start,
+                vts.period_end,
+                vts.idBulan,
+                vts.keterangan,
+                vts.total
+            FROM student std
+            JOIN class cls ON cls.class_id = std.class_class_id
+            JOIN majors mjr ON mjr.majors_id = std.majors_majors_id
+            JOIN v_tagihan_siswa vts 
+                ON vts.idStudent = std.student_id
+                AND $wherePeriod
+            WHERE $whereStudentSql
+            ORDER BY
+                std.student_full_name ASC,
+                vts.period_start DESC,
+                vts.idBulan ASC
+        ";
+
+        return $this->db->query($sql)->result_array();
+    }
+
+
+
     function getPosBayar($params = array())
     {
         $this->db->select('pos.pos_id, pos.pos_name');
