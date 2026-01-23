@@ -259,7 +259,7 @@
 											</div>
 										</div>
 										<div class="tab-pane" id="daftarPelanggaran">
-											<table id="dtablePelanggaran" class="table table-bordered" style="white-space: nowrap;width:100%">
+											<table id="dtablePelanggaran" class="table table-bordered" style="width:100%">
 												<thead>
 													<tr class="info">
 														<th style="width: 5%;">No</th>
@@ -442,7 +442,7 @@
 											</div>
 										</div>
 										<div class="tab-pane" id="daftarKonsultasi">
-											<table id="dtableKonsultasi" class="table table-bordered" style="white-space: nowrap;">
+											<table id="dtableKonsultasi" class="table table-bordered" style="width:100%">
 												<thead>
 													<tr class="info">
 														<th>No.</th>
@@ -604,7 +604,7 @@
 										</div>
 										<div class="tab-pane" id="daftarPrestasi">
 											<!-- Table Daftar Prestasi -->
-											<table id="dtablePrestasi" class="table table-bordered" style="white-space: nowrap;width:100%;">
+											<table id="dtablePrestasi" class="table table-bordered" style="width:100%;">
 												<thead>
 													<tr class="info">
 														<th style="width: 5%;">No.</th>
