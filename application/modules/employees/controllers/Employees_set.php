@@ -590,42 +590,60 @@ class Employees_set extends CI_Controller
 
   public function add_dokumen()
   {
-    if ($_POST == TRUE) {
 
-      $this->load->library('upload');
+    $employeeID = $this->input->post('employee_id');
+    if (!empty($_FILES['dokumen_file']['name'][0])) {
 
-      $config['upload_path'] = FCPATH . 'uploads/dokumen/berkas/';
-      $config['allowed_types'] = 'pdf|jpg|png|jpeg';
-      $config['max_size'] = 2048;
-      $this->upload->initialize($config);
-
-      $employeeID = $_POST['employee_id'];
-      $dokNote    = $_POST['dokumen_note'];
+      $dokNote    = $this->input->post('dokumen_note');
 
       foreach ($_FILES['dokumen_file']['name'] as $key => $value) {
-        $_FILES['img']['name'] = $_FILES['dokumen_file']['name'][$key];
-        $_FILES['img']['type'] = $_FILES['dokumen_file']['type'][$key];
-        $_FILES['img']['tmp_name'] = $_FILES['dokumen_file']['tmp_name'][$key];
-        $_FILES['img']['error'] = $_FILES['dokumen_file']['error'][$key];
-        $_FILES['img']['size'] = $_FILES['dokumen_file']['size'][$key];
 
-        if ($this->upload->do_upload('img')) {
-          $data = $this->upload->data();
+        $_FILES['file']['name']     = $_FILES['dokumen_file']['name'][$key];
+        $_FILES['file']['type']     = $_FILES['dokumen_file']['type'][$key];
+        $_FILES['file']['tmp_name'] = $_FILES['dokumen_file']['tmp_name'][$key];
+        $_FILES['file']['error']    = $_FILES['dokumen_file']['error'][$key];
+        $_FILES['file']['size']     = $_FILES['dokumen_file']['size'][$key];
 
-          $params['dokumen_note']         = $dokNote[$key];
-          $params['dokumen_file']         = $data['file_name'];
-          $params['dokumen_employee_id']  = $employeeID;
+        $fileName = $this->do_upload_dokument('file');
+
+        if ($fileName) {
+
+          $params = [
+            'dokumen_note'        => $dokNote[$key] ?? null,
+            'dokumen_file'        => $fileName,
+            'dokumen_employee_id' => $employeeID
+          ];
 
           $this->Employees_detail_model->add_dokumen($params);
-
-          $this->session->set_flashdata('success', 'Tambah Dokumen/Berkas Berhasil');
-        } else {
-          $error = array('error' => $this->upload->display_errors());
-          $this->session->set_flashdata('failed', 'Tambah Dokumen/Berkas Gagal');
         }
       }
+
+      $this->session->set_flashdata('success', 'Tambah Dokumen/Berkas Berhasil');
     }
+
     redirect('manage/employees/view/' . $employeeID);
+  }
+
+  private function do_upload_dokument($field)
+  {
+    $config['upload_path']   = FCPATH . 'uploads/employee/dokumen/';
+    $config['allowed_types'] = 'pdf|jpg|jpeg|png';
+    $config['max_size']      = 1024; // 1 MB
+    $config['encrypt_name']  = TRUE;
+
+    // Buat folder jika belum ada
+    if (!is_dir($config['upload_path'])) {
+      mkdir($config['upload_path'], 0777, TRUE);
+    }
+
+    $this->load->library('upload', $config);
+
+    if (!$this->upload->do_upload($field)) {
+      log_message('error', $this->upload->display_errors());
+      return false;
+    }
+
+    return $this->upload->data('file_name');
   }
 
   public function add_education()

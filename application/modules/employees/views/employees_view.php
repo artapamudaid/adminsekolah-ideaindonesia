@@ -196,7 +196,7 @@
 												<?php echo $no++ ?>
 											</td>
 											<td>
-												<a href="<?= base_url() . 'uploads/dokumen/berkas/' . $row['dokumen_file'] ?>" target="_blank" class="btn btn-sm btn-info">Lihat</a>
+												<a href="<?= base_url() . 'uploads/employee/dokumen/' . $row['dokumen_file'] ?>" target="_blank" class="btn btn-sm btn-info">Lihat</a>
 											</td>
 											<td>
 												<?php echo $row['dokumen_note'] ?>
@@ -711,8 +711,16 @@
 				<div id="p_scents_dokumen">
 					<div class="row">
 						<div class="col-md-6">
-							<label>Berkas/Dokumen (.jpg/.png/.pdf) *</label>
-							<input type="file" class="form-control" required="" name="dokumen_file[]" class="form-control">
+							<label>Berkas/Dokumen *</label>
+							<input
+								type="file"
+								name="dokumen_file[]"
+								class="form-control"
+								accept=".jpg,.jpeg,.png,.pdf"
+								required>
+							<small class="text-muted">
+								Format yang diizinkan: JPG, PNG, PDF. Ukuran maksimal 1 MB.
+							</small>
 						</div>
 						<div class="col-md-6">
 							<label>Keterangan *</label>
