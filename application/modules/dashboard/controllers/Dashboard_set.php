@@ -10,6 +10,8 @@ class Dashboard_set extends CI_Controller
         parent::__construct();
         if ($this->session->userdata('logged') == NULL) {
             header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+            redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
+            exit; // ⬅️ PENTING
         }
 
         $this->load->model(array(
@@ -39,9 +41,12 @@ class Dashboard_set extends CI_Controller
         $uRole = $this->session->userdata('uroleid');
 
         $hasDashboard       = false;
-        $cekAksesDashboard  = $this->db->query("SELECT hak_akses_id FROM hak_akses WHERE menu_id = 1 AND role_id = $uRole LIMIT 1")->row();
-        if ($cekAksesDashboard) {
-            $hasDashboard = true;
+        $hasDashboard       = false;
+        if ($uRole) {
+            $cekAksesDashboard = $this->db->query("SELECT hak_akses_id FROM hak_akses WHERE menu_id = 1 AND role_id = $uRole LIMIT 1")->row();
+            if ($cekAksesDashboard) {
+                $hasDashboard = true;
+            }
         }
 
         $data['user']           = count($this->Users_model->get());
