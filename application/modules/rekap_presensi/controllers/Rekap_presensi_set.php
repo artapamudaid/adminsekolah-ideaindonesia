@@ -156,7 +156,14 @@ class Rekap_presensi_set extends CI_Controller
 
     $data['dt_arr'] = [0 => 'Abs. Datang',  1 => 'Status',  2 => 'Abs. Pulang',  3 => 'Status',  4 => 'Ket. Lain'];
     // update penambahan get params array
-    $data['rekap_absensi'] = $this->Rekap_presensi_model->rekap(array('majors_id' => $majors_id));
+    $data['rekap_absensi'] = $this->Rekap_presensi_model->rekap(['majors_id' => $majors_id]);
+
+    $data['absensi'] = $this->Rekap_presensi_model
+      ->get_absensi_bulan($majors_id, $data['tgl_awal'], $data['tgl_akhir']);
+
+    $data['counter'] = $this->Rekap_presensi_model
+      ->get_rekap_counter($majors_id, $data['tgl_awal'], $data['tgl_akhir']);
+
     $this->load->view('rekap_presensi/rekap_presensi_excel_bulan', $data);
   }
 
@@ -364,52 +371,7 @@ class Rekap_presensi_set extends CI_Controller
 
     if ($_POST and $this->form_validation->run() == TRUE) {
       $area = $this->db->query("SELECT MIN(id_area) AS id FROM `area_absensi`")->row_array();
-      $dt         = date('Y-m-d');
-      $tanggal    = date('d-m-Y');
-      $date       = pretty_date($dt, 'l', FALSE);
-      //ambil kode day_id
-      $day        = $this->db->query("SELECT day_id from day WHERE day_name = '$date'")->row_array();
-      //ambil data waktu
-      $data_waktu = $this->db->query("SELECT * from data_waktu WHERE data_waktu_day_id = $day[day_id]")->row_array();
-      $idpeg      = $this->input->post('id_pegawai');
-      //timer saat ini uptodate
-      $timer      = date('H:i:s');
-      // ambil data pegawai
-      $emp        = $this->db->query("SELECT * from employee a JOIN position b ON a.employee_position_id=b.position_id WHERE employee_id = '$idpeg'")->row_array();
-      //kondisi untuk sudah prepare dan belum prepare
-      if ($timer <= $data_waktu['data_waktu_masuk']) {
-        $statusprepare = 'Sudah Prepare pekerjaan';
-      } else {
-        $statusprepare = 'Belum Prepare pekerjaan';
-      }
 
-      // cek data absen PUlang harus datang dahulu
-      $cekpulang = $this->db->query("SELECT * FROM data_absensi WHERE jenis_absen = 'DATANG' AND id_pegawai = $idpeg AND tanggal= '$dt'")->num_rows();
-
-      //cek data absensi datang
-      $cekdatang = $this->db->query("SELECT * FROM data_absensi WHERE id_pegawai = $idpeg AND tanggal= '$dt'")->num_rows();
-      // echo $cekdatang;
-      // exit;
-
-      if ($cekpulang > 0) {
-        if ($timer >= $data_waktu['data_waktu_pulang']) {
-          $status = 'Pulang';
-        } else {
-          $status = 'Pulang Cepat';
-        }
-      } elseif ($cekdatang == 0) {
-        if ($timer <= $data_waktu['data_waktu_masuk']) {
-          $status = 'Tepat Waktu';
-        } else {
-          $status = 'Telambat';
-        }
-      } elseif ($cekpulang == 0) {
-        $this->session->set_flashdata('failed', 'Anda harus absen datang terlebih dahulu');
-        redirect('manage/rekap_presensi/add');
-      }
-
-
-      $params['statushadir']    = $status;
       $params['created_date'] = date('Y-m-d H:i:s');
       $params['created_by'] = $this->session->userdata('uid');
       $params['jenis_absen'] = $this->input->post('type');
@@ -422,7 +384,6 @@ class Rekap_presensi_set extends CI_Controller
       $params['bulan'] = date('Y-m');
       $params['tanggal'] = date('Y-m-d');
       $params['time'] = date('H:i:s');
-
 
       $result = $this->db->insert('data_absensi', $params);
 

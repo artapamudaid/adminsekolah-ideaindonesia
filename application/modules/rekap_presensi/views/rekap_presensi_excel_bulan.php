@@ -1,174 +1,251 @@
-<?php     
-header("Content-Type: application/vnd.ms-excel"); //IE and Opera    
-header("Content-Type: application/x-msexcel"); // Other browsers    
-header("Content-Disposition: attachment; filename=Rekap_Absensi_Periode_".$tgl_awal."_".$tgl_akhir."_download_at_".date('YmdHis').".xls");  
-header("Expires: 0");    
-header("Cache-Control: must-revalidate, post-check=0, pre-check=0");      
-?>
-<!DOCTYPE html >
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>REKAPITULASI ABSENSI </title>
-    <link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>">
-    <style>
-      a {
-          color: #000000;
-          font-weight: bold;
-          font-family: Verdana;
-          font-size: 11px;
-          text-decoration: none;
-      }
-      tr, td {
-          font-family: Verdana;
-          font-size: 11px;
-          border-collapse: collapse;
-      }
-      .td {
-          font-weight: bold;
-          font-family: Verdana;
-          font-size: 11px;
-          text-decoration: none;
-          border-collapse: collapse;
-      }
-      .table>tbody>tr.info>td, .table>tbody>tr.info>th, .table>tbody>tr>td.info, .table>tbody>tr>th.info, .table>tfoot>tr.info>td, .table>tfoot>tr.info>th, .table>tfoot>tr>td.info, .table>tfoot>tr>th.info, .table>thead>tr.info>td, .table>thead>tr.info>th, .table>thead>tr>td.info, .table>thead>tr>th.info {
-          background-color: #d9edf7;
-      }
-      .table-bordered>thead>tr>th, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>tbody>tr>td, .table-bordered>tfoot>tr>td {
-          border: 1px solid #f4f4f4;
-      }
-      .table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th {
-          border: 1px solid #ddd;
-      }
-      .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
-          padding: 8px;
-          line-height: 1.42857143;
-      }
-      a:hover {
-        color: red;
-      }
-    </style>
-  </head>
-  <body>
+<?php
 
-<table border="0" cellpadding="10" cellpadding="5" width="100%" align="left">   
-  <tr>
-    <td align="left" valign="top">   
-      <center>   
-        <font size="4"><strong>REKAPITULASI ABSENSI PERUNIT</strong></font><br/>
-        <br>   
-        TANGGAL : <?=$tgl_awal?> s/d <?=$tgl_akhir?>
-      </center><br /><br />   
-      <table class="table table-bordered" border=1 style="border-collapse:collapse">
-        <thead>   
-          <tr bgcolor=#d9edf7 height="30">   
-            <td rowspan=3 align="center" class="td">No</td>
-            <td colspan=7 align="center" class="td">Data</td>
-            <td colspan=3 align="center" class="td">Keterangan</td>
-            <td rowspan=3 align="center" class="td">Score</td>
-            <th colspan='<?php $itv = $interval->format("%a"); $int = $itv*5; echo $int; ?>'><center><?php echo $namaBulan . ' ' . $namaTahun ?></center></th>
-          </tr>
-          <tr bgcolor=#d9edf7 height="30">   
-            <td width="250" rowspan=2 align="center" class="td">Nama Lengkap</td>
-            <td rowspan=2 align="center" class="td">Tanggal Masuk</td>
-            <td colspan=3 align="center" class="td">Usia Kerja</td>
-            <td rowspan=2 align="center" class="td">Jabatan</td>
-            <td rowspan=2 align="center" class="td">Unit Kerja</td>
-            <td colspan=4 align="center" class="td">Rekap Kehadiran</td>
-            <?php
-                foreach ($daterange as $dt) {
-                    echo '<th colspan=5>'.$dt->format("d").'</th>';
-                }
-            ?>   
-          </tr>
-        
-          <tr bgcolor=#d9edf7 height="30">   
-            <td width="100" align="center" class="td">Tahun</td>   
-            <td width="100" align="center" class="td">Bulan</td>   
-            <td width="100" align="center" class="td">Hari</td>  
-            <td width="100" align="center" class="td">Hadir</td>   
-            <td width="100" align="center" class="td">Ijin</td>   
-            <td width="100" align="center" class="td">Terlambat</td>
-            <?php
-              foreach ($daterange as $dt) {
-                  foreach ($dt_arr as $dt) {
-                    echo '<th>'.$dt.'</th>';
-                  }
-              }
-            ?>   
-          </tr>
-        <thead>
-          <!-- //update -->
-        <tbody>
-          <?php
-          $no=1;
-          foreach($rekap_absensi as $row):
-            $lahir=new DateTime($row['employee_start']);
-            $today =new DateTime();
-            $umur=$today->diff($lahir);
+// Include PhpSpreadsheet library
+require 'vendor/autoload.php'; // Adjust the path according to your project structure
 
-            $idp=$row['employee_id'];
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
-            $hadir = $this->db->query("select id from data_absensi where id_pegawai='$idp' and (tanggal between '$tgl_awal' and '$tgl_akhir') and jenis_absen='DATANG'");
-            $hadir=$hadir->num_rows();
 
-            $ijin = $this->db->query("select id from data_absensi where id_pegawai='$idp' and (tanggal between '$tgl_awal' and '$tgl_akhir') and (jenis_absen between 'SAKIT' and 'IJIN' and 'LAIN-LAIN' )");
-            $ijin=$ijin->num_rows();
-            $terlambat = $this->db->query("select id from data_absensi where id_pegawai='$idp' and (tanggal between '$tgl_awal' and '$tgl_akhir') and statushadir='Terlambat'");
-            $terlambat=$terlambat->num_rows();
+while (ob_get_level()) {
+  ob_end_clean();
+}
 
-            $score= round(((intval($hadir) - intval($terlambat)) / intval($hadir)) * 100,2);
+$spreadsheet = new Spreadsheet();
+$sheet = $spreadsheet->getActiveSheet();
+$sheet->setTitle('Rekap Absensi Unit');
 
-            if(is_nan($score)){
-              $score=0;
-            }
+// Jumlah Kolom Statis
+$jKolomStatis = 12;
+// Hitung jumlah hari
+$jumlahHari = (int)$interval->format('%a');
 
-          ?>
-          <tr>
-            <td><?=$no++?></td>
-            <td><a href="javascript:void(0)"><?=$row['employee_name']?></a></td>
-            <td><?=$row['employee_start']?></td>
-            <td><?=$umur->y." Tahun"?></td>
-            <td><?=$umur->m." Bulan"?></td>
-            <td><?=$umur->d." Hari"?></td>
-            <td><?=$row['jabatan']?></td>
-            <td><?=$row['nama_unit']?></td>
-            <td><?=$hadir?></td>
-            <td><?=$ijin?></td>
-            <td><?=$terlambat?></td>
-            <td><?=$score."%"?></td>
-            <?php
-                foreach ($daterange as $dt) {
-                    $date = $dt->format("Y-m-d");
-                    $period_id = $q['p'];
-                    $month_id = $q['m'];
-                    $class_id = $q['c'];
-                    $student_id = $row['student_id'];
-                    
-                    $presensi_hadir = $this->db->query("select id, time, jenis_absen, statushadir from data_absensi where id_pegawai='$idp' and tanggal= '$date' and jenis_absen='DATANG'")->row_array();
-                    echo (isset($presensi_hadir['id'])) ? '<td>'.$presensi_hadir['time'].'</td>' : '<td>-</td>';
-                    echo (isset($presensi_hadir['id'])) ? '<td>'.$presensi_hadir['statushadir'].'</td>' : '<td>-</td>';
-                    $presensi_pulang = $this->db->query("select id, time, jenis_absen, statushadir from data_absensi where id_pegawai='$idp' and tanggal= '$date' and jenis_absen='PULANG'")->row_array();
-                    echo (isset($presensi_pulang['id'])) ? '<td>'.$presensi_pulang['time'].'</td>' : '<td>-</td>';
-                    echo (isset($presensi_pulang['id'])) ? '<td>'.$presensi_pulang['statushadir'].'</td>' : '<td>-</td>';
-                    $presensi_lain = $this->db->query("select id, time, jenis_absen, statushadir from data_absensi where id_pegawai='$idp' and tanggal= '$date' and (jenis_absen='SAKIT' or jenis_absen='IJIN' or jenis_absen='LAIN-LAIN')")->row_array();
-                    echo (isset($presensi_hadir['id'])) ? '<td>'.$presensi_lain['statushadir'].'</td>' : '<td>Alpha</td>';
-                    
-                    
-                    // $presensi = $this->db->query("SELECT presensi_harian_status FROM presensi_harian WHERE presensi_harian_date = '$date' AND presensi_harian_period_id = '$period_id' AND presensi_harian_month_id = '$month_id' AND presensi_harian_class_id = '$class_id' AND presensi_harian_student_id = '$student_id'")->row_array();
-                    // echo (isset($presensi['presensi_harian_status'])) ? '<td>'.$presensi['presensi_harian_status'].'</td>' : '<td>-</td>'  ;
-                }
-            ?>
-          </tr>
-          <?php
-          endforeach;
-          ?>
-        </tbody>
-      </table>   
-    </td>   
-  </tr>   
-  <!-- END TABLE CENTER -->       
-</table>
+// ================== HEADER ==================
+$startSekolahIndex = 1; // Kolom D = 4
+$endSekolahIndex   = $startSekolahIndex + ($jumlahHari * 5) - 1 + $jKolomStatis;
+$endSekolahCol = Coordinate::stringFromColumnIndex($endSekolahIndex);
 
-  </body>
-</html>
+$sheet->mergeCells('A1:' . $endSekolahCol . '1');
+$sheet->setCellValue('A1', 'REKAPITULASI ABSENSI PERUNIT');
+$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+$sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+$sheet->mergeCells('A2:' . $endSekolahCol . '2');
+$sheet->setCellValue('A2', 'TANGGAL ' . $tgl_awal . '  s/d  ' . $tgl_akhir);
+$sheet->getStyle('A2')->getFont()->setSize(8);
+$sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+
+$rowHeader1 = 4;
+$rowHeader2 = 5;
+$rowHeader3 = 6;
+
+$headerRange = "A$rowHeader1:$endSekolahCol$rowHeader3";
+
+$sheet->getStyle($headerRange)->applyFromArray([
+  'font' => [
+    'bold' => true,
+    'color' => [
+      'rgb' => 'FFFFFF', // putih
+    ],
+  ],
+  'fill' => [
+    'fillType' => Fill::FILL_SOLID,
+    'startColor' => [
+      'rgb' => '3C8DBC',
+    ],
+  ],
+  'alignment' => [
+    'horizontal' => Alignment::HORIZONTAL_CENTER,
+    'vertical'   => Alignment::VERTICAL_CENTER,
+  ],
+]);
+$sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+$sheet->mergeCells("A$rowHeader1:A$rowHeader3");
+$sheet->setCellValue("A$rowHeader1", 'No');
+
+$sheet->mergeCells("B$rowHeader1:H$rowHeader1");
+$sheet->setCellValue("B$rowHeader1", 'Data');
+
+$sheet->mergeCells("I$rowHeader1:K$rowHeader1");
+$sheet->setCellValue("I$rowHeader1", 'Keterangan');
+
+$sheet->mergeCells("L$rowHeader1:L$rowHeader3");
+$sheet->setCellValue("L$rowHeader1", 'Score');
+
+$sheet->mergeCells("B$rowHeader2:B$rowHeader3");
+$sheet->setCellValue("B$rowHeader2", 'Nama Lengkap');
+
+$sheet->mergeCells("C$rowHeader2:C$rowHeader3");
+$sheet->setCellValue("C$rowHeader2", 'Tanggal Masuk');
+
+$sheet->mergeCells("D$rowHeader2:F$rowHeader2");
+$sheet->setCellValue("D$rowHeader2", 'Usia Kerja');
+
+$sheet->mergeCells("G$rowHeader2:G$rowHeader3");
+$sheet->setCellValue("G$rowHeader2", 'Jabatan');
+
+$sheet->mergeCells("H$rowHeader2:H$rowHeader3");
+$sheet->setCellValue("H$rowHeader2", 'Unit Kerja');
+
+$sheet->setCellValue("D$rowHeader3", 'Tahun');
+$sheet->setCellValue("E$rowHeader3", 'Bulan');
+$sheet->setCellValue("F$rowHeader3", 'Hari');
+
+$sheet->mergeCells("I$rowHeader2:K$rowHeader2");
+$sheet->setCellValue("I$rowHeader2", 'Rekap Kehadiran');
+
+$sheet->setCellValue("I$rowHeader3", 'Hadir');
+$sheet->setCellValue("J$rowHeader3", 'Ijin');
+$sheet->setCellValue("K$rowHeader3", 'Terlambat');
+
+
+// ===== Lebar kolom utama =====
+$sheet->getColumnDimension('A')->setWidth(6);   // No
+$sheet->getColumnDimension('B')->setWidth(35);  // Nama
+$sheet->getColumnDimension('C')->setWidth(14);  // Tanggal Masuk
+$sheet->getColumnDimension('D')->setWidth(10);  // Tahun
+$sheet->getColumnDimension('E')->setWidth(10);  // Bulan
+$sheet->getColumnDimension('F')->setWidth(10);  // Hari
+$sheet->getColumnDimension('G')->setWidth(25);  // Jabatan
+$sheet->getColumnDimension('H')->setWidth(20);  // Unit
+$sheet->getColumnDimension('I')->setWidth(10);  // Hadir
+$sheet->getColumnDimension('J')->setWidth(10);  // Ijin
+$sheet->getColumnDimension('K')->setWidth(12);  // Terlambat
+$sheet->getColumnDimension('L')->setWidth(10);  // Score
+
+// Merge judul bulan
+$startCol = 'M';
+
+$startColumnIndex = 13; // Kolom M = 13
+$jumlahLabel = count($dt_arr);
+
+$endColumnIndex   = $startColumnIndex + ($jumlahHari * $jumlahLabel) - 1;
+
+$endCol = Coordinate::stringFromColumnIndex($endColumnIndex);
+
+$sheet->mergeCells("$startCol$rowHeader1:$endCol$rowHeader1");
+$sheet->setCellValue(
+  "$startCol$rowHeader1",
+  $namaBulan . ' ' . $namaTahun
+);
+// $sheet->getStyle("$startCol$rowHeader1")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+$lastColIndex = Coordinate::columnIndexFromString($endCol);
+
+for ($i = 13; $i <= $lastColIndex; $i++) { // 13 = kolom M
+  $col = Coordinate::stringFromColumnIndex($i);
+  $sheet->getColumnDimension($col)->setWidth(12);
+}
+
+
+$col = 'M';
+foreach ($daterange as $dr) {
+  $endColMerge = $col;
+  // i < 4 karena 0 samapai 4 itu 5 kolom
+  $kolomLabel = 0;
+  for ($i = $kolomLabel; $i < 4; $i++) {
+    $sheet->setCellValue($endColMerge . $rowHeader3, $dt_arr[$kolomLabel]);
+    $endColMerge++;
+    $kolomLabel++;
+  }
+  $sheet->setCellValue($endColMerge . $rowHeader3, $dt_arr[$kolomLabel]);
+
+  $sheet->mergeCells("$col$rowHeader2:$endColMerge$rowHeader2");
+  $sheet->setCellValue($col . $rowHeader2, $dr->format('d'));
+  // $sheet->getStyle($col . $rowHeader2)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+  $col = $endColMerge;
+  $col++;
+}
+
+$rowDataStart = 7;
+$no = 1;
+foreach ($rekap_absensi as $row) {
+  $idp = $row['employee_id'];
+
+  // usia kerja
+  $mulai = new DateTime($row['employee_start']);
+  $today = new DateTime();
+  $umur  = $today->diff($mulai);
+
+  $tahunKerja = $umur->y ? $umur->y . ' Tahun' : '-';
+  $bulanKerja = $umur->m ? $umur->m . ' Bulan' : '-';
+  $hariKerja = $umur->d ? $umur->d . ' Hari' : '-';
+
+  // rekap dari controller
+  $hadir     = $counter[$idp]['hadir'] ?? 0;
+  $ijin      = $counter[$idp]['ijin'] ?? 0;
+  $terlambat = $counter[$idp]['terlambat'] ?? 0;
+
+  $score = $hadir ? round((($hadir - $terlambat) / $hadir) * 100, 2) : 0;
+  $scoreHadir = $score > 0 ? $score . ' %' : '-';
+
+  $sheet->setCellValue("A$rowDataStart", $no++);
+  $sheet->setCellValue("B$rowDataStart", $row['employee_name']);
+  $sheet->setCellValue("C$rowDataStart", $row['employee_start']);
+  $sheet->setCellValue("D$rowDataStart", $tahunKerja);
+  $sheet->setCellValue("E$rowDataStart", $bulanKerja);
+  $sheet->setCellValue("F$rowDataStart", $hariKerja);
+  $sheet->setCellValue("G$rowDataStart", $row['jabatan']);
+  $sheet->setCellValue("H$rowDataStart", $row['nama_unit']);
+  $sheet->setCellValue("I$rowDataStart", $hadir);
+  $sheet->setCellValue("J$rowDataStart", $ijin);
+  $sheet->setCellValue("K$rowDataStart", $terlambat);
+  $sheet->setCellValue("L$rowDataStart", $scoreHadir);
+
+  $colStatusStart = 'M';
+  foreach ($daterange as $d) {
+    $date = $d->format('Y-m-d');
+
+    $hari = $absensi[$idp][$date] ?? [];
+
+    $datang = $hari['DATANG'] ?? null;
+    $pulang = $hari['PULANG'] ?? null;
+    $lain   = $hari['IJIN'] ?? $hari['SAKIT'] ?? $hari['LAIN-LAIN'] ?? null;
+
+
+    $sheet->setCellValue($colStatusStart . $rowDataStart, $datang['time'] ?? '-');
+    $colStatusStart++;
+    $sheet->setCellValue($colStatusStart . $rowDataStart, $datang['statushadir'] ?? '-');
+    $colStatusStart++;
+    $sheet->setCellValue($colStatusStart . $rowDataStart, $pulang['time'] ?? '-');
+    $colStatusStart++;
+    $sheet->setCellValue($colStatusStart . $rowDataStart, $pulang['statushadir'] ?? '-');
+    $colStatusStart++;
+
+    $statusLain = '';
+    if ($lain) {
+      $statusLain = $lain['jenis_absen'];
+    } elseif (!$datang && !$pulang) {
+      $statusLain = 'Alpha';
+    } else {
+      $statusLain = '-';
+    }
+    $sheet->setCellValue($colStatusStart . $rowDataStart, $statusLain);
+    $colStatusStart++;
+  }
+
+  $rowDataStart++;
+}
+
+// Header download
+$filename = "Rekap_Absensi_Periode_" . $tgl_awal . "_" . $tgl_akhir . "_download_at_" . date('YmdHis') . ".xlsx";
+
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment; filename="' . $filename . '"');
+header('Cache-Control: max-age=0');
+header('Cache-Control: max-age=1');
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // cache lama
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+header('Pragma: public');
+
+$writer = new Xlsx($spreadsheet);
+$writer->save('php://output');
+exit;
