@@ -105,7 +105,7 @@
 		<tr>
 			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
 			<td align="left" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
-				<b>Total Tagihan Santri</b>
+				<b>Total Tagihan Siswa</b>
 			</td>
 			<td align='right' style='border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt; '>Rp</td>
 			<td align="right" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">

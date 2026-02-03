@@ -173,9 +173,9 @@
 									foreach ($tagihan_siswa as $row) : ?>
 										<tr>
 											<td><?php echo $no++ ?></td>
-											<td class="nis_santri"><?php echo $row['student_nis'] ?></td>
-											<td class="nama_santri"><?php echo $row['student_full_name'] ?></td>
-											<td class="kelas_santri"><?php echo $row['class_name'] ?></td>
+											<td class="nis_siswa"><?php echo $row['student_nis'] ?></td>
+											<td class="nama_siswa"><?php echo $row['student_full_name'] ?></td>
+											<td class="kelas_siswa"><?php echo $row['class_name'] ?></td>
 											<td style="text-align: right;"><?php echo 'Rp ' . number_format($row['total_tagihan'], 0, ",", "."); ?></td>
 											<td><button data-student="<?php echo $row['student_id'] ?>" class="btnRincian btn btn-info btn-sm"><i class="fa fa-list"></i> Rician</button>
 												<a href="<?php echo site_url('manage/billing/print_bill/' . $q['p'] . '/' . $q['d'] . '/' . $q['s'] . '/' . $row['student_id']) ?>" target="_blank"><button class="btn btn-danger btn-sm"><i class="fa fa-file-pdf-o"></i> Cetak</button></a>
@@ -209,26 +209,26 @@
 
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal">&times;</button>
-				<h4 class="modal-title">Rincian Tagihan Santri</h4>
+				<h4 class="modal-title">Rincian Tagihan Siswa</h4>
 			</div>
 
-			<!-- Bagian identitas santri -->
+			<!-- Bagian identitas siswa -->
 			<div class="px-3 pt-2 pb-0">
 				<table style="width: 100%; margin-bottom: 10px;">
 					<tr>
 						<th style="text-align:left; width:25%;">NIS</th>
 						<th>:</th>
-						<td id="nisSantri"></td>
+						<td id="nisSiswa"></td>
 					</tr>
 					<tr>
 						<th style="text-align:left;">Nama</th>
 						<th>:</th>
-						<td id="namaSantri"></td>
+						<td id="namaSiswa"></td>
 					</tr>
 					<tr>
 						<th style="text-align:left;">Kelas</th>
 						<th>:</th>
-						<td id="kelasSantri"></td>
+						<td id="kelasSiswa"></td>
 					</tr>
 				</table>
 			</div>
@@ -264,13 +264,13 @@
 <script>
 	$(".btnRincian").click(function() {
 		const row = $(this).closest('tr');
-		const nis = row.find('.nis_santri').text().trim();
-		const nama = row.find('.nama_santri').text().trim();
-		const kelas = row.find('.kelas_santri').text().trim();
+		const nis = row.find('.nis_siswa').text().trim();
+		const nama = row.find('.nama_siswa').text().trim();
+		const kelas = row.find('.kelas_siswa').text().trim();
 
-		$("#nisSantri").text(nis);
-		$("#namaSantri").text(nama);
-		$("#kelasSantri").text(kelas);
+		$("#nisSiswa").text(nis);
+		$("#namaSiswa").text(nama);
+		$("#kelasSiswa").text(kelas);
 
 		var student = $(this).attr("data-student");
 		var period = $("#periodeID").val();

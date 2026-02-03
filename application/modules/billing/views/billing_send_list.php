@@ -54,17 +54,6 @@
 									</div>
 								</div>
 							</div>
-							<div class="col-md-2">
-								<div class="form-group">
-									<label>Kamar</label>
-									<select class="form-control" name="m" id="madin_id">
-										<option value="">--SEMUA KAMAR--</option>
-										<?php foreach ($madin as $row): ?>
-											<option <?php echo (isset($q['m']) and $q['m'] == $row['madin_id']) ? 'selected' : '' ?> value="<?php echo $row['madin_id'] ?>"><?php echo $row['madin_name'] ?></option>
-										<?php endforeach; ?>
-									</select>
-								</div>
-							</div>
 							<div class="col-md-4">
 								<div style="margin-top:25px;">
 									<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Cari</button>
@@ -89,7 +78,6 @@
 										<th>NIS</th>
 										<th>Nama</th>
 										<th>Kelas</th>
-										<th>Kamar</th>
 										<th>WA Ortu</th>
 										<th>Total Tagihan</th>
 									</tr>
@@ -188,7 +176,6 @@
 											<td><?php echo $row['student_nis'] ?></td>
 											<td><?php echo $row['student_full_name'] ?></td>
 											<td><?php echo $row['class_name'] ?></td>
-											<td><?php echo $row['madin_name'] ?></td>
 											<td><?php echo $row['student_parent_phone'] ?></td>
 											<td>
 												<?php
@@ -213,7 +200,7 @@
 									$kelas = $this->Student_model->get_class(array('id' => $q['c']));
 									?>
 									<tr style="background-color: #f0f0f0;">
-										<td colspan="7" align="center">
+										<td colspan="6" align="center">
 											<b>Total Tagihan Kelas <?php echo $kelas['class_name'] ?></b>
 										</td>
 										<td>
@@ -296,7 +283,7 @@
 									</div>
 									<div class="modal-body">
 										<?php echo form_open('manage/billing/send/', array('method' => 'post')); ?>
-										<p>Anda Yakin Mau Mengirim Tagihan ke Orang Tua Santri Tersebut?</p>
+										<p>Anda Yakin Mau Mengirim Tagihan ke Orang Tua Siswa Tersebut?</p>
 										<input type="hidden" class="form-group" name="period_id" value="<?php echo $q['p'] ?>">
 										<input type="hidden" class="form-group" name="majors_id" value="<?php echo $q['k'] ?>">
 										<input type="hidden" class="form-group" name="class_id" value="<?php echo $q['c'] ?>">

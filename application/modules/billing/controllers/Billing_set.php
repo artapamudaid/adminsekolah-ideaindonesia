@@ -76,7 +76,7 @@ class Billing_set extends CI_Controller
 		$data['to']         = $this->Bulan_model->get_month($params);
 
 		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
-		$data['title'] = 'Tagihan Santri';
+		$data['title'] = 'Tagihan Siswa';
 		$data['main'] = 'billing/billing_list';
 		$this->load->view('manage/layout', $data);
 	}
@@ -808,11 +808,10 @@ class Billing_set extends CI_Controller
 		$data['from']       = $this->Bulan_model->get_month($params);
 		$data['to']         = $this->Bulan_model->get_month($params);
 		$data['student']    = $this->Student_model->get($params);
-		$data['madin']      = $this->Student_model->get_madin(array());
 
 		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
 
-		$data['title'] = 'Kirim Tagihan Santri';
+		$data['title'] = 'Kirim Tagihan Siswa';
 		$data['main'] = 'billing/billing_send_list';
 		$this->load->view('manage/layout', $data);
 	}
@@ -935,27 +934,27 @@ class Billing_set extends CI_Controller
 					$till = '6';
 				}
 
-				$santri = $this->db->query("SELECT student_id, student_full_name, majors_short_name, majors_school_name, class_name, student_parent_phone, student_id_telegram FROM student JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE student.student_id = '$student_id[$i]'")->row_array();
+				$siswa = $this->db->query("SELECT student_id, student_full_name, majors_short_name, majors_school_name, class_name, student_parent_phone, student_id_telegram FROM student JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE student.student_id = '$student_id[$i]'")->row_array();
 				$wa_key             = $this->Setting_model->get(array('name' => 'setting_wa_key'));
 				$setting_whatsapp   = $this->Setting_model->get(array('id' => 92));
 				$set_key 			= $wa_key['setting_value'];
 				$set_wa  			= $setting_whatsapp['setting_value'];
 
-				if (isset($santri['student_parent_phone']) and $santri['student_parent_phone'] != '+62' and $total != 0) {
+				if (isset($siswa['student_parent_phone']) and $siswa['student_parent_phone'] != '+62' and $total != 0) {
 
 					//echo $student_id[$i];
 
-					$no_wa = $santri['student_parent_phone'];
+					$no_wa = $siswa['student_parent_phone'];
 					//$no_wa='+6281335111174';
-					$psn = 'Assalamualaikum, Bismillahirrahmanirrahim..' . "\n\n" . 'Diberitahukan kepada Ayah/Bunda Wali Siswa,  kami ingin mengingatkan kembali kewajiban pembayaran ananda A/N ' . $santri['student_full_name'] . ', Kelas ' . $santri['class_name'] . 'sejumlah Rp ' . number_format($total, 0, ",", ".") . '. sudah bisa ditunaikan.' . "\n\n" .
+					$psn = 'Assalamualaikum, Bismillahirrahmanirrahim..' . "\n\n" . 'Diberitahukan kepada Ayah/Bunda Wali Siswa,  kami ingin mengingatkan kembali kewajiban pembayaran ananda A/N ' . $siswa['student_full_name'] . ', Kelas ' . $siswa['class_name'] . 'sejumlah Rp ' . number_format($total, 0, ",", ".") . '. sudah bisa ditunaikan.' . "\n\n" .
 						'Kami mengharap kerjasama Ayah/Bunda agar bisa menunaikan kewajiban paling lambat tgl 10 tiap bulannya.' . "\n\n" .
-						'Download Tagihan : ' . base_url() . 'billing/cetak?a=' . base64_encode($period_id) . '&b=' . base64_encode('1') . '&c=' . base64_encode($till) . '&d=' . base64_encode($santri['student_id']) . "\n\n" . '*) Jika tagihan tidak sesuai dengan kartu syahriah atau sudah melakukan pembayaran agar konfirmasi dengan mengirimkan bukti pembayaran / kwitansi yang sah.';
+						'Download Tagihan : ' . base_url() . 'billing/cetak?a=' . base64_encode($period_id) . '&b=' . base64_encode('1') . '&c=' . base64_encode($till) . '&d=' . base64_encode($siswa['student_id']) . "\n\n" . '*) Jika tagihan tidak sesuai dengan kartu syahriah atau sudah melakukan pembayaran agar konfirmasi dengan mengirimkan bukti pembayaran / kwitansi yang sah.';
 					send_whatsapp($no_wa, $psn, $set_key, $set_wa);
 				}
 			}
 
 
-			$this->session->set_flashdata('success', ' Kirim Tagihan Santri Berhasil Dikirim');
+			$this->session->set_flashdata('success', ' Kirim Tagihan Siswa Berhasil Dikirim');
 			redirect('manage/billing/send_billing');
 		}
 	}
