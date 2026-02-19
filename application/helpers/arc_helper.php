@@ -163,3 +163,29 @@ function majors()
     $result = $CI->Setting_model->get(array('id' => 7));
     return $result['setting_value'];
 }
+
+if (!function_exists('sanitizeStrict')) {
+    function sanitizeStrict($input)
+    {
+        if (is_array($input)) {
+            foreach ($input as $key => $val) {
+                $input[$key] = sanitizeStrict($val);
+            }
+            return $input;
+        }
+
+        $input = (string) $input;
+
+        $input = strip_tags($input);
+
+        $input = preg_replace('/&#[0-9]+;|&#x[0-9A-F]+;/i', '', $input);
+
+        $input = preg_replace('/[<>]/', '', $input);
+
+        $input = str_ireplace('[removed]', '', $input);
+
+        $input = preg_replace('/[^a-zA-Z0-9\s\.\,\-\_\(\)\!\?\:\@\'\/]/', '', $input);
+
+        return trim($input);
+    }
+}
