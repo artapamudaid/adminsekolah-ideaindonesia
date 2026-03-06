@@ -7,11 +7,11 @@ uploads/
 uploadimage/
 
 media/barcode_employees/
+media/barcode_tahfidz/
 
 application/config/database.php
 composer.lock
-#application/views/portal.php
-#application/views/manage/login.php
+
 
 .DS_Store
 media/barcode_hutang/*
