@@ -2,11 +2,11 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            Dashboard
+            <?php echo $this->lang->line('dash_title'); ?>
         </h1>
         <ol class="breadcrumb">
-            <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Dashboard</li>
+            <li><a href="#"><i class="fa fa-dashboard"></i> <?php echo $this->lang->line('dash_home'); ?></a></li>
+            <li class="active"><?php echo $this->lang->line('dash_title'); ?></li>
         </ol>
     </section>
 
@@ -18,14 +18,14 @@
                     <span class="info-box-icon"><i class="fa fa-calculator icon" aria-hidden="true"></i></span>
 
                     <div class="info-box-content">
-                        <span class="info-box-text"><strong>Penerimaan KAS</strong></span>
+                        <span class="info-box-text"><strong><?php echo $this->lang->line('dash_receipts'); ?></strong></span>
                         <span class="info-box-number" style="opacity: 0;">kosong</span>
 
-                        <span class="info-box-text dash-text">Hari ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_today'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_debit_today, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Bulan ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_this_month'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_debit_month, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Tahun ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_this_year'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_debit_period, 0, ',', '.') ?></span>
                     </div>
                 </div>
@@ -39,14 +39,14 @@
                     <span class="info-box-icon"><i class="fa fa-money icon"></i></span>
 
                     <div class="info-box-content">
-                        <span class="info-box-text"><strong>Pengeluaran KAS</strong></span>
+                        <span class="info-box-text"><strong><?php echo $this->lang->line('dash_disbursements'); ?></strong></span>
                         <span class="info-box-number" style="opacity: 0;">kosong</span>
 
-                        <span class="info-box-text dash-text">Hari ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_today'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_kredit_today, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Bulan ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_this_month'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_kredit_month, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Tahun ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_this_year'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_kredit_period, 0, ',', '.') ?></span>
                     </div>
                 </div>
@@ -57,13 +57,13 @@
                 <div class="info-box bg-green-gradient">
                     <span class="info-box-icon"><i class="fa fa-bank icon"></i></span>
                     <div class="info-box-content">
-                        <span class="info-box-text"><strong>Pembayaran Siswa</strong></span>
+                        <span class="info-box-text"><strong><?php echo $this->lang->line('dash_student_payments'); ?></strong></span>
                         <span class="info-box-number" style="opacity: 0;">kosong</span>
-                        <span class="info-box-text dash-text">Hari ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_today'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_pay_today, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Bulan ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_this_month'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_pay_month, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Tahun ini</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_this_year'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_pay_period, 0, ',', '.') ?></span>
                     </div>
                 </div>
@@ -74,13 +74,13 @@
                     <span class="info-box-icon"><i class="fa fa-credit-card icon"></i></span>
 
                     <div class="info-box-content">
-                        <span class="info-box-text"><strong>Tabungan Siswa</strong></span>
+                        <span class="info-box-text"><strong><?php echo $this->lang->line('dash_student_savings'); ?></strong></span>
                         <span class="info-box-number" style="opacity: 0;">kosong</span>
-                        <span class="info-box-text dash-text">Setoran</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_deposit'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_setoran, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Penarikan</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_withdrawal'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_penarikan, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Saldo</span>
+                        <span class="info-box-text dash-text"><?php echo $this->lang->line('dash_balance'); ?></span>
                         <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_setoran - $total_penarikan, 0, ',', '.') ?></span>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
             <div class="col-md-12">
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Realisasi Akun Pembayaran</h3>
+                        <h3 class="box-title"><?php echo $this->lang->line('dash_payment_realization'); ?></h3>
                         <div class="box-tools pull-right">
                             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
                             </button>
@@ -124,8 +124,8 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-md btn-default" onclick="get_data()">Filter</button>
-                                <button class="btn btn-md btn-success" onclick="export_xls()">Export Xls</button>
+                                <button class="btn btn-md btn-default" onclick="get_data()"><?php echo $this->lang->line('dash_filter'); ?></button>
+                                <button class="btn btn-md btn-success" onclick="export_xls()"><?php echo $this->lang->line('dash_export_xls'); ?></button>
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -142,7 +142,7 @@
             <div class="col-md-6">
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Jurnal Keuangan</h3>
+                        <h3 class="box-title"><?php echo $this->lang->line('dash_financial_journal'); ?></h3>
                         <div class="box-tools pull-right">
                             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
                             </button>
@@ -160,7 +160,7 @@
 
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Jumlah Status Guru & Pegawai</h3>
+                        <h3 class="box-title"><?php echo $this->lang->line('dash_teacher_staff_status'); ?></h3>
                         <div class="box-tools pull-right">
                             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
                             </button>
@@ -179,7 +179,7 @@
 
                     <div class="box box-success">
                         <div class="box-header with-border">
-                            <h3 class="box-title">Lima Presensi Terawal</h3>
+                            <h3 class="box-title"><?php echo $this->lang->line('dash_earliest_attendance'); ?></h3>
 
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -206,7 +206,7 @@
                 <?php } else { ?>
                     <div class="box box-success">
                         <div class="box-header with-border">
-                            <h3 class="box-title">Informasi</h3>
+                            <h3 class="box-title"><?php echo $this->lang->line('dash_information'); ?></h3>
 
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -237,7 +237,7 @@
 
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Jumlah Siswa Tiap Jenjang</h3>
+                        <h3 class="box-title"><?php echo $this->lang->line('dash_student_per_level'); ?></h3>
                         <div class="box-tools pull-right">
                             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
                             </button>
@@ -254,7 +254,7 @@
 
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Kalender</h3>
+                        <h3 class="box-title"><?php echo $this->lang->line('dash_calendar'); ?></h3>
                         <div class="box-tools pull-right">
                             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
                             </button>
@@ -268,7 +268,7 @@
 
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Lima Pembayaran Terakhir Santri</h3>
+                        <h3 class="box-title"><?php echo $this->lang->line('dash_last_payments'); ?></h3>
 
                         <div class="box-tools pull-right">
                             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>

@@ -11,7 +11,7 @@ class Dashboard_set extends CI_Controller
         if ($this->session->userdata('logged') == NULL) {
             header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
             redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
-            exit; // ⬅️ PENTING
+            exit;
         }
 
         $this->load->model(array(
@@ -31,6 +31,13 @@ class Dashboard_set extends CI_Controller
         ));
 
         $this->load->library('user_agent');
+
+        $siteLang = $this->session->userdata('site_lang');
+        if ($siteLang) {
+            $this->lang->load('dashboard', $siteLang);
+        } else {
+            $this->lang->load('dashboard', 'indonesia');
+        }
     }
 
     public function index()
@@ -40,8 +47,8 @@ class Dashboard_set extends CI_Controller
         $id = $this->session->userdata('uid');
         $uRole = $this->session->userdata('uroleid');
 
-        $hasDashboard       = false;
-        $hasDashboard       = false;
+        $hasDashboard = false;
+        $hasDashboard = false;
         if ($uRole) {
             $cekAksesDashboard = $this->db->query("SELECT hak_akses_id FROM hak_akses WHERE menu_id = 1 AND role_id = $uRole LIMIT 1")->row();
             if ($cekAksesDashboard) {
@@ -49,63 +56,63 @@ class Dashboard_set extends CI_Controller
             }
         }
 
-        $data['user']           = count($this->Users_model->get());
+        $data['user'] = count($this->Users_model->get());
 
-        $data['majors']         = $this->db->query("SELECT majors_id, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
+        $data['majors'] = $this->db->query("SELECT majors_id, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
 
-        $period                 = $this->db->query("SELECT period_id,period_start,period_end FROM period WHERE period_status = 1")->row_array();
-        $periodActive           = $period['period_id'];
+        $period = $this->db->query("SELECT period_id,period_start,period_end FROM period WHERE period_status = 1")->row_array();
+        $periodActive = $period['period_id'];
         $periodStart = $period['period_start'];
-        $periodEnd   = $period['period_end'];
+        $periodEnd = $period['period_end'];
 
         $dateStart = "$periodStart-07-01";
-        $dateEnd  = "$periodEnd-06-30";
+        $dateEnd = "$periodEnd-06-30";
 
-        $mon                    = pretty_date(date('Y-m-d'), 'F', false);
-        $bulanSekarang          = pretty_date(date('Y-m-d'), 'm', false);
+        $mon = pretty_date(date('Y-m-d'), 'F', false);
+        $bulanSekarang = pretty_date(date('Y-m-d'), 'm', false);
 
-        $month                  = $this->db->query("SELECT month_id FROM month WHERE month_name = '$mon'")->row_array();
-        $data['monthActive']    = $month['month_id'];
+        $month = $this->db->query("SELECT month_id FROM month WHERE month_name = '$mon'")->row_array();
+        $data['monthActive'] = $month['month_id'];
 
         if ($hasDashboard) {
             // $data['kas']            = $this->db->query("SELECT kas_noref, kas_debit, kas_kredit, kas_month_id, kas_majors_id, kas_input_date FROM kas WHERE kas_period = '$periodActive'")->result_array();
-            $data['kasTotal']          = $this->db->query(
+            $data['kasTotal'] = $this->db->query(
                 "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
                     FROM v_laporan_jurnal 
                     WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd'
                     GROUP BY jenisTransaksi"
             )->result_array();
 
-            $data['kasMonth']          = $this->db->query(
+            $data['kasMonth'] = $this->db->query(
                 "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
                     FROM v_laporan_jurnal 
                     WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd' AND MONTH(tanggal) = MONTH(CURRENT_DATE())
                     GROUP BY jenisTransaksi"
             )->result_array();
 
-            $data['kasToday']          = $this->db->query(
+            $data['kasToday'] = $this->db->query(
                 "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
                     FROM v_laporan_jurnal 
                     WHERE tanggal = CURDATE()
                     GROUP BY jenisTransaksi"
             )->result_array();
 
-            $data['student']        = $this->db->query("SELECT student_status, majors_majors_id FROM student")->result_array();
-            $data['employee']       = $this->db->query("SELECT employee_category FROM employee")->result_array();
+            $data['student'] = $this->db->query("SELECT student_status, majors_majors_id FROM student")->result_array();
+            $data['employee'] = $this->db->query("SELECT employee_category FROM employee")->result_array();
 
-            $banking                = $this->db->query("SELECT SUM(banking_debit) AS total_setor, SUM(banking_kredit) AS total_tarik FROM banking")->row_array();
+            $banking = $this->db->query("SELECT SUM(banking_debit) AS total_setor, SUM(banking_kredit) AS total_tarik FROM banking")->row_array();
 
             $data['total_setoran'] = (int)$banking['total_setor'] ?? 0;
             $data['total_penarikan'] = (int)$banking['total_tarik'] ?? 0;
 
-            $data['information']    = $this->Information_model->get(array('information_publish' => 1));
-            $data['majors']         = $this->Student_model->get_majors();
-            $data['numStudents']    = $this->db->query("SELECT COUNT(student_id) as numbers
+            $data['information'] = $this->Information_model->get(array('information_publish' => 1));
+            $data['majors'] = $this->Student_model->get_majors();
+            $data['numStudents'] = $this->db->query("SELECT COUNT(student_id) as numbers
                                                     FROM student
                                                     GROUP BY majors_majors_id
                                                     ORDER BY majors_majors_id ASC")->result_array();
 
-            $data['lastPayments']   = $this->db->query("SELECT s.student_full_name, MAX(l.log_trx_input_date) AS last_payment
+            $data['lastPayments'] = $this->db->query("SELECT s.student_full_name, MAX(l.log_trx_input_date) AS last_payment
                                                             FROM log_trx l
                                                             JOIN student s ON s.student_id = l.student_student_id
                                                             WHERE DATE(l.log_trx_input_date) = CURRENT_DATE
@@ -234,19 +241,19 @@ class Dashboard_set extends CI_Controller
                 }
             }
 
-            $dates['tgl_awal']      = date('Y-m-d');
-            $dates['tgl_akhir']     = date('Y-m-d');
+            $dates['tgl_awal'] = date('Y-m-d');
+            $dates['tgl_akhir'] = date('Y-m-d');
 
-            $data['package']        = $this->Setting_model->get(array('name' => 'setting_package'));
+            $data['package'] = $this->Setting_model->get(array('name' => 'setting_package'));
 
-            $data['periodActive']   = $periodActive;
-            $data['period']         = $this->Period_model->get();
-            $data['month']          = $this->Bulan_model->get_month();
-            $data['setting_logo']   = $this->Setting_model->get(array('id' => 6));
+            $data['periodActive'] = $periodActive;
+            $data['period'] = $this->Period_model->get();
+            $data['month'] = $this->Bulan_model->get_month();
+            $data['setting_logo'] = $this->Setting_model->get(array('id' => 6));
             $data['rekap_presensi'] = $this->Rekap_presensi_model->get_dashboard($dates);
 
-            $data['holiday']        = $this->Holiday_model->get();
-            $data['main']           = 'dashboard/dashboard';
+            $data['holiday'] = $this->Holiday_model->get();
+            $data['main'] = 'dashboard/dashboard';
         } else {
             $data['information'] = $this->Information_model->get(array('information_publish' => 1));
 
@@ -254,7 +261,7 @@ class Dashboard_set extends CI_Controller
             $data['main'] = 'dashboard/dashboard_employees';
         }
 
-        $data['title']          = 'Dashboard';
+        $data['title'] = 'Dashboard';
         $this->load->view('manage/layout', $data);
     }
 
@@ -278,12 +285,12 @@ class Dashboard_set extends CI_Controller
 
         $html = '<thead>
                 <tr>
-                <th>Unit</th>
-                <th>Akun Pembayaran</th>
-                <th>Tagihan</th>
-                <th>Terbayar</th>
-                <th>Belum Terbayar</th>
-                <th>Pencapaian</th>
+                <th>' . $this->lang->line('dash_unit') . '</th>
+                <th>' . $this->lang->line('dash_payment_account') . '</th>
+                <th>' . $this->lang->line('dash_bill') . '</th>
+                <th>' . $this->lang->line('dash_paid') . '</th>
+                <th>' . $this->lang->line('dash_unpaid') . '</th>
+                <th>' . $this->lang->line('dash_achievement') . '</th>
                 </tr>
                 </thead>';
 
@@ -304,8 +311,8 @@ class Dashboard_set extends CI_Controller
             foreach ($rBulan as $dBulan) {
                 if ($major['majors_id'] == $dBulan['majors_id']) {
 
-                    $terbayar = (int) $dBulan['terbayar'];
-                    $belum    = (int) $dBulan['belum'];
+                    $terbayar = (int)$dBulan['terbayar'];
+                    $belum = (int)$dBulan['belum'];
                     $totalBulan = $terbayar + $belum;
 
                     $pembulatanBulan = $totalBulan > 0
@@ -318,7 +325,7 @@ class Dashboard_set extends CI_Controller
                     <td>Rp ' . number_format($totalBulan, '0', ',', '.') . '</td>
                     <td>Rp ' . number_format($dBulan['terbayar'], '0', ',', '.') . '</td>
                     <td>Rp ' . number_format($dBulan['belum'], '0', ',', '.') . '</td>
-                    <td>' . $pembulatanBulan  . '% </td>
+                    <td>' . $pembulatanBulan . '% </td>
                     </tr>';
 
                     $sumTagihanBulan += $totalBulan;
@@ -330,8 +337,8 @@ class Dashboard_set extends CI_Controller
             foreach ($rBebas as $dBebas) {
                 if ($major['majors_id'] == $dBebas['majors_id']) {
 
-                    $terbayar = (int) $dBebas['terbayar'];
-                    $belum    = (int) $dBebas['belum'];
+                    $terbayar = (int)$dBebas['terbayar'];
+                    $belum = (int)$dBebas['belum'];
                     $totalBebas = $terbayar + $belum;
 
                     $pembulatanBebas = $totalBebas > 0
@@ -380,9 +387,9 @@ class Dashboard_set extends CI_Controller
 
     public function realisasi_xls()
     {
-        $getRealisasi   = $this->Dashboard_model->get_realisasi();
+        $getRealisasi = $this->Dashboard_model->get_realisasi();
 
-        $dataRealisasi  = json_decode($getRealisasi, true);
+        $dataRealisasi = json_decode($getRealisasi, true);
         $data['rBulan'] = $dataRealisasi['rp_bulan'];
         $data['rBebas'] = $dataRealisasi['rp_bebas'];
         $data['majors'] = $this->Student_model->get_majors();
@@ -390,13 +397,13 @@ class Dashboard_set extends CI_Controller
         $start = $this->get_month_name($_GET['start']);
         $end = $this->get_month_name($_GET['end']);
 
-        $data['setting_nip_bendahara']      = $this->Setting_model->get(array('id' => 15));
-        $data['setting_nama_bendahara']     = $this->Setting_model->get(array('id' => 16));
-        $data['setting_city']               = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-        $data['setting_district']           = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-        $data['setting_school']             = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-        $data['setting_address']            = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-        $data['setting_phone']              = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+        $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
+        $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+        $data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+        $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+        $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+        $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+        $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
         $data['bulan'] = $start . '_' . $end;
         $data['period'] = $dataRealisasi['period'];
@@ -404,7 +411,7 @@ class Dashboard_set extends CI_Controller
         $this->load->view('dashboard/realisasi_xls', $data);
     }
 
-    private function get_month_name(Int $month = null)
+    private function get_month_name(int $month = null)
     {
 
         $this->db->where('month_id', $month);
@@ -429,7 +436,7 @@ class Dashboard_set extends CI_Controller
         echo json_encode($data, TRUE);
     }
 
-    private function pembulatan(Float $number = null)
+    private function pembulatan(float $number = null)
     {
 
         $round = ceil($number * 10) / 10;
