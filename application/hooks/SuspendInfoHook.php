@@ -33,8 +33,9 @@ class SuspendInfoHook
         // $show_info = ($diff <= 30 && $diff > 0);
         $show_info = ($diff == 30 ||
             $diff == 21 ||
-            $diff == 14 ||
-            ($diff <= 7 && $diff > 0)
+            // $diff == 14 ||
+            // ($diff <= 7 && $diff > 0)
+            ($diff <= 15 && $diff > 0)
         );
 
         if ($diff < 0) {
