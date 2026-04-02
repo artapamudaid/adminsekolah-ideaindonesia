@@ -52,37 +52,73 @@ class Cardregister_set extends CI_Controller
 
   function set_data()
   {
-    $nis = $this->input->post('nis');
-    $rfid = $this->input->post('rfid');
-    $pin = $this->input->post('pin');
+    $nis = sanitizeStrict($this->input->post('nis'));
+    $rfid = sanitizeStrict($this->input->post('rfid'));
+    $pin = sanitizeStrict($this->input->post('pin'));
 
-    $pin = $pin;
-
-    $student     = $this->db->query("SELECT * FROM cards WHERE nis = '$nis'")->result_array();
-
-    if (count($student) > 0) {
-
-      $data = array(
-        'rfid' => $rfid,
-        'pin' => md5($pin),
-        'updated_at' => date('Y-m-d H:i:s')
-      );
-
-      $this->db->where('nis', $nis);
-      $data = $this->db->update('cards', $data);
-    } else {
-
-      $data = array(
-        'rfid' => $rfid,
-        'nis' => $nis,
-        'pin' => md5($pin),
-        'status' => 1
-      );
-
-      $data = $this->db->insert('cards', $data);
+    if (!ctype_digit($rfid) || strlen($rfid) != 10) {
+      echo json_encode([
+        'status' => false,
+        'message' => 'RFID harus berupa angka dan memiliki panjang 10 karakter.'
+      ]);
+      return;
     }
 
-    echo json_encode($data);
+    $check_rfid = $this->db
+      ->where('rfid', $rfid)
+      ->where('nis !=', $nis)
+      ->get('cards')
+      ->num_rows();
+
+    if ($check_rfid > 0) {
+      echo json_encode([
+        'status' => false,
+        'message' => 'RFID sudah digunakan oleh siswa lain.'
+      ]);
+      return;
+    }
+
+    if (!ctype_digit($pin) || strlen($pin) != 6) {
+      echo json_encode([
+        'status' => false,
+        'message' => 'PIN harus berupa angka dan memiliki panjang 6 karakter.'
+      ]);
+      return;
+    }
+
+    $student = $this->db->get_where('cards', ['nis' => $nis])->row_array();
+
+    if ($student) {
+
+      $payload = [
+        'rfid'       => $rfid,
+        'pin'        => md5($pin),
+        'updated_at' => date('Y-m-d H:i:s')
+      ];
+
+      $this->db->where('nis', $nis);
+      $this->db->update('cards', $payload);
+
+      echo json_encode([
+        'status' => true,
+        'message' => 'Data berhasil diperbarui.'
+      ]);
+    } else {
+
+      $payload = [
+        'nis'   => $nis,
+        'rfid'  => $rfid,
+        'pin'   => md5($pin),
+        'status' => 1
+      ];
+
+      $this->db->insert('cards', $payload);
+
+      echo json_encode([
+        'status' => true,
+        'message' => 'Data berhasil disimpan.'
+      ]);
+    }
   }
 
 
