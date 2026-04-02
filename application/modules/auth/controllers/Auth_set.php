@@ -39,6 +39,23 @@ class Auth_set extends CI_Controller
 
             $user = $this->Users_model->get_login(array('email' => $email, 'password' => md5($password)));
 
+            $aktivasi = $this->Setting_model->get(array('name' => 'setting_aktivasi'));
+            $aktivasi_value = (isset($aktivasi['setting_value']) && $aktivasi['setting_value'] == 'Y') ? 'Y' : 'N';
+
+            if (
+                $aktivasi_value == 'N' and
+                $user[0]['user_role_role_id'] != '3'
+            ) {
+                redirect('suspended');
+            }
+
+            $setting_end = $this->Setting_model->get(array('name' => 'setting_end'));
+            if ($setting_end) {
+                $setting_end_value = $setting_end['setting_value'];
+            } else {
+                $setting_end_value = date('Y-m-d', strtotime('+1 day'));
+            }
+
             if (count($user) > 0) {
                 $this->session->set_userdata('logged', TRUE);
                 $this->session->set_userdata('uid', $user[0]['user_id']);
@@ -49,6 +66,7 @@ class Auth_set extends CI_Controller
                 $this->session->set_userdata('umajorsname', $user[0]['majors_name']);
                 $this->session->set_userdata('urolename', $user[0]['role_name']);
                 $this->session->set_userdata('user_image', $user[0]['user_image']);
+                $this->session->set_userdata('suspend_date', $setting_end_value);
                 if ($location != '') {
                     header("Location:" . htmlspecialchars($location));
                 } else {

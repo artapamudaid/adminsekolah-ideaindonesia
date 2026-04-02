@@ -17,3 +17,10 @@ $hook['post_controller'] = array(
     'filename' => 'AppStatusHook.php',
     'filepath' => 'hooks'
 );
+
+$hook['post_controller_constructor'][] = array(
+    'class'    => 'SuspendInfoHook',
+    'function' => 'check',
+    'filename' => 'SuspendInfoHook.php',
+    'filepath' => 'hooks'
+);

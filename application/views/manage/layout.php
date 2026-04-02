@@ -582,6 +582,18 @@
         return s.join(dec);
       }
     </script>
+
+    <script>
+      $(function() {
+        let suspend_show = <?= isset($this->suspend_info['show']) ? json_encode($this->suspend_info['show']) : false; ?>;
+        let suspend_date = <?= isset($this->suspend_info['suspend_date']) ? json_encode($this->suspend_info['suspend_date']) : null; ?>;
+        if (suspend_show) {
+          let suspendUI = <?= isset($this->suspend_info['ui']) ? json_encode($this->suspend_info['ui']) : ''; ?>;
+
+          $(".content-wrapper").prepend(suspendUI);
+        }
+      });
+    </script>
 </body>
 
 </html>
