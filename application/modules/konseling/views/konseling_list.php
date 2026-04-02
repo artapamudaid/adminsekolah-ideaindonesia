@@ -71,7 +71,7 @@
 			</div>
 		</div>
 
-		<?php if ($f) { ?>
+		<?php if ($f && $f['r'] !== '') { ?>
 			<!-- Data Konseling Siswa -->
 			<div class="box box-primary">
 				<div class="box-header with-border">
@@ -160,16 +160,16 @@
 					<div class="nav-tabs-custom">
 						<!-- TAB UTAMA -->
 						<ul class="nav nav-tabs">
-							<li class="<?php echo $f['m'] == 0 ? 'active' : '' ?> tab-utama"> <a href="#pelanggaran" data-toggle="tab">Pelanggaran</a></li>
-							<li class="<?php echo $f['m'] == 1 ? 'active' : '' ?> tab-utama"><a href="#konsultasi" data-toggle="tab">Konsultasi</a></li>
-							<li class="<?php echo $f['m'] == 2 ? 'active' : '' ?> tab-utama"><a href="#prestasi" data-toggle="tab">Prestasi</a></li>
+							<li class="<?php echo @$f['m'] == 0 ? 'active' : '' ?> tab-utama"> <a href="#pelanggaran" data-toggle="tab">Pelanggaran</a></li>
+							<li class="<?php echo @$f['m'] == 1 ? 'active' : '' ?> tab-utama"><a href="#konsultasi" data-toggle="tab">Konsultasi</a></li>
+							<li class="<?php echo @$f['m'] == 2 ? 'active' : '' ?> tab-utama"><a href="#prestasi" data-toggle="tab">Prestasi</a></li>
 						</ul>
 
 						<!-- ISI DARI TIAP TAB UTAMA -->
 						<div class="tab-content">
 
 							<!-- ================= PELANGGARAN ================= -->
-							<div class="<?php echo $f['m'] == 0 ? 'active' : '' ?> tab-pane" id="pelanggaran">
+							<div class="<?php echo @$f['m'] == 0 ? 'active' : '' ?> tab-pane" id="pelanggaran">
 								<div class="d-flex justify-content-end mb-2" style="margin-bottom: 2px;">
 									<a href="<?php echo base_url() . 'manage/konseling/printBook/?n=' . $f['n'] . '&r=' . $f['r']; ?>" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-print"></i> Cetak Buku Pelanggaran</a>
 								</div>
@@ -368,7 +368,7 @@
 							</div>
 
 							<!-- ================= KONSULTASI ================= -->
-							<div class="<?php echo $f['m'] == 1 ? 'active' : '' ?> tab-pane" id="konsultasi">
+							<div class="<?php echo @$f['m'] == 1 ? 'active' : '' ?> tab-pane" id="konsultasi">
 								<div class="d-flex justify-content-end mb-2" style="margin-bottom: 2px;">
 									<a href="<?php echo base_url() . 'manage/konseling/printBookKonsultasi/?n=' . $f['n'] . '&r=' . $f['r']; ?>" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-print"></i> Cetak Buku Konsultasi</a>
 								</div>
@@ -515,7 +515,7 @@
 							</div>
 
 							<!-- ================= PRESTASI ================= -->
-							<div class="<?php echo $f['m'] == 2 ? 'active' : '' ?> tab-pane" id="prestasi">
+							<div class="<?php echo @$f['m'] == 2 ? 'active' : '' ?> tab-pane" id="prestasi">
 								<div class="d-flex justify-content-end mb-2" style="margin-bottom: 2px;">
 									<a href="<?php echo base_url() . 'manage/konseling/printBookPrestasi/?n=' . $f['n'] . '&r=' . $f['r']; ?>" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-print"></i> Cetak Buku Prestasi</a>
 								</div>

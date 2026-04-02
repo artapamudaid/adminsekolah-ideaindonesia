@@ -40,8 +40,6 @@ class Konseling_set extends CI_Controller
       $siswa = $this->Student_model->get(array('student_nis' => $f['r']));
       $siswaID = $siswa['student_id'];
 
-      $data['periodActive'] = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
-
       $data['siswa'] = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
 
       $data['konseling']      = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'PELANGGARAN', 'order_by' => 'konseling_id'));
@@ -53,6 +51,7 @@ class Konseling_set extends CI_Controller
       $data['konsultasi']      = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'KONSULTASI', 'order_by' => 'konseling_id'));
     }
 
+    $data['periodActive'] = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
 
     $data['kategori_pelanggaran']  = $this->Konseling_model->kategori_pelanggaran();
     $data['kategori_prestasi']     = $this->Konseling_model->kategori_prestasi();
