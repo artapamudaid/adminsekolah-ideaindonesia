@@ -188,4 +188,22 @@ if (!function_exists('sanitizeStrict')) {
 
         return trim($input);
     }
+
+    function pre($data)
+    {
+        echo '<pre>';
+        print_r($data);
+        echo '</pre>';
+    }
+
+    if (!function_exists('printQuery')) {
+        function printQuery()
+        {
+            $CI = &get_instance();
+            echo '<pre>';
+            echo $CI->db->last_query();
+            echo '</pre>';
+            die;
+        }
+    }
 }
