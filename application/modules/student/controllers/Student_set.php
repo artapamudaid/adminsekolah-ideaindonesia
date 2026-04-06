@@ -553,9 +553,13 @@ class Student_set extends CI_Controller
         $path = FCPATH . 'uploads/xls_tmp/';
         $pathFile = $path . $file;
 
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        ini_set('memory_limit', '1024M'); // Alokasikan memory sementara untuk baca file excel
+        
+        $fileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($pathFile);
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($fileType);
+        $reader->setReadDataOnly(true); // Baca data saja tanpa style untuk menghemat memory
         $spreadsheet = $reader->load($pathFile);
-        $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+        $worksheet = $spreadsheet->getActiveSheet();
 
         //Ambil semua NIS dari DB sekali saja
         $existingNis = $this->db->select('student_nis')->get('student')->result_array();
@@ -564,21 +568,38 @@ class Student_set extends CI_Controller
         $numrow = 1;
         $imported = 0;
         $duplicated = 0;
-        foreach ($sheet as $row) {
-          $student_nis          = $row['A']; // required
-          $student_nisn         = $row['B'];
-          $student_full_name    = $row['C']; // required
+        
+        foreach ($worksheet->getRowIterator() as $rowObj) {
+          $cellIterator = $rowObj->getCellIterator();
+          $cellIterator->setIterateOnlyExistingCells(false); 
+          
+          $row = [];
+          foreach ($cellIterator as $cell) {
+             $row[$cell->getColumn()] = $cell->getValue();
+          }
+
+          $student_nis          = isset($row['A']) ? trim($row['A']) : ''; // required
+          $student_nisn         = isset($row['B']) ? trim($row['B']) : '';
+          $student_full_name    = isset($row['C']) ? trim($row['C']) : ''; // required
           $class_class_id       = isset($row['D']) ? (int)trim($row['D']) : 0;
           $majors_majors_id     = isset($row['E']) ? (int)trim($row['E']) : 0;
-          $student_parent_phone = $row['F'];
-          $gender               = $row['G'];
-          $tempat_lahir         = $row['H'];
-          $tgl_lahir            = $row['I'];
-          $hobi                 = $row['J'];
-          $student_phone        = $row['K'];
-          $alamat               = $row['L'];
-          $ayah                 = $row['M'];
-          $ibu                  = $row['N'];
+          $student_parent_phone = isset($row['F']) ? trim($row['F']) : '';
+          $gender               = isset($row['G']) ? trim($row['G']) : '';
+          $tempat_lahir         = isset($row['H']) ? trim($row['H']) : '';
+          $tgl_lahir            = isset($row['I']) ? trim($row['I']) : '';
+          
+          // Konversi nilai tgl lahir jika formatnya numerical serial excel
+          if (is_numeric($tgl_lahir) && !empty($tgl_lahir)) {
+             try {
+                $tgl_lahir = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tgl_lahir)->format('Y-m-d');
+             } catch (\Exception $e) {}
+          }
+
+          $hobi                 = isset($row['J']) ? trim($row['J']) : '';
+          $student_phone        = isset($row['K']) ? trim($row['K']) : '';
+          $alamat               = isset($row['L']) ? trim($row['L']) : '';
+          $ayah                 = isset($row['M']) ? trim($row['M']) : '';
+          $ibu                  = isset($row['N']) ? trim($row['N']) : '';
 
           if ($numrow > 2) {
             // Validasi awal
@@ -654,6 +675,9 @@ class Student_set extends CI_Controller
           $numrow++;
         }
 
+        $spreadsheet->disconnectWorksheets();
+        unset($spreadsheet);
+        
         unlink($pathFile);
 
         // Flash message akumulatif
@@ -797,17 +821,29 @@ class Student_set extends CI_Controller
         $path = FCPATH . 'uploads/xls_tmp/';
         $pathFile = $path . $file;
 
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        ini_set('memory_limit', '1024M'); // Alokasikan memori sementara
+        $fileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($pathFile);
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($fileType);
+        $reader->setReadDataOnly(true); // Baca data tanpa style format
         $spreadsheet = $reader->load($pathFile);
-        $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+        $worksheet = $spreadsheet->getActiveSheet();
+        
         $numrow = 1;
-        foreach ($sheet as $row) {
+        
+        foreach ($worksheet->getRowIterator() as $rowObj) {
+          $cellIterator = $rowObj->getCellIterator();
+          $cellIterator->setIterateOnlyExistingCells(false); 
+          
+          $row = [];
+          foreach ($cellIterator as $cell) {
+             $row[$cell->getColumn()] = $cell->getValue();
+          }
 
-          $student_nis            = $row['A'];
-          $student_address        = $row['E'];
-          $student_name_of_father = $row['F'];
-          $student_name_of_mother = $row['G'];
-          $student_parent_phone   = $row['H'];
+          $student_nis            = isset($row['A']) ? trim($row['A']) : '';
+          $student_address        = isset($row['E']) ? trim($row['E']) : '';
+          $student_name_of_father = isset($row['F']) ? trim($row['F']) : '';
+          $student_name_of_mother = isset($row['G']) ? trim($row['G']) : '';
+          $student_parent_phone   = isset($row['H']) ? trim($row['H']) : '';
 
           if ($numrow > 2) {
 
@@ -842,6 +878,9 @@ class Student_set extends CI_Controller
           $numrow++;
         }
 
+        $spreadsheet->disconnectWorksheets();
+        unset($spreadsheet);
+        
         unlink($pathFile);
 
         $this->session->set_flashdata('success', 'Update No. Whatsapp Ortu Siswa Berhasil');
