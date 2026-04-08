@@ -125,8 +125,47 @@ class Banking_set extends CI_Controller
 
 
       if (isset($student['student_parent_phone']) and $student['student_parent_phone'] != '+62') {
+        // $params_msg['pesan'] = 'Setoran Tabungan ananda ' . $student['student_full_name'] . ' kelas ' . $student['class_name'] . ' unit ' . $student['majors_school_name'] . ' sudah kami terima.' . "\n\n" .
+        // 'Berikut Bukti Transaksi Tabungan nya.' . "\n\n" . ' Download Bukti : ' . base_url() . 'banking/cetakBukti?r=' . base64_encode($nis) . '&d=' . base64_encode($params['banking_date']);
+
         $params_msg['pesan'] = 'Setoran Tabungan ananda ' . $student['student_full_name'] . ' kelas ' . $student['class_name'] . ' unit ' . $student['majors_school_name'] . ' sudah kami terima.' . "\n\n" .
-          'Berikut Bukti Transaksi Tabungan nya.' . "\n\n" . ' Download Bukti : ' . base_url() . 'banking/cetakBukti?r=' . base64_encode($nis) . '&d=' . base64_encode($params['banking_date']);
+          'Berikut Bukti Transaksi Tabungan nya.';
+
+
+
+        $template_query = $this->db->get_where('templates', array('location' => 'BANKING_IN'));
+
+        $check_template         = $template_query->num_rows();
+
+        if ($check_template > 0) {
+          $get_template = $template_query->row_array();
+
+          $data = [
+            'STUDENT_NIS' => $student['student_nis'],
+            'STUDENT_FULL_NAME' => $student['student_full_name'],
+            'EMPLOYEE_NIP' => '',
+            'EMPLOYEE_NAME' => '',
+            'POSITION_NAME' => '',
+            'CLASS_NAME' => $student['class_name'],
+            'MAJORS_SCHOOL_NAME' => $student['majors_school_name'],
+            'MAJORS_SHORT_NAME' => $student['majors_short_name'],
+            'NOMINAL' => '',
+            'TRX_DATE' => '',
+            'NOREF' => '',
+            'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
+            'YEAR' => date('Y')
+          ];
+
+          $template = $get_template['content'];
+
+          $debit_template = parse_template($template, $data, false);
+
+          $debit_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $debit_template);
+        }
+
+        $params_msg['pesan'] = $debit_template;
+
+        $params_msg['pesan'] .= "\n\n" . ' Download Bukti : ' . base_url() . 'banking/cetakBukti?r=' . base64_encode($nis) . '&d=' . base64_encode($params['banking_date']);
 
         $params_msg['no_wa']                = $student['student_parent_phone'];
         $params_msg['status_kirim']         = 'PENDING';
@@ -237,6 +276,64 @@ class Banking_set extends CI_Controller
       }
 
       $this->Banking_model->add($params);
+
+      $student = $this->db->query("SELECT student_id, student_full_name, majors_short_name, majors_id, majors_school_name, class_name,  student_parent_phone, student_id_telegram FROM student JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE student.student_nis = '$nis'")->row_array();
+      $wa_key             = $this->Setting_model->get(array('name' => 'setting_wa_key'));
+      $setting_whatsapp   = $this->Setting_model->get(array('id' => 92));
+      $set_key       = $wa_key['setting_value'];
+      $set_wa        = $setting_whatsapp['setting_value'];
+
+      if (isset($student['student_parent_phone']) and $student['student_parent_phone'] != '+62') {
+
+        $kredit_template = 'Penarikan Tabungan ananda ' . $student['student_full_name'] . ' kelas ' . $student['class_name'] . ' unit ' . $student['majors_school_name'] . ' sudah diproses.';
+
+        $template_query = $this->db->get_where('templates', array('location' => 'BANKING_OUT'));
+
+        $check_template         = $template_query->num_rows();
+
+        if ($check_template > 0) {
+          $get_template = $template_query->row_array();
+
+          $data = [
+            'STUDENT_NIS' => $student['student_nis'],
+            'STUDENT_FULL_NAME' => $student['student_full_name'],
+            'EMPLOYEE_NIP' => '',
+            'EMPLOYEE_NAME' => '',
+            'POSITION_NAME' => '',
+            'CLASS_NAME' => $student['class_name'],
+            'MAJORS_SCHOOL_NAME' => $student['majors_school_name'],
+            'MAJORS_SHORT_NAME' => $student['majors_short_name'],
+            'NOMINAL' => '',
+            'TRX_DATE' => '',
+            'NOREF' => '',
+            'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
+            'YEAR' => date('Y')
+          ];
+
+          $template = $get_template['content'];
+
+          $kredit_template = parse_template($template, $data, false);
+
+          $kredit_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $kredit_template);
+        }
+
+        $params_msg['pesan'] = $kredit_template;
+
+        $params_msg['pesan'] .= "\n\n" . ' Download Bukti : ' . base_url() . 'banking/cetakBukti?r=' . base64_encode($nis) . '&d=' . base64_encode($params['banking_date']);
+
+        $params_msg['no_wa']                = $student['student_parent_phone'];
+        $params_msg['status_kirim']         = 'PENDING';
+        // $params_msg['id_funding']           = $noref;
+        $params_msg['created_by']           = $user_id = $this->session->userdata('uid');
+        $params_msg['created_date']         = date("Y-m-d H:i:s");
+
+        $this->Log_trx_model->send_pesan($params_msg);
+
+        $no_wa = $student['student_parent_phone'];
+        $psn = $params_msg['pesan'];
+
+        send_whatsapp($no_wa, $psn, $set_key, $set_wa);
+      }
 
       return $this->output
         ->set_content_type('application/json')
