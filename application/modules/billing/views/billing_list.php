@@ -60,7 +60,7 @@
 				<div class="box box-success">
 					<div class="box-header">
 						<div class="row">
-							<form action="<?= current_url(); ?>" method="get">
+							<form action="<?= current_url(); ?>" method="get" id="form-report">
 								<div class="col-md-2">
 									<div class="form-group">
 										<label>Tahun Ajaran</label>
@@ -140,7 +140,8 @@
 								</div>
 								<div class="col-md-2">
 									<div style="margin-top:25px;">
-										<button type="submit" class="btn btn-primary">Cari</button>
+										<button type="button" class="btn btn-primary" id="btn-cari"><i class="fa fa-search"></i> Cari</button>
+										<button type="submit" class="btn btn-primary hidden"><i class="fa fa-search"></i> Cari</button>
 										<?php if ($q and !empty($tagihan_siswa)) { ?>
 											<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/billing/billing_excel' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i>Detail Excel</a>
 											<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/billing/billing_excel_rekap' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Rekap Excel</a>
@@ -411,5 +412,42 @@
 		$("#selectall2").change(function() {
 			$(".checkbox").prop('checked', $(this).prop("checked"));
 		});
+	});
+</script>
+
+<script>
+	$(function() {
+		$('#btn-cari').click(function() {
+			let tahun_ajaran = $('select[name="p"]').val();
+			let unit_sekolah = $('select[name="k"]').val();
+			let kelas = $('select[name="c"]').val();
+			let start_month = $('select[name="d"]').val();
+
+			if (!tahun_ajaran) {
+				toastNotifikasi('error', 'Pilih Tahun Ajaran dahulu!', 'Gagal!');
+				return;
+			}
+
+			if (!unit_sekolah) {
+				toastNotifikasi('error', 'Pilih Unit Sekolah dahulu!', 'Gagal!');
+				return;
+			}
+
+			if (!kelas) {
+				toastNotifikasi('error', 'Pilih Kelas dahulu!', 'Gagal!');
+				return;
+			}
+
+			if (!start_month) {
+				toastNotifikasi('error', 'Pilih Bulan awal dahulu!', 'Gagal!');
+				return;
+			}
+
+			$('#btn-cari').addClass('disabled');
+			$('#btn-cari').html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
+
+			let form = $('#form-report');
+			form.submit();
+		})
 	});
 </script>

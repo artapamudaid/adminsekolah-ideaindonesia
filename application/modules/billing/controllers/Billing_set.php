@@ -946,9 +946,48 @@ class Billing_set extends CI_Controller
 
 					$no_wa = $siswa['student_parent_phone'];
 					//$no_wa='+6281335111174';
-					$psn = 'Assalamualaikum, Bismillahirrahmanirrahim..' . "\n\n" . 'Diberitahukan kepada Ayah/Bunda Wali Siswa,  kami ingin mengingatkan kembali kewajiban pembayaran ananda A/N ' . $siswa['student_full_name'] . ', Kelas ' . $siswa['class_name'] . 'sejumlah Rp ' . number_format($total, 0, ",", ".") . '. sudah bisa ditunaikan.' . "\n\n" .
-						'Kami mengharap kerjasama Ayah/Bunda agar bisa menunaikan kewajiban paling lambat tgl 10 tiap bulannya.' . "\n\n" .
-						'Download Tagihan : ' . base_url() . 'billing/cetak?a=' . base64_encode($period_id) . '&b=' . base64_encode('1') . '&c=' . base64_encode($till) . '&d=' . base64_encode($siswa['student_id']) . "\n\n" . '*) Jika tagihan tidak sesuai dengan kartu syahriah atau sudah melakukan pembayaran agar konfirmasi dengan mengirimkan bukti pembayaran / kwitansi yang sah.';
+					// $psn = 'Assalamualaikum, Bismillahirrahmanirrahim..' . "\n\n" . 'Diberitahukan kepada Ayah/Bunda Wali Siswa,  kami ingin mengingatkan kembali kewajiban pembayaran ananda A/N ' . $siswa['student_full_name'] . ', Kelas ' . $siswa['class_name'] . 'sejumlah Rp ' . number_format($total, 0, ",", ".") . '. sudah bisa ditunaikan.' . "\n\n" .
+					// 	'Kami mengharap kerjasama Ayah/Bunda agar bisa menunaikan kewajiban paling lambat tgl 10 tiap bulannya.' . "\n\n" .
+					// 	'Download Tagihan : ' . base_url() . 'billing/cetak?a=' . base64_encode($period_id) . '&b=' . base64_encode('1') . '&c=' . base64_encode($till) . '&d=' . base64_encode($siswa['student_id']) . "\n\n" . '*) Jika tagihan tidak sesuai dengan kartu syahriah atau sudah melakukan pembayaran agar konfirmasi dengan mengirimkan bukti pembayaran / kwitansi yang sah.';
+
+					$billing_template = 'Assalamualaikum, Bismillahirrahmanirrahim..' . "\n\n" . 'Diberitahukan kepada Ayah/Bunda Wali Santri,  kami ingin mengingatkan kembali kewajiban pembayaran ananda A/N ' . $siswa['student_full_name'] . ', Kelas ' . $siswa['class_name'] . 'sejumlah Rp ' . number_format($total, 0, ",", ".") . '. sudah bisa ditunaikan.' . "\n\n" .
+						'Kami mengharap kerjasama Ayah/Bunda agar bisa menunaikan kewajiban paling lambat tgl 10 tiap bulannya.';
+
+					$template_query = $this->db->get_where('templates', array('location' => 'BILLING'));
+
+					$check_template         = $template_query->num_rows();
+
+					if ($check_template > 0) {
+						$get_template = $template_query->row_array();
+
+						$data = [
+							'STUDENT_NIS' => $siswa['student_nis'],
+							'STUDENT_FULL_NAME' => $siswa['student_full_name'],
+							'EMPLOYEE_NIP' => '',
+							'EMPLOYEE_NAME' => '',
+							'POSITION_NAME' => '',
+							'CLASS_NAME' => $siswa['class_name'],
+							'MAJORS_SCHOOL_NAME' => $siswa['majors_school_name'],
+							'MAJORS_SHORT_NAME' => $siswa['majors_short_name'],
+							'NOMINAL' => '',
+							'TRX_DATE' => '',
+							'NOREF' => '',
+							'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
+							'YEAR' => date('Y')
+						];
+
+						$template = $get_template['content'];
+
+						$billing_template = parse_template($template, $data, false);
+
+						$billing_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $billing_template);
+					}
+
+					$psn = $billing_template;
+
+					$psn .= "\n\n" .
+						'Download Tagihan : ' . base_url() . 'billing/cetak?a=' . base64_encode($period_id) . '&b=' . base64_encode('1') . '&c=' . base64_encode($till) . '&d=' . base64_encode($santri['student_id']) . "\n\n" . '*) Jika tagihan tidak sesuai dengan kartu syahriah atau sudah melakukan pembayaran agar konfirmasi dengan mengirimkan bukti pembayaran / kwitansi yang sah.';
+
 					send_whatsapp($no_wa, $psn, $set_key, $set_wa);
 				}
 			}

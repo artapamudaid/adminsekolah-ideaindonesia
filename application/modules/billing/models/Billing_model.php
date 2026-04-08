@@ -35,14 +35,14 @@ class Billing_model extends CI_Model
         } else {
             // Periode tertentu
             $whereCondition = "
-                vts.period_start <= '$period_start' AND
+                p.period_start <= '$period_start' AND
                 (
                     vts.idBulan = 0
                     OR (
-                        vts.period_start = '$period_start'
+                        p.period_start = '$period_start'
                         AND vts.idBulan BETWEEN $month_start AND $month_end
                     )
-                    OR vts.period_start < '$period_start'
+                    OR p.period_start < '$period_start'
                 )
             ";
         }
@@ -54,6 +54,7 @@ class Billing_model extends CI_Model
                     vts.idStudent, 
                     SUM(vts.total) AS totalTagihan
                 FROM v_tagihan_siswa vts
+                JOIN period p ON vts.idPeriod = p.period_id
                 WHERE $whereCondition
                 GROUP BY vts.idStudent
             ) AS tagihan_siswa
@@ -127,24 +128,24 @@ class Billing_model extends CI_Model
                 AND (
                     idBulan = 0
                     OR (
-                        period_start = " . $this->db->escape($period_start) . "
+                        p.period_start = " . $this->db->escape($period_start) . "
                         AND idBulan BETWEEN {$month_start} AND {$month_end}
                     )
-                    OR period_start <> " . $this->db->escape($period_start) . "
+                    OR p.period_start <> " . $this->db->escape($period_start) . "
                 )
             ";
         } else {
             // periode spesifik: batasi sampai period_start yang dipilih
             $where = "
                 WHERE idStudent = {$student_id}
-                AND period_start <= " . $this->db->escape($period_start) . "
+                AND p.period_start <= " . $this->db->escape($period_start) . "
                 AND (
                     idBulan = 0
                     OR (
-                        period_start = " . $this->db->escape($period_start) . "
+                        p.period_start = " . $this->db->escape($period_start) . "
                         AND idBulan BETWEEN {$month_start} AND {$month_end}
                     )
-                    OR period_start < " . $this->db->escape($period_start) . "
+                    OR p.period_start < " . $this->db->escape($period_start) . "
                 )
             ";
         }
@@ -158,8 +159,9 @@ class Billing_model extends CI_Model
                 keterangan,
                 total
             FROM v_tagihan_siswa
+            JOIN period p ON v_tagihan_siswa.idPeriod = p.period_id
             $where
-            ORDER BY period_start DESC, idBulan ASC
+            ORDER BY p.period_start DESC, idBulan ASC
         ";
 
         // debug: jika mau cek query terakhir saat error, kamu bisa uncomment baris di bawah ini
