@@ -1118,16 +1118,62 @@ class Payout_set extends CI_Controller
       $noref_enc              = base64_encode($noref);
       $date_enc               = base64_encode($today);
 
-      $params_msg['pesan']    = 'Terima kasih, Pembayaran Sekolah ' . $student['majors_school_name'] . "\n\n" .
+      // $params_msg['pesan']    = 'Terima kasih, Pembayaran Sekolah ' . $student['majors_school_name'] . "\n\n" .
+      //   'Nama : ' . $student['student_full_name'] . "\n" .
+      //   'Kelas   : ' . $student['class_name'] .
+      //   "\n\n" . 'Telah kami terima Tanggal ' . $tanggal_ini . ' sejumlah ' . number_format($total) . ' Referensi ID : ' . $noref  . ' dengan rincian sebagia berikut: ' .
+      //   "\n";
+
+      $trx_date               = date("d-m-Y");
+      $today                  = date("Y-m-d");
+      $nis_enc                = base64_encode($student['student_nis']);
+      $noref_enc              = base64_encode($noref);
+      $date_enc               = base64_encode($today);
+
+      $nominal                = $total;
+
+      $payout_template = 'Terima kasih, Pembayaran Sekolah' . $student['majors_school_name'] . "\n\n" .
         'Nama : ' . $student['student_full_name'] . "\n" .
         'Kelas   : ' . $student['class_name'] .
-        "\n\n" . 'Telah kami terima Tanggal ' . $tanggal_ini . ' sejumlah ' . number_format($total) . ' Referensi ID : ' . $noref  . ' dengan rincian sebagia berikut: ' .
-        "\n";
+        "\n\n" . 'Telah kami terima Tanggal ' . $trx_date . ' sejumlah ' . number_format($nominal) . ' Referensi ID : ' . $noref;
 
-      $i = 1;
-      foreach ($itemBayar as $value) {
-        $params_msg['pesan']    .= "\n" . $i++ . '. ' . $value['keterangan'];
+      $template_query = $this->db->get_where('templates', array('location' => 'PAYOUT'));
+
+      $check_template         = $template_query->num_rows();
+
+      if ($check_template > 0) {
+        $get_template = $template_query->row_array();
+
+        $data = [
+          'STUDENT_NIS' => $student['student_nis'],
+          'STUDENT_FULL_NAME' => $student['student_full_name'],
+          'EMPLOYEE_NIP' => '',
+          'EMPLOYEE_NAME' => '',
+          'POSITION_NAME' => '',
+          'CLASS_NAME' => $student['class_name'],
+          'MAJORS_SCHOOL_NAME' => $student['majors_school_name'],
+          'MAJORS_SHORT_NAME' => $student['majors_short_name'],
+          'NOMINAL' => number_format($nominal, 0, ',', '.'),
+          'TRX_DATE' => $trx_date,
+          'NOREF' => $noref,
+          'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
+          'YEAR' => date('Y')
+        ];
+
+        $template = $get_template['content'];
+
+        $payout_template = parse_template($template, $data, false);
+
+        $payout_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $payout_template);
       }
+
+      // $i = 1;
+      // foreach ($itemBayar as $value) {
+      //   $params_msg['pesan']    .= "\n" . $i++ . '. ' . $value['keterangan'];
+      // }
+
+      $params_msg['pesan']    = $payout_template;
+
 
       $params_msg['pesan']    .=  "\n\n" . 'Download kwitansi : ' . base_url() . 'payout/cetakBukti?r=' . $nis_enc . '&d=' . $date_enc .  '&f=' . $noref_enc . "\n\n" .
         'Nomor WA Sekolah : http://wa.me/' . $wa_center['setting_value'];
