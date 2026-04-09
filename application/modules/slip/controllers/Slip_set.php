@@ -120,7 +120,8 @@ class Slip_set extends CI_Controller
 
     $data['period'] = $this->Period_model->get($params);
     $data['bulan'] = $this->Bulan_model->get_month($params);
-    $data['dataKas'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_note IN (SELECT account_id FROM account WHERE account_category = '0' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_description LIKE '%Aktiva%' ORDER BY account_code ASC) ORDER BY account_code ASC")->result_array();
+    // $data['dataKas'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_note IN (SELECT account_id FROM account WHERE account_category = '0' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_description LIKE '%Aktiva%' ORDER BY account_code ASC) ORDER BY account_code ASC")->result_array();
+    $data['dataKas'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_note IN (SELECT account_id FROM account WHERE account_category != '0' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_description LIKE '%Aktiva%' ORDER BY account_code ASC) ORDER BY account_code ASC")->result_array();
 
     $data['dataKasActive'] = $this->db->query("SELECT account_id FROM account WHERE account_category = '2' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_description LIKE '%Tunai%'")->row_array();
 
@@ -525,11 +526,48 @@ class Slip_set extends CI_Controller
 
           $school = $this->Setting_model->get(array('id' => SCHOOL_NAME));
 
-          $total   = $employee['gaji_jumlah'];
+          // $total   = $employee['gaji_jumlah'];
+          $nominal   = $employee['gaji_jumlah'];
           $gaji_id = $employee['gaji_id'];
 
           $no_wa = $query['employee_phone'];
-          $psn = 'Assalamu alaikum Ustadz/Ustadzah ' . $query['employee_name'] . ' (' . $query['position_name'] . ') kami dari ' . $school['setting_value'] . ' mengucapkan terima kasih atas dedikasi dan kinerjanya Ustadz/Ustadzah. Maka dari itu kami serahkan hak Ustadz/Ustadzah di bulan ' . $bul['month_name'] . ' tahun ajaran ' . $ta['period_start'] . '/' . $ta['period_end'] . ' sebesar  Rp ' . number_format($total, 0, ",", ".") . '. Syukron wa jazakumullahu khoiran.' . "\n\n" .
+          // $psn = 'Assalamu alaikum Ustadz/Ustadzah ' . $query['employee_name'] . ' (' . $query['position_name'] . ') kami dari ' . $school['setting_value'] . ' mengucapkan terima kasih atas dedikasi dan kinerjanya Ustadz/Ustadzah. Maka dari itu kami serahkan hak Ustadz/Ustadzah di bulan ' . $bul['month_name'] . ' tahun ajaran ' . $ta['period_start'] . '/' . $ta['period_end'] . ' sebesar  Rp ' . number_format($total, 0, ",", ".") . '. Syukron wa jazakumullahu khoiran.' . "\n\n" .
+          //   'Download Slip : ' . base_url() . 'slip/download?key=' . base64_encode($gaji_id) . "\n\n" .
+          //   'WA Center Sekolah : http://wa.me/' . $wa_center['setting_value'];
+
+          $psn = 'Assalamu alaikum Ustadz/Ustadzah ' . $query['employee_name'] . ' (' . $query['position_name'] . ') kami dari ' . $school['setting_value'] . ' mengucapkan terima kasih atas dedikasi dan kinerjanya Ustadz/Ustadzah. Maka dari itu kami serahkan hak Ustadz/Ustadzah di bulan ' . $bul['month_name'] . ' tahun ajaran ' . $ta['period_start'] . '/' . $ta['period_end'] . ' sebesar  Rp ' . number_format($nominal, 0, ",", ".") . '. Syukron wa jazakumullahu khoiran.';
+
+          $template_query = $this->db->get_where('templates', array('location' => 'SLIP'));
+
+          $check_template         = $template_query->num_rows();
+
+          if ($check_template > 0) {
+            $get_template = $template_query->row_array();
+
+            $data = [
+              'EMPLOYEE_NIP' => '',
+              'EMPLOYEE_NAME' => '',
+              'EMPLOYEE_NIP' => $query['employee_nip'],
+              'EMPLOYEE_NAME' => $query['employee_name'],
+              'POSITION_NAME' => $query['position_name'],
+              'CLASS_NAME' => '',
+              'MAJORS_SCHOOL_NAME' => $query['majors_school_name'],
+              'MAJORS_SHORT_NAME' => $query['majors_short_name'],
+              'NOMINAL' => number_format($nominal, 0, ',', '.'),
+              'TRX_DATE' => pretty_date(date('Y-m-d'), 'd F Y', false),
+              'NOREF' => "",
+              'MONTH_NAME' => $bul['month_name'],
+              'YEAR' => date('Y')
+            ];
+
+            $template = $get_template['content'];
+
+            $slip_template = parse_template($template, $data, false);
+
+            $slip_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $slip_template);
+          }
+
+          $psn .= "\n\n" .
             'Download Slip : ' . base_url() . 'slip/download?key=' . base64_encode($gaji_id) . "\n\n" .
             'WA Center Sekolah : http://wa.me/' . $wa_center['setting_value'];
 
@@ -542,7 +580,7 @@ class Slip_set extends CI_Controller
               -----------------------*/
           $telegram_id = $query['employee_idtele'];
 
-          $psn = 'Assalamu alaikum Ustadz/Ustadzah ' . $query['employee_name'] . ' (' . $query['position_name'] . ') kami dari ' . $school['setting_value'] . ' mengucapkan terima kasih atas dedikasi dan kinerjanya Ustadz/Ustadzah. Maka dari itu kami serahkan hak Ustadz/Ustadzah di bulan ' . $bul['month_name'] . ' tahun ajaran ' . $ta['period_start'] . '/' . $ta['period_end'] . ' sebesar  Rp ' . number_format($total, 0, ",", ".") . '. Syukron wa jazakumullahu khoiran.' . "\n\n" .
+          $psn = 'Assalamu alaikum Ustadz/Ustadzah ' . $query['employee_name'] . ' (' . $query['position_name'] . ') kami dari ' . $school['setting_value'] . ' mengucapkan terima kasih atas dedikasi dan kinerjanya Ustadz/Ustadzah. Maka dari itu kami serahkan hak Ustadz/Ustadzah di bulan ' . $bul['month_name'] . ' tahun ajaran ' . $ta['period_start'] . '/' . $ta['period_end'] . ' sebesar  Rp ' . number_format($nominal, 0, ",", ".") . '. Syukron wa jazakumullahu khoiran.' . "\n\n" .
             // 'Download Slip : ' . base_url() . 'slip/download?key=' . base64_encode($gaji_id) . "\n\n" .
             'WA Center Sekolah : http://wa.me/' . $wa_center['setting_value'];
 
