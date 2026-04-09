@@ -19,6 +19,48 @@
 					</div>
 					<div class="box-body">
 						<a href="<?php echo site_url('manage/schedule/import_schedule') ?>" class="btn btn-sm btn-info"><i class="fa fa-upload"></i> Import Jadwal Pelajaran</a>
+						<?php
+						$majorsShortName = '';
+						$className = '';
+						$semesterName = '';
+						$TAName = '';
+						$periodId = '';
+						$semesterId = '';
+
+						if (
+							!empty($f['n']) && !empty($f['r'])
+						):
+
+							foreach ($class as $row) {
+								if (isset($f['n']) and $f['r'] == $row['class_id']) {
+									$majorsShortName = $row['majors_short_name'];
+									$className = $row['class_name'];
+								}
+							}
+
+							foreach ($semester as $row) {
+								$semesterName = $row['semester_name'];
+								$semesterId = $row['semester_id'];
+								$periodId = $row['semester_period_id'];
+								$TAName = $row['period_start'] . '/' . $row['period_end'];
+							}
+
+						?>
+							<button
+								class="btn btn-sm btn-info"
+								id="btnCopySchedule"
+								data-unit="<?= $f['n'] ?>"
+								data-period="<?= $periodId ?>"
+								data-semester="<?= $semesterId ?>"
+								data-class="<?= $f['r'] ?>"
+								data-majors-short-name="<?= $majorsShortName ?>"
+								data-class-name="<?= $className ?>"
+								data-semester-name="<?= $semesterName ?>"
+								data-ta-name="<?= $TAName ?>">
+								<i class="fa fa-copy"></i>&nbsp;
+								Salin Jadwal Pelajaran
+							</button>
+						<?php endif; ?>
 					</div>
 				</div>
 			</div>
@@ -289,6 +331,99 @@
 	</div>
 </div>
 
+<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="copyScheduleModal">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Copy Jadwal Pelajaran</h4>
+			</div>
+			<div class="modal-body">
+				<div class="alert alert-info">
+					<strong>
+						Salin Jadwal Pelajaran hanya dapat dilakukan dengan ketentuan sebagai berikut:
+					</strong>
+					<ol>
+						<li>Hanya dapat dilakukan pada Unit Sekolah yang sama</li>
+						<li>Hanya dapat dilakukan pada Kelas yang sama</li>
+						<li>Dengan semester yang berbeda</li>
+					</ol>
+				</div>
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="box box-info">
+							<div class="box-body">
+								<div class="table-responsive">
+									<table class="table table-striped">
+										<thead>
+											<tr>
+												<th></th>
+												<th></th>
+												<th class="text-left">Sumber Data</th>
+												<th class="text-left">Data Tujuan</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>Unit Sekolah</td>
+												<td>:</td>
+												<td>
+													<span id="txtUnit"></span>
+												</td>
+												<td>
+													<span id="txtUnit"></span>
+												</td>
+											</tr>
+											<tr>
+												<td>Kelas</td>
+												<td>:</td>
+												<td>
+													<span id="txtClass"></span>
+												</td>
+												<td>
+													<span id="txtClass"></span>
+												</td>
+											</tr>
+											<tr>
+												<td>Semester</td>
+												<td>:</td>
+												<td>
+													<span id="txtSemesterSrc"></span>
+												</td>
+												<td>
+													<span id="txtSemesterObj"></span>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-12">
+						<div id="copyProgressContainer" style="display: none;">
+							<div class="progress">
+								<div id="copyProgressBar" class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+									<span id="progressText">0%</span>
+								</div>
+							</div>
+						</div>
+
+						<input type="hidden" class="form-control" placeholder="unitId" id="unitId" readonly />
+						<input type="hidden" class="form-control" placeholder="classId" id="classId" readonly />
+						<input type="hidden" class="form-control" placeholder="periodId" id="periodId" readonly />
+						<input type="hidden" class="form-control" placeholder="semesterId" id="semesterId" readonly />
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" id="pasteSchedule" class="btn btn-info">Copy Jadwal</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <script>
 	function get_kelas() {
 		var id_majors = $("#majors_id").val();
@@ -415,3 +550,131 @@
 		overflow: scroll;
 	}
 </style>
+
+<script>
+	$(function() {
+		let btnCopySchedule = $('#btnCopySchedule');
+		btnCopySchedule.on('click', function() {
+			let unitId = $(this).data('unit');
+			let classId = $(this).data('class');
+			let periodId = $(this).data('period');
+			let semesterId = $(this).data('semester');
+			let majorsShortName = $(this).data('majors-short-name');
+			let className = $(this).data('class-name');
+			let semesterName = $(this).data('semester-name');
+			let taName = $(this).data('ta-name');
+
+			$('#copyScheduleModal #txtUnit').html(majorsShortName);
+			$('#copyScheduleModal #txtClass').html(className);
+			$('#txtSemesterSrc').html(`${semesterName} (${taName})`);
+			getSemesterObj(periodId, semesterId);
+
+			$('#unitId').val(unitId);
+			$('#classId').val(classId);
+			$('#periodId').val(periodId);
+			$('#semesterId').val(semesterId);
+
+			$('#copyScheduleModal').modal('show');
+		});
+
+		let btnPasteSchedule = $('#pasteSchedule');
+		btnPasteSchedule.on('click', function() {
+			btnPasteSchedule.prop("disabled", true);
+			btnPasteSchedule.html('Processing...');
+
+			let unitId = $('#unitId').val();
+			let classId = $('#classId').val();
+			let periodId = $('#periodId').val();
+			let semesterId = $('#semesterId').val();
+
+			$.ajax({
+				url: "<?= site_url('manage/schedule/copySchedule') ?>",
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					unitId,
+					classId,
+					periodId,
+					semesterId
+				},
+				xhr: function() {
+					var xhr = new window.XMLHttpRequest();
+
+					xhr.upload.addEventListener("progress", function(evt) {
+						if (evt.lengthComputable) {
+							var percentComplete = (evt.loaded / evt.total) * 100;
+							if (!$('#copyProgressContainer').is(':visible')) {
+								$('#copyProgressContainer').show();
+								$('#copyProgressBar').removeClass('active');
+							}
+							updateProgressBar(percentComplete);
+						}
+					}, false);
+
+					return xhr;
+				},
+				success: function(response) {
+					if (response.status == 'success') {
+						if (!$('#copyProgressContainer').is(':visible')) {
+							$('#copyProgressContainer').show();
+							$('#copyProgressBar').removeClass('active');
+						}
+						updateProgressBar(100);
+						let title = 'Berhasil!';
+						toastNotifikasi(response.status, response.message, title);
+						setTimeout(function() {
+							$('#copyScheduleModal').modal('hide');
+							resetProgressBar();
+						}, 1000);
+					} else {
+						resetProgressBar();
+						let title = 'Gagal!';
+						toastNotifikasi(response.status, response.message, title);
+					}
+				},
+				error: function(jqXHR, textStatus) {
+					handleAjaxError(jqXHR, textStatus);
+					resetProgressBar();
+				},
+				complete: function() {
+					btnPasteSchedule.prop("disabled", false);
+					btnPasteSchedule.html('Copy Jadwal');
+				}
+			});
+		});
+
+		function getSemesterObj(periodId, semesterId) {
+			$.ajax({
+				url: '<?php echo base_url(); ?>manage/schedule/getSemseterObj',
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					'periodId': periodId,
+					'semesterId': semesterId,
+				},
+				success: function(response) {
+					let semesterName = response.semester_name;
+					let taName = `${response.period_start}/${response.period_end}`;
+
+					$('#txtSemesterObj').html(`${semesterName} (${taName})`);
+				},
+				error: function(jqXHR, textStatus) {
+					handleAjaxError(jqXHR, textStatus)
+				}
+			});
+		}
+
+		function updateProgressBar(percentage) {
+			let roundedPercent = Math.round(percentage);
+			$('#copyProgressBar').css('width', roundedPercent + '%');
+			$('#copyProgressBar').attr('aria-valuenow', roundedPercent);
+			$('#progressText').html(roundedPercent + '%');
+		}
+
+		function resetProgressBar() {
+			$('#copyProgressContainer').hide();
+			$('#copyProgressBar').addClass('active');
+			updateProgressBar(0);
+		}
+	});
+</script>

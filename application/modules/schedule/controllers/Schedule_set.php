@@ -328,4 +328,86 @@ class Schedule_set extends CI_Controller
 
     return $upload_data['file_name'];
   }
+
+  public function getSemseterObj()
+  {
+    $periodId = $this->input->post('periodId');
+    $semesterId = $this->input->post('semesterId');
+    $this->db->select("s.semester_name, p.period_start,	p.period_end, s.semester_id, p.period_id")
+      ->join("period p", "s.semester_period_id = p.period_id", "left")
+      ->where([
+        "s.semester_period_id" => $periodId,
+        "s.semester_id <> " => $semesterId
+      ]);
+    $semester = $this->db->get("semester s")->row_array();
+
+    echo json_encode($semester);
+  }
+
+  public function copySchedule()
+  {
+    $unitId = sanitizeStrict($this->input->post('unitId'));
+    $classId = sanitizeStrict($this->input->post('classId'));
+    $periodId = sanitizeStrict($this->input->post('periodId'));
+    $semesterId = sanitizeStrict($this->input->post('semesterId'));
+
+    $semesterObj = $this->db->get_where('semester', [
+      'semester_id <> ' => $semesterId,
+      'semester_period_id' => $periodId
+    ])->row_array();
+
+    if (!$semesterObj) {
+      echo json_encode([
+        'status' => 'error',
+        'message' => 'Semester tujuan tidak ditemukan.'
+      ]);
+      return;
+    }
+
+    $schedules = $this->db->get_where(
+      'schedule',
+      [
+        'schedule_semester_id' => $semesterId,
+        'schedule_class_id' => $classId
+      ]
+    )->result_array();
+
+    if (!$schedules) {
+      echo json_encode([
+        'status' => 'error',
+        'message' => 'Tidak ada jadwal untuk disalin.'
+      ]);
+      return;
+    }
+
+    foreach ($schedules as $row) {
+      $colWhere = [
+        'schedule_semester_id' => $semesterObj['semester_id'],
+        'schedule_class_id' => $classId,
+        'schedule_lesson_id' => $row['schedule_lesson_id'],
+        'schedule_day' => $row['schedule_day'],
+        'schedule_time' => $row['schedule_time'],
+        'schedule_jampel' => $row['schedule_jampel'],
+      ];
+      if ($this->General_model->checkDataExists('schedule', $colWhere)) {
+        continue;
+      }
+
+      $dataInsert = [
+        'schedule_semester_id' => $semesterObj['semester_id'],
+        'schedule_class_id' => $classId,
+        'schedule_lesson_id' => $row['schedule_lesson_id'],
+        'schedule_day' => $row['schedule_day'],
+        'schedule_time' => $row['schedule_time'],
+        'schedule_jampel' => $row['schedule_jampel'],
+      ];
+
+      $this->db->insert('schedule', $dataInsert);
+    }
+
+    echo json_encode([
+      'status' => 'success',
+      'message' => 'Copy jadwal berhasil.'
+    ]);
+  }
 }
