@@ -14,42 +14,62 @@
     <section class="content">
         <?php
         $majors_id = $this->session->userdata('umajorsid');
+        $assignPosButton = false;
+        $disabledAssignPosButton = "";
         ?>
         <div class="row">
             <div class="col-md-12">
                 <div class="box">
                     <div class="box-header">
-                        <?php if ($majors_id == '0') { ?>
-                            <?php echo form_open(current_url(), array('class' => 'form-horizontal', 'method' => 'get')) ?>
-                            <div class="box-body table-responsive">
-                                <table>
-                                    <tr>
-                                        <td>
-                                            <select style="width: 200px;" id="m" name="m" class="form-control" required>
-                                                <option value="">--- Pilih Unit Pesantren ---</option>
-                                                <?php if ($this->session->userdata('umajorsid') == '0') { ?>
-                                                    <option value="all" <?php echo (isset($s['m']) && $s['m'] == 'all') ? 'selected' : '' ?>>Semua Unit</option>
-                                                <?php } ?>
-                                                <?php foreach ($majors as $row) { ?>
-                                                    <option value="<?php echo $row['majors_id']; ?>" <?php echo (isset($s['m']) && $s['m'] == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
-                                                <?php } ?>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            &nbsp&nbsp
-                                        </td>
-                                        <td>
-                                            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Cari</button>
-                                        </td>
-                                    </tr>
-                                </table>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <?php if ($majors_id == '0') { ?>
+                                    <?php echo form_open(current_url(), array('class' => 'form-horizontal', 'method' => 'get')) ?>
+                                    <div class="box-body table-responsive">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <select style="width: 200px;" id="m" name="m" class="form-control" required>
+                                                        <option value="">--- Pilih Unit Pesantren ---</option>
+                                                        <?php if ($this->session->userdata('umajorsid') == '0') { ?>
+                                                            <option value="all" <?php echo (isset($s['m']) && $s['m'] == 'all') ? 'selected' : '' ?>>Semua Unit</option>
+                                                        <?php } ?>
+                                                        <?php foreach ($majors as $row) { ?>
+                                                            <option value="<?php echo $row['majors_id']; ?>" <?php echo (isset($s['m']) && $s['m'] == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
+                                                        <?php } ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    &nbsp&nbsp
+                                                </td>
+                                                <td>
+                                                    <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Cari</button>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <?php echo form_close(); ?>
+                                <?php } ?>
                             </div>
-                            <?php echo form_close(); ?>
-                        <?php } ?>
+                            <div class="col-md-6" style="margin-top: 10px;">
+                                <?php
+                                if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all'):
+                                ?>
+                                    <div class="pull-right">
+                                        <a href="<?= site_url('manage/account/import_account?m=' . $s['m']) ?>" class="btn btn-info">
+                                            <i class="fa fa-upload"></i>&nbsp;
+                                            Upload Akun Biaya
+                                        </a>
+                                    </div>
+                                <?php
+                                endif;
+                                ?>
+                            </div>
+                        </div>
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body table-responsive">
-                        <table id='dtable' class='table table-hover table-responsive'>
+                        <table id='dtable-coa' class='table table-hover table-responsive'>
                             <thead>
                                 <tr>
                                     <th>No</th>
@@ -75,7 +95,13 @@
                                     $piece = "account_majors_id = '$majors_id' AND";
                                 }
 
-                                $sql_main = "SELECT * FROM account LEFT JOIN majors ON majors.majors_id = account.account_majors_id WHERE account_note = '0' ORDER BY account_code ASC";
+                                $attribute = "";
+                                if (@$s['m'] != 'all') {
+                                    $attribute = "readonly ";
+                                    $attribute .= "style='pointer-events: none;'";
+                                }
+
+                                $sql_main = "SELECT * FROM account LEFT JOIN majors ON majors.majors_id = account.account_majors_id WHERE (account_note = '0' OR account_note IS NULL) ORDER BY account_code ASC";
                                 $main_account = $this->db->query($sql_main)->result();
                                 $no = 1;
                                 foreach ($main_account as $main) {
@@ -145,10 +171,12 @@
                                                                 </div>
                                                                 <div class="form-group">
                                                                     <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                    <select required="" name="account_majors_id" class="form-control">
+                                                                    <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                         <option value="">-Pilih Unit Pesantren-</option>
-                                                                        <?php foreach ($majors as $row) { ?>
-                                                                            <option value="<?php echo $row['majors_id']; ?>"><?php echo $row['majors_short_name'] ?></option>
+                                                                        <?php foreach ($majors as $row) {
+                                                                            $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                        ?>
+                                                                            <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>><?php echo $row['majors_short_name'] ?></option>
                                                                         <?php } ?>
                                                                     </select>
                                                                 </div>
@@ -240,10 +268,16 @@
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                            <select required="" name="account_majors_id" class="form-control">
+                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                 <option value="">-Pilih Unit Pesantren-</option>
-                                                                                <?php foreach ($majors as $row) { ?>
-                                                                                    <option value="<?php echo $row['majors_id']; ?>"><?php echo $row['majors_short_name'] ?></option>
+                                                                                <?php foreach ($majors as $row) {
+                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                ?>
+                                                                                    <option
+                                                                                        value="<?php echo $row['majors_id']; ?>"
+                                                                                        <?= $selected ?>>
+                                                                                        <?php echo $row['majors_short_name'] ?>
+                                                                                    </option>
                                                                                 <?php } ?>
                                                                             </select>
                                                                         </div>
@@ -286,7 +320,7 @@
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                            <select required="" name="account_majors_id" class="form-control">
+                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                 <option value="">-Pilih Unit Pesantren-</option>
                                                                                 <?php foreach ($majors as $row) { ?>
                                                                                     <option value="<?php echo $row['majors_id']; ?>" <?php echo ($sub->account_majors_id == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
@@ -318,7 +352,7 @@
                                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $child->account_code ?></td>
                                                             <td><?php echo $child->account_description ?></td>
                                                             <td><?php echo ($child->account_status == 0) ? 'Header' : 'Non-Header'  ?></td>
-                                                            <td>Sub Akun 2</td>
+                                                            <td>Sub Akun 2-1</td>
                                                             <td>
                                                                 <?php
                                                                 if ($child->account_category == '1') {
@@ -383,10 +417,16 @@
                                                                                 </div>
                                                                                 <div class="form-group">
                                                                                     <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                    <select required="" name="account_majors_id" class="form-control">
+                                                                                    <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                         <option value="">-Pilih Unit Pesantren-</option>
-                                                                                        <?php foreach ($majors as $row) { ?>
-                                                                                            <option value="<?php echo $row['majors_id']; ?>"><?php echo $row['majors_short_name'] ?></option>
+                                                                                        <?php foreach ($majors as $row) {
+                                                                                            $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                        ?>
+                                                                                            <option
+                                                                                                value="<?php echo $row['majors_id']; ?>"
+                                                                                                <?= $selected ?>>
+                                                                                                <?php echo $row['majors_short_name'] ?>
+                                                                                            </option>
                                                                                         <?php } ?>
                                                                                     </select>
                                                                                 </div>
@@ -437,7 +477,7 @@
                                                                                 </div>
                                                                                 <div class="form-group">
                                                                                     <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                    <select required="" name="account_majors_id" class="form-control">
+                                                                                    <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                         <option value="">-Pilih Unit Pesantren-</option>
                                                                                         <?php foreach ($majors as $row) { ?>
                                                                                             <option value="<?php echo $row['majors_id']; ?>" <?php echo ($child->account_majors_id == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
@@ -543,10 +583,12 @@
                                                                                         </div>
                                                                                         <div class="form-group">
                                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                            <select required="" name="account_majors_id" class="form-control">
+                                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                                 <option value="">-Pilih Unit Pesantren-</option>
-                                                                                                <?php foreach ($majors as $row) { ?>
-                                                                                                    <option value="<?php echo $row['majors_id']; ?>"><?php echo $row['majors_short_name'] ?></option>
+                                                                                                <?php foreach ($majors as $row) {
+                                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                                ?>
+                                                                                                    <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>><?php echo $row['majors_short_name'] ?></option>
                                                                                                 <?php } ?>
                                                                                             </select>
                                                                                         </div>
@@ -597,7 +639,7 @@
                                                                                         </div>
                                                                                         <div class="form-group">
                                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                            <select required="" name="account_majors_id" class="form-control">
+                                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                                 <option value="">-Pilih Unit Pesantren-</option>
                                                                                                 <?php foreach ($majors as $row) { ?>
                                                                                                     <option value="<?php echo $row['majors_id']; ?>" <?php echo ($grandchild->account_majors_id == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
@@ -638,9 +680,11 @@
                                                                         <!-- /.modal-content -->
                                                                     </div>
                                                                     <!-- /.modal-dialog -->
-                                                                </div><?php
-                                                                        foreach ($grandgrandchild_account as $lastchild) {
-                                                                        ?>
+                                                                </div>
+
+                                                                <?php
+                                                                foreach ($grandgrandchild_account as $lastchild) {
+                                                                ?>
 
                                                                     <tr>
                                                                         <td><?php echo $no++ ?></td>
@@ -695,13 +739,13 @@
                                                                                                 <label>Kategori <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
                                                                                                 <select required="" name="account_category" class="form-control">
                                                                                                     <option value="">-Pilih Kategori-</option>
-                                                                                                    <option value="1" <?php echo ($grandChild->account_category == '1') ? 'selected' : '' ?>>Pembayaran</option>
-                                                                                                    <option value="2" <?php echo ($grandChild->account_category == '2') ? 'selected' : '' ?>>Keuangan</option>
+                                                                                                    <option value="1" <?php echo ($lastchild->account_category == '1') ? 'selected' : '' ?>>Pembayaran</option>
+                                                                                                    <option value="2" <?php echo ($lastchild->account_category == '2') ? 'selected' : '' ?>>Keuangan</option>
                                                                                                 </select>
                                                                                             </div>
                                                                                             <div class="form-group">
                                                                                                 <label>Unit Sekolah <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                                <select required="" name="account_majors_id" class="form-control">
+                                                                                                <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                                     <option value="">-Pilih Unit Sekolah-</option>
                                                                                                     <?php foreach ($majors as $row) { ?>
                                                                                                         <option value="<?php echo $row['majors_id']; ?>" <?php echo ($lastchild->account_majors_id == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
@@ -744,8 +788,8 @@
                                                                         <!-- /.modal-dialog -->
                                                                     </div>
                                                                 <?php
-                                                                        }
-                                                                    } else {
+                                                                }
+                                                            } else {
                                                                 ?>
                                                                 <tr>
                                                                     <td><?php echo $no++ ?></td>
@@ -773,8 +817,6 @@
                                                                     </td>
                                                                 </tr>
 
-
-
                                                                 <div class="modal fade" id="addGrandchildAccount<?php echo $grandchild->account_id ?>" role="dialog">
                                                                     <div class="modal-dialog modal-md">
                                                                         <div class="modal-content">
@@ -789,7 +831,8 @@
                                                                                         <?php
                                                                                         //$childID = $child->account_id;
                                                                                         $grandchild_code = $this->db->query("SELECT MAX(account_code) as maxGrandChild FROM account WHERE account_note = '$grandchild_id'")->row();
-                                                                                        $grandgrandchildParams = substr($grandchild_code->maxGrandChild, 2);
+                                                                                        // $grandgrandchildParams = substr($grandchild_code->maxGrandChild, 2);
+                                                                                        $grandgrandchildParams = !empty($grandchild_code->maxGrandChild) ? substr($grandchild_code->maxGrandChild, 2) : '';
                                                                                         if ($grandgrandchildParams > 0) {
                                                                                             $grandgrandchildFront = substr($grandchild_code->maxGrandChild, 0, 2);
                                                                                             $grandgrandchildBack = substr($grandchild_code->maxGrandChild, 2);
@@ -822,10 +865,16 @@
                                                                                         </div>
                                                                                         <div class="form-group">
                                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                            <select required="" name="account_majors_id" class="form-control">
+                                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                                 <option value="">-Pilih Unit Pesantren-</option>
-                                                                                                <?php foreach ($majors as $row) { ?>
-                                                                                                    <option value="<?php echo $row['majors_id']; ?>"><?php echo $row['majors_short_name'] ?></option>
+                                                                                                <?php foreach ($majors as $row) {
+                                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                                ?>
+                                                                                                    <option
+                                                                                                        value="<?php echo $row['majors_id']; ?>"
+                                                                                                        <?= $selected ?>>
+                                                                                                        <?php echo $row['majors_short_name'] ?>
+                                                                                                    </option>
                                                                                                 <?php } ?>
                                                                                             </select>
                                                                                         </div>
@@ -876,7 +925,7 @@
                                                                                         </div>
                                                                                         <div class="form-group">
                                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                            <select required="" name="account_majors_id" class="form-control">
+                                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                                 <option value="">-Pilih Unit Pesantren-</option>
                                                                                                 <?php foreach ($majors as $row) { ?>
                                                                                                     <option value="<?php echo $row['majors_id']; ?>" <?php echo ($grandchild->account_majors_id == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
@@ -919,9 +968,21 @@
                                                                     <!-- /.modal-dialog -->
                                                                 </div>
                                                         <?php
-                                                                    }
-                                                                }
-                                                            } else {
+                                                            }
+                                                        }
+                                                    } else {
+                                                        $subCode = substr($child->account_code, 0, 1);
+                                                        if ($subCode == '4') $assignPosButton = true;
+                                                        else $assignPosButton = false;
+
+                                                        $colWhere = [
+                                                            "account_account_id" => $child->account_id,
+                                                        ];
+                                                        $qPos = $this->db->get_where("pos", $colWhere)->result_array();
+                                                        $countQPos = count($qPos);
+                                                        if ($countQPos > 0) $disabledAssignPosButton = "disabled";
+                                                        else $disabledAssignPosButton = "";
+
                                                         ?>
 
                                                         <tr>
@@ -929,7 +990,7 @@
                                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $child->account_code ?></td>
                                                             <td><?php echo $child->account_description ?></td>
                                                             <td><?php echo ($child->account_status == 0) ? 'Header' : 'Non-Header'  ?></td>
-                                                            <td>Sub Akun 2</td>
+                                                            <td>Sub Akun 2-2</td>
                                                             <td>
                                                                 <?php
                                                                 if ($child->account_category == '1') {
@@ -945,6 +1006,35 @@
                                                             <td align='left'>
                                                                 <button type="button" class="btn btn-success btn-xs" data-toggle="modal" data-target="#addChildAccount<?php echo $child->account_id ?>" title="Tambah Sub Akun"><i class="fa fa-plus"></i></button>
                                                                 <button type="button" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#editChildAccount<?php echo $child->account_id ?>" title="Edit Sub Akun"><i class="fa fa-pencil"></i></button>
+                                                                <?php
+                                                                if ($assignPosButton):
+                                                                    if ($countQPos > 0):
+                                                                ?>
+                                                                        <button
+                                                                            type="button"
+                                                                            class="btn btn-info btn-xs"
+                                                                            data-toggle="tooltip"
+                                                                            title="Buat POS"
+                                                                            <?= $disabledAssignPosButton ?>>
+                                                                            <i class="fa fa-magic"></i>
+                                                                        </button>
+                                                                    <?php
+                                                                    else:
+                                                                        $url = site_url("manage/account/assign/");
+                                                                        $url .= $child->account_id;
+                                                                        if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
+                                                                            $url .= "?m=" . $s['m'];
+                                                                        }
+                                                                    ?>
+                                                                        <a href="<?= $url ?>" class="btn btn-info btn-xs"
+                                                                            data-toggle="tooltip"
+                                                                            title="Buat POS">
+                                                                            <i class="fa fa-magic"></i>
+                                                                        </a>
+                                                                <?php
+                                                                    endif;
+                                                                endif;
+                                                                ?>
                                                                 <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteChildAccount<?php echo $child->account_id ?>" title="Hapus Sub Akun"><i class="fa fa-trash"></i></button>
                                                             </td>
                                                         </tr>
@@ -963,7 +1053,8 @@
                                                                                 <?php
                                                                                 //$childID = $child->account_id;
                                                                                 $child_code = $this->db->query("SELECT MAX(account_code) as maxChild FROM account WHERE account_note = '$child_id'")->row();
-                                                                                $grandchildParams = substr($child_code->maxChild, 2);
+                                                                                // $grandchildParams = substr($child_code->maxChild, 2);
+                                                                                $grandchildParams = !empty($child_code->maxChild) ? substr($child_code->maxChild, 2) : '';
                                                                                 if ($grandchildParams > 0) {
                                                                                     $grandchildFront = substr($child_code->maxChild, 0, 2);
                                                                                     $grandchildBack = substr($child_code->maxChild, 2);
@@ -995,10 +1086,16 @@
                                                                                 </div>
                                                                                 <div class="form-group">
                                                                                     <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                    <select required="" name="account_majors_id" class="form-control">
+                                                                                    <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                         <option value="">-Pilih Unit Pesantren-</option>
-                                                                                        <?php foreach ($majors as $row) { ?>
-                                                                                            <option value="<?php echo $row['majors_id']; ?>"><?php echo $row['majors_short_name'] ?></option>
+                                                                                        <?php foreach ($majors as $row) {
+                                                                                            $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                        ?>
+                                                                                            <option
+                                                                                                value="<?php echo $row['majors_id']; ?>"
+                                                                                                <?= $selected ?>>
+                                                                                                <?php echo $row['majors_short_name'] ?>
+                                                                                            </option>
                                                                                         <?php } ?>
                                                                                     </select>
                                                                                 </div>
@@ -1049,7 +1146,7 @@
                                                                                 </div>
                                                                                 <div class="form-group">
                                                                                     <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                                    <select required="" name="account_majors_id" class="form-control">
+                                                                                    <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                         <option value="">-Pilih Unit Pesantren-</option>
                                                                                         <?php foreach ($majors as $row) { ?>
                                                                                             <option value="<?php echo $row['majors_id']; ?>" <?php echo ($child->account_majors_id == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
@@ -1092,9 +1189,9 @@
                                                             <!-- /.modal-dialog -->
                                                         </div>
                                                 <?php
-                                                            }
-                                                        }
-                                                    } else {
+                                                    }
+                                                }
+                                            } else {
                                                 ?>
                                                 <tr style="font-weight: bold;">
                                                     <td><?php echo $no++ ?></td>
@@ -1133,7 +1230,8 @@
                                                                     <div class="col-md-8">
                                                                         <?php
                                                                         $sub_code = $this->db->query("SELECT MAX(account_code) as maxSub FROM account WHERE account_note = '$sub_id'")->row();
-                                                                        $childParams = substr($sub_code->maxSub, 2);
+                                                                        // $childParams = substr($sub_code->maxSub, 2);
+                                                                        $childParams = !empty($sub_code->maxSub) ? substr($sub_code->maxSub, 2) : '';
                                                                         if ($childParams > 0) {
                                                                             $childFront = substr($sub_code->maxSub, 0, 2);
                                                                             $childBack = substr($sub_code->maxSub, 2);
@@ -1165,10 +1263,16 @@
                                                                         </div>
                                                                         <div class="form-group">
                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                            <select required="" name="account_majors_id" class="form-control">
+                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                 <option value="">-Pilih Unit Pesantren-</option>
-                                                                                <?php foreach ($majors as $row) { ?>
-                                                                                    <option value="<?php echo $row['majors_id']; ?>"><?php echo $row['majors_short_name'] ?></option>
+                                                                                <?php foreach ($majors as $row) {
+                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                ?>
+                                                                                    <option
+                                                                                        value="<?php echo $row['majors_id']; ?>"
+                                                                                        <?= $selected ?>>
+                                                                                        <?php echo $row['majors_short_name'] ?>
+                                                                                    </option>
                                                                                 <?php } ?>
                                                                             </select>
                                                                         </div>
@@ -1212,7 +1316,7 @@
                                                                         <!---->
                                                                         <div class="form-group">
                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                            <select required="" name="account_majors_id" class="form-control">
+                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                 <option value="">-Pilih Unit Pesantren-</option>
                                                                                 <?php foreach ($majors as $row) { ?>
                                                                                     <option value="<?php echo $row['majors_id']; ?>" <?php echo ($sub->account_majors_id == $row['majors_id']) ? 'selected' : '' ?>><?php echo $row['majors_short_name'] ?></option>
@@ -1255,9 +1359,9 @@
                                                     <!-- /.modal-dialog -->
                                                 </div>
                                         <?php
-                                                    }
-                                                }
-                                            } else {
+                                            }
+                                        }
+                                    } else {
                                         ?>
                                         <tr style="font-weight: bold;">
                                             <td><?php echo $no++ ?></td>
@@ -1294,7 +1398,8 @@
                                                             <div class="col-md-8">
                                                                 <?php
                                                                 $main_code = $this->db->query("SELECT MAX(account_code) as maxMain FROM account WHERE account_note = '$main_id'")->row();
-                                                                $subParams = substr($main_code->maxMain, 2);
+                                                                // $subParams = substr($main_code->maxMain, 2);
+                                                                $subParams = !empty($main_code->maxMain) ? substr($main_code->maxMain, 2) : '';
                                                                 if ($subParams > 0) {
                                                                     $subFront = substr($main_code->maxMain, 0, 2);
                                                                     $subBack = substr($main_code->maxMain, 2);
@@ -1318,10 +1423,12 @@
                                                                 </div>
                                                                 <div class="form-group">
                                                                     <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                    <select required="" name="account_majors_id" class="form-control">
+                                                                    <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                         <option value="">-Pilih Unit Pesantren-</option>
-                                                                        <?php foreach ($majors as $row) { ?>
-                                                                            <option value="<?php echo $row['majors_id']; ?>"><?php echo $row['majors_short_name'] ?></option>
+                                                                        <?php foreach ($majors as $row) {
+                                                                            $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                        ?>
+                                                                            <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>><?php echo $row['majors_short_name'] ?></option>
                                                                         <?php } ?>
                                                                     </select>
                                                                 </div>
@@ -1337,8 +1444,8 @@
                                             </div>
                                         </div>
                                 <?php
-                                            }
-                                        }
+                                    }
+                                }
                                 ?>
                             </tbody>
                         </table>
@@ -1354,3 +1461,15 @@
     </section>
     <!-- /.content -->
 </div>
+
+<script>
+    $(function() {
+        $('#dtable-coa').DataTable({
+            lengthMenu: [
+                [10, 25, 50, 100, -1],
+                [10, 25, 50, 100, 'All']
+            ],
+            pageLength: -1
+        })
+    })
+</script>
