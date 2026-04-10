@@ -177,7 +177,21 @@ class Student_set extends CI_Controller
     $this->load->library('form_validation');
 
     if (!$this->input->post('student_id')) {
-      $this->form_validation->set_rules('student_nis', 'NIS', 'trim|required|xss_clean|is_unique[student.student_nis]');
+      $this->form_validation->set_rules(
+        'student_nis',
+        'NIS',
+        'trim|required|xss_clean|is_unique[student.student_nis]',
+        [
+          'required'   => '%s wajib diisi.',
+          'is_unique'  => '%s sudah terdaftar, gunakan yang lain.',
+        ]
+      );
+    } else {
+      $this->form_validation->set_rules(
+        'student_nis',
+        'NIS',
+        'trim|required|xss_clean|callback_check_nis_unique'
+      );
     }
     $this->form_validation->set_rules('class_class_id', 'Kelas', 'trim|required|xss_clean');
     $this->form_validation->set_rules('student_full_name', 'Nama lengkap', 'trim|required|xss_clean');
@@ -199,7 +213,7 @@ class Student_set extends CI_Controller
         }
       }
 
-      $student_parent_phone = $this->input->post('student_parent_phone');
+      $student_parent_phone = sanitizeStrict($this->input->post('student_parent_phone'));
 
       $student_parent_phone = str_replace(" ", "", $student_parent_phone);
       $student_parent_phone = str_replace("(", "", $student_parent_phone);
@@ -220,22 +234,45 @@ class Student_set extends CI_Controller
         }
       }
 
-      $params['student_nis'] = $this->input->post('student_nis');
-      $params['student_nisn'] = $this->input->post('student_nisn');
-      $params['student_gender'] = $this->input->post('student_gender');
-      $params['student_phone'] = $this->input->post('student_phone');
-      $params['student_hobby'] = $this->input->post('student_hobby');
-      $params['class_class_id'] = $this->input->post('class_class_id');
-      $params['majors_majors_id'] = $this->input->post('majors_majors_id');
+      $studentNis = sanitizeStrict($this->input->post('student_nis'));
+      $studentNisn = sanitizeStrict($this->input->post('student_nisn'));
+      $studentFullName = sanitizeStrict($this->input->post('student_full_name'));
+      $studentAddress = sanitizeStrict($this->input->post('student_address'));
+      $studentClassId = sanitizeStrict($this->input->post('class_class_id'));
+      $studentMajorsId = sanitizeStrict($this->input->post('majors_majors_id'));
+
+      $redirectUrl = 'student/student_set/add';
+      $colWhere = array(
+        'student_nis' => $studentNis,
+        'class_class_id' => $studentClassId,
+        'majors_majors_id' => $studentMajorsId
+      );
+      if ($id != NULL) {
+        $colWhere['student_id !='] = $id;
+        $redirectUrl = 'student/student_set/edit/' . $id;
+      }
+      if ($this->Student_model->checkDataExists("student", $colWhere)) {
+        $this->session->set_flashdata('error', 'Data sudah ada');
+        redirect($redirectUrl);
+        exit;
+      }
+
+      $params['student_nis'] = $studentNis;
+      $params['student_nisn'] = $studentNisn;
+      $params['student_gender'] = sanitizeStrict($this->input->post('student_gender'));
+      $params['student_phone'] = sanitizeStrict($this->input->post('student_phone'));
+      $params['student_hobby'] = sanitizeStrict($this->input->post('student_hobby'));
+      $params['class_class_id'] = sanitizeStrict($this->input->post('class_class_id'));
+      $params['majors_majors_id'] = sanitizeStrict($this->input->post('majors_majors_id'));
       $params['student_last_update'] = date('Y-m-d H:i:s');
-      $params['student_full_name'] = $this->input->post('student_full_name');
-      $params['student_born_place'] = $this->input->post('student_born_place');
-      $params['student_born_date'] = $this->input->post('student_born_date');
-      $params['student_address'] = $this->input->post('student_address');
-      $params['student_name_of_mother'] = $this->input->post('student_name_of_mother');
-      $params['student_name_of_father'] = $this->input->post('student_name_of_father');
+      $params['student_full_name'] = $studentFullName;
+      $params['student_born_place'] = sanitizeStrict($this->input->post('student_born_place'));
+      $params['student_born_date'] = sanitizeStrict($this->input->post('student_born_date'));
+      $params['student_address'] = $studentAddress;
+      $params['student_name_of_mother'] = sanitizeStrict($this->input->post('student_name_of_mother'));
+      $params['student_name_of_father'] = sanitizeStrict($this->input->post('student_name_of_father'));
       $params['student_parent_phone'] = $hp;
-      $params['student_status'] = $this->input->post('student_status');
+      $params['student_status'] = sanitizeStrict($this->input->post('student_status'));
       $status = $this->Student_model->add($params);
 
       if (!empty($_FILES['student_img']['name'])) {
@@ -554,7 +591,7 @@ class Student_set extends CI_Controller
         $pathFile = $path . $file;
 
         ini_set('memory_limit', '1024M'); // Alokasikan memory sementara untuk baca file excel
-        
+
         $fileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($pathFile);
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($fileType);
         $reader->setReadDataOnly(true); // Baca data saja tanpa style untuk menghemat memory
@@ -568,14 +605,14 @@ class Student_set extends CI_Controller
         $numrow = 1;
         $imported = 0;
         $duplicated = 0;
-        
+
         foreach ($worksheet->getRowIterator() as $rowObj) {
           $cellIterator = $rowObj->getCellIterator();
-          $cellIterator->setIterateOnlyExistingCells(false); 
-          
+          $cellIterator->setIterateOnlyExistingCells(false);
+
           $row = [];
           foreach ($cellIterator as $cell) {
-             $row[$cell->getColumn()] = $cell->getValue();
+            $row[$cell->getColumn()] = $cell->getValue();
           }
 
           $student_nis          = isset($row['A']) ? trim($row['A']) : ''; // required
@@ -587,12 +624,13 @@ class Student_set extends CI_Controller
           $gender               = isset($row['G']) ? trim($row['G']) : '';
           $tempat_lahir         = isset($row['H']) ? trim($row['H']) : '';
           $tgl_lahir            = isset($row['I']) ? trim($row['I']) : '';
-          
+
           // Konversi nilai tgl lahir jika formatnya numerical serial excel
           if (is_numeric($tgl_lahir) && !empty($tgl_lahir)) {
-             try {
-                $tgl_lahir = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tgl_lahir)->format('Y-m-d');
-             } catch (\Exception $e) {}
+            try {
+              $tgl_lahir = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tgl_lahir)->format('Y-m-d');
+            } catch (\Exception $e) {
+            }
           }
 
           $hobi                 = isset($row['J']) ? trim($row['J']) : '';
@@ -677,7 +715,7 @@ class Student_set extends CI_Controller
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
-        
+
         unlink($pathFile);
 
         // Flash message akumulatif
@@ -827,16 +865,16 @@ class Student_set extends CI_Controller
         $reader->setReadDataOnly(true); // Baca data tanpa style format
         $spreadsheet = $reader->load($pathFile);
         $worksheet = $spreadsheet->getActiveSheet();
-        
+
         $numrow = 1;
-        
+
         foreach ($worksheet->getRowIterator() as $rowObj) {
           $cellIterator = $rowObj->getCellIterator();
-          $cellIterator->setIterateOnlyExistingCells(false); 
-          
+          $cellIterator->setIterateOnlyExistingCells(false);
+
           $row = [];
           foreach ($cellIterator as $cell) {
-             $row[$cell->getColumn()] = $cell->getValue();
+            $row[$cell->getColumn()] = $cell->getValue();
           }
 
           $student_nis            = isset($row['A']) ? trim($row['A']) : '';
@@ -880,7 +918,7 @@ class Student_set extends CI_Controller
 
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet);
-        
+
         unlink($pathFile);
 
         $this->session->set_flashdata('success', 'Update No. Whatsapp Ortu Siswa Berhasil');
