@@ -28,16 +28,30 @@ class Pelanggaran_set extends CI_Controller
 
     public function simpan_pelanggaran()
     {
-        $id = $this->input->post('id');
+        $id = sanitizeStrict($this->input->post('id'));
+        $pelanggaran = sanitizeStrict($this->input->post('pelanggaran'));
+        $poin = sanitizeStrict($this->input->post('poin'));
+        $idKategori = sanitizeStrict($this->input->post('id_kategori'));
+
         $data = [
-            'pelanggaran' => $this->input->post('pelanggaran'),
-            'poin' => $this->input->post('poin'),
-            'id_kategori' => $this->input->post('id_kategori')
+            'pelanggaran' => $pelanggaran,
+            'poin' => $poin,
+            'id_kategori' => $idKategori,
         ];
+        $colWhere = $data;
 
         if ($id) {
+            $colWhere['id <>'] = $id;
+            if ($this->General_model->checkDataExists("pelanggaran", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data Jenis Pelanggaran sudah ada.');
+                redirect('manage/pelanggaran');
+            }
             $this->db->where('id', $id)->update('pelanggaran', $data);
         } else {
+            if ($this->General_model->checkDataExists("pelanggaran", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data Jenis Pelanggaran sudah ada.');
+                redirect('manage/pelanggaran');
+            }
             $this->db->insert('pelanggaran', $data);
         }
 
@@ -47,12 +61,24 @@ class Pelanggaran_set extends CI_Controller
 
     public function simpan_kategori_pelanggaran()
     {
-        $id = $this->input->post('id');
-        $data = ['kategori' => $this->input->post('kategori')];
+        $id = sanitizeStrict($this->input->post('id'));
+        $kategori = sanitizeStrict($this->input->post('kategori'));
+
+        $data = ['kategori' => $kategori];
+        $colWhere = $data;
 
         if ($id) {
+            $colWhere['id <>'] = $id;
+            if ($this->General_model->checkDataExists("kategori_pelanggaran", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data Kategori Pelanggaran sudah ada.');
+                redirect('manage/pelanggaran');
+            }
             $this->db->where('id', $id)->update('kategori_pelanggaran', $data);
         } else {
+            if ($this->General_model->checkDataExists("kategori_pelanggaran", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data Kategori Pelanggaran sudah ada.');
+                redirect('manage/pelanggaran');
+            }
             $this->db->insert('kategori_pelanggaran', $data);
         }
 

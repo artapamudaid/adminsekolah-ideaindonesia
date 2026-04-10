@@ -28,7 +28,7 @@ class Prestasi_set extends CI_Controller
 
     public function tambah_kategori()
     {
-        $kategori = $this->input->post('kategori');
+        $kategori = sanitizeStrict($this->input->post('kategori'));
 
         if ($kategori) {
             $colWhere = ["kategori" => $kategori];
