@@ -1,8 +1,9 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Class_set extends CI_Controller {
+class Class_set extends CI_Controller
+{
 
   public function __construct()
   {
@@ -15,11 +16,12 @@ class Class_set extends CI_Controller {
     $this->load->helper(array('form', 'url'));
   }
 
-// User_customer view in list
-  public function index($offset = NULL) {
+  // User_customer view in list
+  public function index($offset = NULL)
+  {
     $this->load->library('pagination');
-// Apply Filter
-// Get $_GET variable
+    // Apply Filter
+    // Get $_GET variable
     $s = $this->input->get(NULL, TRUE);
     $f = $this->input->get(NULL, TRUE);
 
@@ -27,14 +29,14 @@ class Class_set extends CI_Controller {
     $data['f'] = $f;
 
     $params = array();
-// Nip
+    // Nip
     if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
       $params['class_name'] = $f['n'];
     }
-    
+
     if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
       $params['majors_id'] = $s['m'];
-    }else if (isset($s['m']) && !empty($s['m']) && $s['m'] == 'all') {
+    } else if (isset($s['m']) && !empty($s['m']) && $s['m'] == 'all') {
       //$params['majors_id'] = $s['m'];
     }
 
@@ -50,42 +52,95 @@ class Class_set extends CI_Controller {
     //$config['total_rows'] = count($this->Student_model->get_class($paramsPage));
     //$this->pagination->initialize($config);
     $data['majors'] = $this->Student_model->get_majors();
-    
+
     $data['title'] = 'Kelas';
     $data['main'] = 'class/class_list';
     $this->load->view('manage/layout', $data);
   }
 
-  public function add_glob(){
+  public function add_glob()
+  {
     if ($_POST == TRUE) {
-      $className = $_POST['class_name'];
-      $majorsMajorsId = $_POST['majors_majors_id'];
-      $cpt = count($_POST['class_name']);
+      $className = sanitizeStrict($_POST['class_name']);
+      $majorsMajorsId = sanitizeStrict($_POST['majors_majors_id']);
+      $cpt = count($className);
+      $added = 0;
+      $skipped = 0;
       for ($i = 0; $i < $cpt; $i++) {
+        if (empty($className[$i])) {
+          $skipped++;
+          continue;
+        }
+
+        $colWhere = [
+          'class_name' => $className[$i],
+          'majors_majors_id' => $majorsMajorsId,
+        ];
+        if ($this->Student_model->checkDataExists("class", $colWhere)) {
+          $skipped++;
+          continue;
+        }
         $params['class_name'] = $className[$i];
         $params['majors_majors_id'] = $majorsMajorsId;
 
-        $this->Student_model->add_class($params);
+
+
+        $insert = $this->Student_model->add_class($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+
+        $added++;
       }
+
+      if ($added > 1) {
+        $msg = "$added data berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 data berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped data dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
     }
-    $this->session->set_flashdata('success',' Tambah Kelas Berhasil');
     redirect('manage/class');
   }
 
-// Add User_customer and Update
-  public function add($id = NULL) {
+  // Add User_customer and Update
+  public function add($id = NULL)
+  {
     $this->load->library('form_validation');
     $this->form_validation->set_rules('class_name', 'Nama Kelas', 'trim|required|xss_clean');
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button ket="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
-    if ($_POST AND $this->form_validation->run() == TRUE) {
+    if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('class_id')) {
-        $params['class_id'] = $this->input->post('class_id');
+        $id = sanitizeStrict($this->input->post('class_id'));
+        $params['class_id'] = $id;
       }
-      $params['class_name'] = $this->input->post('class_name');
-      $params['majors_majors_id'] = $this->input->post('majors_majors_id');
+      $className = sanitizeStrict($this->input->post('class_name'));
+      $majorsMajorsId = sanitizeStrict($this->input->post('majors_majors_id'));
+
+      $colWhere = [
+        'class_name' => $className,
+        'majors_majors_id' => $majorsMajorsId,
+        'class_id != ' => $id,
+      ];
+      if ($this->Student_model->checkDataExists("class", $colWhere)) {
+        $this->session->set_flashdata('failed', 'Data sudah ada');
+        $redirectUrl = ($id) ? "manage/class/edit/$id" : "manage/class";
+        redirect($redirectUrl);
+      }
+
+      $params['class_name'] = $className;
+      $params['majors_majors_id'] = $majorsMajorsId;
       $status = $this->Student_model->add_class($params);
 
 
@@ -100,7 +155,7 @@ class Class_set extends CI_Controller {
         redirect('manage/class/edit/' . $this->input->post('class_id'));
       }
 
-// Edit mode
+      // Edit mode
       if (!is_null($id)) {
         $object = $this->Student_model->get_class(array('id' => $id));
         if ($object == NULL) {
@@ -117,12 +172,13 @@ class Class_set extends CI_Controller {
   }
 
 
-// Delete to database
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  // Delete to database
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
-    $siswa = $this->Student_model->get(array('class_id'=>$id));
+    $siswa = $this->Student_model->get(array('class_id' => $id));
 
     if ($_POST) {
 
@@ -132,7 +188,7 @@ class Class_set extends CI_Controller {
       }
 
       $this->Student_model->delete_class($id);
-// activity log
+      // activity log
       $this->load->model('logs/Logs_model');
       $this->Logs_model->add(
         array(
@@ -148,6 +204,6 @@ class Class_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/class/edit/' . $id);
-    }  
+    }
   }
 }
