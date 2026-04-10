@@ -31,6 +31,11 @@ class Prestasi_set extends CI_Controller
         $kategori = $this->input->post('kategori');
 
         if ($kategori) {
+            $colWhere = ["kategori" => $kategori];
+            if ($this->General_model->checkDataExists("kategori_prestasi", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Kategori sudah ada.');
+                redirect('manage/prestasi');
+            }
             $this->db->insert('kategori_prestasi', [
                 'kategori' => $kategori
             ]);
@@ -45,8 +50,19 @@ class Prestasi_set extends CI_Controller
 
     public function update_kategori()
     {
-        $id = $this->input->post('edit_id_kategori');
-        $nama = $this->input->post('edit_nama_kategori');
+        $id = sanitizeStrict($this->input->post('edit_id_kategori'));
+        $nama = sanitizeStrict($this->input->post('edit_nama_kategori'));
+
+        if (empty($nama)) {
+            $this->session->set_flashdata('failed', 'Kategori harus diisi.');
+            redirect('manage/prestasi');
+        }
+
+        $colWhere = ["kategori" => $nama, "id <>" => $id];
+        if ($this->General_model->checkDataExists("kategori_prestasi", $colWhere)) {
+            $this->session->set_flashdata('failed', 'Kategori sudah ada.');
+            redirect('manage/prestasi');
+        }
 
         $this->db->where('id', $id);
         $this->db->update('kategori_prestasi', ['kategori' => $nama]);
@@ -75,10 +91,25 @@ class Prestasi_set extends CI_Controller
     function add_jenis_prestasi()
     {
         if ($_POST == TRUE) {
+            $idKategori = sanitizeStrict($this->input->post('kategori_prestasi'));
+            $prestasi = sanitizeStrict($this->input->post('nama_prestasi'));
+            $poin = sanitizeStrict($this->input->post('poin_prestasi'));
+
+            if (empty($prestasi) || empty($poin) || empty($idKategori)) {
+                $this->session->set_flashdata('failed', 'Data tidak boleh kosong.');
+                redirect('manage/prestasi');
+            }
+
+            $colWhere = ["prestasi" => $prestasi, "id_kategori" => $idKategori, "poin" => $poin];
+            if ($this->General_model->checkDataExists("prestasi", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data sudah ada.');
+                redirect('manage/prestasi');
+            }
+
             $data = array();
-            $data['id_kategori']  = $this->input->post('kategori_prestasi');
-            $data['prestasi']  = $this->input->post('nama_prestasi');
-            $data['poin']         = $this->input->post('poin_prestasi');
+            $data['id_kategori']  = $idKategori;
+            $data['prestasi']  = $prestasi;
+            $data['poin']         = $poin;
 
             $this->db->insert('prestasi', $data);
 
@@ -96,10 +127,21 @@ class Prestasi_set extends CI_Controller
 
     public function update_prestasi()
     {
-        $id         = $this->input->post('id');
-        $prestasi   = $this->input->post('prestasi');
-        $kategori   = $this->input->post('id_kategori');
-        $poin       = $this->input->post('poin');
+        $id         = sanitizeStrict($this->input->post('id'));
+        $prestasi   = sanitizeStrict($this->input->post('prestasi'));
+        $kategori   = sanitizeStrict($this->input->post('id_kategori'));
+        $poin       = sanitizeStrict($this->input->post('poin'));
+
+        if (empty($prestasi) || empty($poin) || empty($kategori)) {
+            $this->session->set_flashdata('failed', 'Data tidak boleh kosong.');
+            redirect('manage/prestasi');
+        }
+
+        $colWhere = ["prestasi" => $prestasi, "id_kategori" => $kategori, "poin" => $poin, "id <>" => $id];
+        if ($this->General_model->checkDataExists("prestasi", $colWhere)) {
+            $this->session->set_flashdata('failed', 'Data sudah ada.');
+            redirect('manage/prestasi');
+        }
 
         $data = [
             'prestasi' => $prestasi,
