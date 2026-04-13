@@ -1,7 +1,8 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Presensi_khusus_set extends CI_Controller {
+class Presensi_khusus_set extends CI_Controller
+{
 
   public function __construct()
   {
@@ -14,7 +15,8 @@ class Presensi_khusus_set extends CI_Controller {
     $this->load->helper(array('form', 'url'));
   }
 
-  public function index() {
+  public function index()
+  {
     $this->load->library('pagination');
     // Apply Filter
     // Get $_GET variable
@@ -26,7 +28,7 @@ class Presensi_khusus_set extends CI_Controller {
     $param = array();
     if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
       $params['presensi_khusus_search'] = $f['n'];
-    } 
+    }
 
     $data['presensi_khusus'] = $this->Presensi_khusus_model->get($params);
     $config['base_url'] = site_url('manage/presensi_khusus');
@@ -37,14 +39,16 @@ class Presensi_khusus_set extends CI_Controller {
     $this->load->view('manage/layout', $data);
   }
 
-  public function export_excel(){
+  public function export_excel()
+  {
     $data['presensi_khusus'] = $this->Presensi_khusus_model->get();
     $this->load->view('presensi_khusus/presensi_khusus_excel', $data);
   }
 
 
   // Update
-  public function add($id = NULL) {
+  public function add($id = NULL)
+  {
 
     $this->load->library('form_validation');
     $this->form_validation->set_rules('tanggal', 'Tanggal', 'trim|required|xss_clean');
@@ -53,7 +57,7 @@ class Presensi_khusus_set extends CI_Controller {
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button position="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
-    if ($_POST AND $this->form_validation->run() == TRUE) {
+    if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('id')) {
         $params['id'] = $id;
@@ -62,14 +66,34 @@ class Presensi_khusus_set extends CI_Controller {
       } else {
         $params['created_date'] = date('Y-m-d H:i:s');
         $params['created_by'] = $this->session->userdata('uid');
-      } 
-      $params['tanggal'] = $this->input->post('tanggal'); 
-      $params['id_pegawai'] = $this->input->post('id_pegawai'); 
-      $params['lokasi_absen'] = $this->input->post('lokasi_absen'); 
-      $params['remark'] = $this->input->post('remark'); 
+      }
+
+      $tanggal = sanitizeStrict($this->input->post('tanggal'));
+      $idPegawai = sanitizeStrict($this->input->post('id_pegawai'));
+      $lokasiAbsen = sanitizeStrict($this->input->post('lokasi_absen'));
+
+      $colWhere = [
+        "tanggal" => $tanggal,
+        "id_pegawai" => $idPegawai,
+        "lokasi_absen" => $lokasiAbsen,
+      ];
+      if (!empty($id)) {
+        $colWhere["id != "] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("absensi_khusus", $colWhere)) {
+        $this->session->set_flashdata('failed', ' Data sudah ada');
+        $redirectUrl = (!empty($id)) ? "manage/presensi_khusus/edit/$id" : "manage/presensi_khusus/add";
+        redirect($redirectUrl);
+      }
+
+      $params['tanggal'] = $tanggal;
+      $params['id_pegawai'] = $idPegawai;
+      $params['lokasi_absen'] = $lokasiAbsen;
+      $params['remark'] = sanitizeStrict($this->input->post('remark'));
       $status = $this->Presensi_khusus_model->add($params);
 
-    // activity log
+      // activity log
       $this->load->model('logs/Logs_model');
       $this->Logs_model->add(
         array(
@@ -88,7 +112,7 @@ class Presensi_khusus_set extends CI_Controller {
         redirect('manage/presensi_khusus/edit/' . $this->input->post('id'));
       }
 
-    // Edit mode
+      // Edit mode
       if (!is_null($id)) {
         $object = $this->Presensi_khusus_model->get(array('id' => $id));
         if ($object == NULL) {
@@ -101,24 +125,25 @@ class Presensi_khusus_set extends CI_Controller {
 
       $this->load->model('presensi_data_area/Presensi_data_area_model');
       $data['lokasi_absen'] = $this->Presensi_data_area_model->get();
-      
-      $data['setting_level'] = $this->Setting_model->get(array('id' => 7)); 
+
+      $data['setting_level'] = $this->Setting_model->get(array('id' => 7));
       $data['title'] = $data['operation'] . ' Presensi Khusus';
       $data['main'] = 'presensi_khusus/presensi_khusus_edit';
       $this->load->view('manage/layout', $data);
     }
   }
 
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
-    $presensi = $this->Presensi_khusus_model->get(array('id'=>$id));
+    $presensi = $this->Presensi_khusus_model->get(array('id' => $id));
 
     if ($_POST) {
 
       $this->Presensi_khusus_model->hapus($id);
-    // activity log
+      // activity log
       $this->load->model('logs/Logs_model');
       $this->Logs_model->add(
         array(
@@ -134,15 +159,15 @@ class Presensi_khusus_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/presensi_khusus/edit/' . $id);
-    }  
+    }
   }
 
   // View data detail
-  public function view($id = NULL) {
+  public function view($id = NULL)
+  {
     $data['presensi_khusus'] = $this->Presensi_khusus_model->get(array('id' => $id));
     $data['title'] = 'Detail Presensi Khusus';
     $data['main'] = 'presensi_khusus/presensi_khusus_view';
     $this->load->view('manage/layout', $data);
   }
-
 }
