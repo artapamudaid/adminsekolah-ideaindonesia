@@ -83,7 +83,7 @@ class Presensi_waktu_set extends CI_Controller
           'data_waktu_pulang' => $pulang[$i],
         ];
 
-        if ($this->General_model->checkDataExist('data_waktu', $col_where)) {
+        if ($this->General_model->checkDataExists('data_waktu', $col_where)) {
           $skipped++;
           continue;
         }

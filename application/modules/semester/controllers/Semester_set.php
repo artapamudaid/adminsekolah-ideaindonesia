@@ -53,20 +53,56 @@ class Semester_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $semesterName   = $_POST['semester_name'];
-      $semesterStatus   = $_POST['semester_status'];
-      $semesterPeriodId = $_POST['semester_period_id'];
-      $cpt = count($_POST['semester_name']);
+      $semesterName   = sanitizeStrict($_POST['semester_name']);
+      $semesterPeriodId = sanitizeStrict($_POST['semester_period_id']);
+
+      $cpt = count($semesterName);
+
+      $added = 0;
+      $skipped = 0;
       for ($i = 0; $i < $cpt; $i++) {
+
+        if (empty($semesterName[$i])) {
+          $skipped++;
+          continue;
+        }
+
+        $col_where = [
+          'semester_name' => $semesterName[$i],
+          'semester_period_id' => $semesterPeriodId,
+        ];
+
+        if ($this->General_model->checkDataExists('semester', $col_where)) {
+          $skipped++;
+          continue;
+        }
+
         $params['semester_name']     = $semesterName[$i];
-        $params['semester_status']   = $semesterStatus[$i];
         $params['semester_period_id'] = $semesterPeriodId;
 
-        $this->Semester_model->add($params);
+        $insert = $this->Semester_model->add($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+        $added++;
       }
+
+      if ($added > 1) {
+        $msg = "$added Semester berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 Semester berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped Semester dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
+      redirect('manage/semester');
     }
-    $this->session->set_flashdata('success', ' Tambah Semester Berhasil');
-    redirect('manage/semester');
   }
 
   public function add($id = NULL)
@@ -79,12 +115,30 @@ class Semester_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('semester_id')) {
-        $params['semester_id'] = $this->input->post('semester_id');
+        $id = sanitizeStrict($this->input->post('semester_id'));
+        $params['semester_id'] = $id;
       }
 
-      $params['semester_name']     = $this->input->post('semester_name');
-      $params['semester_period_id']   = $this->input->post('semester_period_id');
-      $params['semester_status']     = $this->input->post('semester_status');
+      $semesterName = sanitizeStrict($this->input->post('semester_name'));
+      $semesterPeriodId = sanitizeStrict($this->input->post('semester_period_id'));
+      $semesterStatus = sanitizeStrict($this->input->post('semester_status'));
+
+      $colWhere = [
+        'semester_name' => $semesterName,
+        'semester_period_id' => $semesterPeriodId
+      ];
+      if (!empty($id)) {
+        $colWhere['semester_id !='] = $id;
+      }
+      if ($this->Semester_model->checkDataExists("semester", $colWhere)) {
+        $this->session->set_flashdata('failed', 'Data sudah ada');
+        $redirectUrl = ($id) ? "manage/semester/edit/$id" : "manage/semester";
+        redirect($redirectUrl);
+      }
+
+      $params['semester_name']     = $semesterName;
+      $params['semester_period_id']   = $semesterPeriodId;
+      $params['semester_status']     = $semesterStatus;
 
       $status = $this->Semester_model->add($params);
 
