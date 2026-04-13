@@ -1,7 +1,8 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Presensi_data_area_set extends CI_Controller {
+class Presensi_data_area_set extends CI_Controller
+{
 
   public function __construct()
   {
@@ -14,7 +15,8 @@ class Presensi_data_area_set extends CI_Controller {
     $this->load->helper(array('form', 'url'));
   }
 
-  public function index() {
+  public function index()
+  {
     $this->load->library('pagination');
     // Apply Filter
     // Get $_GET variable
@@ -26,7 +28,7 @@ class Presensi_data_area_set extends CI_Controller {
     $param = array();
     if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
       $params['presensi_data_area_search'] = $f['n'];
-    } 
+    }
 
     $data['presensi_data_area'] = $this->Presensi_data_area_model->get($params);
     $config['base_url'] = site_url('manage/presensi_data_area');
@@ -38,31 +40,33 @@ class Presensi_data_area_set extends CI_Controller {
   }
 
 
-  public function maps_area(){
-    $id=base64_decode($this->input->get('id_area'));
+  public function maps_area()
+  {
+    $id = base64_decode($this->input->get('id_area'));
     $params = array();
-    $params['id']=$id;
+    $params['id'] = $id;
     $data['presensi_data_area'] = $this->Presensi_data_area_model->get($params);
     $this->load->view('presensi_data_area/presensi_data_area_maps', $data);
-
   }
 
-  public function maps_area_global(){
-    $data['nama']=$this->input->get('nama');
-    $data['longi']=$this->input->get('longi');
-    $data['lati']=$this->input->get('lati');
+  public function maps_area_global()
+  {
+    $data['nama'] = $this->input->get('nama');
+    $data['longi'] = $this->input->get('longi');
+    $data['lati'] = $this->input->get('lati');
     $this->load->view('presensi_data_area/presensi_data_area_maps_global', $data);
-
   }
 
-  public function export_excel(){
+  public function export_excel()
+  {
     $data['presensi_data_area'] = $this->Presensi_data_area_model->get();
     $this->load->view('presensi_data_area/presensi_data_area_excel', $data);
   }
 
 
   // Update
-  public function add($id = NULL) {
+  public function add($id = NULL)
+  {
 
     $this->load->library('form_validation');
     $this->form_validation->set_rules('nama_area', 'Nama Area', 'trim|required|xss_clean');
@@ -71,7 +75,7 @@ class Presensi_data_area_set extends CI_Controller {
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button position="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
-    if ($_POST AND $this->form_validation->run() == TRUE) {
+    if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('id_area')) {
         $params['id_area'] = $id;
@@ -80,14 +84,36 @@ class Presensi_data_area_set extends CI_Controller {
       } else {
         $params['created_date'] = date('Y-m-d H:i:s');
         $params['created_by'] = $this->session->userdata('uid');
-      } 
-      $params['nama_area'] = $this->input->post('nama_area'); 
-      $params['longi'] = $this->input->post('longi'); 
-      $params['lati'] = $this->input->post('lati'); 
-      $params['remark'] = $this->input->post('remark'); 
+      }
+
+      $namaArea = sanitizeStrict($this->input->post('nama_area'));
+      $longi = sanitizeStrict($this->input->post('longi'));
+      $lati = sanitizeStrict($this->input->post('lati'));
+      $remark = sanitizeStrict($this->input->post('remark'));
+
+      $colWhere = [
+        "nama_area" => $namaArea,
+        "longi" => $longi,
+        "lati" => $lati,
+      ];
+
+      if (!empty($id)) {
+        $colWhere["id_area != "] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("presensi_data_area", $colWhere)) {
+        $this->session->set_flashdata('failed', ' Data sudah ada');
+        $redirectUrl = (!empty($id)) ? "manage/presensi_data_area/edit/$id" : "manage/presensi_data_area";
+        redirect($redirectUrl);
+      }
+
+      $params['nama_area'] = $namaArea;
+      $params['longi'] = $longi;
+      $params['lati'] = $lati;
+      $params['remark'] = $remark;
       $status = $this->Presensi_data_area_model->add($params);
 
-    // activity log
+      // activity log
       $this->load->model('logs/Logs_model');
       $this->Logs_model->add(
         array(
@@ -106,7 +132,7 @@ class Presensi_data_area_set extends CI_Controller {
         redirect('manage/presensi_data_area/edit/' . $this->input->post('id_area'));
       }
 
-    // Edit mode
+      // Edit mode
       if (!is_null($id)) {
         $object = $this->Presensi_data_area_model->get(array('id' => $id));
         if ($object == NULL) {
@@ -114,23 +140,24 @@ class Presensi_data_area_set extends CI_Controller {
           $data['presensi_data_area'] = $object;
         }
       }
-      $data['setting_level'] = $this->Setting_model->get(array('id' => 7)); 
+      $data['setting_level'] = $this->Setting_model->get(array('id' => 7));
       $data['title'] = $data['operation'] . ' Data Area Presensi';
       $data['main'] = 'presensi_data_area/presensi_data_area_edit';
       $this->load->view('manage/layout', $data);
     }
   }
 
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
-    $presensi = $this->Presensi_data_area_model->get(array('id_area'=>$id));
+    $presensi = $this->Presensi_data_area_model->get(array('id_area' => $id));
 
     if ($_POST) {
 
       $this->Presensi_data_area_model->hapus($id);
-    // activity log
+      // activity log
       $this->load->model('logs/Logs_model');
       $this->Logs_model->add(
         array(
@@ -146,15 +173,15 @@ class Presensi_data_area_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/presensi_data_area/edit/' . $id);
-    }  
+    }
   }
 
   // View data detail
-  public function view($id = NULL) {
+  public function view($id = NULL)
+  {
     $data['presensi_data_area'] = $this->Presensi_data_area_model->get(array('id' => $id));
     $data['title'] = 'Detail Data Area Presensi';
     $data['main'] = 'presensi_data_area/presensi_data_area_view';
     $this->load->view('manage/layout', $data);
   }
-
 }
