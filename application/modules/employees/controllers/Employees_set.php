@@ -126,22 +126,57 @@ class Employees_set extends CI_Controller
           $params['employee_password'] = md5($default);
         }
       }
-      $params['employee_nip'] = $this->input->post('employee_nip');
-      $params['employee_gender'] = $this->input->post('employee_gender');
-      $params['employee_phone'] = $this->input->post('employee_phone');
-      $params['employee_email'] = $this->input->post('employee_email');
-      $params['employee_position_id'] = $this->input->post('employee_position_id');
-      $params['employee_majors_id'] = $this->input->post('employee_majors_id');
-      $params['employee_category'] = $this->input->post('employee_category');
+
+      $employeeNip = sanitizeStrict($this->input->post('employee_nip'));
+      $employeeName = sanitizeStrict($this->input->post('employee_name'));
+      $employeePhone = sanitizeStrict($this->input->post('employee_phone'));
+      $employeePhone = str_replace(' ', '', $employeePhone);
+      $employeePositionId = sanitizeStrict($this->input->post('employee_position_id'));
+      $employeeMajorsId = sanitizeStrict($this->input->post('employee_majors_id'));
+
+      $colWhere = [
+        "employee_nip" => $employeeNip,
+        "employee_position_id" => $employeePositionId,
+        "employee_majors_id" => $employeeMajorsId,
+      ];
+
+      if (!empty($id)) {
+        $colWhere = [
+          "employee_nip" => $employeeNip,
+          "employee_position_id" => $employeePositionId,
+          "employee_majors_id" => $employeeMajorsId,
+          "employee_id != " => $id
+        ];
+      } else {
+        $colWhere = [
+          "employee_nip" => $employeeNip,
+          "employee_position_id" => $employeePositionId,
+          "employee_majors_id" => $employeeMajorsId,
+        ];
+      }
+
+      if ($this->Employees_model->checkDataExists("employee", $colWhere)) {
+        $this->session->set_flashdata('failed', ' Data sudah ada');
+        $redirectUrl = (!empty($id)) ? "manage/employees/edit/$id" : "manage/employees";
+        redirect($redirectUrl);
+      }
+
+      $params['employee_nip'] = $employeeNip;
+      $params['employee_gender'] = sanitizeStrict($this->input->post('employee_gender'));
+      $params['employee_phone'] = $employeePhone;
+      $params['employee_email'] = sanitizeStrict($this->input->post('employee_email'));
+      $params['employee_position_id'] = $employeePositionId;
+      $params['employee_majors_id'] = $employeeMajorsId;
+      $params['employee_category'] = sanitizeStrict($this->input->post('employee_category'));
       $params['employee_last_update'] = date('Y-m-d H:i:s');
-      $params['employee_name'] = $this->input->post('employee_name');
-      $params['employee_born_place'] = $this->input->post('employee_born_place');
-      $params['employee_born_date'] = $this->input->post('employee_born_date');
-      $params['employee_address'] = $this->input->post('employee_address');
-      $params['employee_strata'] = $this->input->post('employee_strata');
-      $params['employee_start'] = $this->input->post('employee_start');
-      $params['employee_end'] = $this->input->post('employee_end');
-      $params['employee_status'] = $this->input->post('employee_status');
+      $params['employee_name'] = $employeeName;
+      $params['employee_born_place'] = sanitizeStrict($this->input->post('employee_born_place'));
+      $params['employee_born_date'] = sanitizeStrict($this->input->post('employee_born_date'));
+      $params['employee_address'] = sanitizeStrict($this->input->post('employee_address'));
+      $params['employee_strata'] = sanitizeStrict($this->input->post('employee_strata'));
+      $params['employee_start'] = sanitizeStrict($this->input->post('employee_start'));
+      $params['employee_end'] = sanitizeStrict($this->input->post('employee_end'));
+      $params['employee_status'] = sanitizeStrict($this->input->post('employee_status'));
       $status = $this->Employees_model->add($params);
 
       if (!empty($_FILES['employee_photo']['name'])) {
