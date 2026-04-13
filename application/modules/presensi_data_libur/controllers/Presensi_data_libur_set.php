@@ -68,8 +68,26 @@ class Presensi_data_libur_set extends CI_Controller
         $params['created_date'] = date('Y-m-d H:i:s');
         $params['created_by'] = $this->session->userdata('uid');
       }
-      $params['hari'] = $this->input->post('hari');
-      $params['keterangan'] = $this->input->post('keterangan');
+
+      $hari = sanitizeStrict($this->input->post('hari'));
+      $keterangan = sanitizeStrict($this->input->post('keterangan'));
+
+      $colWhere = [
+        "hari" => $hari,
+        // "keterangan" => $keterangan,
+      ];
+      if (!empty($id)) {
+        $colWhere["id != "] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("absensi_data_libur", $colWhere)) {
+        $this->session->set_flashdata('failed', ' Data sudah ada');
+        $redirectUrl = (!empty($id)) ? "manage/presensi_data_libur/edit/$id" : "manage/presensi_data_libur/add";
+        redirect($redirectUrl);
+      }
+
+      $params['hari'] = $hari;
+      $params['keterangan'] = $keterangan;
       $status = $this->presensi_data_libur_model->add($params);
 
       // activity log
