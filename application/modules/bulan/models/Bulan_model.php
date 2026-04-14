@@ -2578,4 +2578,260 @@ class Bulan_model extends CI_Model
         $status = $this->db->affected_rows();
         return ($status == 0) ? FALSE : TRUE;
     }
+
+    function get_bulananWithCOA($params = array())
+    {
+        if (isset($params['id'])) {
+            $this->db->where('bulan.bulan_id', $params['id']);
+        }
+
+        if (isset($params['student_id'])) {
+            $this->db->where('bulan.student_student_id', $params['student_id']);
+        }
+
+        if (isset($params['multiple_id'])) {
+            $this->db->where_in('bulan.bulan_id', $params['multiple_id']);
+        }
+
+        if (isset($params['date'])) {
+            $this->db->where('bulan_date_pay', $params['date']);
+        }
+
+        if (isset($params['student_nis'])) {
+            $this->db->where('student_nis', $params['student_nis']);
+        }
+
+        if (isset($params['bulan_bill'])) {
+            $this->db->where('bulan_bill', $params['bulan_bill']);
+        }
+
+        if (isset($params['payment_id'])) {
+            $this->db->where('bulan.payment_payment_id', $params['payment_id']);
+        }
+
+        if (isset($params['month_id'])) {
+            $this->db->where('bulan.month_month_id', $params['month_id']);
+        }
+
+        if (isset($params['class_id'])) {
+            $this->db->where('student.class_class_id', $params['class_id']);
+        }
+
+        if (isset($params['account_majors_id'])) {
+            $this->db->where('account_majors_id', $params['account_majors_id']);
+        }
+
+        if (isset($params['period_id'])) {
+            $this->db->where('payment.period_period_id', $params['period_id']);
+        }
+
+        if (isset($params['status'])) {
+            $this->db->where('bulan.bulan_status', $params['status']);
+        }
+
+        if (isset($params['period_status'])) {
+            $this->db->where('period_status', $params['period_status']);
+        }
+
+        if (isset($params['bulan_input_date'])) {
+            $this->db->where('bulan_input_date', $params['bulan_input_date']);
+        }
+
+        if (isset($params['bulan_last_update'])) {
+            $this->db->where('bulan_last_update', $params['bulan_last_update']);
+        }
+
+        if (isset($params['date_start']) and isset($params['date_end'])) {
+            $this->db->where('bulan_date_pay >=', $params['date_start'] . ' 00:00:00');
+            $this->db->where('bulan_date_pay <=', $params['date_end'] . ' 23:59:59');
+        }
+
+        if (isset($params['month_start']) and isset($params['month_end'])) {
+            $this->db->where('month_month_id >=', $params['month_start']);
+            $this->db->where('month_month_id <=', $params['month_end']);
+        }
+
+        if (isset($params['date'])) {
+            $this->db->where('bulan_date_pay', $params['date']);
+        }
+
+        if (isset($params['group'])) {
+
+            $this->db->group_by('bulan.student_student_id');
+        }
+
+        if (isset($params['grup'])) {
+
+            $this->db->group_by('bulan.month_month_id');
+        }
+
+        if (isset($params['paymentt'])) {
+
+            $this->db->group_by('bulan.payment_payment_id');
+        }
+
+        if (isset($params['limit'])) {
+            if (!isset($params['offset'])) {
+                $params['offset'] = NULL;
+            }
+
+            $this->db->limit($params['limit'], $params['offset']);
+        }
+
+        $this->db->distinct();
+
+        $this->db->order_by('payment_payment_id');
+
+        if (isset($params['urutan'])) {
+
+            $this->db->order_by('bulan_date_pay', 'asc');
+        } else {
+            $this->db->order_by('class_id', 'asc');
+            $this->db->order_by('student_nis', 'asc');
+            $this->db->order_by('month_month_id', 'asc');
+        }
+
+        $this->db->group_by('student_nis');
+        $this->db->where('majors_status', '1');
+
+        $this->db->select('bulan.bulan_id, sum(bulan_bill) as bulan_bill, bulan_date_pay, bulan_number_pay, bulan_status, status_tagihan, bulan_input_date, bulan_last_update');
+
+        $this->db->select('student_student_id, student_img, student_nis, student_full_name, student_name_of_mother, student_parent_phone, student.class_class_id, student.majors_majors_id, majors_name, majors_short_name, class_name');
+        $this->db->select('payment_payment_id, period_period_id, period_status, period_start, period_end, pos_name, account_account_id, payment_type');
+        $this->db->select('user_user_id, user_full_name');
+        $this->db->select('account_id, account_code');
+
+        $this->db->select('month_month_id, month_name');
+        $this->db->select('bulan.student_student_id, bulan.student_student_id');
+        $this->db->join('month', 'month.month_id = bulan.month_month_id', 'left');
+
+        $this->db->join('student', 'student.student_id = bulan.student_student_id', 'left');
+        $this->db->join('payment', 'payment.payment_id = bulan.payment_payment_id', 'left');
+        $this->db->join('pos', 'pos.pos_id = payment.pos_pos_id', 'left');
+        $this->db->join('period', 'period.period_id = payment.period_period_id', 'left');
+
+        $this->db->join('class', 'class.class_id = student.class_class_id', 'left');
+        $this->db->join('majors', 'majors.majors_id = student.majors_majors_id', 'left');
+        $this->db->join('users', 'users.user_id = bulan.user_user_id', 'left');
+        $this->db->join('account', 'account.account_id = pos.account_account_id', 'left');
+        $res = $this->db->get('bulan');
+
+        if (isset($params['id'])) {
+            return $res->row_array();
+        } else {
+            return $res->result_array();
+        }
+    }
+
+
+    function get_pembayaranWithCOA($tahun, $nis)
+    {
+        $query = "SELECT `t`.`student_id`, `t`.`student_nis`, `t`.`student_full_name`, 
+            `s`.`pos_name`, `d`.`period_id`, `d`.`period_start`, `d`.`period_end`, 
+            `p`.`payment_id`, `p`.`payment_mode`, 
+            SUM(`b`.`bulan_bill`) as `total`,
+            SUM(if(`b`.`bulan_status`='1',`b`.`bulan_bill`,0)) as `dibayar`,
+            SUM(if(`b`.`month_month_id`='1',`b`.`bulan_bill`,0)) as `bill_jul`, 
+            SUM(if(`b`.`month_month_id`='2',`b`.`bulan_bill`,0)) as `bill_agu`, 
+            SUM(if(`b`.`month_month_id`='3',`b`.`bulan_bill`,0)) as `bill_sep`, 
+            SUM(if(`b`.`month_month_id`='4',`b`.`bulan_bill`,0)) as `bill_okt`, 
+            SUM(if(`b`.`month_month_id`='5',`b`.`bulan_bill`,0)) as `bill_nov`, 
+            SUM(if(`b`.`month_month_id`='6',`b`.`bulan_bill`,0)) as `bill_des`, 
+            SUM(if(`b`.`month_month_id`='7',`b`.`bulan_bill`,0)) as `bill_jan`, 
+            SUM(if(`b`.`month_month_id`='8',`b`.`bulan_bill`,0)) as `bill_feb`, 
+            SUM(if(`b`.`month_month_id`='9',`b`.`bulan_bill`,0)) as `bill_mar`, 
+            SUM(if(`b`.`month_month_id`='10',`b`.`bulan_bill`,0)) as `bill_apr`, 
+            SUM(if(`b`.`month_month_id`='11',`b`.`bulan_bill`,0)) as `bill_mei`, 
+            SUM(if(`b`.`month_month_id`='12',`b`.`bulan_bill`,0)) as `bill_jun`, 
+            SUM(if(`b`.`month_month_id`='1',`b`.`bulan_status`,0)) as `status_jul`, 
+            SUM(if(`b`.`month_month_id`='2',`b`.`bulan_status`,0)) as `status_agu`, 
+            SUM(if(`b`.`month_month_id`='3',`b`.`bulan_status`,0)) as `status_sep`, 
+            SUM(if(`b`.`month_month_id`='4',`b`.`bulan_status`,0)) as `status_okt`, 
+            SUM(if(`b`.`month_month_id`='5',`b`.`bulan_status`,0)) as `status_nov`, 
+            SUM(if(`b`.`month_month_id`='6',`b`.`bulan_status`,0)) as `status_des`, 
+            SUM(if(`b`.`month_month_id`='7',`b`.`bulan_status`,0)) as `status_jan`, 
+            SUM(if(`b`.`month_month_id`='8',`b`.`bulan_status`,0)) as `status_feb`, 
+            SUM(if(`b`.`month_month_id`='9',`b`.`bulan_status`,0)) as `status_mar`, 
+            SUM(if(`b`.`month_month_id`='10',`b`.`bulan_status`,0)) as `status_apr`, 
+            SUM(if(`b`.`month_month_id`='11',`b`.`bulan_status`,0)) as `status_mei`, 
+            SUM(if(`b`.`month_month_id`='12',`b`.`bulan_status`,0)) as `status_jun`,
+            MAX(if(`b`.`month_month_id`='1',`b`.`status_tagihan`,'')) as `status_tagihan_jul`,
+            MAX(if(`b`.`month_month_id`='2',`b`.`status_tagihan`,'')) as `status_tagihan_agu`,
+            MAX(if(`b`.`month_month_id`='3',`b`.`status_tagihan`,'')) as `status_tagihan_sep`,
+            MAX(if(`b`.`month_month_id`='4',`b`.`status_tagihan`,'')) as `status_tagihan_okt`,
+            MAX(if(`b`.`month_month_id`='5',`b`.`status_tagihan`,'')) as `status_tagihan_nov`,
+            MAX(if(`b`.`month_month_id`='6',`b`.`status_tagihan`,'')) as `status_tagihan_des`,
+            MAX(if(`b`.`month_month_id`='7',`b`.`status_tagihan`,'')) as `status_tagihan_jan`,
+            MAX(if(`b`.`month_month_id`='8',`b`.`status_tagihan`,'')) as `status_tagihan_feb`,
+            MAX(if(`b`.`month_month_id`='9',`b`.`status_tagihan`,'')) as `status_tagihan_mar`,
+            MAX(if(`b`.`month_month_id`='10',`b`.`status_tagihan`,'')) as `status_tagihan_apr`,
+            MAX(if(`b`.`month_month_id`='11',`b`.`status_tagihan`,'')) as `status_tagihan_mei`,
+            MAX(if(`b`.`month_month_id`='12',`b`.`status_tagihan`,'')) as `status_tagihan_jun`,
+            MAX(if(`b`.`month_month_id`='1',`b`.`bulan_date_pay`,0)) as `date_pay_jul`, 
+            MAX(if(`b`.`month_month_id`='2',`b`.`bulan_date_pay`,0)) as `date_pay_agu`, 
+            MAX(if(`b`.`month_month_id`='3',`b`.`bulan_date_pay`,0)) as `date_pay_sep`, 
+            MAX(if(`b`.`month_month_id`='4',`b`.`bulan_date_pay`,0)) as `date_pay_okt`, 
+            MAX(if(`b`.`month_month_id`='5',`b`.`bulan_date_pay`,0)) as `date_pay_nov`, 
+            MAX(if(`b`.`month_month_id`='6',`b`.`bulan_date_pay`,0)) as `date_pay_des`, 
+            MAX(if(`b`.`month_month_id`='7',`b`.`bulan_date_pay`,0)) as `date_pay_jan`, 
+            MAX(if(`b`.`month_month_id`='8',`b`.`bulan_date_pay`,0)) as `date_pay_feb`, 
+            MAX(if(`b`.`month_month_id`='9',`b`.`bulan_date_pay`,0)) as `date_pay_mar`, 
+            MAX(if(`b`.`month_month_id`='10',`b`.`bulan_date_pay`,0)) as `date_pay_apr`, 
+            MAX(if(`b`.`month_month_id`='11',`b`.`bulan_date_pay`,0)) as `date_pay_mei`, 
+            MAX(if(`b`.`month_month_id`='12',`b`.`bulan_date_pay`,0)) as `date_pay_jun`, 
+            MAX(if(`b`.`month_month_id`='1',`m`.`month_name`,'')) as `month_name_jul`, 
+            MAX(if(`b`.`month_month_id`='2',`m`.`month_name`,'')) as `month_name_agu`, 
+            MAX(if(`b`.`month_month_id`='3',`m`.`month_name`,'')) as `month_name_sep`, 
+            MAX(if(`b`.`month_month_id`='4',`m`.`month_name`,'')) as `month_name_okt`, 
+            MAX(if(`b`.`month_month_id`='5',`m`.`month_name`,'')) as `month_name_nov`, 
+            MAX(if(`b`.`month_month_id`='6',`m`.`month_name`,'')) as `month_name_des`, 
+            MAX(if(`b`.`month_month_id`='7',`m`.`month_name`,'')) as `month_name_jan`, 
+            MAX(if(`b`.`month_month_id`='8',`m`.`month_name`,'')) as `month_name_feb`, 
+            MAX(if(`b`.`month_month_id`='9',`m`.`month_name`,'')) as `month_name_mar`, 
+            MAX(if(`b`.`month_month_id`='10',`m`.`month_name`,'')) as `month_name_apr`, 
+            MAX(if(`b`.`month_month_id`='11',`m`.`month_name`,'')) as `month_name_mei`, 
+            MAX(if(`b`.`month_month_id`='12',`m`.`month_name`,'')) as `month_name_jun`,
+            MAX(if(`b`.`month_month_id`='1',`a`.`coa_name`,'')) as `account_jul`, 
+            MAX(if(`b`.`month_month_id`='2',`a`.`coa_name`,'')) as `account_agu`, 
+            MAX(if(`b`.`month_month_id`='3',`a`.`coa_name`,'')) as `account_sep`, 
+            MAX(if(`b`.`month_month_id`='4',`a`.`coa_name`,'')) as `account_okt`, 
+            MAX(if(`b`.`month_month_id`='5',`a`.`coa_name`,'')) as `account_nov`, 
+            MAX(if(`b`.`month_month_id`='6',`a`.`coa_name`,'')) as `account_des`, 
+            MAX(if(`b`.`month_month_id`='7',`a`.`coa_name`,'')) as `account_jan`, 
+            MAX(if(`b`.`month_month_id`='8',`a`.`coa_name`,'')) as `account_feb`, 
+            MAX(if(`b`.`month_month_id`='9',`a`.`coa_name`,'')) as `account_mar`, 
+            MAX(if(`b`.`month_month_id`='10',`a`.`coa_name`,'')) as `account_apr`, 
+            MAX(if(`b`.`month_month_id`='11',`a`.`coa_name`,'')) as `account_mei`, 
+            MAX(if(`b`.`month_month_id`='12',`a`.`coa_name`,'')) as `account_jun`, 
+            SUM(if(`b`.`month_month_id`='1',`b`.`bulan_id`,0)) as `month_id_jul`,
+            SUM(if(`b`.`month_month_id`='2',`b`.`bulan_id`,0)) as `month_id_agu`,
+            SUM(if(`b`.`month_month_id`='3',`b`.`bulan_id`,0)) as `month_id_sep`,
+            SUM(if(`b`.`month_month_id`='4',`b`.`bulan_id`,0)) as `month_id_okt`,
+            SUM(if(`b`.`month_month_id`='5',`b`.`bulan_id`,0)) as `month_id_nov`,
+            SUM(if(`b`.`month_month_id`='6',`b`.`bulan_id`,0)) as `month_id_des`,
+            SUM(if(`b`.`month_month_id`='7',`b`.`bulan_id`,0)) as `month_id_jan`,
+            SUM(if(`b`.`month_month_id`='8',`b`.`bulan_id`,0)) as `month_id_feb`,
+            SUM(if(`b`.`month_month_id`='9',`b`.`bulan_id`,0)) as `month_id_mar`,
+            SUM(if(`b`.`month_month_id`='10',`b`.`bulan_id`,0)) as `month_id_apr`,
+            SUM(if(`b`.`month_month_id`='11',`b`.`bulan_id`,0)) as `month_id_mei`,
+            SUM(if(`b`.`month_month_id`='12',`b`.`bulan_id`,0)) as `month_id_jun`
+            FROM `bulan` as `b` 
+            JOIN `payment` as `p` ON `b`.`payment_payment_id` = `p`.`payment_id` 
+            JOIN `pos` as `s` ON `s`.`pos_id` = `p`.`pos_pos_id` 
+            LEFT JOIN `coa` as `a` ON `a`.`coa_id` = `b`.`bulan_account_id` 
+            JOIN `period` as `d` ON `d`.`period_id` = `p`.`period_period_id`
+            JOIN `student` as `t` ON `t`.`student_id` = `b`.student_student_id
+            JOIN `month` as `m` ON `m`.`month_id` = `b`.month_month_id
+            WHERE `t`.`student_nis` = '$nis' AND `d`.`period_id` = '$tahun'
+            AND p.payment_is_batch = '0'
+            GROUP BY `p`.`payment_id`";
+
+        $q = $this->db->query($query);
+        if ($q->num_rows() > 0) {
+            foreach ($q->result() as $row) {
+                $data[] = $row;
+            }
+            return $data;
+        }
+    }
 }
