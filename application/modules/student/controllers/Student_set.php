@@ -251,6 +251,7 @@ class Student_set extends CI_Controller
         $colWhere['student_id !='] = $id;
         $redirectUrl = 'student/student_set/edit/' . $id;
       }
+
       if ($this->General_model->checkDataExists("student", $colWhere)) {
         $this->session->set_flashdata('error', 'Data sudah ada');
         redirect($redirectUrl);
@@ -1336,5 +1337,24 @@ class Student_set extends CI_Controller
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
     $this->load->view('student/excel_students', $data);
+  }
+
+  public function check_nis_unique($nis)
+  {
+    $id = $this->input->post('student_id'); // ID dari form, bisa kosong kalau tambah
+
+    $this->db->where('student_nis', $nis);
+    if ($id) {
+      $this->db->where('student_id !=', $id); // hindari baris milik diri sendiri
+    }
+
+    $query = $this->db->get('student');
+
+    if ($query->num_rows() > 0) {
+      $this->form_validation->set_message('check_nis_unique', 'NIS sudah digunakan oleh santri lain.');
+      return FALSE;
+    }
+
+    return TRUE;
   }
 }
