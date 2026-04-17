@@ -1057,8 +1057,18 @@ class Student_set extends CI_Controller
     $print = array();
     $idcard = array();
     if ($action == "pass") {
-      $majors = $this->input->post('majors_id');
       $pass   = $this->input->post('msg');
+      $majors = sanitizeStrict($this->input->post('majors_id'));
+      $asalKelas = sanitizeStrict($this->input->post('from_class'));
+      if (!is_array($pass) || empty($pass)) {
+        $this->session->set_flashdata('failed', 'Kenaikan kelas gagal. Tidak ada siswa yang dipilih untuk kenaikan kelas.');
+        if ($majors != '' && $asalKelas != '') {
+          redirect('manage/student/pass?m=' . $majors . '&pr=' . $asalKelas);
+        } else {
+          redirect('manage/student/pass');
+        }
+      }
+
       $msn    = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$majors'")->row_array();
       $like   = $msn['majors_short_name'] . ' Kelas Alumni';
       $cek    = $this->db->query("SELECT count(class_id) c_class FROM class WHERE class_name = '$like'")->row_array();
@@ -1094,18 +1104,69 @@ class Student_set extends CI_Controller
           $this->session->set_flashdata('failed', 'Siswa yang masih memiliki tunggakan dipindahkan ke kelas ' . $like);
         }
       }
-      redirect('manage/student/pass');
+
+      if ($majors != '' && $asalKelas != '') {
+        redirect('manage/student/pass?m=' . $majors . '&pr=' . $asalKelas);
+      } else {
+        redirect('manage/student/pass');
+      }
     } elseif ($action == "notpass") {
       $notpass = $this->input->post('msg');
-      for ($i = 0; $i < count($notpass); $i++) {
-        $this->Student_model->add(array('student_id' => $notpass[$i], 'student_status' => 1, 'student_last_update' => date('Y-m-d H:i:s')));
-        $this->session->set_flashdata('success', 'Proses Kembali berhasil');
+      $asalUnit = sanitizeStrict($this->input->post('majors_id'));
+      $asalKelas = sanitizeStrict($this->input->post('from_class'));
+      if (!is_array($notpass) || empty($notpass)) {
+        $this->session->set_flashdata('failed', 'Pembatalan kelulusan gagal. Tidak ada siswa yang dipilih.');
+        redirect('manage/student/pass');
       }
-      redirect('manage/student/pass');
+
+      for ($i = 0; $i < count($notpass); $i++) {
+        // $this->Student_model->add(array('student_id' => $notpass[$i], 'student_status' => 1, 'student_last_update' => date('Y-m-d H:i:s')));
+        // $this->session->set_flashdata('success', 'Proses Kembali berhasil');
+
+        $students = $this->Student_model->get_student(array('student_id' => $notpass[$i]));
+        if ($students) {
+          foreach ($students as $value) {
+            $nis = $value['student_nis'];
+            $nisn = $value['student_nisn'];
+
+            $this->db->where(['alumni_nis' => $nis, 'alumni_nisn' => $nisn]);
+            $this->db->delete('alumni');
+          }
+
+          $this->Student_model->add(array('student_id' => $notpass[$i], 'student_status' => 1, 'student_last_update' => date('Y-m-d H:i:s')));
+          $this->session->set_flashdata('success', 'Proses Kembali berhasil');
+        } else {
+          $this->session->set_flashdata('failed', 'Data alumni tidak ditemukan. Pembatalan kelulusan gagal.');
+        }
+      }
+
+      if ($asalUnit != '' && $asalKelas != '') {
+        redirect('manage/student/pass?m=' . $asalUnit . '&pr=' . $asalKelas);
+      } else {
+        redirect('manage/student/pass');
+      }
     } elseif ($action == "upgrade") {
+      $asalUnit = $this->input->post('from_unit');
+      $asalKelas = $this->input->post('from_class');
       $upgrade = $this->input->post('msg');
       $majors   = $this->input->post('m_id');
       $kelas   = $this->input->post('class_id');
+
+      if (!is_array($upgrade) || empty($upgrade)) {
+        $this->session->set_flashdata('failed', 'Kenaikan kelas gagal. Tidak ada siswa yang dipilih untuk kenaikan kelas.');
+        redirect('manage/student/upgrade?m=' . $asalUnit . '&pr=' . $asalKelas);
+      }
+
+      if ($asalUnit == $majors && $asalKelas == $kelas) {
+        $this->session->set_flashdata('failed', 'Kenaikan kelas gagal. Kelas tujuan tidak boleh sama dengan kelas asal.');
+        redirect('manage/student/upgrade?m=' . $asalUnit . '&pr=' . $asalKelas);
+      }
+
+      if ($kelas == null || $kelas == '') {
+        $this->session->set_flashdata('failed', 'Kenaikan kelas gagal. Kelas tujuan tidak boleh kosong.');
+        redirect('manage/student/upgrade?m=' . $asalUnit . '&pr=' . $asalKelas);
+      }
+
       //echo $kelas.'<br>';
       for ($i = 0; $i < count($upgrade); $i++) {
         //echo $upgrade[$i];

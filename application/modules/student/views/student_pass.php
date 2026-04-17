@@ -51,6 +51,7 @@
 							<form action="<?php echo site_url('manage/student/multiple'); ?>" method="post" id="lulus">
 								<input type="hidden" name="majors_id" value="<?php echo (isset($f['m'])) ? $f['m'] : '' ?>">
 								<input type="hidden" name="action" value="pass">
+								<input type="hidden" name="from_class" value="<?php echo isset($f['pr']) ? $f['pr'] : '' ?>" readonly>
 								<thead>
 									<tr>
 										<th><input type="checkbox" id="selectall" value="checkbox" name="checkbox"></th>
@@ -128,6 +129,8 @@
 						<table class="table table-hover table-bordered table-responsive">
 							<form action="<?php echo site_url('manage/student/multiple'); ?>" method="post" id="kembali">
 								<input type="hidden" name="action" value="notpass">
+								<input type="hidden" placeholder="majors_id" name="majors_id" value="<?php echo (isset($f['m'])) ? $f['m'] : '' ?>" readonly>
+								<input type="hidden" name="from_class" value="<?php echo isset($f['pr']) ? $f['pr'] : '' ?>" readonly>
 								<tr>
 									<th><input type="checkbox" id="selectall2" value="checkbox" name="checkbox"></th>
 									<th>No</th>
