@@ -48,11 +48,11 @@ class Schedule_model extends CI_Model
             $this->db->order_by('schedule.schedule_time', 'asc');
         }
 
-        $this->db->select('schedule_id, schedule_class_id,  schedule_lesson_id, schedule_day,  schedule_time');
+        $this->db->select('schedule_id, schedule_class_id,  schedule_lesson_id, schedule_day,  schedule_time, schedule_jampel');
         $this->db->select('class_id, class_name');
         $this->db->select('lesson_id,lesson_name');
         $this->db->select('majors_name, majors_short_name, majors_id');
-        $this->db->select('jam_pelajaran_name, jam_pelajaran_start, jam_pelajaran_end');
+        $this->db->select('jam_pelajaran_name, jam_pelajaran_start, jam_pelajaran_end, jam_pelajaran_id');
         $this->db->select('lesson_teacher, employee_id, employee_name');
 
         $this->db->join('class', 'class.class_id = schedule.schedule_class_id');
