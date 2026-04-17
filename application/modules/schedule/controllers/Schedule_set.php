@@ -61,24 +61,62 @@ class Schedule_set extends CI_Controller
   {
     if ($_POST == TRUE) {
 
-      $scheduleMajors   = $_POST['schedule_majors_id'];
-      $scheduleSemester = $_POST['schedule_semester_id'];
-      $scheduleClass    = $_POST['schedule_class_id'];
-      $scheduleLesson   = $_POST['schedule_lesson'];
-      $scheduleDay      = $_POST['schedule_day'];
-      $scheduleJampel   = $_POST['schedule_jampel'];
+      $scheduleMajors   = sanitizeStrict($_POST['schedule_majors_id']);
+      $scheduleSemester = sanitizeStrict($_POST['schedule_semester_id']);
+      $scheduleClass    = sanitizeStrict($_POST['schedule_class_id']);
+      $scheduleLesson   = sanitizeStrict($_POST['schedule_lesson']);
+      $scheduleDay      = sanitizeStrict($_POST['schedule_day']);
+      $scheduleJampel   = sanitizeStrict($_POST['schedule_jampel']);
 
-      $cpt = count($_POST['schedule_lesson']);
+      $cpt = count($scheduleLesson);
+      $added = 0;
+      $skipped = 0;
       for ($i = 0; $i < $cpt; $i++) {
+        if (empty($scheduleLesson[$i])) {
+          $skipped++;
+          continue;
+        }
+
+        $colWhere = [
+          'schedule_class_id' => $scheduleClass,
+          'schedule_day' => $scheduleDay,
+          'schedule_semester' => $scheduleSemester,
+          'schedule_lesson_id' => $scheduleLesson[$i],
+          'schedule_jampel' => $scheduleJampel[$i],
+        ];
+        if ($this->General_model->checkDataExists('schedule', $colWhere)) {
+          $skipped++;
+          continue;
+        }
+
         $params['schedule_class_id'] = $scheduleClass;
         $params['schedule_day'] = $scheduleDay;
         $params['schedule_semester'] = $scheduleSemester;
         $params['schedule_lesson_id'] = $scheduleLesson[$i];
         $params['schedule_jampel'] = $scheduleJampel[$i];
-        $this->Schedule_model->add($params);
+        $insert = $this->Schedule_model->add($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+
+        $added++;
       }
+
+      if ($added > 1) {
+        $msg = "$added data berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 data berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped data dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
     }
-    $this->session->set_flashdata('success', ' Tambah Jadwal Pelajaran Berhasil');
     redirect('manage/schedule?n=' . $scheduleMajors . '&r=' . $scheduleClass);
   }
 
@@ -90,15 +128,28 @@ class Schedule_set extends CI_Controller
     if ($_POST) {
 
       if ($this->input->post('schedule_id')) {
-        $params['schedule_id'] = $this->input->post('schedule_id');
+        $id = sanitizeStrict($this->input->post('schedule_id'));
+        $params['schedule_id'] = $id;
       }
 
+      $majors_id        = sanitizeStrict($_POST['majors_id']);
+      $class_id         = sanitizeStrict($_POST['class_id']);
+      $scheduleLesson   = sanitizeStrict($_POST['schedule_lesson']);
+      $scheduleDay      = sanitizeStrict($_POST['schedule_day']);
+      $scheduleJampel   = sanitizeStrict($_POST['schedule_jampel']);
+      $scheduleSemester = sanitizeStrict($_POST['schedule_semester']);
 
-      $majors_id        = $_POST['majors_id'];
-      $class_id         = $_POST['class_id'];
-      $scheduleLesson   = $_POST['schedule_lesson'];
-      $scheduleDay      = $_POST['schedule_day'];
-      $scheduleJampel   = $_POST['schedule_jampel'];
+      $colWhere = [
+        'schedule_class_id' => $class_id,
+        'schedule_day' => $scheduleDay,
+        'schedule_semester' => $scheduleSemester,
+        'schedule_lesson_id' => $scheduleLesson,
+        'schedule_jampel' => $scheduleJampel,
+      ];
+      if ($this->General_model->checkDataExists('schedule', $colWhere)) {
+        $this->session->set_flashdata('error', 'Jadwal Pelajaran sudah ada');
+        redirect('manage/schedule?n=' . $majors_id . '&r=' . $class_id);
+      }
 
       $params['schedule_day'] = $scheduleDay;
       $params['schedule_lesson_id'] = $scheduleLesson;
