@@ -162,7 +162,7 @@ class Dashboard_set extends CI_Controller
                     $data['total_debit_today'] += $row['tDebit'];
                 }
                 if ($row['jenisTransaksi'] == 'Debit') {
-                    $data['total_debit_month'] += $row['tDebit'];
+                    $data['total_debit_today'] += $row['tDebit'];
                 }
                 if ($row['jenisTransaksi'] == 'Kredit') {
                     $data['total_kredit_today'] += $row['tKredit'];
