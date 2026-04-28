@@ -74,13 +74,13 @@ class Banking_set extends CI_Controller
       $period = $this->input->post('debit_period_id');
       $nis    = $this->input->post('debit_student_nis');
 
-      $params['banking_date'] = $this->input->post('debit_date');
-      $params['banking_debit'] = $this->input->post('debit_val');
+      $params['banking_date'] = sanitizeStrict($this->input->post('debit_date'));
+      $params['banking_debit'] = sanitizeStrict($this->input->post('debit_val'));
       $params['banking_kredit'] = '0';
-      $params['banking_note'] = $this->input->post('debit_note');
-      $params['banking_code'] = $this->input->post('debit_code');
-      $params['banking_student_id'] = $this->input->post('debit_student_id');
-      $params['banking_period_id'] = $this->input->post('debit_period_id');
+      $params['banking_note'] = sanitizeStrict($this->input->post('debit_note'));
+      $params['banking_code'] = sanitizeStrict($this->input->post('debit_code'));
+      $params['banking_student_id'] = sanitizeStrict($this->input->post('debit_student_id'));
+      $params['banking_period_id'] = sanitizeStrict($this->input->post('debit_period_id'));
       $params['user_user_id'] = $this->session->userdata('uid');
 
       $this->Banking_model->add($params);
@@ -207,10 +207,10 @@ class Banking_set extends CI_Controller
 
     if ($_POST == TRUE) {
       $is_confirmed = $this->input->post('confirm') == 1;
-      $nis = $this->input->post('kredit_student_nis');
-      $period = $this->input->post('kredit_period_id');
-      $student_id = $this->input->post('kredit_student_id');
-      $nominal = $this->input->post('kredit_val');
+      $nis = sanitizeStrict($this->input->post('kredit_student_nis'));
+      $period = sanitizeStrict($this->input->post('kredit_period_id'));
+      $student_id = sanitizeStrict($this->input->post('kredit_student_id'));
+      $nominal = sanitizeStrict($this->input->post('kredit_val'));
 
       // Cek limit
       $limit = 0;
@@ -261,10 +261,10 @@ class Banking_set extends CI_Controller
 
       // Proses penarikan
       $params = [
-        'banking_date'       => $this->input->post('kredit_date'),
+        'banking_date'       => sanitizeStrict($this->input->post('kredit_date')),
         'banking_debit'      => 0,
         'banking_kredit'     => $nominal,
-        'banking_note'       => $this->input->post('kredit_note'),
+        'banking_note'       => sanitizeStrict($this->input->post('kredit_note')),
         'banking_code'       => '2',
         'banking_student_id' => $student_id,
         'banking_period_id'  => $period,
