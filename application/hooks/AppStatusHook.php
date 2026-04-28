@@ -1,11 +1,13 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class AppStatusHook {
-    public function check_app_status() {
-        $CI =& get_instance();
+class AppStatusHook
+{
+    public function check_app_status()
+    {
+        $CI = &get_instance();
         $CI->load->database();
-        
+
         // Dapatkan nama controller yang sedang diakses
         $class = $CI->router->fetch_class();
 
@@ -17,9 +19,9 @@ class AppStatusHook {
         $query = $CI->db->get_where('setting', ['setting_name' => 'setting_app_status'])->row_array();
 
         if (!isset($query['setting_value']) || $query['setting_value'] != 'Y') {
+            $CI->session->sess_destroy();
             redirect('block'); // Redirect jika aplikasi tidak aktif
             exit();
         }
     }
 }
-
