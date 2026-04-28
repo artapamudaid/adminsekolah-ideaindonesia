@@ -88,14 +88,33 @@ class Settinghutang_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('settinghutang_id')) {
-        $params['settinghutang_id'] = $this->input->post('settinghutang_id');
+        $id = sanitizeStrict($this->input->post('settinghutang_id'));
+        $params['settinghutang_id'] = $id;
       } else {
         $params['settinghutang_input_date'] = date('Y-m-d H:i:s');
       }
 
+      $periodId = sanitizeStrict($this->input->post('period_id'));
+      $posHutangId = sanitizeStrict($this->input->post('poshutang_id'));
+
+      $colWhere = [
+        "settinghutang_period_id" => $periodId,
+        "settinghutang_poshutang_id" => $posHutangId
+      ];
+
+      if (!empty($id)) {
+        $colWhere['settinghutang_id <> '] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("settinghutang", $colWhere)) {
+        $this->session->set_flashdata('failed', $data['operation'] . ' Hutang gagal, data sudah ada.');
+        $redirectUrl = !empty($id) ? 'manage/settinghutang/edit/' . $id : 'manage/settinghutang/add';
+        redirect($redirectUrl);
+      }
+
       $params['settinghutang_last_update'] = date('Y-m-d H:i:s');
-      $params['period_id'] = $this->input->post('period_id');
-      $params['poshutang_id'] = $this->input->post('poshutang_id');
+      $params['period_id'] = $periodId;
+      $params['poshutang_id'] = $posHutangId;
 
       $status = $this->Settinghutang_model->add($params);
       $paramsupdate['settinghutang_id'] = $status;
@@ -223,14 +242,14 @@ class Settinghutang_set extends CI_Controller
           $this->session->set_flashdata('failed', ' Tidak boleh ada data yang 0 (nol)');
         } else {
 
-          $noref                    = $this->input->post('hutang_noref');
-          $hutang_bill              = $this->input->post('hutang_bill');
-          $hutang_settinghutang_id  = $this->input->post('hutang_settinghutang_id');
-          $hutang_kreditur          = $this->input->post('hutang_kreditur');
-          $hutang_date              = $this->input->post('hutang_date');
-          $hutang_account_id        = $this->input->post('hutang_account_id');
-          $poshutang_account_id     = $this->input->post('poshutang_account_id');
-          $majors_id                = $this->input->post('majors_id');
+          $noref                    = sanitizeStrict($this->input->post('hutang_noref'));
+          $hutang_bill              = sanitizeStrict($this->input->post('hutang_bill'));
+          $hutang_settinghutang_id  = sanitizeStrict($this->input->post('hutang_settinghutang_id'));
+          $hutang_kreditur          = sanitizeStrict($this->input->post('hutang_kreditur'));
+          $hutang_date              = sanitizeStrict($this->input->post('hutang_date'));
+          $hutang_account_id        = sanitizeStrict($this->input->post('hutang_account_id'));
+          $poshutang_account_id     = sanitizeStrict($this->input->post('poshutang_account_id'));
+          $majors_id                = sanitizeStrict($this->input->post('majors_id'));
 
           $param['hutang_noref']            = $noref;
           $param['hutang_bill']             = $hutang_bill;
