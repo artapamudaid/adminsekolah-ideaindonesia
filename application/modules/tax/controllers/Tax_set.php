@@ -1,8 +1,9 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Tax_set extends CI_Controller {
+class Tax_set extends CI_Controller
+{
 
   public function __construct()
   {
@@ -15,17 +16,18 @@ class Tax_set extends CI_Controller {
     $this->load->helper(array('form', 'url'));
   }
 
-// User_customer view in list
-  public function index($offset = NULL) {
+  // User_customer view in list
+  public function index($offset = NULL)
+  {
     $this->load->library('pagination');
-// Apply Filter
-// Get $_GET variable
+    // Apply Filter
+    // Get $_GET variable
     $f = $this->input->get(NULL, TRUE);
 
     $data['f'] = $f;
 
     $params = array();
-// Nip
+    // Nip
     if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
       $params['tax_name'] = $f['n'];
     }
@@ -39,37 +41,90 @@ class Tax_set extends CI_Controller {
     $this->load->view('manage/layout', $data);
   }
 
-  public function add_glob(){
+  public function add_glob()
+  {
     if ($_POST == TRUE) {
-      $taxName = $_POST['tax_name'];
-      $taxShort = $_POST['tax_number'];
-      $cpt = count($_POST['tax_name']);
+      $taxName = sanitizeStrict($_POST['tax_name']);
+      $taxShort = sanitizeStrict($_POST['tax_number']);
+      $cpt = count($taxName);
+
+      $added = 0;
+      $skipped = 0;
       for ($i = 0; $i < $cpt; $i++) {
+        if (empty($taxName[$i]) || empty($taxShort[$i])) {
+          $skipped++;
+          continue;
+        }
+
+        $colWhere = [
+          'tax_name' => $taxName[$i],
+          'tax_number' => $taxShort[$i],
+        ];
+
+        if ($this->General_model->checkDataExists('tax', $colWhere)) {
+          $skipped++;
+          continue;
+        }
         $params['tax_name'] = $taxName[$i];
         $params['tax_number'] = $taxShort[$i];
 
-        $this->Tax_model->add($params);
+        $insert = $this->Tax_model->add($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+        $added++;
       }
+
+      if ($added > 1) {
+        $msg = "$added Pajak berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 Pajak berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped Pajak dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
     }
-    $this->session->set_flashdata('success',' Tambah Pajak Berhasil');
     redirect('manage/tax');
   }
 
-// Add User_customer and Update
-  public function add($id = NULL) {
+  // Add User_customer and Update
+  public function add($id = NULL)
+  {
     $this->load->library('form_validation');
     $this->form_validation->set_rules('tax_name', 'Nama Pajak', 'trim|required|xss_clean');
     $this->form_validation->set_rules('tax_number', 'Singkatan Pajak', 'trim|required|xss_clean');
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button ket="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
-    if ($_POST AND $this->form_validation->run() == TRUE) {
+    if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('tax_id')) {
-        $params['tax_id'] = $this->input->post('tax_id');
+        $id = sanitizeStrict($this->input->post('tax_id'));
+        $params['tax_id'] = $id;
       }
-      $params['tax_name'] = $this->input->post('tax_name');
-      $params['tax_number'] = $this->input->post('tax_number');
+
+      $taxName = sanitizeStrict($this->input->post('tax_name'));
+      $taxShort = sanitizeStrict($this->input->post('tax_number'));
+
+      $colWhere = [
+        'tax_name' => $taxName,
+        'tax_number' => $taxShort,
+      ];
+      if (!empty($id)) {
+        $colWhere['tax_id <>'] = $id;
+      }
+      if ($this->General_model->checkDataExists('tax', $colWhere)) {
+        $this->session->set_flashdata('failed', "Data sudah ada.");
+        redirect('manage/tax/edit/' . $id);
+      }
+      $params['tax_name'] = $taxName;
+      $params['tax_number'] = $taxShort;
       $status = $this->Tax_model->add($params);
 
 
@@ -84,7 +139,7 @@ class Tax_set extends CI_Controller {
         redirect('manage/tax/edit/' . $this->input->post('tax_id'));
       }
 
-            // Edit mode
+      // Edit mode
       if (!is_null($id)) {
         $object = $this->Tax_model->get(array('id' => $id));
         if ($object == NULL) {
@@ -99,15 +154,16 @@ class Tax_set extends CI_Controller {
     }
   }
 
-// Delete to database
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  // Delete to database
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
     if ($_POST) {
 
       $this->Tax_model->delete($id);
-// activity log
+      // activity log
       $this->load->model('logs/Logs_model');
       $this->Logs_model->add(
         array(
@@ -123,6 +179,6 @@ class Tax_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/tax/edit/' . $id);
-    }  
+    }
   }
 }
