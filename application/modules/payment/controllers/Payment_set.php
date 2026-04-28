@@ -105,25 +105,61 @@ class Payment_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('payment_id')) {
-        $params['payment_id'] = $this->input->post('payment_id');
+        $id = sanitizeStrict($this->input->post('payment_id'));
+        $params['payment_id'] = $id;
       } else {
         $params['payment_input_date'] = date('Y-m-d H:i:s');
       }
 
-      $type = $this->input->post('payment_type');
+      $paymentType = sanitizeStrict($this->input->post('payment_type'));
+      $paymentMode = sanitizeStrict($this->input->post('payment_mode'));
+      $paymentIsBatch = sanitizeStrict($this->input->post('payment_is_batch'));
+      $paymentPeriod = sanitizeStrict($this->input->post('period_id'));
+      $paymentPosId = sanitizeStrict($this->input->post('pos_id'));
+
+      $colWhere = [
+        'OR' => [
+          [
+            'payment_type' => $paymentType,
+            'payment_mode' => $paymentMode,
+            'payment_is_batch' => $paymentIsBatch,
+            'period_period_id' => $paymentPeriod,
+            'pos_pos_id' => $paymentPosId
+          ],
+          [
+            'period_period_id' => $paymentPeriod,
+            'pos_pos_id' => $paymentPosId,
+          ]
+        ]
+      ];
+
+      if (!empty($id)) {
+        $colWhere["payment_id <>"] = $id;
+      }
+
+      if ($this->General_model->checkDataExists('payment', $colWhere)) {
+        $this->session->set_flashdata('failed', "Jenis Pembayaran sudah ada.");
+        if (!is_null($id)) {
+          redirect('manage/payment/edit/' . $id);
+        } else {
+          redirect('manage/payment/add');
+        }
+      }
+
+      // $type = $this->input->post('payment_type');
       $params['payment_last_update'] = date('Y-m-d H:i:s');
-      $params['payment_type'] = $this->input->post('payment_type');
+      $params['payment_type'] = $paymentType;
 
       if ($params['payment_type'] == 'BEBAS') {
         $params['payment_mode'] = 'TETAP';
         $params['payment_is_batch'] = '0';
       } else {
-        $params['payment_mode'] = $this->input->post('payment_mode');
-        $params['payment_is_batch'] = $this->input->post('payment_is_batch');
+        $params['payment_mode'] = $paymentMode;
+        $params['payment_is_batch'] = $paymentIsBatch;
       }
 
-      $params['period_id'] = $this->input->post('period_id');
-      $params['pos_id'] = $this->input->post('pos_id');
+      $params['period_id'] = $paymentPeriod;
+      $params['pos_id'] = $paymentPosId;
 
       $status = $this->Payment_model->add($params);
       $paramsupdate['payment_id'] = $status;
