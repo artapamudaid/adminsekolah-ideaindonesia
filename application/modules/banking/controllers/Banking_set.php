@@ -35,23 +35,23 @@ class Banking_set extends CI_Controller
     if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
       $params['student_nis']    = $f['r'];
       $student_nis = $f['r'];
+
+
+      $siswa = $this->Student_model->get(array('student_nis' => $student_nis));
+      $siswaID = $siswa['student_id'];
+      $majors_siswa = $siswa['majors_majors_id'] ?? 0;
+
+      $data['siswa'] = $this->Student_model->get_student(array('student_id' => $siswa['student_id'], 'group' => TRUE));
+
+      $data['history']    = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'order_by' => 'desc'));
+      $data['setor']      = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'code' => '1'));
+      $data['tarik']      = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'code' => '2'));
+
+      $sum = $this->db->query("SELECT SUM(banking_debit) AS sumDeb, SUM(banking_kredit) AS sumKrd FROM banking WHERE banking_student_id = '$siswaID'")->row_array();
+
+      $data['sumDebit']   = $sum['sumDeb'];
+      $data['sumKredit']  = $sum['sumKrd'];
     }
-
-
-    $siswa = $this->Student_model->get(array('student_nis' => $student_nis));
-    $siswaID = $siswa['student_id'];
-    $majors_siswa = $siswa['majors_majors_id'] ?? 0;
-
-    $data['siswa'] = $this->Student_model->get_student(array('student_id' => $siswa['student_id'], 'group' => TRUE));
-
-    $data['history']    = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'order_by' => 'desc'));
-    $data['setor']      = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'code' => '1'));
-    $data['tarik']      = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'code' => '2'));
-
-    $sum = $this->db->query("SELECT SUM(banking_debit) AS sumDeb, SUM(banking_kredit) AS sumKrd FROM banking WHERE banking_student_id = '$siswaID'")->row_array();
-
-    $data['sumDebit']   = $sum['sumDeb'];
-    $data['sumKredit']  = $sum['sumKrd'];
 
     // $data['akun_kas']   = $this->db->query("SELECT * FROM account WHERE account_category != 0 AND account_code LIKE '1-%' AND account_description LIKE 'Kas%' AND account_majors_id = $majors_siswa")->result_array();
 
