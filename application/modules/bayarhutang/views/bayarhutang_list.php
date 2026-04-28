@@ -47,8 +47,8 @@
 													<td><?= $row['hutang_noref'] ?></td>
 													<td style="text-align: center;"><?= pretty_date($row['hutang_date'], 'd F Y', false) ?></td>
 													<td><?= $row['hutang_kreditur'] ?></td>
-													<td>Rp. <?= number_format($row['hutang_bill'], 0, ',', '.') ?></td>
-													<td>Rp. <?= number_format($row['hutang_cicil'], 0, ',', '.') ?></td>
+													<td>Rp. <?= number_format((!empty($row['hutang_bill']) ? $row['hutang_bill'] : 0), 0, ',', '.') ?></td>
+													<td>Rp. <?= number_format((!empty($row['hutang_cicil']) ? $row['hutang_cicil'] : 0), 0, ',', '.') ?></td>
 													<td>Rp. <?= number_format($sisa, 0, ',', '.') ?></td>
 													<td><span class="label <?php echo ($sisa > 0) ?  'label-warning' : 'label-success' ?>"><?php echo ($sisa > 0) ? 'Belum Lunas' : 'Lunas' ?></span></td>
 													<td align="center">

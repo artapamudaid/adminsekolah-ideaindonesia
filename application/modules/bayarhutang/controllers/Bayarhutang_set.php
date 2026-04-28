@@ -42,6 +42,7 @@ class Bayarhutang_set extends CI_Controller
     if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
       $params['hutang_noref']    = $f['r'];
       $kreditur       = $this->Hutang_model->get(array('hutang_noref' => $f['r']));
+
       $sumHutang      = $this->Hutang_model->get(array('hutang_noref' => $params['hutang_noref']));
       $sumHutangPay   = $this->Hutang_pay_model->get_sum(array('hutang_noref' => $params['hutang_noref']));
 
@@ -52,9 +53,17 @@ class Bayarhutang_set extends CI_Controller
       $majorsID = $sumHutang['majors_id'];
     }
 
-    $data['kreditur'] = $this->Hutang_model->get(array('hutang_id' => $kreditur['hutang_id'], 'group' => TRUE));
+    if (!$kreditur) {
+      $data['kreditur'] = null;
+    } else {
+      $data['kreditur'] = $this->Hutang_model->get(array('hutang_id' => $kreditur['hutang_id'],  'group' => TRUE));
+    }
 
-    $data['history']    = $this->Hutang_pay_model->get(array('hutang_id' => $kreditur['hutang_id']));
+    if (!$kreditur) {
+      $data['history'] = null;
+    } else {
+      $data['history']    = $this->Hutang_pay_model->get(array('hutang_id' => $kreditur['hutang_id']));
+    }
 
     $data['hutang_pay']    = $this->Hutang_pay_model->get($params);
 
