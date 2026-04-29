@@ -124,7 +124,7 @@
 										$params['student_id']   = $row['student_id'];
 										$params['period_id']    = $q['p'];
 										$params['class_id']     = $q['c'];
-										$params['madin_id']     = $q['m'];
+										// $params['madin_id']     = $q['m'];
 										$params['majors_id']    = $q['k'];
 										$params['month_start']  = 1;
 
@@ -152,7 +152,7 @@
 											$param['period_id']     = $periode;
 											$param['majors_id']     = $q['k'];
 											$param['class_id']      = $q['c'];
-											$param['madin_id']     = $q['m'];
+											// $param['madin_id']     = $q['m'];
 										} else {
 
 											$param['student_id']    = "";
@@ -215,7 +215,7 @@
 											$params['period_id']    = $q['p'];
 											$params['class_id']     = $q['c'];
 											$params['majors_id']    = $q['k'];
-											$params['madin_id']     = $q['m'];
+											// $params['madin_id']     = $q['m'];
 											$params['month_start']  = 1;
 											$params['month_end']    = $till;
 
@@ -235,7 +235,7 @@
 												$param['period_id']     = $periode;
 												$param['majors_id']     = $q['k'];
 												$param['class_id']      = $q['c'];
-												$param['madin_id']      = $q['m'];
+												// $param['madin_id']      = $q['m'];
 											} else {
 
 												$param['period_id']     = "";
