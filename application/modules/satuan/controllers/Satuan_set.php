@@ -72,15 +72,15 @@ class Satuan_set extends CI_Controller
       }
 
       if ($added > 1) {
-        $msg = "$added POS berhasil ditambahkan";
+        $msg = "$added Satuan berhasil ditambahkan";
       } elseif ($added == 1) {
-        $msg = "1 POS berhasil ditambahkan";
+        $msg = "1 Satuan berhasil ditambahkan";
       } else {
         $msg = "Tidak ada yang ditambahkan";
       }
 
       if ($skipped > 0) {
-        $msg .= "<br>($skipped POS dilewati)";
+        $msg .= "<br>($skipped Satuan dilewati)";
       }
 
       $this->session->set_flashdata('success', $msg);
