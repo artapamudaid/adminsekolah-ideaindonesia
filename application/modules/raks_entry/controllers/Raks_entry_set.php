@@ -84,6 +84,8 @@ class Raks_entry_set extends CI_Controller
             }
         }
 
+        $data['raks_entry'] = isset($data['raks_entry']) ? $data['raks_entry'] : array();
+
         $data['grade'] =  $grade;
         $data['title'] = 'RAKS Entry';
         $data['main'] = 'raks_entry/raks_entry_list';
