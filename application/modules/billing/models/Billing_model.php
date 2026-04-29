@@ -506,10 +506,10 @@ class Billing_model extends CI_Model
             $this->db->where('student.student_id', $param['student_id']);
         }
 
-        if (isset($param['period_id'])) {
+        if (isset($param['period_id']) && !empty($param['period_id'])) {
             $this->db->where_in('payment.period_period_id', $param['period_id']);
         } else {
-            $this->db->where_in('payment.period_period_id', '');
+            $this->db->where_in('payment.period_period_id', [0]);
         }
 
         if (isset($param['class_id'])) {
@@ -573,8 +573,10 @@ class Billing_model extends CI_Model
             $this->db->where('student.student_id', $param['student_id']);
         }
 
-        if (isset($param['period_id'])) {
+        if (isset($param['period_id']) && !empty($param['period_id'])) {
             $this->db->where_in('payment.period_period_id', $param['period_id']);
+        } else {
+            $this->db->where_in('payment.period_period_id', [0]);
         }
 
         if (isset($param['class_id'])) {

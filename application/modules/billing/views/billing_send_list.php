@@ -147,20 +147,15 @@
 										}
 
 										if (isset($periode)) {
-
-											$param['student_id']    = $row['student_id'];
 											$param['period_id']     = $periode;
-											$param['majors_id']     = $q['k'];
-											$param['class_id']      = $q['c'];
-											$param['madin_id']     = $q['m'];
 										} else {
-
-											$param['student_id']    = "";
-											$param['period_id']     = "";
-											$param['majors_id']     = "";
-											$param['class_id']      = "";
-											$param['madin_id']      = "";
+											$param['period_id']     = array();
 										}
+
+										$param['student_id']    = $row['student_id'];
+										$param['majors_id']     = $q['k'];
+										$param['class_id']      = $q['c'];
+										$param['madin_id']     = $q['m'];
 
 										$month = $this->Billing_model->get_tagihan_bulan($params);
 										$free  = $this->Billing_model->get_tagihan_bebas($params);
