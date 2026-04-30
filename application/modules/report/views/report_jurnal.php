@@ -133,7 +133,7 @@
 	<!-- /.content -->
 </div>
 
-<script>
+<script type="text/javascript">
 	var unit = '';
 	var tglMulai = '';
 	var tglAkhir = '';
@@ -146,6 +146,15 @@
 		var ds = $("#ds").val();
 		var de = $("#de").val();
 		var majors_id = $("#majors_id").val();
+		if (!ds || !de) {
+			toastNotifikasi('error', 'Pilih Tanggal awal dan akhir dahulu!', 'Gagal!');
+			return;
+		}
+
+		if (!majors_id) {
+			toastNotifikasi('error', 'Pilih Unit Sekolah dahulu!', 'Gagal!');
+			return;
+		}
 		//alert(id_jurusan+id_kelas);
 		if (ds != '' && de != '' && majors_id != '') {
 			const baseURL = "<?php echo base_url(); ?>";
@@ -170,7 +179,11 @@
 			unit = selectUnit.options[selectUnit.selectedIndex].text;
 			$("#tglJurnal").html(unit + " " + tglMulai + " Sampai " + tglAkhir);
 
-			var param = "<?php echo $param; ?>";
+			var param = "<?php echo json_encode($param); ?>";
+			let btn = $('#btn-cari');
+
+			btn.attr('disabled', true);
+			btn.html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
 			$("#xtable").DataTable({
 				ordering: true,
 				processing: true,
