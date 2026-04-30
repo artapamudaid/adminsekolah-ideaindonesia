@@ -1,4 +1,3 @@
-
 <div class="content-wrapper">
 	<!-- Content Header (Page header) -->
 	<section class="content-header">
@@ -16,114 +15,115 @@
 			<div class="col-md-12">
 				<div class="box box-success">
 					<div class="box-header">
-						<?php echo form_open(current_url(), array('method' => 'get')) ?>
+						<?php echo form_open(current_url(), array('method' => 'get', 'id' => 'form-tahfidz')) ?>
 						<div class="row">
-							<div class="col-md-2">  
+							<div class="col-md-2">
 								<div class="form-group">
 									<label>Tahun Ajaran</label>
-									<select class="form-control" name="p" >
+									<select class="form-control" name="p">
 										<option value="">-- Pilih T.A. --</option>
-										<option <?php echo (isset($q['p']) AND $q['p'] == '0') ? 'selected' : '' ?> value="0">Semua T.A.</option>
+										<option <?php echo (isset($q['p']) and $q['p'] == '0') ? 'selected' : '' ?> value="0">Semua T.A.</option>
 										<?php foreach ($period as $row): ?>
-											<option <?php echo (isset($q['p']) AND $q['p'] == $row['period_id']) ? 'selected' : '' ?> value="<?php echo $row['period_id'] ?>"><?php echo $row['period_start'].'/'.$row['period_end'] ?></option>
+											<option <?php echo (isset($q['p']) and $q['p'] == $row['period_id']) ? 'selected' : '' ?> value="<?php echo $row['period_id'] ?>"><?php echo $row['period_start'] . '/' . $row['period_end'] ?></option>
 										<?php endforeach; ?>
 									</select>
 								</div>
 							</div>
-							<div class="col-md-2">  
+							<div class="col-md-2">
 								<div class="form-group">
 									<label>Unit Sekolah</label>
-									<select class="form-control" name="k" id="majors_id" onchange="get_kelas()"  >
+									<select class="form-control" name="k" id="majors_id" onchange="get_kelas()">
 										<option value="">-- Pilih Unit --</option>
-										<option <?php echo (isset($q['k']) AND $q['k'] == '0') ? 'selected' : '' ?> value="0">Semua Unit</option>
+										<option <?php echo (isset($q['k']) and $q['k'] == '0') ? 'selected' : '' ?> value="0">Semua Unit</option>
 										<?php foreach ($majors as $row): ?>
-											<option <?php echo (isset($q['k']) AND $q['k'] == $row['majors_id']) ? 'selected' : '' ?> value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
+											<option <?php echo (isset($q['k']) and $q['k'] == $row['majors_id']) ? 'selected' : '' ?> value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
 										<?php endforeach; ?>
 									</select>
 								</div>
 							</div>
 							<div id="td_kelas">
-							<div class="col-md-2">  
-								<div class="form-group">
-									<label>Kelas</label>
-									<select class="form-control" name="c" id="class_id" onchange="get_siswa()" >
-										<option value="">-- Pilih Kelas --</option>
-										<?php if(isset($q['k'])){?>
-										<option <?php echo (isset($q['c']) AND $q['c'] == '0') ? 'selected' : '' ?> value="0">Semua Kelas</option>
-										<?php foreach ($class as $row): ?>
-											<option <?php echo (isset($q['c']) AND $q['c'] == $row['class_id']) ? 'selected' : '' ?> value="<?php echo $row['class_id'] ?>"><?php echo $row['class_name'] ?></option>
-										<?php endforeach; ?>
-										<?php } ?>
-									</select>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label>Kelas</label>
+										<select class="form-control" name="c" id="class_id" onchange="get_siswa()">
+											<option value="">-- Pilih Kelas --</option>
+											<?php if (isset($q['k'])) { ?>
+												<option <?php echo (isset($q['c']) and $q['c'] == '0') ? 'selected' : '' ?> value="0">Semua Kelas</option>
+												<?php foreach ($class as $row): ?>
+													<option <?php echo (isset($q['c']) and $q['c'] == $row['class_id']) ? 'selected' : '' ?> value="<?php echo $row['class_id'] ?>"><?php echo $row['class_name'] ?></option>
+												<?php endforeach; ?>
+											<?php } ?>
+										</select>
+									</div>
 								</div>
 							</div>
-							</div>
-							
+
 							<div id="td_siswa">
-							<div class="col-md-2">  
-								<div class="form-group">
-									<label>Siswa</label>
-									<select class="form-control" name="m" id="student_id" >
-										<option value="">-- Pilih Siswa --</option>
-										<?php if(isset($q['c'])){?>
-										<option <?php echo (isset($q['m']) AND $q['m'] == '0') ? 'selected' : '' ?> value="0">Semua Siswa</option>
-										<?php foreach ($student as $row): ?>
-											<option <?php echo (isset($q['m']) AND $q['m'] == $row['student_id']) ? 'selected' : '' ?> value="<?php echo $row['student_id'] ?>"><?php echo $row['student_full_name'] ?></option>
-										<?php endforeach; ?>
-										<?php } ?>
-									</select>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label>Siswa</label>
+										<select class="form-control" name="m" id="student_id">
+											<option value="">-- Pilih Siswa --</option>
+											<?php if (isset($q['c'])) { ?>
+												<option <?php echo (isset($q['m']) and $q['m'] == '0') ? 'selected' : '' ?> value="0">Semua Siswa</option>
+												<?php foreach ($student as $row): ?>
+													<option <?php echo (isset($q['m']) and $q['m'] == $row['student_id']) ? 'selected' : '' ?> value="<?php echo $row['student_id'] ?>"><?php echo $row['student_full_name'] ?></option>
+												<?php endforeach; ?>
+											<?php } ?>
+										</select>
+									</div>
 								</div>
 							</div>
-							</div>
-							
+
 							<div class="col-md-2">
-							<div style="margin-top:25px;">
-							<button type="submit" class="btn btn-primary">Cari</button>
-							<?php if ($q AND !empty($tahfidz)) { ?>
-							<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/tahfidz/tahfidz_excel' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o" ></i> Excel</a>
-							<?php } ?>
-						    </div>
-					        </div>
-					</div>
-					</form>
+								<div style="margin-top:25px;">
+									<button type="button" class="btn btn-primary" id="btn-cari">Cari</button>
+									<button type="submit" class="btn btn-primary hidden">Cari</button>
+									<?php if ($q and !empty($tahfidz)) { ?>
+										<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/tahfidz/tahfidz_excel' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Excel</a>
+									<?php } ?>
+								</div>
+							</div>
+						</div>
+						</form>
 					</div>
 				</div>
-				<?php if ($q AND !empty($student)) { ?>
-				<div class="box box-info">
-					<div class="box-body table-responsive">
-						<table id="dtable" class="table table-responsive table-bordered" style="white-space: nowrap;">
-						    <thead>
-							<tr>
-								<th>No. </th> 
-								<th>NIS</th> 
-								<th>Nama</th>
-								<th>Kelas</th>
-								<th>Unit</th>
-								<th>Total Hafalan</th>
-								<th>Aksi</th>
-							</tr>
-							</thead>
-							<tbody>
-							<?php 
-							
-							    $no = 1;
-							    foreach ($tahfidz as $row) : 
-							?>
-								<tr>
-									<td><?php echo $no++ ?></td>
-									<td><?php echo $row['student_nis']?></td> 
-									<td><?php echo $row['student_full_name']?></td>
-									<td><?php echo $row['class_name']?></td>
-									<td><?php echo $row['majors_short_name'] ?></td>
-									<td><?php echo $row['tahfidzSum'] . ' Hafalan' ?></td>
-									<td><a href="<?php echo base_url() . 'manage/tahfidz/printBook/?n='.$row['period_id'].'&r=' . $row['student_nis']; ?>" target="_blank" class="btn btn-sm btn-danger"><i class="fa fa-print"></i> Cetak Buku</a></td>
-								</tr>
-							<?php endforeach ?>
-                            </tbody>
-						</table>
+				<?php if ($q and !empty($student)) { ?>
+					<div class="box box-info">
+						<div class="box-body table-responsive">
+							<table id="dtable" class="table table-responsive table-bordered" style="white-space: nowrap;">
+								<thead>
+									<tr>
+										<th>No. </th>
+										<th>NIS</th>
+										<th>Nama</th>
+										<th>Kelas</th>
+										<th>Unit</th>
+										<th>Total Hafalan</th>
+										<th>Aksi</th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php
+
+									$no = 1;
+									foreach ($tahfidz as $row) :
+									?>
+										<tr>
+											<td><?php echo $no++ ?></td>
+											<td><?php echo $row['student_nis'] ?></td>
+											<td><?php echo $row['student_full_name'] ?></td>
+											<td><?php echo $row['class_name'] ?></td>
+											<td><?php echo $row['majors_short_name'] ?></td>
+											<td><?php echo $row['tahfidzSum'] . ' Hafalan' ?></td>
+											<td><a href="<?php echo base_url() . 'manage/tahfidz/printBook/?n=' . $row['period_id'] . '&r=' . $row['student_nis']; ?>" target="_blank" class="btn btn-sm btn-danger"><i class="fa fa-print"></i> Cetak Buku</a></td>
+										</tr>
+									<?php endforeach ?>
+								</tbody>
+							</table>
+						</div>
+						<!-- /.box-body -->
 					</div>
-					<!-- /.box-body -->
-				</div>
 				<?php } ?>
 			</div>
 		</div>
@@ -131,45 +131,45 @@
 	<!-- /.content -->
 </div>
 <script>
-    function get_kelas(){
-        var id_majors    = $("#majors_id").val();
-        //alert(id_jurusan+id_kelas);
-        $.ajax({ 
-            url: '<?php echo base_url();?>manage/tahfidz/class_searching',
-            type: 'POST', 
-            data: {
-                    'id_majors': id_majors,
-            },    
-            success: function(msg) {
-                    $("#td_kelas").html(msg);
-            },
-			error: function(msg){
-					alert('msg');
+	function get_kelas() {
+		var id_majors = $("#majors_id").val();
+		//alert(id_jurusan+id_kelas);
+		$.ajax({
+			url: '<?php echo base_url(); ?>manage/tahfidz/class_searching',
+			type: 'POST',
+			data: {
+				'id_majors': id_majors,
+			},
+			success: function(msg) {
+				$("#td_kelas").html(msg);
+			},
+			error: function(msg) {
+				alert('msg');
 			}
-            
-        });
-    }
-    
-    function get_siswa(){
-        var id_majors    = $("#majors_id").val();
-        var id_class     = $("#class_id").val();
-        //alert(id_jurusan+id_kelas);
-        $.ajax({ 
-            url: '<?php echo base_url();?>manage/tahfidz/student_searching',
-            type: 'POST', 
-            data: {
-                    'id_majors': id_majors,
-                    'id_class': id_class,
-            },    
-            success: function(msg) {
-                    $("#td_siswa").html(msg);
-            },
-			error: function(msg){
-					alert('msg');
+
+		});
+	}
+
+	function get_siswa() {
+		var id_majors = $("#majors_id").val();
+		var id_class = $("#class_id").val();
+		//alert(id_jurusan+id_kelas);
+		$.ajax({
+			url: '<?php echo base_url(); ?>manage/tahfidz/student_searching',
+			type: 'POST',
+			data: {
+				'id_majors': id_majors,
+				'id_class': id_class,
+			},
+			success: function(msg) {
+				$("#td_siswa").html(msg);
+			},
+			error: function(msg) {
+				alert('msg');
 			}
-            
-        });
-    }
+
+		});
+	}
 </script>
 <script>
 	$(document).ready(function() {
@@ -181,5 +181,26 @@
 		$("#selectall2").change(function() {
 			$(".checkbox").prop('checked', $(this).prop("checked"));
 		});
+	});
+</script>
+
+<script>
+	$(function() {
+		$('#btn-cari').click(function() {
+			let tahun_ajaran = $('select[name="p"]').val();
+			let unit_sekolah = $('select[name="k"]').val();
+			let kelas = $('select[name="c"]').val();
+			let siswa = $('select[name="m"]').val();
+			if (tahun_ajaran == '' && unit_sekolah == '' && kelas == '' && siswa == '') {
+				toastNotifikasi('error', 'Pilih salah satu filter untuk melakukan pencarian data!', 'Gagal!');
+				return;
+			}
+
+			$('#btn-cari').addClass('disabled');
+			$('#btn-cari').html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
+
+			let form = $('#form-tahfidz');
+			form.submit();
+		})
 	});
 </script>
