@@ -1,4 +1,3 @@
-
 <div class="content-wrapper">
 	<!-- Content Header (Page header) -->
 	<section class="content-header">
@@ -15,135 +14,194 @@
 		<div class="row">
 			<div class="col-md-12">
 				<div class="box box-success">
-				    <div class="box-header">
-					<div class="box-body table-responsive">
-						<table class="table">
-						    <tr>
-						        <th>
-						            Tahun Ajaran
-						        </th>
-						        <th>
-						            Unit Sekolah
-						        </th>
-						        <th>
-						            Jenis Pembayaran
-						        </th>
-						        <th>
-						            Kelas
-						        </th>
-						        <th>
-						        </th>
-						    </tr>
-						    <tr>
-						        <td>
-						            <select class="form-control" name="periode" id="periode" required="">
-									<option value="">--Pilih Tahun Ajaran--</option>
-									<?php foreach ($period as $row): ?>
-										<option value="<?php echo $row['period_id'] ?>"><?php echo $row['period_start'].'/'.$row['period_end'] ?></option>
-									<?php endforeach; ?>
-								    </select>
-						        </td>
-						        <td>
-						            <select class="form-control" name="majors_id" id="majors_id" required="">
-									<option value="">--Pilih Unit Sekolah--</option>
-									<?php foreach ($majors as $row): ?>
-										<option value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
-									<?php endforeach; ?>
-								    </select>
-						        </td>
-						        <td id="td_tagihan">
-        							<select name="tagihan_id" id="tagihan_id" class="form-control" required="">
-        							    <option value="">--Pilih Tagihan--</option>
-        							</select>
-						        </td>
-						        <td id="td_kelas">
-						            <select name="class_id" id="class_id" class="form-control" required="">
-						                <option value="">--Pilih Kelas--</option>
-									</select>
-						        </td>
-						        <td>
-						            <button type="button" class="btn btn-primary" onclick="cari_data()"><i class="fa fa-search"></i>Cari</button>
-						        </td>
-						    </tr>
-						</table>
-						</div>
+					<div class="box-header">
+						<div class="box-body table-responsive">
+							<table class="table">
+								<tr>
+									<th>
+										Tahun Ajaran
+									</th>
+									<th>
+										Unit Sekolah
+									</th>
+									<th>
+										Jenis Pembayaran
+									</th>
+									<th>
+										Kelas
+									</th>
+									<th>
+									</th>
+								</tr>
+								<tr>
+									<td>
+										<select class="form-control" name="periode" id="periode" required="">
+											<option value="">--Pilih Tahun Ajaran--</option>
+											<?php foreach ($period as $row): ?>
+												<option value="<?php echo $row['period_id'] ?>"><?php echo $row['period_start'] . '/' . $row['period_end'] ?></option>
+											<?php endforeach; ?>
+										</select>
+									</td>
+									<td>
+										<select class="form-control" name="majors_id" id="majors_id" required="">
+											<option value="">--Pilih Unit Sekolah--</option>
+											<?php foreach ($majors as $row): ?>
+												<option value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
+											<?php endforeach; ?>
+										</select>
+									</td>
+									<td id="td_tagihan">
+										<select name="tagihan_id" id="tagihan_id" class="form-control" required="">
+											<option value="">--Pilih Tagihan--</option>
+										</select>
+									</td>
+									<td id="td_kelas">
+										<select name="class_id" id="class_id" class="form-control" required="">
+											<option value="">--Pilih Kelas--</option>
+										</select>
+									</td>
+									<td>
+										<button type="button" class="btn btn-primary" onclick="cari_data()"><i class="fa fa-search"></i>Cari</button>
+									</td>
+								</tr>
+							</table>
 						</div>
 					</div>
-					<div id="div_tampil_data">
-					</div>
+				</div>
+				<div id="div_tampil_data">
 				</div>
 			</div>
 		</div>
-	</section>
-	<!-- /.content -->
+</div>
+</section>
+<!-- /.content -->
 </div>
 <script>
-    function cari_data(){
-        var id_periode    = $("#periode").val();
-        var id_tagihan    = $("#tagihan_id").val();
-        var id_kelas      = $("#class_id").val();
-        //alert(id_jurusan+id_kelas);
-        $.ajax({ 
-            url: '<?php echo base_url();?>manage/report/cari_data',
-            type: 'POST', 
-            data: {
-                    'id_periode': id_periode,
-                    'id_tagihan': id_tagihan,
-                    'id_kelas'  : id_kelas,
-            },    
-            success: function(msg) {
-                    $("#div_tampil_data").html(msg);
-            },
-			error: function(msg){
-					alert('msg');
+	function cari_data() {
+		var id_periode = $("#periode").val();
+		var id_tagihan = $("#tagihan_id").val();
+		var id_kelas = $("#class_id").val();
+		if (!id_periode) {
+			toastNotifikasi('error', 'Tahun Ajaran harus dipilih', 'Gagal');
+			return;
+		}
+		if (!id_tagihan) {
+			toastNotifikasi('error', 'Jenis Pembayaran harus dipilih', 'Gagal');
+			return;
+		}
+		if (!id_kelas) {
+			toastNotifikasi('error', 'Kelas harus dipilih', 'Gagal');
+			return;
+		}
+		//alert(id_jurusan+id_kelas);
+		$.ajax({
+			url: '<?php echo base_url(); ?>manage/report/cari_data',
+			type: 'POST',
+			data: {
+				'id_periode': id_periode,
+				'id_tagihan': id_tagihan,
+				'id_kelas': id_kelas,
+			},
+			success: function(msg) {
+				$("#div_tampil_data").html(msg);
+			},
+			error: function(msg) {
+				alert('msg');
 			}
-            
-        });
-    }
+
+		});
+	}
 </script>
 
 <script>
-    $(document).ready(function(){
-        $("#majors_id").change(function(e){
-    	    var id_periode    = $("#periode").val();
-    	    var id_majors    = $("#majors_id").val();
-            //alert(id_jurusan+id_kelas);
-            $.ajax({ 
-                url: '<?php echo base_url();?>manage/report/get_tagihan',
-                type: 'POST', 
-                data: {
-                        'id_periode': id_periode,
-                        'id_majors' : id_majors,
-                },    
-                success: function(msg) {
-                        $("#td_tagihan").html(msg);
-                },
-    			error: function(msg){
-    					alert('msg');
-    			}
-                
-            });
-    		e.preventDefault();
-    	});
-    	
-    	$("#majors_id").change(function(e){
-    	    var id_majors    = $("#majors_id").val();
-            //alert(id_jurusan+id_kelas);
-            $.ajax({ 
-                url: '<?php echo base_url();?>manage/report/cari_kelas',
-                type: 'POST', 
-                data: {
-                        'id_majors': id_majors,
-                },    
-                success: function(msg) {
-                        $("#td_kelas").html(msg);
-                },
-    			error: function(msg){
-    					alert('msg');
-    			}
-                
-            });
-    		e.preventDefault();
-    	});
-    });
+	$(document).ready(function() {
+		$("#tagihan_id").select2({
+			width: '400px'
+		});
+
+		$(".select2-selection").css({
+			'height': '35px',
+			'line-height': '40px',
+			'padding-left': '8px'
+		});
+
+		$("#majors_id").change(function(e) {
+			var id_periode = $("#periode").val();
+			var id_majors = $("#majors_id").val();
+			//alert(id_jurusan+id_kelas);
+			$.ajax({
+				url: '<?php echo base_url(); ?>manage/report/get_tagihan',
+				type: 'POST',
+				data: {
+					'id_periode': id_periode,
+					'id_majors': id_majors,
+				},
+				success: function(msg) {
+					$("#td_tagihan").html(msg);
+				},
+				error: function(msg) {
+					alert('msg');
+				}
+
+			});
+			e.preventDefault();
+		});
+
+		$("#majors_id").change(function(e) {
+			var id_majors = $("#majors_id").val();
+			//alert(id_jurusan+id_kelas);
+			$.ajax({
+				url: '<?php echo base_url(); ?>manage/report/cari_kelas',
+				type: 'POST',
+				data: {
+					'id_majors': id_majors,
+				},
+				success: function(msg) {
+					$("#td_kelas").html(msg);
+					$("#tagihan_id").select2({
+						width: '400px',
+					});
+					$(".select2-selection").css({
+						'height': '35px',
+						'line-height': '40px',
+						'padding-left': '8px'
+					});
+				},
+				error: function(msg) {
+					alert('msg');
+				}
+
+			});
+			e.preventDefault();
+		});
+
+		$('#periode').change(function() {
+			var id_periode = $(this).val();
+			var id_majors = $("#majors_id").val();
+			$.ajax({
+				url: '<?php echo base_url(); ?>manage/report/get_tagihan',
+				type: 'POST',
+				data: {
+					'id_periode': id_periode,
+					'id_majors': id_majors,
+				},
+				success: function(msg) {
+					$("#td_tagihan").html(msg);
+					$("#tagihan_id").select2({
+						width: '400px',
+					});
+					$(".select2-selection").css({
+						'height': '35px',
+						'line-height': '40px',
+						'padding-left': '8px'
+					});
+				},
+				error: function(msg) {
+					alert('msg');
+				}
+
+			});
+			e.preventDefault();
+		});
+	});
 </script>
