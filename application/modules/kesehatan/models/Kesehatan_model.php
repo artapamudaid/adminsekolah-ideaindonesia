@@ -77,6 +77,10 @@ class Kesehatan_model extends CI_Model
 
 		if ($this->session->userdata('umajorsid') != '0') {
 			$this->db->where('majors_id', $this->session->userdata('umajorsid'));
+		} else {
+			if (isset($params['majors_id'])) {
+				$this->db->where('majors.majors_id', $params['majors_id']);
+			}
 		}
 
 		if (isset($params['order_by'])) {
