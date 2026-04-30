@@ -121,7 +121,7 @@ class Laba_rugi_set extends CI_Controller
 		        <tr>
 				    <td>
 				        <div class="pull-right">
-    					    <a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/laba_rugi/export_xls/?unit=' . $_REQUEST['majors_id'] . '&start=' . $_REQUEST['start'] . '&end=' . $_REQUEST['end'] . '"><span class="fa fa-file-excel-o"></span> Cetak Excel
+    					    <a class="btn btn-success" target="_blank" href="' . base_url() . 'manage/laba_rugi/export_xls/?unit=' . $_REQUEST['majors_id'] . '&start=' . @$_REQUEST['start'] . '&end=' . $_REQUEST['end'] . '"><span class="fa fa-file-excel-o"></span> Cetak Excel
     					    </a>
     					</div>
 				    </td>
