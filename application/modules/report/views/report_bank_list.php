@@ -72,7 +72,7 @@
 							</div>	
 					        </div>-->
 							<div>
-								<button type="submit" class="btn btn-primary" onclick="cari_data()">Filter</button>
+								<button type="submit" class="btn btn-primary" id='btn-cari' onclick="cari_data()">Filter</button>
 							</div>
 						</div>
 						<div id="div_show_data">
@@ -166,6 +166,15 @@
 		var ds = $("#ds").val();
 		var de = $("#de").val();
 		var majors_id = $("#majors_id").val();
+		if (!ds || !de) {
+			toastNotifikasi('error', 'Pilih Tanggal awal dan akhir dahulu!', 'Gagal!');
+			return;
+		}
+
+		if (!majors_id) {
+			toastNotifikasi('error', 'Pilih Unit Sekolah dahulu!', 'Gagal!');
+			return;
+		}
 		//alert(id_jurusan+id_kelas);
 		if (ds != '' && de != '' && majors_id != '') {
 			const baseURL = "<?php echo base_url(); ?>";
@@ -190,7 +199,11 @@
 			unit = selectUnit.options[selectUnit.selectedIndex].text;
 			$("#tglJurnal").html(unit + " " + tglMulai + " Sampai " + tglAkhir);
 
-			var param = "<?php echo $param; ?>";
+			var param = "<?php echo json_encode($param); ?>";
+			let btn = $('#btn-cari');
+
+			btn.attr('disabled', true);
+			btn.html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
 			$("#xtable").DataTable({
 				ordering: true,
 				processing: true,
@@ -220,6 +233,10 @@
 						$('#total').html("Rp " + numberFormat(total));
 						$('#saldo-akhir').html("Rp " + numberFormat(saldoAkhir));
 						return json.data;
+					},
+					complete: function() {
+						btn.attr('disabled', false);
+						btn.html('Filter');
 					}
 				},
 			});

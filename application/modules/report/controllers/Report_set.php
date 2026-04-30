@@ -1762,6 +1762,7 @@ class Report_set extends CI_Controller
 
 		$params = array();
 		$data['period'] = $this->Period_model->get($params);
+		$data['param'] = $params;
 
 		$config['base_url'] = site_url('manage/report/index');
 		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
