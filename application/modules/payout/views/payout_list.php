@@ -1960,8 +1960,11 @@
 																			</select>
 																		</div>
 																	</div>
-																	<button class="btn btn-success btn-block" formtarget="_blank" type="submit">Cetak</button>
+																	<button class="btn btn-info btn-block" formtarget="_blank" type="submit">Cetak</button>
 																</form>
+																<div class="mb-2"></div>
+																<button class="btn btn-success btn-block" type="button" id="generateWAMessage">Generate Pesan WhatsApp</button>
+																<div class="mb-2"></div>
 																<form action="<?php echo site_url('manage/payout/cetakThermal') ?>" method="GET" class="view-pdf">
 																	<input type="hidden" name="n" value="<?php echo $f['n'] ?>">
 																	<input type="hidden" name="r" value="<?php echo $f['r'] ?>">
@@ -1970,6 +1973,7 @@
 																	<input type="hidden" name="f" id="thermalNoref" value="">
 																	<button class="btn btn-danger btn-block" formtarget="_blank" type="submit">Cetak Thermal</button>
 																</form>
+																<div class="mb-2"></div>
 																<?php if ($f['n'] and $f['r'] != NULL) { ?>
 																	<a href="<?php echo site_url('manage/payout/printBill' . '/?' . http_build_query($f)) ?>" target="_blank" class="btn btn-warning btn-block pull-right">Cetak Semua Transaksi</a>
 																<?php } ?>
@@ -2112,6 +2116,23 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="modalGenerateMessage" data-backdrop="static" data-keyboard="false" role="dialog">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Pesan WhatsApp</h4>
+			</div>
+			<div class="modal-body">
+				<textarea id="waMessage" class="form-control" rows="10" readonly></textarea>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-success" id="copyWAMessage"><i class="fa fa-copy"></i> Copy Pesan</button>
 			</div>
 		</div>
 	</div>
@@ -2666,3 +2687,55 @@
 		overflow: scroll;
 	}
 </style>
+
+<script>
+	$(function() {
+		$('#generateWAMessage').on('click', function() {
+			let periodId = <?php echo json_encode($f['n']) ?>;
+			let studentNis = <?php echo json_encode($f['r']) ?>;
+			let trxDate = $('#trxDate').val();
+			let no_ref = $('#no_ref').val();
+
+			if (!trxDate || !no_ref) {
+				toastNotifikasi('error', 'Mohon pilih tanggal transaksi dan no. referensi terlebih dahulu.');
+				return;
+			}
+
+			$.ajax({
+				url: '<?php echo base_url(); ?>manage/payout/generate_wa_message/',
+				type: 'POST',
+				data: {
+					period_id: periodId,
+					student_nis: studentNis,
+					trx_date: trxDate,
+					no_ref: no_ref
+				},
+				dataType: 'json',
+				success: function(res) {
+					toastNotifikasi(res.status, res.message, (res.status === 'success' ? 'Sukses' : 'Gagal'));
+
+					if (res.status === 'success') {
+						$('#waMessage').html(res.data.pesan_whatsapp);
+						$('#modalGenerateMessage').modal('show');
+
+						$('#copyWAMessage').off('click').on('click', function() {
+							var waMessage = $('#waMessage');
+							waMessage.select();
+							waMessage[0].setSelectionRange(0, 99999);
+							document.execCommand('copy');
+							toastNotifikasi(
+								'success',
+								'Pesan berhasil disalin ke clipboard.',
+								'Sukses'
+							);
+							$('#modalGenerateMessage').modal('hide');
+						});
+					}
+				},
+				error: function(jqXHR, textStatus) {
+					handleAjaxError(jqXHR, textStatus)
+				},
+			});
+		});
+	});
+</script>

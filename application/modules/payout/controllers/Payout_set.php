@@ -2117,4 +2117,116 @@ class Payout_set extends CI_Controller
       }
     }
   }
+
+  public function generate_wa_message()
+  {
+    $period_id = sanitizeStrict($this->input->post('period_id'));
+    $student_nis = sanitizeStrict($this->input->post('student_nis'));
+    $trx_date = sanitizeStrict($this->input->post('trx_date'));
+    $noref = sanitizeStrict($this->input->post('no_ref'));
+
+    $student = $this->Student_model->get(array('student_nis' => $student_nis));
+    if (!$student) {
+      $response = [
+        'status' => 'error',
+        'message' => 'Data siswa tidak ditemukan',
+        'data' => null
+      ];
+      echo json_encode($response);
+      return;
+    }
+
+    $params = [
+      'noref' => $noref,
+      'period_id' => $period_id,
+      'date' => $trx_date,
+    ];
+
+    $kas = $this->Payout_model->get_kas($params);
+    if (!$kas) {
+      $response = [
+        'status' => 'error',
+        'message' => 'Data kas tidak ditemukan',
+        'data' => null
+      ];
+      echo json_encode($response);
+      return;
+    }
+    $kas = $kas[0];
+
+    $status_whatsapp        = $this->Setting_model->get(array('name' => 'setting_notif'));
+    $status                 = $status_whatsapp['setting_value'];
+
+    if ($status == 'active' and isset($student['student_parent_phone']) and $student['student_parent_phone'] != '+62') {
+
+      $wa_center              = $this->Setting_model->get(array('id' => 17));
+      $wa_key                 = $this->Setting_model->get(array('name' => 'setting_wa_key'));
+      $setting_whatsapp       = $this->Setting_model->get(array('id' => 92));
+      $set_key                = $wa_key['setting_value'];
+      $set_wa                 = $setting_whatsapp['setting_value'];
+
+      $tanggal_ini            = date("d-m-Y");
+      $today                  = date("Y-m-d");
+      $nis_enc                = base64_encode($student['student_nis']);
+      $noref_enc              = base64_encode($noref);
+      $date_enc               = base64_encode($today);
+
+      $today                  = date("Y-m-d");
+      $nis_enc                = base64_encode($student['student_nis']);
+      $noref_enc              = base64_encode($noref);
+      $date_enc               = base64_encode($today);
+
+      $nominal                = $kas['kas_debit'];
+
+      $template_query = $this->db->get_where('templates', array('location' => 'PAYOUT'));
+
+      $check_template         = $template_query->num_rows();
+
+      if ($check_template > 0) {
+        $get_template = $template_query->row_array();
+
+        $data = [
+          'STUDENT_NIS' => $student['student_nis'],
+          'STUDENT_FULL_NAME' => $student['student_full_name'],
+          'EMPLOYEE_NIP' => '',
+          'EMPLOYEE_NAME' => '',
+          'POSITION_NAME' => '',
+          'CLASS_NAME' => $student['class_name'],
+          'MAJORS_SCHOOL_NAME' => $student['majors_name'],
+          'MAJORS_SHORT_NAME' => $student['majors_short_name'],
+          'NOMINAL' => number_format($nominal, 0, ',', '.'),
+          'TRX_DATE' => $trx_date,
+          'NOREF' => $noref,
+          'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
+          'YEAR' => date('Y')
+        ];
+
+        $template = $get_template['content'];
+
+        $payout_template = parse_template($template, $data, false);
+
+        $payout_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $payout_template);
+      }
+
+      $params_msg['pesan']    = $payout_template;
+      $wa_center = str_replace(['+', ' '], '', $wa_center['setting_value']);
+
+      $params_msg['pesan']  .= "\n\n" . 'Download kwitansi : ' . base_url() . 'payout/cetakBukti?r=' . $nis_enc . '&d=' . $date_enc .  '&f=' . $noref_enc . "\n\n" .
+        'Nomor WA Pesantren : http://wa.me/' . $wa_center;
+
+      $psn = $params_msg['pesan'];
+      $psn = str_replace(['\\n', '\\r'], ["\n", "\r"], $psn);
+    }
+
+    $response = [
+      'status' => 'success',
+      'message' => 'Pesan WhatsApp berhasil dibuat',
+      'data' => [
+        'kas' => $kas,
+        'pesan_whatsapp' => $psn
+      ]
+    ];
+
+    echo json_encode($response);
+  }
 }
