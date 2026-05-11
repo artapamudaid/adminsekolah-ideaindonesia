@@ -77,7 +77,7 @@
             <span class="info-box-number" style="opacity: 0;">&nbsp;</span>
 
             <span class="info-box-text dash-text">Bulan ini</span>
-            <span class="info-box-number"><?php echo 'Rp. ' . number_format($tagihan_bulan_ini, 0, ',', '.') ?></span>
+            <span class="info-box-number"><?php echo 'Rp. ' . number_format((float)$tagihan_bulan_ini, 0, ',', '.') ?></span>
             <span class="info-box-text dash-text">Tahun ini</span>
             <span class="info-box-number"><?php echo 'Rp. ' . number_format($tagihan_tahun_ini, 0, ',', '.') ?></span>
             <span class="info-box-text dash-text" style="opacity: 0;">&nbsp;</span>
@@ -394,11 +394,14 @@
                   <th style="text-align:center;">Bulan Ini</th>
                   <th style="text-align:center;">Tahun Ajaran Ini</th>
                 </tr>
-                <?php foreach ($kasUnit as $key => $kas) { ?>
+                <?php foreach ($kasUnit as $key => $kas) {
+                  $val_kas_bulan = isset($kas['bulan']) ? $kas['bulan'] : 0;
+                  $val_kas_tahun = isset($kas['tahun']) ? $kas['tahun'] : 0;
+                ?>
                   <tr>
                     <td><?php echo  $key ?></td>
-                    <td align="center"><?php echo 'Rp. ' . number_format($kas['bulan'], 0, ',', '.') ?></td>
-                    <td align="center"><?php echo 'Rp. ' . number_format($kas['tahun'], 0, ',', '.') ?></td>
+                    <td align="center"><?php echo 'Rp. ' . number_format((float)$val_kas_bulan, 0, ',', '.') ?></td>
+                    <td align="center"><?php echo 'Rp. ' . number_format((float)$val_kas_tahun, 0, ',', '.') ?></td>
                   </tr>
                 <?php } ?>
                 </tbody>

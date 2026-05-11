@@ -141,7 +141,7 @@ class Summary_set extends CI_Controller
         $data['bulan'] = $this->db->query("SELECT bulan_noref, bulan_status, bulan_bill, month_month_id, majors_majors_id
                                             FROM bulan a LEFT JOIN payment b ON a.payment_payment_id=b.payment_id  
                                             LEFT JOIN student c ON a.student_student_id=c.student_id
-                                            WHERE b.period_period_id=$periodActive")->result_array();
+                                            WHERE b.period_period_id='$periodActive'")->result_array();
 
         // $data['topfive'] = $this->db->query("SELECT kas_noref, 
         //                                             SUM(kas_debit) AS total_deb, 
@@ -229,9 +229,14 @@ class Summary_set extends CI_Controller
                 $data['total_kredit_period'] += $row['tKredit'];
             }
 
+            // NOTE: Modified 11052026
+            // if (!isset($groupedKas[$majors_name]['tahun'])) {
+            //     $groupedKas[$majors_name]['tahun'] += $row['tDebit'];
+            // }
             if (!isset($groupedKas[$majors_name]['tahun'])) {
-                $groupedKas[$majors_name]['tahun'] += $row['tDebit'];
+                $groupedKas[$majors_name]['tahun'] = 0;
             }
+            $groupedKas[$majors_name]['tahun'] += $row['tDebit'];
         }
 
         $data['total_debit_month']      = 0;
