@@ -1399,4 +1399,51 @@ class Student_set extends CI_Controller
 
     $this->load->view('student/excel_students', $data);
   }
+
+  function datatablesSiswa()
+  {
+    $draw = $_REQUEST['draw'];
+    $length = $_REQUEST['length'];
+    $start = $_REQUEST['start'];
+    $search = $_REQUEST['search']["value"];
+
+    // Menangani sorting
+    $order_column_index = $_REQUEST['order'][0]['column']; // Index kolom yang diklik
+    $order_dir = $_REQUEST['order'][0]['dir']; // Arah sorting (asc/desc)
+    $data['order_dir'] = $order_dir;
+
+    $columns = ['student_nis', 'student_full_name', 'madin_name', 'class_name', 'student_full_name'];
+
+    // Pastikan index yang dikirimkan oleh DataTables sesuai dengan daftar kolom yang kita punya
+    $order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'student_nis';
+    $data['order_column'] = $order_column;
+
+    $totalBaris = $this->Student_model->count_all($search, array('status' => '1'));
+    $output = array();
+    $output['draw']   = $draw;
+    $output['recordsTotal'] = $output['recordsFiltered'] = $totalBaris;
+    $output['data'] = array();
+
+    if ($search != "") {
+      $query = $this->Student_model->list_siswa($length, $start, $search, $data);
+    } else {
+      $query = $this->Student_model->list_siswa($length, $start, $search, $data);
+    }
+
+    $nomor_urut = $start + 1;
+    foreach ($query->result_array() as $dt) {
+      $output['data'][] = array(
+        // $nomor_urut,
+        $dt['student_nis'],
+        $dt['student_full_name'],
+        $dt['majors_short_name'],
+        $dt['class_name'],
+        '<button type="button" class="btn btn-primary btn-xs" onclick="ambil_data(' . $dt['student_nis'] . ')">Pilih</button>'
+
+      );
+      $nomor_urut++;
+    }
+
+    echo json_encode($output);
+  }
 }

@@ -335,61 +335,24 @@
 				<h4 class="modal-title">Cari Data Siswa</h4>
 			</div>
 			<div class="modal-body">
-				<?php $dataSiswa = $this->Student_model->get(array('status' => '1'));
-
-				echo '
-            <div class="box-body table-responsive">
-							<table id="dtable" class="table table-hover">
-							    <thead>
-								<tr>
-									<th>No</th>
-									<th>NIS</th>
-									<th>Nama</th>
-									<th>Unit Sekolah</th>
-									<th>Kelas</th>
-									<th>Aksi</th>
-								</tr>
-								</thead>
-								<tbody>';
-				if (!empty($dataSiswa)) {
-					$i = 1;
-					foreach ($dataSiswa as $row):
-						echo '<tr>
-												<td>' .
-							$i
-							. '</td>
-												<td>' .
-							$row['student_nis']
-							. '</td>
-												<td>' .
-							$row['student_full_name']
-							. '</td>
-												<td>' .
-							$row['majors_short_name']
-							. '</td>
-												<td>' .
-							$row['class_name']
-							. '</td>';
-						echo '<td align="center">';
-						echo '<button type="button" data-dismiss="modal" class="btn btn-primary btn-xs" onclick="ambil_data(';
-						echo "'" . $row['student_nis'] . "'";
-						echo ')">Pilih</button>';
-						echo '</td>';
-						echo '</tr>';
-						$i++;
-					endforeach;
-				} else {
-					echo '<tr id="row">
-											<td colspan="8" align="center">Data Kosong</td>
-										</tr>';
-				}
-				echo	'</tbody>
-								</table>
-							</div>
-      '; ?>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+				<div class="box-body table-responsive">
+					<table id="table-siswa" class="table table-hover" style="width: 100%;">
+						<thead>
+							<tr>
+								<th>NIS</th>
+								<th>Nama</th>
+								<th>Unit Sekolah</th>
+								<th>Kelas</th>
+								<th>Aksi</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
 				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
 			</div>
 		</div>
 	</div>
@@ -474,3 +437,17 @@
 		overflow: scroll;
 	}
 </style>
+
+<script>
+	$(function() {
+		$("#table-siswa").DataTable({
+			ordering: true,
+			processing: false,
+			serverSide: true,
+			ajax: {
+				url: "<?php echo base_url('manage/student/datatablesSiswa'); ?>",
+				type: 'POST',
+			},
+		});
+	});
+</script>
