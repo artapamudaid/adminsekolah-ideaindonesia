@@ -76,7 +76,7 @@ class Class_set extends CI_Controller
           'class_name' => $className[$i],
           'majors_majors_id' => $majorsMajorsId,
         ];
-        if ($this->Student_model->checkDataExists("class", $colWhere)) {
+        if ($this->General_model->checkDataExists("class", $colWhere)) {
           $skipped++;
           continue;
         }
