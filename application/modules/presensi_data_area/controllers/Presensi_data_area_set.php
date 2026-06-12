@@ -101,7 +101,7 @@ class Presensi_data_area_set extends CI_Controller
         $colWhere["id_area != "] = $id;
       }
 
-      if ($this->General_model->checkDataExists("presensi_data_area", $colWhere)) {
+      if ($this->General_model->checkDataExists("area_absensi", $colWhere)) {
         $this->session->set_flashdata('failed', ' Data sudah ada');
         $redirectUrl = (!empty($id)) ? "manage/presensi_data_area/edit/$id" : "manage/presensi_data_area";
         redirect($redirectUrl);
