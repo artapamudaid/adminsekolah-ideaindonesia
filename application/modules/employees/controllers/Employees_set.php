@@ -349,7 +349,9 @@ class Employees_set extends CI_Controller
       $spreadSheetAry = $excelSheet->toArray();
       $sheetCount = count($spreadSheetAry);
 
-      for ($row = 2; $row <= $sheetCount; $row++) {
+      $data = array();
+
+      for ($row = 2; $row < $sheetCount; $row++) {
         $employee_nip           = $spreadSheetAry[$row][0];
         $employee_name          = $spreadSheetAry[$row][1];
         $employee_majors_id     = $spreadSheetAry[$row][2];
@@ -397,8 +399,12 @@ class Employees_set extends CI_Controller
       }
 
 
-      $this->db->insert_batch('employee', $data);
-      $this->session->set_flashdata('success', 'Import Data Pegawai Berhasil');
+      if (!empty($data)) {
+        $this->db->insert_batch('employee', $data);
+        $this->session->set_flashdata('success', 'Import Data Pegawai Berhasil');
+      } else {
+        $this->session->set_flashdata('failed', 'Tidak ada data untuk diimport atau semua baris duplikat.');
+      }
       redirect('manage/employees');
     }
   }
