@@ -78,7 +78,7 @@
 													<td>
 														<?php
 														$bulan = $this->db->query("SELECT COUNT(bulan_id) as c_bulan FROM bulan WHERE student_student_id = '" . $row['student_id'] . "' AND bulan_status = 0")->row_array();
-														$bebas = $this->db->query("SELECT COUNT(bebas_id) as c_bebas FROM bebas WHERE student_student_id = '" . $row['student_id'] . "' AND (bebas_bill - bebas_diskon - bebas_total_pay) = 0")->row_array();
+														$bebas = $this->db->query("SELECT COUNT(bebas_id) as c_bebas FROM bebas WHERE student_student_id = '" . $row['student_id'] . "' AND (bebas_bill - bebas_diskon - bebas_total_pay) > 0")->row_array();
 														?>
 														<label class="label <?php echo ($bulan['c_bulan'] == 0 and $bebas['c_bebas'] == 0) ? 'label-success' : 'label-danger' ?>"><?php echo ($bulan['c_bulan'] == 0 and $bebas['c_bebas'] == 0) ? 'Lunas' : 'Belum Lunas' ?></label>
 													</td>
