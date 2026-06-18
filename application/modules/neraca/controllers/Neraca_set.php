@@ -90,13 +90,13 @@ class Neraca_set extends CI_Controller
 			echo '
 			              <tr>
 			                <td colspan="2">' . $row['account_description'] . '</td>
-			                <td>' . 'Rp ' . number_format($row['saldo'], 0, ",", ".") . '</td>
+			                <td>' . 'Rp ' . number_format((float)$row['saldo'], 0, ",", ".") . '</td>
 					    </tr>';
 			$sumAktiva += $row['saldo'];
 		}
 		echo '<tr style="background-color: #fcfdff;">
 		                <td colspan = "2" align = "right"><strong>Total Aktiva</strong></td>
-		                <td>' . 'Rp ' . number_format($sumAktiva, 0, ",", ".") . '</td>
+		                <td>' . 'Rp ' . number_format((float)$sumAktiva, 0, ",", ".") . '</td>
     				    </tr>
     			        </table>
     			    </div>
@@ -110,13 +110,13 @@ class Neraca_set extends CI_Controller
 			echo '
 									  <tr>
 										<td colspan="2">' . $row['account_description'] . '</td>
-										<td>' . 'Rp ' . number_format($row['saldo'], 0, ",", ".") . '</td>
+										<td>' . 'Rp ' . number_format((float)$row['saldo'], 0, ",", ".") . '</td>
 									</tr>';
 			$sumPasiva += $row['saldo'];
 		}
 		echo '<tr style="background-color: #fcfdff;">
 									<td colspan = "2" align = "right"><strong>Total Hutang</strong></td>
-									<td>' . 'Rp ' . number_format($sumPasiva, 0, ",", ".") . '</td>
+									<td>' . 'Rp ' . number_format((float)$sumPasiva, 0, ",", ".") . '</td>
 									</tr>
 									</table>
 									<table class="table table-responsive" style="white-space: nowrap;">';
@@ -126,19 +126,19 @@ class Neraca_set extends CI_Controller
 			echo '
 													  <tr>
 														<td colspan="2">' . $row['account_description'] . '</td>
-														<td>' . 'Rp ' . number_format($row['saldo'], 0, ",", ".") . '</td>
+														<td>' . 'Rp ' . number_format((float)$row['saldo'], 0, ",", ".") . '</td>
 													</tr>';
 			$sumModal += $row['saldo'];
 		}
 		echo '<tr style="background-color: #fcfdff;">
 													<td colspan = "2" align = "right"><strong>Total Modal</strong></td>
-													<td>' . 'Rp ' . number_format($sumModal, 0, ",", ".") . '</td>
+													<td>' . 'Rp ' . number_format((float)$sumModal, 0, ",", ".") . '</td>
 													</tr>
 													</table>';
 		echo '<table class="table table-responsive" style="white-space: nowrap;">
 		<tr style="background-color: #fcfdff;">
 													<td colspan = "2" align = "right"><strong>Total Laba/Rugi</strong></td>
-													<td>' . 'Rp ' . number_format($laba_rugi['nominal'], 0, ",", ".") . '</td>
+													<td>' . 'Rp ' . number_format((float)$laba_rugi['nominal'], 0, ",", ".") . '</td>
 													</tr>
 													</table>';
 

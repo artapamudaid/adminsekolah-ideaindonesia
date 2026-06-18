@@ -810,4 +810,42 @@ class Student_model extends CI_Model
         $this->db->where('student_id', $id);
         $this->db->update('student', $params);
     }
+
+    function count_all($params = array())
+    {
+        if (isset($params['status'])) {
+            $this->db->where('student_status', $params['status']);
+        }
+
+        return $this->db->count_all_results('student');
+    }
+
+    function list_siswa($limit, $start, $search)
+    {
+        $this->db->select('student.student_id, student_nis, student_nisn, student_password, student_gender, student_phone, 
+                            student_hobby, student_address, student_parent_phone,student_full_name, student_born_place, 
+                            student_born_date, student_img, student_status, student_name_of_mother, student_name_of_father,
+                            student_input_date, student_last_update');
+        $this->db->select('class.class_id, student.class_class_id, class.class_name, class.majors_majors_id');
+        $this->db->select('student.majors_majors_id, majors_id, majors_name, majors_short_name, majors_school_name, majors_status');
+
+        $this->db->from('student');
+
+        $this->db->join('class', 'class.class_id = student.class_class_id', 'left');
+        $this->db->join('majors', 'majors.majors_id = student.majors_majors_id', 'left');
+
+        if (!empty($search)) {
+            $this->db->group_start();
+
+            $this->db->like("student.student_full_name", $search);
+            $this->db->or_like("student.student_nis", $search);
+
+            $this->db->group_end();
+        }
+
+        $this->db->where('student.student_status', '1');
+
+        $this->db->limit($limit, $start);
+        return $this->db->get();
+    }
 }

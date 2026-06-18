@@ -52,8 +52,20 @@ if (isset($period)) {
 							</div>
 						</div>
 
+						<div class="form-group col-md-6">
+							<label>Status</label>
+							<div class="radio">
+								<label>
+									<input type="radio" name="period_status" value="1" <?php echo ($inputStatusValue == 1) ? 'checked' : ''; ?>> Aktif
+								</label> &nbsp;&nbsp;&nbsp;&nbsp;
+								<label>
+									<input type="radio" name="period_status" value="0" <?php echo (!$inputStatusValue || $inputStatusValue == 0) ? 'checked' : ''; ?>> Tidak Aktif
+								</label>
+							</div>
+						</div>
+
 						<?php if (!isset($period)) { ?>
-							<div class="form-group">
+							<div class="form-group col-md-6">
 								<label>Apakah anda ingin generate Jenis Bayar otomatis (sesuai POS bayar) ?</label>
 								<div class="row">
 									<div class="col-sm-6 col-md-6">
@@ -76,19 +88,7 @@ if (isset($period)) {
 								</div>
 							</div>
 						<?php } ?>
-						<!--
-						<div class="form-group">
-							<label>Keterangan</label>
-							<div class="radio">
-								<label>
-									<input type="radio" name="period_status" value="1" <?php echo ($inputStatusValue == 1) ? 'checked' : ''; ?>> Aktif
-								</label> &nbsp;&nbsp;&nbsp;&nbsp;
-								<label>
-									<input type="radio" name="period_status" value="0" <?php echo ($inputStatusValue == 0) ? 'checked' : ''; ?>> Tidak Aktif
-								</label>
-							</div>
-						</div>
--->
+
 						<p class="text-muted">*) Kolom wajib diisi.</p>
 					</div>
 					<!-- /.box-body -->

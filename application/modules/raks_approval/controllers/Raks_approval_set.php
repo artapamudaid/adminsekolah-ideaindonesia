@@ -94,6 +94,8 @@ class Raks_approval_set extends CI_Controller
             }
         }
 
+        $data['raks_entry'] = isset($data['raks_entry']) ? $data['raks_entry'] : array();
+
         $data['grade'] =  $grade;
         $data['title'] = 'RAKS Approval';
         $data['main'] = 'raks_approval/approval_list';

@@ -192,7 +192,7 @@ class Account_set extends CI_Controller
     {
         $akun_piutang = $this->db->query("SELECT account_id FROM account
                                             WHERE account_code LIKE '1-1%'
-                                            AND account_description LIKE '%PIUTANG SANTRI%'
+                                            AND account_description LIKE '%PIUTANG SISWA%'
                                             AND account_majors_id ='$id'")->row_array();
 
         return $akun_piutang['account_id'];

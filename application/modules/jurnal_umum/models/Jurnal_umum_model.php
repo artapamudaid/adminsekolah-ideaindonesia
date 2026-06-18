@@ -51,7 +51,7 @@ class Jurnal_umum_model extends CI_Model
         $today = date('Y-m-d');
         $yesterday = date('Y-m-d', strtotime("yesterday"));
         $global_filter = 0;
-        $this->db->select("b.id, b.keterangan, b.noref, b.tanggal, a.account_code, c.account_description,  a.debet, a.kredit, d.majors_short_name");
+        $this->db->select("b.id, b.keterangan, b.noref, b.tanggal, b.pencatatan, a.account_code, c.account_description,  a.debet, a.kredit, d.majors_short_name");
         $this->db->from("jurnal_umum_detail a");
         $this->db->join('jurnal_umum b', 'a.id_jurnal = b.id');
         $this->db->join('account c', 'a.account_code = c.account_code');

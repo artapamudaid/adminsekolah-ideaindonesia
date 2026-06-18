@@ -64,8 +64,20 @@
 		//var start = $("#start").val();
 		var end = $("#end").val();
 		var majors_id = $("#majors_id").val();
+		if (!end) {
+			toastNotifikasi('error', 'Pilih Tanggal akhir dahulu!', 'Gagal!');
+			return;
+		}
+
+		if (!majors_id) {
+			toastNotifikasi('error', 'Pilih Unit Sekolah dahulu!', 'Gagal!');
+			return;
+		}
 		//alert(id_jurusan+id_kelas);
 		if (end != '' && majors_id != '') {
+			let btn = $('#btn-cari');
+			btn.attr('disabled', true);
+			btn.html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
 			$.ajax({
 				url: '<?php echo base_url(); ?>manage/neraca/get_neraca',
 				type: 'POST',
@@ -79,6 +91,10 @@
 				},
 				error: function(msg) {
 					alert('msg');
+				},
+				complete: function() {
+					btn.attr('disabled', false);
+					btn.html('Filter');
 				}
 
 			});

@@ -117,7 +117,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (!empty($s['m']) and !empty($s['p'])) { ?>
+                                <?php if (!empty($s['m']) and $s['m'] != 'all' and !empty($s['p'])) { ?>
                                     <tr style="font-weight: bold;">
                                         <td hidden="true"></td>
                                         <td hidden="true" class="kode-entry"></td>

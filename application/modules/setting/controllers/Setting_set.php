@@ -23,7 +23,7 @@ class Setting_set extends CI_Controller
 
         if ($_POST and $this->form_validation->run() == TRUE) {
 
-            $wa_center = $this->input->post('setting_wa_center');
+            $wa_center = sanitizeStrict($this->input->post('setting_wa_center'));
 
             $wa_center = str_replace(" ", "", $wa_center);
             $wa_center = str_replace("(", "", $wa_center);
@@ -44,33 +44,33 @@ class Setting_set extends CI_Controller
                 }
             }
 
-            $param['setting_school'] = $this->input->post('setting_school');
-            $param['setting_address'] = $this->input->post('setting_address');
-            $param['setting_phone'] = $this->input->post('setting_phone');
-            $param['setting_district'] = $this->input->post('setting_district');
-            $param['setting_city'] = $this->input->post('setting_city');
-            $param['setting_nip_kepsek'] = $this->input->post('setting_nip_kepsek');
-            $param['setting_nama_katu'] = $this->input->post('setting_nama_katu');
-            $param['setting_nip_kepsek'] = $this->input->post('setting_nip_kepsek');
-            $param['setting_nama_katu'] = $this->input->post('setting_nama_katu');
-            $param['setting_nip_bendahara'] = $this->input->post('setting_nip_bendahara');
-            $param['setting_nama_bendahara'] = $this->input->post('setting_nama_bendahara');
+            $param['setting_school'] = sanitizeStrict($this->input->post('setting_school'));
+            $param['setting_address'] = sanitizeStrict($this->input->post('setting_address'));
+            $param['setting_phone'] = sanitizeStrict($this->input->post('setting_phone'));
+            $param['setting_district'] = sanitizeStrict($this->input->post('setting_district'));
+            $param['setting_city'] = sanitizeStrict($this->input->post('setting_city'));
+            $param['setting_nip_kepsek'] = sanitizeStrict($this->input->post('setting_nip_kepsek'));
+            $param['setting_nama_katu'] = sanitizeStrict($this->input->post('setting_nama_katu'));
+            $param['setting_nip_kepsek'] = sanitizeStrict($this->input->post('setting_nip_kepsek'));
+            $param['setting_nama_katu'] = sanitizeStrict($this->input->post('setting_nama_katu'));
+            $param['setting_nip_bendahara'] = sanitizeStrict($this->input->post('setting_nip_bendahara'));
+            $param['setting_nama_bendahara'] = sanitizeStrict($this->input->post('setting_nama_bendahara'));
             $param['setting_wa_center'] = $wa;
-            $param['setting_wa_key'] = $this->input->post('setting_wa_key');
-            $param['setting_level'] = $this->input->post('setting_level');
-            $param['setting_user_sms'] = $this->input->post('setting_user_sms');
-            $param['setting_pass_sms'] = $this->input->post('setting_pass_sms');
-            $param['setting_sms'] = $this->input->post('setting_sms');
-            $param['setting_email'] = $this->input->post('setting_email');
-            $param['setting_website'] = $this->input->post('setting_website');
-            $param['setting_whatsapp'] = $this->input->post('setting_whatsapp');
-            $param['setting_facebook'] = $this->input->post('setting_facebook');
-            $param['setting_instagram'] = $this->input->post('setting_instagram');
-            $param['setting_youtube'] = $this->input->post('setting_youtube');
-            $param['setting_package'] = $this->input->post('package_id');
-            $param['setting_date'] = $this->input->post('package_date');
-            $param['use_limit'] = $this->input->post('use_limit');
-            $param['limit_tabungan'] = $this->input->post('limit_tabungan');
+            $param['setting_wa_key'] = sanitizeStrict($this->input->post('setting_wa_key'));
+            $param['setting_level'] = sanitizeStrict($this->input->post('setting_level'));
+            $param['setting_user_sms'] = sanitizeStrict($this->input->post('setting_user_sms'));
+            $param['setting_pass_sms'] = sanitizeStrict($this->input->post('setting_pass_sms'));
+            $param['setting_sms'] = sanitizeStrict($this->input->post('setting_sms'));
+            $param['setting_email'] = sanitizeStrict($this->input->post('setting_email'));
+            $param['setting_website'] = sanitizeStrict($this->input->post('setting_website'));
+            $param['setting_whatsapp'] = sanitizeStrict($this->input->post('setting_whatsapp'));
+            $param['setting_facebook'] = sanitizeStrict($this->input->post('setting_facebook'));
+            $param['setting_instagram'] = sanitizeStrict($this->input->post('setting_instagram'));
+            $param['setting_youtube'] = sanitizeStrict($this->input->post('setting_youtube'));
+            $param['setting_package'] = sanitizeStrict($this->input->post('package_id'));
+            $param['setting_date'] = sanitizeStrict($this->input->post('package_date'));
+            $param['use_limit'] = sanitizeStrict($this->input->post('use_limit'));
+            $param['limit_tabungan'] = sanitizeStrict($this->input->post('limit_tabungan'));
 
             $status = $this->Setting_model->save($param);
 
@@ -126,8 +126,8 @@ class Setting_set extends CI_Controller
             $data['setting_facebook'] = $this->Setting_model->get(array('id' => 93));
             $data['setting_instagram'] = $this->Setting_model->get(array('id' => 94));
             $data['setting_youtube'] = $this->Setting_model->get(array('id' => 95));
-            $data['setting_package'] = $this->Setting_model->get(array('id' => 100));
-            $data['setting_date'] = $this->Setting_model->get(array('id' => 101));
+            $data['setting_package'] = $this->Setting_model->get(array('id' => 100)) ?? $this->Setting_model->get(array('id' => 97));
+            $data['setting_date'] = $this->Setting_model->get(array('id' => 101)) ?? $this->Setting_model->get(array('id' => 708));
             $data['setting_duration'] = $this->Setting_model->get(array('id' => 102));
             $data['use_limit'] = $this->Setting_model->get(array('id' => 208));
             $data['limit_tabungan'] = $this->Setting_model->get(array('id' => 209));

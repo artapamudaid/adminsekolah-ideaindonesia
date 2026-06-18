@@ -243,7 +243,7 @@ if ($tahun == 0) {
                     <div class="">
                       <div class="col-md-12">
                         <label class="control-label">Status Notifikasi WA</label>
-                        <input type="text" value="<?php echo ($setting_status_wa['setting_value'] == 0 ? 'Free/Gratis' : 'Berbayar') ?>" class="form-control" readonly>
+                        <input type="text" value="<?php echo (@$setting_status_wa['setting_value'] == 0 ? 'Free/Gratis' : 'Berbayar') ?>" class="form-control" readonly>
                       </div>
                     </div>
                   </div>
