@@ -1,31 +1,33 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Majors_set extends CI_Controller {
+class Majors_set extends CI_Controller
+{
 
   public function __construct()
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->model(array('student/Student_model', 'setting/Setting_model'));
     $this->load->helper(array('form', 'url'));
   }
 
-// User_customer view in list
-  public function index($offset = NULL) {
+  // User_customer view in list
+  public function index($offset = NULL)
+  {
     $this->load->library('pagination');
-// Apply Filter
-// Get $_GET variable
+    // Apply Filter
+    // Get $_GET variable
     $f = $this->input->get(NULL, TRUE);
 
     $data['f'] = $f;
 
     $params = array();
-// Nip
+    // Nip
     if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
       $params['majors_name'] = $f['n'];
     }
@@ -47,7 +49,8 @@ class Majors_set extends CI_Controller {
     $this->load->view('manage/layout', $data);
   }
 
-  public function add_glob(){
+  public function add_glob()
+  {
     if ($_POST == TRUE) {
       $majorsName   = $_POST['majors_name'];
       $majorsShort  = $_POST['majors_short_name'];
@@ -63,12 +66,13 @@ class Majors_set extends CI_Controller {
         $this->Student_model->add_majors($params);
       }
     }
-    $this->session->set_flashdata('success',' Tambah Unit Sekolah Berhasil');
+    $this->session->set_flashdata('success', ' Tambah Unit Sekolah Berhasil');
     redirect('manage/majors');
   }
 
-// Add User_customer and Update
-  public function add($id = NULL) {
+  // Add User_customer and Update
+  public function add($id = NULL)
+  {
     $this->load->library('form_validation');
     $this->form_validation->set_rules('majors_name', 'Nama Unit Sekolah', 'trim|required|xss_clean');
     $this->form_validation->set_rules('majors_short_name', 'Singkatan Unit Sekolah', 'trim|required|xss_clean');
@@ -76,7 +80,7 @@ class Majors_set extends CI_Controller {
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button ket="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
-    if ($_POST AND $this->form_validation->run() == TRUE) {
+    if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('majors_id')) {
         $params['majors_id'] = $this->input->post('majors_id');
@@ -99,7 +103,7 @@ class Majors_set extends CI_Controller {
         redirect('manage/majors/edit/' . $this->input->post('majors_id'));
       }
 
-            // Edit mode
+      // Edit mode
       if (!is_null($id)) {
         $object = $this->Student_model->get_unit(array('id' => $id));
         if ($object == NULL) {
@@ -113,8 +117,9 @@ class Majors_set extends CI_Controller {
       $this->load->view('manage/layout', $data);
     }
   }
-  
-  function majors_active($id = NULL) { 
+
+  function majors_active($id = NULL)
+  {
 
     $active = array(
       'majors_id' => $id,
@@ -130,8 +135,9 @@ class Majors_set extends CI_Controller {
       redirect('manage/majors');
     }
   }
-  
-  function majors_nonactive($id = NULL) { 
+
+  function majors_nonactive($id = NULL)
+  {
 
     $active = array(
       'majors_id' => $id,
@@ -148,14 +154,15 @@ class Majors_set extends CI_Controller {
     }
   }
 
-// Delete to database
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  // Delete to database
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
     if ($_POST) {
 
-      $siswa = $this->Student_model->get(array('majors_id'=>$id));
+      $siswa = $this->Student_model->get(array('majors_id' => $id));
 
       if (count($siswa) > 0) {
         $this->session->set_flashdata('failed', 'Data Unit Sekolah tidak dapat dihapus');
@@ -163,7 +170,7 @@ class Majors_set extends CI_Controller {
       }
 
       $this->Student_model->delete_majors($id);
-// activity log
+      // activity log
       $this->load->model('logs/Logs_model');
       $this->Logs_model->add(
         array(
@@ -179,6 +186,6 @@ class Majors_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/majors/edit/' . $id);
-    }  
+    }
   }
 }

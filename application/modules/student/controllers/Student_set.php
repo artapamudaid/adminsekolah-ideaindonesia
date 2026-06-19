@@ -12,7 +12,7 @@ class Student_set extends CI_Controller
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->model(array('student/Student_model', 'konseling/Konseling_model', 'setting/Setting_model', 'bulan/Bulan_model', 'bebas/Bebas_model'));

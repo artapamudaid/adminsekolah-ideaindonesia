@@ -10,7 +10,7 @@ class Bayarhutang_set extends CI_Controller
   {
     parent::__construct(TRUE);
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
     $this->load->model(array('student/Student_model', 'settinghutang/Settinghutang_model', 'employees/Employees_model', 'bayarhutang/bayarhutang_model', 'period/Period_model', 'poshutang/Poshutang_model', 'bulan/Bulan_model', 'hutang/Hutang_model', 'hutang/Hutang_pay_model', 'setting/Setting_model', 'letter_hutang/Letter_hutang_model', 'logs/Logs_model', 'ltrx/Log_trx_model'));
   }

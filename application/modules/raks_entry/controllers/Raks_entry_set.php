@@ -10,7 +10,7 @@ class Raks_entry_set extends CI_Controller
     {
         parent::__construct(TRUE);
         if ($this->session->userdata('logged') == NULL) {
-            header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+            redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
         }
         $this->load->model(array('period/Period_model', 'student/Student_model', 'raks_entry/Raks_entry_model', 'logs/Logs_model'));
         $this->load->library('upload');

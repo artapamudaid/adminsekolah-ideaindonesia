@@ -12,7 +12,7 @@ class Transfer_set extends CI_Controller
     {
         parent::__construct(TRUE);
         if ($this->session->userdata('logged') == NULL) {
-            header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+            redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
         }
         $this->load->model(array(
             'payment/Payment_model',

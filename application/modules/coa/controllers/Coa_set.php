@@ -1,13 +1,14 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Coa_set extends CI_Controller {
+class Coa_set extends CI_Controller
+{
 
     public function __construct()
     {
         parent::__construct();
         if ($this->session->userdata('logged') == NULL) {
-            header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+            redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
             exit;
         }
 
@@ -25,7 +26,7 @@ class Coa_set extends CI_Controller {
         $data['s'] = $s;
 
         $params = array();
-        
+
         // Filter by Majors (Unit)
         if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
             $params['coa_majors'] = $s['m'];
@@ -51,13 +52,13 @@ class Coa_set extends CI_Controller {
 
         if ($_POST && $this->form_validation->run() == TRUE) {
             $params = array();
-            
+
             if ($this->input->post('coa_id')) {
                 $params['coa_id'] = $this->input->post('coa_id');
                 $params['is_active'] = $this->input->post('is_active') ? 1 : 0;
                 $action = 'Sunting';
             } else {
-                $params['is_active'] = 1; 
+                $params['is_active'] = 1;
                 $params['coa_category'] = 'DETAIL'; // Default child/new is DETAIL
                 $action = 'Tambah';
             }
@@ -65,7 +66,7 @@ class Coa_set extends CI_Controller {
             $params['group_id'] = $this->input->post('group_id');
             $params['coa_majors'] = $this->input->post('coa_majors');
             $params['parent_id'] = $this->input->post('parent_id') ?: 0;
-            
+
             // Re-generate code
             if (!$this->input->post('coa_id')) {
                 $params['coa_code'] = $this->Coa_model->generate_code($params['group_id'], $params['coa_majors'], $params['parent_id']);
@@ -104,13 +105,13 @@ class Coa_set extends CI_Controller {
         }
 
         if ($_POST && $id != NULL) {
-            
+
             $del = $this->Coa_model->delete($id);
             if (!$del) {
                 $this->session->set_flashdata('failed', 'COA tidak dapat dihapus karena memiliki sub-akun (child).');
                 redirect('manage/coa' . (isset($_POST['m_redirect']) ? '?m=' . $_POST['m_redirect'] : ''));
             }
-            
+
             $this->Logs_model->add(
                 array(
                     'log_date' => date('Y-m-d H:i:s'),
@@ -143,5 +144,4 @@ class Coa_set extends CI_Controller {
         }
         exit;
     }
-
 }

@@ -10,7 +10,7 @@ class Izin_set extends CI_Controller
   {
     parent::__construct(TRUE);
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
     $this->load->model(array('student/Student_model', 'izin/Izin_model', 'period/Period_model', 'setting/Setting_model', 'logs/Logs_model'));
   }

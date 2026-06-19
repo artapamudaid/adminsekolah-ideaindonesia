@@ -8,7 +8,7 @@ class Kredit_set extends CI_Controller
 	{
 		parent::__construct(TRUE);
 		if ($this->session->userdata('logged') == NULL) {
-			header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+			redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
 		}
 		$this->load->model(array('student/Student_model', 'account/Account_model', 'kredit/Kredit_model', 'tax/Tax_model', 'item/Item_model', 'kredit/Kredit_trx_model', 'logs/Logs_model'));
 		$this->load->library('upload');

@@ -8,7 +8,7 @@ class Neraca_akrual_set extends CI_Controller
 	{
 		parent::__construct(TRUE);
 		if ($this->session->userdata('logged') == NULL) {
-			header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+			redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
 		}
 		$this->load->model(array('student/Student_model', 'setting/Setting_model', 'neraca_akrual/Neraca_akrual_model'));
 	}
@@ -199,7 +199,7 @@ class Neraca_akrual_set extends CI_Controller
 		$sumAsetNeto = 0;
 		$nominalLabaRugi = $laba_rugi['nominal'] ?? 0;
 
-		?>
+?>
 		<div class="box box-primary box-solid">
 			<div class="box-header with-border">
 				<h3 class="box-title"><span class="fa fa-file-text-o"></span> Laporan Posisi Keuangan Per <?php echo pretty_date($end, 'F Y', false); ?></h3>
@@ -237,7 +237,7 @@ class Neraca_akrual_set extends CI_Controller
 					<!-- LIABILITAS & ASET NETO SECTION -->
 					<div class="col-md-6">
 						<h4 class="text-center"><b>LIABILITAS DAN ASET NETO</b></h4>
-						
+
 						<!-- Liabilitas Table -->
 						<table class="table table-hover table-condensed">
 							<thead>
@@ -306,7 +306,7 @@ class Neraca_akrual_set extends CI_Controller
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="box-footer">
 				<div class="pull-right">
 					<a class="btn btn-success" target="_blank" href="<?php echo base_url(); ?>manage/neraca_akrual/export_xls/?unit=<?php echo $_REQUEST['majors_id']; ?>&end=<?php echo $_REQUEST['end']; ?>">
@@ -315,7 +315,7 @@ class Neraca_akrual_set extends CI_Controller
 				</div>
 			</div>
 		</div>
-		<?php
+<?php
 	}
 }
 

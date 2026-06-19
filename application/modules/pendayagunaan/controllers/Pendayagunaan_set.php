@@ -10,7 +10,7 @@ class Pendayagunaan_set extends CI_Controller
     {
         parent::__construct(TRUE);
         if ($this->session->userdata('logged') == NULL) {
-            header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+            redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
         }
         $this->load->model(array('student/Student_model', 'pendayagunaan/Pendayagunaan_model', 'logs/Logs_model', 'setting/Setting_model'));
         $this->load->library('upload');
@@ -131,7 +131,8 @@ class Pendayagunaan_set extends CI_Controller
         $data = array(
             'program_program_id' => $this->input->post('program_program_id'),
             'pendayagunaan_date' => $this->input->post('pendayagunaan_date'),
-            'pendayagunaan_nominal' => $this->input->post('pendayagunaan_nominal'), 'pendayagunaan_note' => $this->input->post('pendayagunaan_note'),
+            'pendayagunaan_nominal' => $this->input->post('pendayagunaan_nominal'),
+            'pendayagunaan_note' => $this->input->post('pendayagunaan_note'),
         );
 
         $insert = $this->db->insert('pendayagunaan', $data);

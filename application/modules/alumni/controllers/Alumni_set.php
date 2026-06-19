@@ -9,7 +9,7 @@ class Alumni_set extends CI_Controller
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->model(array('alumni/Alumni_model', 'student/Student_model', 'setting/Setting_model', 'bulan/Bulan_model', 'period/Period_model'));

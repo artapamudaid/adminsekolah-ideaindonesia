@@ -1,28 +1,31 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Information_set extends CI_Controller {
+class Information_set extends CI_Controller
+{
 
-	public function __construct() {
+	public function __construct()
+	{
 		parent::__construct(TRUE);
 		if ($this->session->userdata('logged') == NULL) {
-			header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+			redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
 		}
 		$this->load->model(array('information/Information_model', 'logs/Logs_model'));
 		$this->load->library('upload');
 	}
 
-    // information view in list
-	public function index($offset = NULL) {
+	// information view in list
+	public function index($offset = NULL)
+	{
 		$this->load->library('pagination');
-        // Apply Filter
-        // Get $_GET variable
+		// Apply Filter
+		// Get $_GET variable
 		$f = $this->input->get(NULL, TRUE);
 
 		$data['f'] = $f;
 
 		$params = array();
-        // Nip
+		// Nip
 		if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
 			$params['user_nik'] = $f['n'];
 		}
@@ -45,16 +48,17 @@ class Information_set extends CI_Controller {
 	}
 
 
-    // Add information and Update
-	public function add($id = NULL) {
+	// Add information and Update
+	public function add($id = NULL)
+	{
 		$this->load->library('form_validation');
 		$this->form_validation->set_rules('information_title', 'Judul', 'trim|required|xss_clean');
 		$this->form_validation->set_rules('information_desc', 'Keterangan', 'trim|required|xss_clean');
-		
+
 		$this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
 		$data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
-		if ($_POST AND $this->form_validation->run() == TRUE) {
+		if ($_POST and $this->form_validation->run() == TRUE) {
 
 			if ($this->input->post('information_id')) {
 				$params['information_id'] = $this->input->post('information_id');
@@ -71,14 +75,14 @@ class Information_set extends CI_Controller {
 			$status = $this->Information_model->add($params);
 
 			if (!empty($_FILES['information_img']['name'])) {
-				$paramsupdate['information_img'] = $this->do_upload($name = 'information_img', $fileName= $params['information_title']);
-			} 
+				$paramsupdate['information_img'] = $this->do_upload($name = 'information_img', $fileName = $params['information_title']);
+			}
 
 			$paramsupdate['information_id'] = $status;
 			$this->Information_model->add($paramsupdate);
 
 
-            // activity log
+			// activity log
 			$this->Logs_model->add(
 				array(
 					'log_date' => date('Y-m-d H:i:s'),
@@ -96,7 +100,7 @@ class Information_set extends CI_Controller {
 				redirect('manage/information/edit/' . $this->input->post('information_id'));
 			}
 
-            // Edit mode
+			// Edit mode
 			if (!is_null($id)) {
 				$data['information'] = $this->Information_model->get(array('id' => $id));
 			}
@@ -107,14 +111,15 @@ class Information_set extends CI_Controller {
 	}
 
 
-    // Delete to database
-	public function delete($id = NULL) {
-		if ($this->session->userdata('uroleid')!= SUPERUSER){
+	// Delete to database
+	public function delete($id = NULL)
+	{
+		if ($this->session->userdata('uroleid') != SUPERUSER) {
 			redirect('manage');
 		}
 		if ($_POST) {
 			$this->Information_model->delete($id);
-            // activity log
+			// activity log
 			$this->load->model('logs/Logs_model');
 			$this->Logs_model->add(
 				array(
@@ -134,7 +139,8 @@ class Information_set extends CI_Controller {
 	}
 
 	// Setting Upload File Requied
-	function do_upload($name=NULL, $fileName=NULL) {
+	function do_upload($name = NULL, $fileName = NULL)
+	{
 		$this->load->library('upload');
 
 		$config['upload_path'] = FCPATH . 'uploads/information/';
@@ -157,8 +163,7 @@ class Information_set extends CI_Controller {
 		$upload_data = $this->upload->data();
 
 		return $upload_data['file_name'];
-	} 
-
+	}
 }
 
 /* End of file Jurnal_set.php */

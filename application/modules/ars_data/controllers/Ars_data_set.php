@@ -1,22 +1,24 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Ars_data_set extends CI_Controller {
+class Ars_data_set extends CI_Controller
+{
 
   public function __construct()
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->model(array('ars_data/Ars_data_model', 'ars_pengajuan/Pengajuan_model', 'setting/Setting_model'));
     $this->load->helper(array('form', 'url'));
   }
 
-// User_customer view in list
-  public function index($offset = NULL) {
+  // User_customer view in list
+  public function index($offset = NULL)
+  {
     $this->load->library('pagination');
     $s = $this->input->get(NULL, TRUE);
     $f = $this->input->get(NULL, TRUE);
@@ -35,26 +37,27 @@ class Ars_data_set extends CI_Controller {
     //$config['total_rows'] = count($this->Student_model->get_class($paramsPage));
     //$this->pagination->initialize($config);
     // $data['majors'] = $this->Student_model->get_majors();
-    
+
     $data['title'] = 'Data Arsip Dokumentasi';
     $data['main'] = 'ars_data/ars_data_list';
     $this->load->view('manage/layout', $data);
   }
 
 
-// Add User_customer and Update
-  public function add($id = NULL) {
+  // Add User_customer and Update
+  public function add($id = NULL)
+  {
     $this->load->library('form_validation');
     $this->form_validation->set_rules('nama_arsip', 'Nama Arsip', 'trim|required|xss_clean');
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button ket="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
-    
+
     $data['jenis'] = $this->Ars_data_model->get_jenis();
     $data['satuan'] = $this->Ars_data_model->get_satuan();
     $data['lokasi'] = $this->Ars_data_model->get_lokasi();
 
-    if ($_POST AND $this->form_validation->run() == TRUE) {
-      
+    if ($_POST and $this->form_validation->run() == TRUE) {
+
       if ($this->input->post('id_arsip')) {
         $params['id_arsip'] = $this->input->post('id_arsip');
       }
@@ -69,8 +72,8 @@ class Ars_data_set extends CI_Controller {
       $status                   = $this->Ars_data_model->add($params);
 
       if (!empty($_FILES['upl_arsip']['name'])) {
-        $paramsupdate['upl_arsip'] = $this->do_upload($name = 'upl_arsip', $fileName= $params['nama_arsip']);
-      } 
+        $paramsupdate['upl_arsip'] = $this->do_upload($name = 'upl_arsip', $fileName = $params['nama_arsip']);
+      }
 
       $paramsupdate['id_arsip'] = $status;
       $this->Ars_data_model->add($paramsupdate);
@@ -102,7 +105,8 @@ class Ars_data_set extends CI_Controller {
   }
 
   // Setting Upload File Requied
-  function do_upload($name=NULL, $fileName=NULL) {
+  function do_upload($name = NULL, $fileName = NULL)
+  {
     $this->load->library('upload');
 
     $config['upload_path'] = FCPATH . 'uploads/arsip/';
@@ -127,8 +131,9 @@ class Ars_data_set extends CI_Controller {
     return $upload_data['file_name'];
   }
 
-   // View data detail
-   public function view($id = NULL) {
+  // View data detail
+  public function view($id = NULL)
+  {
     $data['arsip'] = $this->Ars_data_model->get(array('id' => $id));
     $data['title'] = 'Data Arsip';
     $data['main'] = 'ars_data/ars_data_view';
@@ -136,12 +141,13 @@ class Ars_data_set extends CI_Controller {
   }
 
 
-// Delete to database
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  // Delete to database
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
-    $satuan = $this->Ars_data_model->get_satuan(array('id_satuan'=>$id));
+    $satuan = $this->Ars_data_model->get_satuan(array('id_satuan' => $id));
 
     if ($_POST) {
 
@@ -167,21 +173,21 @@ class Ars_data_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/ars_data/edit/' . $id);
-    }  
+    }
   }
 
   //-----------------------------Download------------------------------------
-  public function download_arsip(){
+  public function download_arsip()
+  {
     $id_arsip   = $_POST['id_arsip'];
     $file_arsip = $_POST['file_arsip'];
-    if($file_arsip ==''){
-      $this->session->set_flashdata('failed',' File Tidak Ada')== TRUE;
-      redirect('manage/arsip/view/'.$id_arsip);
-    }else{
+    if ($file_arsip == '') {
+      $this->session->set_flashdata('failed', ' File Tidak Ada') == TRUE;
+      redirect('manage/arsip/view/' . $id_arsip);
+    } else {
       $this->load->helper('download');
-      $file = 'uploads/arsip/'.$file_arsip;
+      $file = 'uploads/arsip/' . $file_arsip;
       force_download($file, null);
     }
-    
   }
 }

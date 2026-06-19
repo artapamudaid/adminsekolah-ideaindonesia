@@ -1,25 +1,27 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Role_set extends CI_Controller {
+class Role_set extends CI_Controller
+{
 
   public function __construct()
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->model(array('role/Role_model', 'setting/Setting_model'));
     $this->load->helper(array('form', 'url'));
   }
 
-// User_customer view in list
-  public function index($offset = NULL) {
+  // User_customer view in list
+  public function index($offset = NULL)
+  {
     $this->load->library('pagination');
-// Apply Filter
-// Get $_GET variable
+    // Apply Filter
+    // Get $_GET variable
     $s = $this->input->get(NULL, TRUE);
     $f = $this->input->get(NULL, TRUE);
 
@@ -27,11 +29,11 @@ class Role_set extends CI_Controller {
     $data['f'] = $f;
 
     $params = array();
-// Nip
+    // Nip
     if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
       $params['role_name'] = $f['n'];
     }
-    
+
     // if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
     //   $params['majors_id'] = $s['m'];
     // }else if (isset($s['m']) && !empty($s['m']) && $s['m'] == 'all') {
@@ -50,13 +52,14 @@ class Role_set extends CI_Controller {
     //$config['total_rows'] = count($this->Role_model->get($paramsPage));
     //$this->pagination->initialize($config);
     // $data['majors'] = $this->Role_model->get_majors();
-    
+
     $data['title'] = 'Role';
     $data['main'] = 'role/role_list';
     $this->load->view('manage/layout', $data);
   }
 
-  public function add_glob(){
+  public function add_glob()
+  {
     if ($_POST == TRUE) {
       $roleName = $_POST['role_name'];
       //$madinMajorsId = $_POST['role_majors_id'];
@@ -68,18 +71,19 @@ class Role_set extends CI_Controller {
         $this->Role_model->add($params);
       }
     }
-    $this->session->set_flashdata('success',' Tambah Role Berhasil');
+    $this->session->set_flashdata('success', ' Tambah Role Berhasil');
     redirect('manage/role');
   }
 
-// Add User_customer and Update
-  public function add($id = NULL) {
+  // Add User_customer and Update
+  public function add($id = NULL)
+  {
     $this->load->library('form_validation');
     $this->form_validation->set_rules('role_name', 'Nama Role', 'trim|required|xss_clean');
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button ket="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
-    if ($_POST AND $this->form_validation->run() == TRUE) {
+    if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('role_id')) {
         $params['role_id'] = $this->input->post('role_id');
@@ -100,7 +104,7 @@ class Role_set extends CI_Controller {
         redirect('manage/role/edit/' . $this->input->post('role_id'));
       }
 
-// Edit mode
+      // Edit mode
       if (!is_null($id)) {
         $object = $this->Role_model->get(array('id' => $id));
         if ($object == NULL) {
@@ -117,12 +121,13 @@ class Role_set extends CI_Controller {
   }
 
 
-// Delete to database
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  // Delete to database
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
-    $siswa = $this->Role_model->get(array('role_id'=>$id));
+    $siswa = $this->Role_model->get(array('role_id' => $id));
 
     if ($_POST) {
 
@@ -132,7 +137,7 @@ class Role_set extends CI_Controller {
       }
 
       $this->Role_model->delete_madin($id);
-// activity log
+      // activity log
       $this->load->model('logs/Logs_model');
       $this->Logs_model->add(
         array(
@@ -148,6 +153,6 @@ class Role_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/role/edit/' . $id);
-    }  
+    }
   }
 }

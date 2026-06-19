@@ -15,7 +15,7 @@ class Billing_set extends CI_Controller
 	{
 		parent::__construct(TRUE);
 		if ($this->session->userdata('logged') == NULL) {
-			header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+			redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
 		}
 		$this->load->model(array('billing/Billing_model', 'student/Student_model', 'account/Account_model', 'pos/Pos_model', 'payment/Payment_model', 'period/Period_model', 'pos/Pos_model', 'bulan/Bulan_model', 'bebas/Bebas_model', 'bebas/Bebas_pay_model', 'setting/Setting_model', 'logs/Logs_model', 'report/Report_model', 'report/Detail_jurnal_model'));
 		$this->load->library('upload');

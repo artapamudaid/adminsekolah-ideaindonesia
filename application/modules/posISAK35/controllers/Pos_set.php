@@ -3,25 +3,28 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-class Pos_set extends CI_Controller {
+class Pos_set extends CI_Controller
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(TRUE);
         if ($this->session->userdata('logged') == NULL) {
-            header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+            redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
         }
         $this->load->model(array('student/Student_model', 'pos/Pos_model', 'payment/Payment_model', 'logs/Logs_model'));
         $this->load->library('upload');
     }
 
     // pos view in list
-    public function index($offset = NULL) {
+    public function index($offset = NULL)
+    {
         $this->load->library('pagination');
         // Apply Filter
         // Get $_GET variable
         $f = $this->input->get(NULL, TRUE);
         $s = $this->input->get(NULL, TRUE);
-        
+
         $data['f'] = $f;
         $data['s'] = $s;
 
@@ -30,29 +33,27 @@ class Pos_set extends CI_Controller {
         if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
             $params['pos_name'] = $f['n'];
         }
-        
+
         if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
             $params['account_majors_id'] = $s['m'];
         } else if (isset($s['m']) && !empty($s['m']) && $s['m'] == 'all') {
-            
         }
-        
+
         $data['pos'] = $this->Pos_model->get($params);
 
         $majors_id = $this->session->userdata('umajorsid');
-        
-        if($majors_id != '0')
-        {
+
+        if ($majors_id != '0') {
             $data['account'] = $this->db->query("SELECT * FROM coa WHERE group_id = 4 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result();
             $data['piutang'] = $this->db->query("SELECT * FROM coa WHERE group_id = 1 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result();
         } else {
             $data['account'] = $this->db->query("SELECT * FROM coa WHERE group_id = 4 AND coa_category = 'DETAIL'")->result();
             $data['piutang'] = $this->db->query("SELECT * FROM coa WHERE group_id = 1 AND coa_category = 'DETAIL'")->result();
         }
-        
+
         $config['base_url'] = site_url('manage/pos/index');
         $config['suffix'] = '?' . http_build_query($_GET, '', "&");
-        
+
         $data['majors'] = $this->Student_model->get_majors();
 
         $data['title'] = 'Pos Bayar';
@@ -60,38 +61,40 @@ class Pos_set extends CI_Controller {
         $this->load->view('manage/layout', $data);
     }
 
-    public function add_glob(){
-    if ($_POST == TRUE) {
-      $posName = $_POST['pos_name'];
-      $posKet = $_POST['pos_description'];
-      $accountID = $_POST['account_account_id'];
-      $piutangID = $_POST['piutang_account_id'];
-      $pendapatanDimukaID = $_POST['pendapatan_dimuka_account_id'];
-      $cpt = count($_POST['pos_name']);
-      for ($i = 0; $i < $cpt; $i++) {
-        $params['pos_name'] = $posName[$i];
-        $params['pos_description'] = $posKet[$i];
-        $params['account_account_id'] = $accountID[$i];
-        $params['piutang_account_id'] = $piutangID[$i];
-        $params['pendapatan_dimuka_account_id'] = $pendapatanDimukaID[$i];
+    public function add_glob()
+    {
+        if ($_POST == TRUE) {
+            $posName = $_POST['pos_name'];
+            $posKet = $_POST['pos_description'];
+            $accountID = $_POST['account_account_id'];
+            $piutangID = $_POST['piutang_account_id'];
+            $pendapatanDimukaID = $_POST['pendapatan_dimuka_account_id'];
+            $cpt = count($_POST['pos_name']);
+            for ($i = 0; $i < $cpt; $i++) {
+                $params['pos_name'] = $posName[$i];
+                $params['pos_description'] = $posKet[$i];
+                $params['account_account_id'] = $accountID[$i];
+                $params['piutang_account_id'] = $piutangID[$i];
+                $params['pendapatan_dimuka_account_id'] = $pendapatanDimukaID[$i];
 
-        $this->Pos_model->add($params);
-      }
+                $this->Pos_model->add($params);
+            }
+        }
+        $this->session->set_flashdata('success', ' Tambah POS Berhasil');
+        redirect('manage/pos');
     }
-    $this->session->set_flashdata('success',' Tambah POS Berhasil');
-    redirect('manage/pos');
-  }
 
 
     // Add pos and Update
-    public function add($id = NULL) {
+    public function add($id = NULL)
+    {
         $this->load->library('form_validation');
         $this->form_validation->set_rules('pos_name', 'Pos Bayar', 'trim|required|xss_clean');
-        
+
         $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
         $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
-        if ($_POST AND $this->form_validation->run() == TRUE) {
+        if ($_POST and $this->form_validation->run() == TRUE) {
 
             if ($this->input->post('pos_id')) {
                 $params['pos_id'] = $this->input->post('pos_id');
@@ -110,13 +113,13 @@ class Pos_set extends CI_Controller {
 
             // activity log
             $this->Logs_model->add(
-                    array(
-                        'log_date' => date('Y-m-d H:i:s'),
-                        'user_id' => $this->session->userdata('user_id'),
-                        'log_module' => 'Pos Bayar',
-                        'log_action' => $data['operation'],
-                        'log_info' => 'ID:null;Title:' . $params['pos_name']
-                    )
+                array(
+                    'log_date' => date('Y-m-d H:i:s'),
+                    'user_id' => $this->session->userdata('user_id'),
+                    'log_module' => 'Pos Bayar',
+                    'log_action' => $data['operation'],
+                    'log_info' => 'ID:null;Title:' . $params['pos_name']
+                )
             );
 
             $this->session->set_flashdata('success', $data['operation'] . ' Pos Bayar berhasil');
@@ -130,8 +133,7 @@ class Pos_set extends CI_Controller {
             if (!is_null($id)) {
                 $data['pos'] = $this->Pos_model->get(array('id' => $id));
                 $majors_id = $this->session->userdata('umajorsid');
-                if($majors_id != '0')
-                {
+                if ($majors_id != '0') {
                     $data['account'] = $this->db->query("SELECT * FROM coa WHERE group_id = 4 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
                     $data['piutang'] = $this->db->query("SELECT * FROM coa WHERE group_id = 1 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
                     $data['pendapatan_dimuka'] = $this->db->query("SELECT * FROM coa WHERE group_id = 2 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
@@ -149,13 +151,14 @@ class Pos_set extends CI_Controller {
 
 
     // Delete to database
-    public function delete($id = NULL) {
-       if ($this->session->userdata('uroleid')!= SUPERUSER){
-          redirect('manage');
+    public function delete($id = NULL)
+    {
+        if ($this->session->userdata('uroleid') != SUPERUSER) {
+            redirect('manage');
         }
         if ($_POST) {
 
-            $payment = $this->Payment_model->get(array('pos_id'=>$id));
+            $payment = $this->Payment_model->get(array('pos_id' => $id));
 
             if (count($payment) > 0) {
                 $this->session->set_flashdata('failed', 'Data POS tidak dapat dihapus');
@@ -166,13 +169,13 @@ class Pos_set extends CI_Controller {
             // activity log
             $this->load->model('logs/Logs_model');
             $this->Logs_model->add(
-                    array(
-                        'log_date' => date('Y-m-d H:i:s'),
-                        'user_id' => $this->session->userdata('uid'),
-                        'log_module' => 'Pos Bayar',
-                        'log_action' => 'Hapus',
-                        'log_info' => 'ID:' . $id . ';Title:' . $this->input->post('delName')
-                    )
+                array(
+                    'log_date' => date('Y-m-d H:i:s'),
+                    'user_id' => $this->session->userdata('uid'),
+                    'log_module' => 'Pos Bayar',
+                    'log_action' => 'Hapus',
+                    'log_info' => 'ID:' . $id . ';Title:' . $this->input->post('delName')
+                )
             );
             $this->session->set_flashdata('success', 'Hapus Pos Bayar berhasil');
             redirect('manage/pos');
@@ -181,106 +184,112 @@ class Pos_set extends CI_Controller {
             redirect('manage/pos/edit/' . $id);
         }
     }
-    
-    public function cari_akun(){
-	    $majors_id = $this->input->post('majors_id');
-	    
-		$account = $this->db->query("SELECT * FROM coa WHERE group_id = 4 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
-		
-		    echo '<select required="" name="account_account_id[]" class="form-control">
+
+    public function cari_akun()
+    {
+        $majors_id = $this->input->post('majors_id');
+
+        $account = $this->db->query("SELECT * FROM coa WHERE group_id = 4 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
+
+        echo '<select required="" name="account_account_id[]" class="form-control">
 				   <option value="">-Pilih Kode Akun-</option>';
-    			    foreach($account as $row){
-    		 echo '<option value="'.$row['coa_id'].'">';
-        			 echo $row['coa_code'];
-    			     echo ' - ';
-    			     echo $row['coa_name'];
-    		 echo '</option>';
-    			     }
-        	echo '</select>';
-	}
-	
-	public function cari_piutang(){
-	    $majors_id = $this->input->post('majors_id');
-	    
+        foreach ($account as $row) {
+            echo '<option value="' . $row['coa_id'] . '">';
+            echo $row['coa_code'];
+            echo ' - ';
+            echo $row['coa_name'];
+            echo '</option>';
+        }
+        echo '</select>';
+    }
+
+    public function cari_piutang()
+    {
+        $majors_id = $this->input->post('majors_id');
+
         $piutang = $this->db->query("SELECT * FROM coa WHERE group_id = 1 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
-		
-		    echo '<select required="" name="piutang_account_id[]" class="form-control">
+
+        echo '<select required="" name="piutang_account_id[]" class="form-control">
 				   <option value="">-Pilih Akun Piutang-</option>';
-    			    foreach($piutang as $row){
-    		 echo '<option value="'.$row['coa_id'].'">';
-        			 echo $row['coa_code'];
-    			     echo ' - ';
-    			     echo $row['coa_name'];
-    		 echo '</option>';
-    			     }
-        	echo '</select>';
-	}
-	
-	public function cari_pendapatan_dimuka(){
-	    $majors_id = $this->input->post('majors_id');
-	    
+        foreach ($piutang as $row) {
+            echo '<option value="' . $row['coa_id'] . '">';
+            echo $row['coa_code'];
+            echo ' - ';
+            echo $row['coa_name'];
+            echo '</option>';
+        }
+        echo '</select>';
+    }
+
+    public function cari_pendapatan_dimuka()
+    {
+        $majors_id = $this->input->post('majors_id');
+
         $pendapatan_dimuka = $this->db->query("SELECT * FROM coa WHERE group_id = 2 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
-		
-		    echo '<select required="" name="pendapatan_dimuka_account_id[]" class="form-control">
+
+        echo '<select required="" name="pendapatan_dimuka_account_id[]" class="form-control">
 				   <option value="">-Pilih Akun Pendapatan Dibayar Dimuka-</option>';
-    			    foreach($pendapatan_dimuka as $row){
-    		 echo '<option value="'.$row['coa_id'].'">';
-        			 echo $row['coa_code'];
-    			     echo ' - ';
-    			     echo $row['coa_name'];
-    		 echo '</option>';
-    			     }
-        	echo '</select>';
-	}
-	
-    public function cari_akun_edit(){
-	    $majors_id = $this->input->post('majors_id');
-	    
-		$account = $this->db->query("SELECT * FROM coa WHERE group_id = 4 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
-		
-		    echo '<select required="" name="account_account_id" class="form-control">
+        foreach ($pendapatan_dimuka as $row) {
+            echo '<option value="' . $row['coa_id'] . '">';
+            echo $row['coa_code'];
+            echo ' - ';
+            echo $row['coa_name'];
+            echo '</option>';
+        }
+        echo '</select>';
+    }
+
+    public function cari_akun_edit()
+    {
+        $majors_id = $this->input->post('majors_id');
+
+        $account = $this->db->query("SELECT * FROM coa WHERE group_id = 4 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
+
+        echo '<select required="" name="account_account_id" class="form-control">
 				   <option value="">-Pilih Kode Akun-</option>';
-    			    foreach($account as $row){
-    		 echo '<option value="'.$row['coa_id'].'">';
-        			 echo $row['coa_code'];
-    			     echo ' - ';
-    			     echo $row['coa_name'];
-    		 echo '</option>';
-    			     }
-        	echo '</select>';
-	}
-	
-	public function cari_piutang_edit(){
-	    $majors_id = $this->input->post('majors_id');
-	    
+        foreach ($account as $row) {
+            echo '<option value="' . $row['coa_id'] . '">';
+            echo $row['coa_code'];
+            echo ' - ';
+            echo $row['coa_name'];
+            echo '</option>';
+        }
+        echo '</select>';
+    }
+
+    public function cari_piutang_edit()
+    {
+        $majors_id = $this->input->post('majors_id');
+
         $piutang = $this->db->query("SELECT * FROM coa WHERE group_id = 1 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
-		
-		    echo '<select required="" name="piutang_account_id" class="form-control">
+
+        echo '<select required="" name="piutang_account_id" class="form-control">
 				   <option value="">-Pilih Akun Piutang-</option>';
-    			    foreach($piutang as $row){
-    		 echo '<option value="'.$row['coa_id'].'">';
-        			 echo $row['coa_code'];
-    			     echo ' - ';
-    			     echo $row['coa_name'];
-    		 echo '</option>';
-    			     }
-        	echo '</select>';
-	}
-	
-	public function cari_pendapatan_dimuka_edit(){
-	    $majors_id = $this->input->post('majors_id');
-	    
+        foreach ($piutang as $row) {
+            echo '<option value="' . $row['coa_id'] . '">';
+            echo $row['coa_code'];
+            echo ' - ';
+            echo $row['coa_name'];
+            echo '</option>';
+        }
+        echo '</select>';
+    }
+
+    public function cari_pendapatan_dimuka_edit()
+    {
+        $majors_id = $this->input->post('majors_id');
+
         $pendapatan_dimuka = $this->db->query("SELECT * FROM coa WHERE group_id = 2 AND coa_category = 'DETAIL' AND coa_majors = '$majors_id'")->result_array();
-		
-		    echo '<select required="" name="pendapatan_dimuka_account_id" class="form-control">
+
+        echo '<select required="" name="pendapatan_dimuka_account_id" class="form-control">
 				   <option value="">-Pilih Akun Pendapatan Dibayar Dimuka-</option>';
-    			    foreach($pendapatan_dimuka as $row){
-    		 echo '<option value="'.$row['coa_id'].'">';
-        			 echo $row['coa_code'];
-    			     echo ' - ';
-    			     echo $row['coa_name'];
-    		 echo '</option>';
-    			     }
-        	echo '</select>';
-	}
+        foreach ($pendapatan_dimuka as $row) {
+            echo '<option value="' . $row['coa_id'] . '">';
+            echo $row['coa_code'];
+            echo ' - ';
+            echo $row['coa_name'];
+            echo '</option>';
+        }
+        echo '</select>';
+    }
 }

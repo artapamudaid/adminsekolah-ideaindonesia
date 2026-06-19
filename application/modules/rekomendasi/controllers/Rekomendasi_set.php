@@ -1,22 +1,24 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Rekomendasi_set extends CI_Controller {
+class Rekomendasi_set extends CI_Controller
+{
 
   public function __construct()
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->model(array('rekomendasi/Rekomendasi_model', 'student/Student_model', 'setting/Setting_model'));
     $this->load->helper(array('form', 'url'));
   }
 
-// User_customer view in list
-  public function index($offset = NULL) {
+  // User_customer view in list
+  public function index($offset = NULL)
+  {
     $this->load->library('pagination');
     $s = $this->input->get(NULL, TRUE);
     $f = $this->input->get(NULL, TRUE);
@@ -30,28 +32,29 @@ class Rekomendasi_set extends CI_Controller {
     $data['setting_logo'] = $this->Setting_model->get(array('id' => 6));
     $config['base_url'] = site_url('manage/rekomendasi/index');
     $config['suffix'] = '?' . http_build_query($_GET, '', "&");
-    
+
     $data['title'] = 'Surat Rekomendasi Siswa';
     $data['main'] = 'rekomendasi/rekomendasi_list';
     $this->load->view('manage/layout', $data);
   }
 
 
-// Add User_customer and Update
-  public function add($id = NULL) {
+  // Add User_customer and Update
+  public function add($id = NULL)
+  {
     $this->load->library('form_validation');
     $this->form_validation->set_rules('rekomendasi_desc', 'Deskripsi', 'trim|required|xss_clean');
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button ket="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
-    
+
     $now = date('dmy');
-    
+
     //perlu diperbaiki yaa untuk generate number nya....
     // Ambil nomor terakhir dari database atau set nilai awal jika belum ada nomor sebelumnya
     // $last_number = $this->db->select('nomor_id')->order_by('input_date', 'DESC')->limit(1)->get('surat_nomor')->row('nomor_id');
     $maxIdnomor     = $this->db->query("SELECT CONCAT(SUBSTRING(max(nomor_surat), -35, 4)) as maxNo FROM surat_nomor Where tahun = YEAR(now())")->row_array();
-		$last_number 		= $maxIdnomor['maxNo'];
-      
+    $last_number     = $maxIdnomor['maxNo'];
+
     if (!$last_number) {
       $last_number = 0;
     }
@@ -72,12 +75,12 @@ class Rekomendasi_set extends CI_Controller {
     $data['nomor_urut']  = $nomor_urut;
     $data['nomor_surat'] = $nomor_surat;
     $data['student'] = $this->Student_model->get_student();
-    
+
     $data['siswaID']      = $siswaID;
     //sampai sini
 
-    if ($_POST AND $this->form_validation->run() == TRUE) {
-      
+    if ($_POST and $this->form_validation->run() == TRUE) {
+
       if ($this->input->post('rekomendasi_id')) {
         $params['rekomendasi_id'] = $this->input->post('rekomendasi_id');
       }
@@ -93,7 +96,7 @@ class Rekomendasi_set extends CI_Controller {
       $params['rekomendasi_student_id']  = $rekomendasi_student_id;
       $params['rekomendasi_desc']        = $this->input->post('rekomendasi_desc');
       $params['id_users']               = $this->input->post('id_users');
-      
+
       $this->Rekomendasi_model->add($params);
       $this->Rekomendasi_model->add_nomor($params);
       // var_dump($params);
@@ -127,12 +130,13 @@ class Rekomendasi_set extends CI_Controller {
     }
   }
 
-// Delete to database
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  // Delete to database
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
-    $satuan = $this->Rekomendasi_model->get_satuan(array('id_satuan'=>$id));
+    $satuan = $this->Rekomendasi_model->get_satuan(array('id_satuan' => $id));
 
     if ($_POST) {
 
@@ -158,15 +162,17 @@ class Rekomendasi_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/rekomendasi/edit/' . $id);
-    }  
+    }
   }
 
-  public function download($id = NULL){	
-		force_download('uploads/arsip/'.$id.'',NULL);
-	}
+  public function download($id = NULL)
+  {
+    force_download('uploads/arsip/' . $id . '', NULL);
+  }
 
-  public function printdata($id){
-    
+  public function printdata($id)
+  {
+
     ob_start();
 
     $data_surat_rekomendasi     = $this->Rekomendasi_model->get(array('id' => $id));
@@ -176,20 +182,20 @@ class Rekomendasi_set extends CI_Controller {
     $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
     $data['setting_nama_kepsek'] = $this->Setting_model->get(array('id' => 12));
     $data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-    $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT)); 
-    $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME)); 
-    $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS)); 
-    $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));  
+    $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+    $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+    $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+    $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
     $filename = 'Surat Keterangan Rekomendasi.pdf';
-    $this->load->view('rekomendasi/rekomendasi_pdf',$data);
-    
+    $this->load->view('rekomendasi/rekomendasi_pdf', $data);
+
     $html = ob_get_contents();
     ob_clean();
-    
+
     require_once('./assets/html2pdf/html2pdf.class.php');
-    $pdf = new HTML2PDF('p','A4','en');
+    $pdf = new HTML2PDF('p', 'A4', 'en');
     $pdf->WriteHTML($html);
-    $pdf->Output($filename); 
+    $pdf->Output($filename);
   }
 }

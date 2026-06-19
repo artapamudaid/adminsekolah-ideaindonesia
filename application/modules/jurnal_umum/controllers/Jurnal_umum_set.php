@@ -10,7 +10,7 @@ class Jurnal_umum_set extends CI_Controller
     {
         parent::__construct(TRUE);
         if ($this->session->userdata('logged') == NULL) {
-            header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+            redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
         }
         $this->load->model(array('student/Student_model', 'logs/Logs_model'));
         $this->load->library('upload');
@@ -33,7 +33,7 @@ class Jurnal_umum_set extends CI_Controller
         $data['title'] = 'Jurnal Umum';
         $data['main'] = 'jurnal_umum/jurnal_umum_list';
         $this->load->view('manage/layout', $data);
-    }    
+    }
 
     public function list_jurnal()
     {
@@ -58,7 +58,7 @@ class Jurnal_umum_set extends CI_Controller
                     <a onclick="edit(this)" data-id="' . $r->id . '" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
                     <a onclick="hapus(this)" data-id="' . $r->id . '" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></a>
                 ';
-            }else{
+            } else {
                 $row[7] = '
                 <span class="label label-success">Pencatan Auto</span>
                 ';

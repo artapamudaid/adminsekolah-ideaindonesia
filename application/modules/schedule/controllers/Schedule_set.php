@@ -9,7 +9,7 @@ class Schedule_set extends CI_Controller
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->model(array('bulan/Bulan_model', 'schedule/Schedule_model', 'student/Student_model', 'lesson/Lesson_model', 'setting/Setting_model', 'semester/Semester_model',  'jam_pelajaran/Jam_pelajaran_model'));

@@ -9,11 +9,11 @@ class Registrasi_set extends CI_Controller
   {
     parent::__construct(TRUE);
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     if ($this->session->userdata('uroleid') != 3) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->helper(array('send_helper'));
@@ -35,7 +35,7 @@ class Registrasi_set extends CI_Controller
     }
 
     if ($this->input->get('q')) {
-        $this->db->group_start();
+      $this->db->group_start();
       $this->db->like('registrasi_name', $this->input->get('q'));
       $this->db->or_like('registrasi_school', $this->input->get('q'));
       $this->db->or_like('registrasi_email', $this->input->get('q'));
@@ -48,7 +48,7 @@ class Registrasi_set extends CI_Controller
     $config['uri_segment'] = 4;
     $config['use_page_numbers'] = FALSE; // offset, bukan page number
 
-    
+
     $config['base_url'] = site_url('manage/registrasi/index');
     $config['suffix'] = '?' . http_build_query($_GET, '', "&");
 
@@ -103,17 +103,17 @@ class Registrasi_set extends CI_Controller
   }
 
   public function copy_msg()
-{
+  {
     $id = $this->input->post('id');
     if ($id == NULL) {
-        echo json_encode(array('status' => 'error', 'message' => 'ID tidak ditemukan'));
-        exit;
+      echo json_encode(array('status' => 'error', 'message' => 'ID tidak ditemukan'));
+      exit;
     }
 
     $registrasi = $this->Registrasi_model->get(array('id' => $id));
     if ($registrasi == NULL) {
-        echo json_encode(array('status' => 'error', 'message' => 'Data tidak ditemukan'));
-        exit;
+      echo json_encode(array('status' => 'error', 'message' => 'Data tidak ditemukan'));
+      exit;
     }
 
     $name     = $registrasi['registrasi_name'];
@@ -126,82 +126,82 @@ class Registrasi_set extends CI_Controller
     //          $username . ' dan Password: ' . $pswd;
 
     $pesan = "Yth. Bapak/Ibu " . strtoupper($name)
-        ."\n"
-        . ' dari ' . strtoupper($school)
-        . "\n\n"
-        . "Terimakasih sudah mendaftar trial aplikasi AdminSekolah.net "
-        . "\n\n"
-        . "Perkenalkan saya Kiki, yang akan membantu dalam penggunaan aplikasi AdminSekolah "
-        . "\n\n"
-        . "Silahkan login menggunakan akses berikut:"
-        . "\n"
-        . "Login: demo.adminsekolah.net"
-        . "\n"
-        . "Username: " . $username
-        . "\n"
-        . "Password: " . $pswd
-        . "\n\n"
-        . "Berikut panduan untuk mencoba fitur-fiturnya :"
-        . "\n"
-        . "- tutorial.adminsekolah.net "
-        . "\n"
-        . "- s.id/YoutubeTutorialAdminSekolah"
-        . "\n\n"
-        . "Apabila Bapak/Ibu berkenan silahkan coba juga demo aplikasi Mobile AdminSekolah secara GRATIS melalui akses berikut:"
-        . "\n"
-        . "iOs : s.id/AdminSekolahiOS"
-        . "\n"
-        . "Android : s.id/AdminSekolahAndroid"
-        . "\n\n"
-        . "*AKSES PEGAWAI*"
-        . "\n"
-        . "Kode Sekolah : 2020123"
-        . "\n"
-        . "NIP : 123"
-        . "\n"
-        . "Password : 123456"
-        . "\n\n"
-        . "*AKSES SISWA & WALIMURID*"
-        . "Kode Sekolah : 2020123"
-        . "\n"
-        ."NIS : 20250201"
-        . "\n"
-        . "Password : 123456"
-        . "\n\n"
-        . "Apabila terdapat kendala atau ada yang ingin ditanyakan jangan ragu untuk menghubungi nomor ini ☺️";
+      . "\n"
+      . ' dari ' . strtoupper($school)
+      . "\n\n"
+      . "Terimakasih sudah mendaftar trial aplikasi AdminSekolah.net "
+      . "\n\n"
+      . "Perkenalkan saya Kiki, yang akan membantu dalam penggunaan aplikasi AdminSekolah "
+      . "\n\n"
+      . "Silahkan login menggunakan akses berikut:"
+      . "\n"
+      . "Login: demo.adminsekolah.net"
+      . "\n"
+      . "Username: " . $username
+      . "\n"
+      . "Password: " . $pswd
+      . "\n\n"
+      . "Berikut panduan untuk mencoba fitur-fiturnya :"
+      . "\n"
+      . "- tutorial.adminsekolah.net "
+      . "\n"
+      . "- s.id/YoutubeTutorialAdminSekolah"
+      . "\n\n"
+      . "Apabila Bapak/Ibu berkenan silahkan coba juga demo aplikasi Mobile AdminSekolah secara GRATIS melalui akses berikut:"
+      . "\n"
+      . "iOs : s.id/AdminSekolahiOS"
+      . "\n"
+      . "Android : s.id/AdminSekolahAndroid"
+      . "\n\n"
+      . "*AKSES PEGAWAI*"
+      . "\n"
+      . "Kode Sekolah : 2020123"
+      . "\n"
+      . "NIP : 123"
+      . "\n"
+      . "Password : 123456"
+      . "\n\n"
+      . "*AKSES SISWA & WALIMURID*"
+      . "Kode Sekolah : 2020123"
+      . "\n"
+      . "NIS : 20250201"
+      . "\n"
+      . "Password : 123456"
+      . "\n\n"
+      . "Apabila terdapat kendala atau ada yang ingin ditanyakan jangan ragu untuk menghubungi nomor ini ☺️";
 
     // Set header agar browser tahu ini JSON
     header('Content-Type: application/json');
     echo json_encode(array('status' => 'success', 'message' => $pesan));
     exit;
-}
+  }
 
 
-    public function send_wa($id = NULL)
-    {
-        $data['registrasi'] = $this->Registrasi_model->get(array('id' => $id));
-        if ($data['registrasi'] == NULL) {
-            redirect('manage/registrasi');
-        }
+  public function send_wa($id = NULL)
+  {
+    $data['registrasi'] = $this->Registrasi_model->get(array('id' => $id));
+    if ($data['registrasi'] == NULL) {
+      redirect('manage/registrasi');
+    }
 
-        $registrasi = $data['registrasi'];
-        $no_wa      = $this->formatPhoneNumber($registrasi['registrasi_phone']);
-        $name       = $registrasi['registrasi_name'];
-        $school     = $registrasi['registrasi_school'];
-        $username   = $registrasi['registrasi_email'];
-        $pswd       = $registrasi['registrasi_password'];
+    $registrasi = $data['registrasi'];
+    $no_wa      = $this->formatPhoneNumber($registrasi['registrasi_phone']);
+    $name       = $registrasi['registrasi_name'];
+    $school     = $registrasi['registrasi_school'];
+    $username   = $registrasi['registrasi_email'];
+    $pswd       = $registrasi['registrasi_password'];
 
-        $pesan = 'Terima kasih Bapak/Ibu ' . $name . ' dari ' . $school . ', Anda telah terdaftar di demo.adminsekolah.net . Untuk login gunakan Username/Email : ' . $username . ' dan Password : ' . $pswd;
+    $pesan = 'Terima kasih Bapak/Ibu ' . $name . ' dari ' . $school . ', Anda telah terdaftar di demo.adminsekolah.net . Untuk login gunakan Username/Email : ' . $username . ' dan Password : ' . $pswd;
 
-        // Kirim pesan WhatsApp menggunakan API eksternal di tab baru
-        $api_url = "https://wa.me/" . ltrim($no_wa, '+') . "?text=" . urlencode($pesan);
+    // Kirim pesan WhatsApp menggunakan API eksternal di tab baru
+    $api_url = "https://wa.me/" . ltrim($no_wa, '+') . "?text=" . urlencode($pesan);
 
-        // Redirect ke tab baru (window.open via JavaScript)
-        echo "<script>window.open('{$api_url}', '_blank');
+    // Redirect ke tab baru (window.open via JavaScript)
+    echo "<script>window.open('{$api_url}', '_blank');
         window.location.href='" . site_url('manage/registrasi') . "';
         </script>";
-        exit;
-    }
+    exit;
+  }
 
   function rpw($id)
   {
@@ -282,7 +282,7 @@ class Registrasi_set extends CI_Controller
   //     $params['registrasi_address']       =  $this->input->post('registrasi_address');
   //     $params['registrasi_city']          =  $this->input->post('registrasi_city');
   //     $params['registrasi_province']      =  $this->input->post('registrasi_province');
-	//   $params['registrasi_sumber']        =  $this->input->post('registrasi_sumber');
+  //   $params['registrasi_sumber']        =  $this->input->post('registrasi_sumber');
   //     $params['registrasi_phone']         =  $hp;
   //     $params['registrasi_email']         =  $email;
   //     $params['registrasi_password']      = $pass;
@@ -318,11 +318,11 @@ class Registrasi_set extends CI_Controller
   //       $no_wa      = $this->formatPhoneNumber($hp);
   //       $name       = $this->input->post('registrasi_name');
   //       $school     = $this->input->post('registrasi_school');
-	// 	$address    =  $this->input->post('registrasi_address');
+  // 	$address    =  $this->input->post('registrasi_address');
   //       $username   = $this->input->post('registrasi_email');
-	// 	$sumber     = $this->input->post('registrasi_sumber');
-	// 	$city_id    = $this->input->post('registrasi_city');
-	// 	$prov_id    = $this->input->post('registrasi_province');
+  // 	$sumber     = $this->input->post('registrasi_sumber');
+  // 	$city_id    = $this->input->post('registrasi_city');
+  // 	$prov_id    = $this->input->post('registrasi_province');
   //       $pswd       = $pass;
 
   //       //$pesan = 'Terima kasih Bapak/Ibu ' . $this->input->post('registrasi_name') . ' dari ' . $this->input->post('registrasi_school') . ', Anda telah terdaftar di demo.adminsekolah.net . Untuk login gunakan Username/Email : ' . $this->input->post('registrasi_email') . ' dan Password : ' . $pass;
@@ -451,11 +451,11 @@ class Registrasi_set extends CI_Controller
   private function wa_admin($no_wa, $name, $school, $username, $pswd, $address, $city_id, $prov_id, $sumber)
   {
     $cs = "+6281233640003";
-	  
-	$province = $this->db->get_where('province', array('province_id' => $prov_id))->row_array();
-	$prov_name = $province['province_name'];
-	$city = $this->db->get_where('city', array('city_id' => $city_id))->row_array();
-	$city_name = $city['city_name'];
+
+    $province = $this->db->get_where('province', array('province_id' => $prov_id))->row_array();
+    $prov_name = $province['province_name'];
+    $city = $this->db->get_where('city', array('city_id' => $city_id))->row_array();
+    $city_name = $city['city_name'];
 
     $pesan = 'Pendaftar Baru demo.adminsekolah.net ' . "\n\n" . 'Nama ' . $name . "\n" . 'Sekolah : ' . $school . "\n" . 'Alamat : ' . $address . "\n" . 'Kota/Kab : ' . $city_name . "\n" . 'Provinsi : ' . $prov_name . "\n" . 'Sumber : ' . $sumber . "\n\n" . 'Username/Email : ' . $username . "\n" . 'Password : ' . $pswd . "\n\n" .
       'Hubungi Pendaftar : http://wa.me/' . $no_wa;

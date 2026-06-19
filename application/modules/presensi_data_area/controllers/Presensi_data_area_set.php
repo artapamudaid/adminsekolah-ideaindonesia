@@ -8,7 +8,7 @@ class Presensi_data_area_set extends CI_Controller
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
     $this->load->model(array('presensi_data_area/Presensi_data_area_model', 'setting/Setting_model'));

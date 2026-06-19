@@ -1,22 +1,24 @@
 <?php
 
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Surat_keluar_set extends CI_Controller {
+class Surat_keluar_set extends CI_Controller
+{
 
   public function __construct()
   {
     parent::__construct();
     if ($this->session->userdata('logged') == NULL) {
-      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
 
-    $this->load->model(array('surat_keluar/Surat_keluar_model','surat_jenis/Surat_jenis_model', 'setting/Setting_model'));
+    $this->load->model(array('surat_keluar/Surat_keluar_model', 'surat_jenis/Surat_jenis_model', 'setting/Setting_model'));
     $this->load->helper(array('form', 'url'));
   }
 
-// User_customer view in list
-  public function index($offset = NULL) {
+  // User_customer view in list
+  public function index($offset = NULL)
+  {
     $this->load->library('pagination');
     $s = $this->input->get(NULL, TRUE);
     $f = $this->input->get(NULL, TRUE);
@@ -35,23 +37,24 @@ class Surat_keluar_set extends CI_Controller {
     //$config['total_rows'] = count($this->Student_model->get_class($paramsPage));
     //$this->pagination->initialize($config);
     // $data['majors'] = $this->Student_model->get_majors();
-    
+
     $data['title'] = 'Data Surat Keluar';
     $data['main'] = 'surat_keluar/surat_keluar_list';
     $this->load->view('manage/layout', $data);
   }
 
 
-// Add User_customer and Update
-  public function add($id = NULL) {
+  // Add User_customer and Update
+  public function add($id = NULL)
+  {
     $this->load->library('form_validation');
     $this->form_validation->set_rules('no_surat', 'No. Surat', 'trim|required|xss_clean');
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button ket="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
-    
+
     $data['jenis'] = $this->Surat_jenis_model->get();
-    if ($_POST AND $this->form_validation->run() == TRUE) {
-      
+    if ($_POST and $this->form_validation->run() == TRUE) {
+
       if ($this->input->post('id_surat')) {
         $params['id_surat'] = $this->input->post('id_surat');
       }
@@ -68,8 +71,8 @@ class Surat_keluar_set extends CI_Controller {
       $status                   = $this->Surat_keluar_model->add($params);
 
       if (!empty($_FILES['file']['name'])) {
-        $paramsupdate['file'] = $this->do_upload($name = 'file', $fileName= $params['file']);
-      } 
+        $paramsupdate['file'] = $this->do_upload($name = 'file', $fileName = $params['file']);
+      }
 
       $paramsupdate['id_surat'] = $status;
       $this->Surat_keluar_model->add($paramsupdate);
@@ -101,7 +104,8 @@ class Surat_keluar_set extends CI_Controller {
   }
 
   // Setting Upload File Requied
-  function do_upload($name=NULL, $fileName=NULL) {
+  function do_upload($name = NULL, $fileName = NULL)
+  {
     $this->load->library('upload');
 
     $config['upload_path'] = FCPATH . 'uploads/surat_keluar/';
@@ -127,9 +131,10 @@ class Surat_keluar_set extends CI_Controller {
   }
 
 
-// Delete to database
-  public function delete($id = NULL) {
-    if ($this->session->userdata('uroleid')!= SUPERUSER){
+  // Delete to database
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
     // $satuan = $this->Surat_keluar_model->get(array('id_surat'=>$id));
@@ -158,11 +163,12 @@ class Surat_keluar_set extends CI_Controller {
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/surat_keluar/edit/' . $id);
-    }  
+    }
   }
 
-   // View data detail
-   public function view($id = NULL) {
+  // View data detail
+  public function view($id = NULL)
+  {
     $data['surat_keluar'] = $this->Surat_keluar_model->get(array('id' => $id));
     $data['title'] = 'Surat Keluar';
     $data['main'] = 'surat_keluar/surat_keluar_view';
@@ -170,83 +176,85 @@ class Surat_keluar_set extends CI_Controller {
   }
 
 
-  
+
 
   //-----------------------------Download------------------------------------
-  public function download_sk(){
+  public function download_sk()
+  {
     $id_surat   = $_POST['id_surat'];
     $file = $_POST['file'];
-    if($file ==''){
-      $this->session->set_flashdata('failed',' File Tidak Ada')== TRUE;
+    if ($file == '') {
+      $this->session->set_flashdata('failed', ' File Tidak Ada') == TRUE;
       redirect('manage/surat_keluar/surat_keluar_list');
-    }else{
+    } else {
       $this->load->helper('download');
-      $file = 'uploads/surat_keluar/'.$file;
+      $file = 'uploads/surat_keluar/' . $file;
       force_download($file, null);
     }
-    
   }
 
-  public function cari_nosur(){
-      $id_jenis = $this->input->post('id_jenis');
-      $jenisKD = $this->Surat_jenis_model->get(array('id'=>$id_jenis));
-    
-      $now = date('dmy');
-          
-      $query = $this->db->query("SELECT MAX(RIGHT(no_surat,2)) AS no_max FROM tbl_surat_keluar 
-      WHERE SUBSTR(no_surat, -8, 6) = '$now'")->row();
-      
-      if (count(array($query))>0){
-          $tmp = ((int)$query->no_max)+1;
-          $norut = sprintf("%02s", $tmp);
-      } else {
-          $norut = "01";
-      }
+  public function cari_nosur()
+  {
+    $id_jenis = $this->input->post('id_jenis');
+    $jenisKD = $this->Surat_jenis_model->get(array('id' => $id_jenis));
 
-      $date =  date('Y-m');
-      $nosur= $jenisKD['kode_surat'].'SK/'.$date.'/'.$now.$norut;
-    
+    $now = date('dmy');
+
+    $query = $this->db->query("SELECT MAX(RIGHT(no_surat,2)) AS no_max FROM tbl_surat_keluar 
+      WHERE SUBSTR(no_surat, -8, 6) = '$now'")->row();
+
+    if (count(array($query)) > 0) {
+      $tmp = ((int)$query->no_max) + 1;
+      $norut = sprintf("%02s", $tmp);
+    } else {
+      $norut = "01";
+    }
+
+    $date =  date('Y-m');
+    $nosur = $jenisKD['kode_surat'] . 'SK/' . $date . '/' . $now . $norut;
+
     echo '
         <label>Nomor Surat<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-        <input name="no_surat"  id="no_surat" type="text" class="form-control" value="'.$nosur.'" readonly="" placeholder="Nomor Surat">
+        <input name="no_surat"  id="no_surat" type="text" class="form-control" value="' . $nosur . '" readonly="" placeholder="Nomor Surat">
         
     ';
   }
 
-  function printRekap(){
-      ob_start();
-        
-      $this->load->library('pagination');
-      $s = $this->input->get(NULL, TRUE);
-      $f = $this->input->get(NULL, TRUE);
+  function printRekap()
+  {
+    ob_start();
 
-      $data['s'] = $s;
-      $data['f'] = $f;
+    $this->load->library('pagination');
+    $s = $this->input->get(NULL, TRUE);
+    $f = $this->input->get(NULL, TRUE);
 
-      $params = array();
+    $data['s'] = $s;
+    $data['f'] = $f;
 
-      $data['surat_keluar'] = $this->Surat_keluar_model->get($params);
-      
-      $data['period'] 	= $this->db->query("SELECT period_id, period_start, period_end FROM period WHERE period_status='1' ")->row_array();
+    $params = array();
 
-      $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME)); 
-      $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS)); 
-      $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE)); 
+    $data['surat_keluar'] = $this->Surat_keluar_model->get($params);
 
-      $filename = 'Laporan Data Surat Keluar.pdf';
-      
-      $this->load->view('surat_keluar/surat_keluar_print', $data);
-      
-      $html = ob_get_contents();
-      ob_clean();
-      
-      require_once('./assets/html2pdf/html2pdf.class.php');
-      $pdf = new HTML2PDF('L','A4','en', false, 'ISO-8859-15',array(10, 5, 10, 5));
-      
-      $pdf->setDefaultFont('arial');
-      $pdf->setTestTdInOnePage(false);
-      $pdf->pdf->SetDisplayMode('fullpage');
-      $pdf->WriteHTML($html);
-      $pdf->Output($filename, '');
+    $data['period']   = $this->db->query("SELECT period_id, period_start, period_end FROM period WHERE period_status='1' ")->row_array();
+
+    $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+    $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+    $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+
+    $filename = 'Laporan Data Surat Keluar.pdf';
+
+    $this->load->view('surat_keluar/surat_keluar_print', $data);
+
+    $html = ob_get_contents();
+    ob_clean();
+
+    require_once('./assets/html2pdf/html2pdf.class.php');
+    $pdf = new HTML2PDF('L', 'A4', 'en', false, 'ISO-8859-15', array(10, 5, 10, 5));
+
+    $pdf->setDefaultFont('arial');
+    $pdf->setTestTdInOnePage(false);
+    $pdf->pdf->SetDisplayMode('fullpage');
+    $pdf->WriteHTML($html);
+    $pdf->Output($filename, '');
   }
 }

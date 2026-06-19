@@ -10,7 +10,7 @@ class Presensi_pelajaran_set extends CI_Controller
 	{
 		parent::__construct(TRUE);
 		if ($this->session->userdata('logged') == NULL) {
-			header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+			redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
 		}
 		$this->load->model(array('presensi_pelajaran/Presensi_pelajaran_model', 'student/Student_model', 'lesson/Lesson_model', 'period/Period_model', 'bulan/Bulan_model', 'setting/Setting_model', 'logs/Logs_model', 'semester/Semester_model', 'bulan/Bulan_model'));
 		$this->load->library('upload');
