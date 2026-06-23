@@ -10,7 +10,6 @@ class Dashboard_set extends CI_Controller
         parent::__construct();
         if ($this->session->userdata('logged') == NULL) {
             redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
-            redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
             exit;
         }
 
