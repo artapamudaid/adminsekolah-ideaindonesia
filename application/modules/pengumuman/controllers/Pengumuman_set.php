@@ -42,6 +42,8 @@ class Pengumuman_set extends CI_Controller
 
         $config['suffix'] = '?' . http_build_query($_GET, '', "&");
 
+        $data['templates'] = $this->db->get_where('templates', array('location' => 'PENGUMUMAN'))->result_array();
+
         $data['title'] = 'Kirim Pengumuman Siswa';
         $data['main'] = 'pengumuman/pengumuman_send_list';
         $this->load->view('manage/layout', $data);
