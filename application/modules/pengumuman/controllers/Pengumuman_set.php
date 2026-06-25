@@ -84,11 +84,6 @@ class Pengumuman_set extends CI_Controller
                 echo '<input type="hidden" name="student_id[]" id="student_id" value="' . $row['student_id'] . '">';
             }
         }
-
-        echo '<div class="form-group">
-                <label>Pengumuman</label>
-				<textarea class="form-control" name="pengumuman" placeholder="Masukkan Pengumuman"></textarea>
-			    </div>';
     }
 
     public function blast()
