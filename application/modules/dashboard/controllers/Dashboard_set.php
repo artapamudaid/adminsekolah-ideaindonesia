@@ -61,9 +61,15 @@ class Dashboard_set extends CI_Controller
         $data['majors'] = $this->db->query("SELECT majors_id, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
 
         $period = $this->db->query("SELECT period_id,period_start,period_end FROM period WHERE period_status = 1")->row_array();
-        $periodActive = $period['period_id'];
-        $periodStart = $period['period_start'];
-        $periodEnd = $period['period_end'];
+        if (!$period) {
+            $periodActive = 1;
+            $periodStart = date('Y');
+            $periodEnd = date('Y') + 1;
+        } else {
+            $periodActive = $period['period_id'];
+            $periodStart = $period['period_start'];
+            $periodEnd = $period['period_end'];
+        }
 
         $dateStart = "$periodStart-07-01";
         $dateEnd = "$periodEnd-06-30";
