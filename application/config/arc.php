@@ -1,4 +1,4 @@
-<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (! defined('BASEPATH')) exit('No direct script access allowed');
 
 /*
 |--------------------------------------------------------------------------
@@ -19,8 +19,8 @@ $config['media_url'] = '-';
 |
 */
 $config['app_name'] = 'ADMIN SEKOLAH';
-$config['version'] = 'V.1.0';
-$config['created'] = 'Copyright © 2018-'.date('Y').' <a target="_blank" href="https://www.indoweb.id">indoweb.id</a>. All rights reserved.';
+$config['version'] = 'v' . APP_VERSION;
+$config['created'] = 'Copyright © 2018-' . date('Y') . ' <a target="_blank" href="https://www.indoweb.id">indoweb.id</a>. All rights reserved.';
 
 /*
 |--------------------------------------------------------------------------

@@ -136,7 +136,7 @@ class Lesson_set extends CI_Controller
       if (!empty($id)) {
         $colWhere['lesson_id !='] = $id;
       }
-      if ($this->Lesson_model->checkDataExists("lesson", $colWhere)) {
+      if ($this->General_model->checkDataExists("lesson", $colWhere)) {
         $this->session->set_flashdata('failed', 'Data Mata Pelajaran sudah ada');
         $redirectUrl = ($id) ? "manage/lesson/edit/$id" : "manage/lesson?m=" . $lessonMajors;
         redirect($redirectUrl);
