@@ -86,57 +86,119 @@ class Pengumuman_set extends CI_Controller
         }
     }
 
+    // public function blast_old()
+    // {
+    //     if ($_POST == TRUE) {
+
+    //         $id             = $_POST['id_info'];
+    //         $student_id     = $_POST['student_id'];
+    //         $kode_sekolah   = $_POST['kode_sekolah'];
+    //         $judul          = $_POST['judul'];
+    //         $pengumuman     = $_POST['pengumuman'];
+
+    //         $pengumuman = str_replace('(kode pesantren)', $kode_sekolah, $pengumuman);
+    //         $pengumuman = str_replace('<p>', '', $pengumuman);
+    //         $pengumuman = str_replace('</p>', '', $pengumuman);
+    //         $pengumuman = str_replace('<span class="text_exposed_show">', '', $pengumuman);
+    //         $pengumuman = str_replace('</span>', '', $pengumuman);
+    //         $pengumuman = str_replace('<br />', "\n", $pengumuman);
+
+    //         $nip_bendahara  = $this->Setting_model->get(array('id' => 15));
+    //         $nama_bendahara = $this->Setting_model->get(array('id' => 16));
+    //         $wa_center      = $this->Setting_model->get(array('id' => 17));
+
+    //         $now = pretty_date(date('d-m-Y'), 'F', false);
+
+    //         $month = $this->db->query("SELECT month_id FROM month WHERE month_name = '$now'")->row_array();
+
+    //         $cpt = count($_POST['student_id']);
+    //         for ($i = 0; $i < $cpt; $i++) {
+
+    //             $params['student_id']   = $student_id[$i];
+
+    //             $siswa = $this->db->query("SELECT student_id, student_full_name, majors_short_name, majors_school_name, class_name, student_parent_phone FROM student JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE student.student_id = '$student_id[$i]'")->row_array();
+
+    //             $wa_key             = $this->Setting_model->get(array('name' => 'setting_wa_key'));
+    //             $setting_whatsapp   = $this->Setting_model->get(array('id' => 92));
+    //             $set_key             = $wa_key['setting_value'];
+    //             $set_wa              = $setting_whatsapp['setting_value'];
+
+    //             if (isset($siswa['student_parent_phone']) and $siswa['student_parent_phone'] != '+62') {
+
+    //                 $no_wa = $siswa['student_parent_phone'];
+    //                 $pengumuman = str_replace('(nis santri)', $siswa['student_nis'], $pengumuman);
+    //                 //$no_wa='+6283851378225';
+
+    //                 // $info_wa = "\n\n" .
+    //                 //     'Nomor WA Sekolah : http://wa.me/' . $wa_center['setting_value'];
+    //                 // $psn = $pengumuman . $info_wa;
+
+    //                 $info_wa = "\n\n" . 'Untuk Informasi hubungi No. WA Pesantren : http://wa.me/' . $wa_center['setting_value'] . "\n\n" . 'NB : Jika link tidak aktif silahkan simpan No. HP ini terlebih dahulu.';
+
+    //                 $psn = $judul . "\n\n" . $pengumuman . $info_wa;
+
+
+    //                 send_whatsapp($no_wa, $psn, $set_key, $set_wa);
+    //             }
+    //         }
+
+
+    //         $this->session->set_flashdata('success', ' Kirim Pengumuman Siswa Berhasil');
+    //         redirect('manage/pengumuman');
+    //     }
+    // }
+
     public function blast()
     {
         if ($_POST == TRUE) {
 
-            $id             = $_POST['id_info'];
             $student_id     = $_POST['student_id'];
-            $kode_sekolah   = $_POST['kode_sekolah'];
-            $judul          = $_POST['judul'];
             $pengumuman     = $_POST['pengumuman'];
 
-            $pengumuman = str_replace('(kode pesantren)', $kode_sekolah, $pengumuman);
-            $pengumuman = str_replace('<p>', '', $pengumuman);
-            $pengumuman = str_replace('</p>', '', $pengumuman);
-            $pengumuman = str_replace('<span class="text_exposed_show">', '', $pengumuman);
-            $pengumuman = str_replace('</span>', '', $pengumuman);
-            $pengumuman = str_replace('<br />', "\n", $pengumuman);
-
-            $nip_bendahara  = $this->Setting_model->get(array('id' => 15));
-            $nama_bendahara = $this->Setting_model->get(array('id' => 16));
             $wa_center      = $this->Setting_model->get(array('id' => 17));
+            $info_wa = "\n\n" . 'Nomor WA Bimbel : http://wa.me/' . $wa_center['setting_value'];
 
             $now = pretty_date(date('d-m-Y'), 'F', false);
-
-            $month = $this->db->query("SELECT month_id FROM month WHERE month_name = '$now'")->row_array();
 
             $cpt = count($_POST['student_id']);
             for ($i = 0; $i < $cpt; $i++) {
 
                 $params['student_id']   = $student_id[$i];
 
-                $siswa = $this->db->query("SELECT student_id, student_full_name, majors_short_name, majors_school_name, class_name, student_parent_phone FROM student JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE student.student_id = '$student_id[$i]'")->row_array();
+                $siswa = $this->db->query("SELECT student_id, student_nis, student_full_name, majors_short_name, majors_school_name, student_parent_phone FROM student JOIN majors ON majors.majors_id = student.majors_majors_id WHERE student.student_id = '$student_id[$i]'")->row_array();
 
                 $wa_key             = $this->Setting_model->get(array('name' => 'setting_wa_key'));
                 $setting_whatsapp   = $this->Setting_model->get(array('id' => 92));
                 $set_key             = $wa_key['setting_value'];
                 $set_wa              = $setting_whatsapp['setting_value'];
 
+                $no_wa              = $siswa['student_parent_phone'];
+
                 if (isset($siswa['student_parent_phone']) and $siswa['student_parent_phone'] != '+62') {
 
-                    $no_wa = $siswa['student_parent_phone'];
-                    $pengumuman = str_replace('(nis santri)', $siswa['student_nis'], $pengumuman);
-                    //$no_wa='+6283851378225';
+                    $data = [
+                        'STUDENT_NIS' => $siswa['student_nis'],
+                        'STUDENT_FULL_NAME' => $siswa['student_full_name'],
+                        'EMPLOYEE_NIP' => '',
+                        'EMPLOYEE_NAME' => '',
+                        'POSITION_NAME' => '',
+                        'CLASS_NAME' => '',
+                        'MAJORS_SCHOOL_NAME' => $siswa['majors_school_name'],
+                        'MAJORS_SHORT_NAME' => $siswa['majors_short_name'],
+                        'NOMINAL' => '',
+                        'TRX_DATE' => '',
+                        'NOREF' => '',
+                        'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
+                        'YEAR' => date('Y')
+                    ];
 
-                    // $info_wa = "\n\n" .
-                    //     'Nomor WA Sekolah : http://wa.me/' . $wa_center['setting_value'];
-                    // $psn = $pengumuman . $info_wa;
+                    $template = $pengumuman;
 
-                    $info_wa = "\n\n" . 'Untuk Informasi hubungi No. WA Pesantren : http://wa.me/' . $wa_center['setting_value'] . "\n\n" . 'NB : Jika link tidak aktif silahkan simpan No. HP ini terlebih dahulu.';
+                    $ready_to_send = parse_template($template, $data, false);
 
-                    $psn = $judul . "\n\n" . $pengumuman . $info_wa;
+                    $ready_to_send = str_replace(['\\n', '\\r'], ["\n", "\r"], $ready_to_send);
 
+                    $psn = $ready_to_send . $info_wa;
 
                     send_whatsapp($no_wa, $psn, $set_key, $set_wa);
                 }
