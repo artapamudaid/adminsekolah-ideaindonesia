@@ -2,27 +2,40 @@
 
 function send_whatsapp($no_wa, $psn, $set_key, $set_wa)
 {
-    $number_to = str_replace('+', '', $no_wa);
 
-    // Bangun query string
-    $query = http_build_query([
-         'api_key' => $set_key,
-        'sender' => $set_wa,
-        'number'  => $number_to,
-        'message' => $psn
-    ]);
+    $url = "https://wa-scheduler.indoweb.id/api/queue";
 
-    $url = 'https://indoweb.notifwa.com/send-message?' . $query;
+    $token = "19a90a35eeb8ceb11e0141ed997a871149dadcb3"; // Bearer Token
+
+    $receiver    = str_replace('+', '', $no_wa);
+    $data = [
+        "apikey"   => $set_key,
+        "sender"   => $set_wa,
+        "receiver" => $receiver,
+        "message"  => $psn
+    ];
+
+    $payload = json_encode($data);
 
     $ch = curl_init($url);
+
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-    $res = curl_exec($ch);
-    curl_close($ch);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bearer " . $token,
+        "Content-Type: application/json",
+        "Content-Length: " . strlen($payload)
+    ]);
 
-    return $res;
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        return "cURL Error: " . curl_error($ch);
+    } else {
+        return "Response: " . $response;
+    }
 }
 
 function send_telegram($telegram_id, $psn)
