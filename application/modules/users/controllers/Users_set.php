@@ -39,6 +39,8 @@ class Users_set extends CI_Controller
         // $data['user'] = $this->Users_model->get($params);
 
         // $data['majors'] = $this->Student_model->get_majors();
+
+        $data['param'] = [];
         $data['title'] = 'Pengguna';
         $data['main'] = 'users/user_list';
         $this->load->view('manage/layout', $data);
@@ -46,7 +48,7 @@ class Users_set extends CI_Controller
 
     function datatablesUsers()
     {
-        $param = $_POST['param'];
+        $param = isset($_POST['param']) ? $_POST['param'] : '';
 
         $draw = $_REQUEST['draw'];
         $length = $_REQUEST['length'];

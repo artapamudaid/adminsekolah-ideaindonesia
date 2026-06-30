@@ -133,7 +133,7 @@ class Class_set extends CI_Controller
         'majors_majors_id' => $majorsMajorsId,
         'class_id != ' => $id,
       ];
-      if ($this->Student_model->checkDataExists("class", $colWhere)) {
+      if ($this->General_model->checkDataExists("class", $colWhere)) {
         $this->session->set_flashdata('failed', 'Data sudah ada');
         $redirectUrl = ($id) ? "manage/class/edit/$id" : "manage/class";
         redirect($redirectUrl);

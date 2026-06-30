@@ -129,11 +129,11 @@ class Penggajian_set extends CI_Controller
 
       //add data potongan========================================================================================================
       $potongan_setting_id      = $this->input->post('potongan_setting_id');
-      $potongan_name            = $_POST['potongan_name'];
-      $potongan_default_id      = $_POST['potongan_default_id'];
-      $potongan_majors_id       = $_POST['potongan_majors_id'];
-      $potongan_nominal         = $_POST['potongan_nominal'];
-      $count_potongan           = count($_POST['potongan_default_id']);
+      $potongan_name            = @$_POST['potongan_name'];
+      $potongan_default_id      = @$_POST['potongan_default_id'];
+      $potongan_majors_id       = @$_POST['potongan_majors_id'];
+      $potongan_nominal         = @$_POST['potongan_nominal'];
+      $count_potongan           = isset($_POST['potongan_default_id']) ? count($_POST['potongan_default_id']) : 0;
 
       for ($i = 0; $i < $count_potongan; $i++) {
         if (isset($potongan_setting_id[$i])) {

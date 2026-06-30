@@ -82,7 +82,7 @@
 
 <script>
 	$(document).ready(function() {
-		var param = "<?php echo $param; ?>";
+		var param = <?= json_encode($param); ?>;
 		$("#dtable").DataTable({
 			ordering: false,
 			processing: false,

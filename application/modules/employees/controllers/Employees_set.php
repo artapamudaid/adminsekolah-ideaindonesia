@@ -155,7 +155,7 @@ class Employees_set extends CI_Controller
         ];
       }
 
-      if ($this->Employees_model->checkDataExists("employee", $colWhere)) {
+      if ($this->General_model->checkDataExists("employee", $colWhere)) {
         $this->session->set_flashdata('failed', ' Data sudah ada');
         $redirectUrl = (!empty($id)) ? "manage/employees/edit/$id" : "manage/employees";
         redirect($redirectUrl);

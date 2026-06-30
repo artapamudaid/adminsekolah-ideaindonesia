@@ -67,7 +67,7 @@ class Kitab_set extends CI_Controller
             if (!empty($id)) {
                 $colWhere["kitab_id != "] = $id;
             }
-            if ($this->Kitab_model->checkDataExists("kitab", $colWhere)) {
+            if ($this->General_model->checkDataExists("kitab", $colWhere)) {
                 $this->session->set_flashdata('failed', ' Data sudah ada');
                 $redirectUrl = (!empty($id)) ? "manage/kitab/edit/$id" : "manage/kitab";
                 redirect($redirectUrl);
@@ -122,7 +122,7 @@ class Kitab_set extends CI_Controller
                 $colWhere = [
                     "kitab_name" => $kitabName[$i],
                 ];
-                if ($this->Kitab_model->checkDataExists("kitab", $colWhere)) {
+                if ($this->General_model->checkDataExists("kitab", $colWhere)) {
                     $skipped++;
                     continue;
                 }
