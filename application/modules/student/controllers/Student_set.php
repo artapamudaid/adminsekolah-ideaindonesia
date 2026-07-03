@@ -4,6 +4,9 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class Student_set extends CI_Controller
 {
@@ -980,11 +983,202 @@ class Student_set extends CI_Controller
 
   public function download()
   {
-    $data = file_get_contents("./media/template_excel/Template_Data_Siswa.xlsx");
-    $name = 'Template_Data_Siswa.xlsx';
+    while (ob_get_level()) {
+      ob_end_clean();
+    }
 
-    $this->load->helper('download');
-    force_download($name, $data);
+    // Buat spreadsheet baru
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Template Siswa');
+
+    /*
+    |--------------------------------------------------------------------------
+    | HEADER KOLOM (sesuaikan dengan kebutuhan import Anda)
+    |--------------------------------------------------------------------------
+    */
+    $headers = [
+      'A1' => 'NIS SISWA',
+      'B1' => 'NISN SISWA',
+      'C1' => 'NAMA SISWA',
+      'D1' => 'ID KELAS',
+      'E1' => 'ID UNIT',
+      'F1' => 'NO. WA ORTU',
+      'G1' => 'JENIS KELAMIN',
+      'H1' => 'TEMPAT LAHIR',
+      'I1' => 'TANGGAL LAHIR',
+      'J1' => 'HOBI',
+      'K1' => 'NO. HP SISWA',
+      'L1' => 'ALAMAT',
+      'M1' => 'NAMA AYAH',
+      'N1' => 'NAMA IBU',
+    ];
+
+    foreach ($headers as $cell => $text) {
+      $sheet->setCellValue($cell, $text);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STYLE HEADER
+    |--------------------------------------------------------------------------
+    */
+    $sheet->getStyle('A1:N1')->getFont()->setBold(true);
+    $sheet->getStyle('A1:N1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getRowDimension(1)->setRowHeight(25);
+
+    /*
+    |--------------------------------------------------------------------------
+    | STYLE HEADER (ROW 1)
+    |--------------------------------------------------------------------------
+    */
+    $sheet->getStyle('A1:N1')->applyFromArray([
+      'font' => [
+        'bold'  => true,
+        'color' => ['rgb' => 'FFFFFF'],
+      ],
+      'fill' => [
+        'fillType'   => Fill::FILL_SOLID,
+        'startColor' => ['rgb' => '000000'],
+      ],
+      'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_CENTER,
+        'vertical'   => Alignment::VERTICAL_CENTER,
+      ],
+    ]);
+
+
+    // Auto width kolom
+    foreach (range('A', 'N') as $col) {
+      $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | KETERANGAN
+    |--------------------------------------------------------------------------
+    */
+    $sheet->setCellValue('A2', 'wajib diisi');
+    $sheet->setCellValue('B2', 'tidak wajib diisi');
+    $sheet->setCellValue('C2', 'wajib diisi');
+    $sheet->setCellValue('D2', 'wajib diisi');
+    $sheet->setCellValue('E2', 'wajib diisi');
+    $sheet->setCellValue('F2', 'tidak wajib diisi');
+    $sheet->setCellValue('G2', 'tidak wajib diisi');
+    $sheet->setCellValue('H2', 'tidak wajib diisi');
+    $sheet->setCellValue('I2', 'tidak wajib diisi');
+    $sheet->setCellValue('J2', 'tidak wajib diisi');
+    $sheet->setCellValue('K2', 'tidak wajib diisi');
+    $sheet->setCellValue('L2', 'tidak wajib diisi');
+    $sheet->setCellValue('M2', 'tidak wajib diisi');
+    $sheet->setCellValue('N2', 'tidak wajib diisi');
+
+    /*
+    |--------------------------------------------------------------------------
+    | STYLE KETERANGAN (ROW 2)
+    |--------------------------------------------------------------------------
+    */
+    for ($col = 'A'; $col <= 'N'; $col++) {
+      $value = strtolower(trim($sheet->getCell($col . '2')->getValue()));
+
+      // WAJIB DIISI → KUNING
+      if ($value === 'wajib diisi') {
+        $sheet->getStyle($col . '2')->applyFromArray([
+          'font' => [
+            'color' => ['rgb' => '000000'],
+          ],
+          'fill' => [
+            'fillType'   => Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'FFD966'], // kuning
+          ],
+          'alignment' => [
+            'horizontal' => Alignment::HORIZONTAL_CENTER,
+            'vertical'   => Alignment::VERTICAL_CENTER,
+          ],
+        ]);
+      }
+
+      // TIDAK WAJIB DIISI → HIJAU
+      if ($value === 'tidak wajib diisi') {
+        $sheet->getStyle($col . '2')->applyFromArray([
+          'font' => [
+            'color' => ['rgb' => 'FFFFFF'],
+          ],
+          'fill' => [
+            'fillType'   => Fill::FILL_SOLID,
+            'startColor' => ['rgb' => '00B050'], // hijau
+          ],
+          'alignment' => [
+            'horizontal' => Alignment::HORIZONTAL_CENTER,
+            'vertical'   => Alignment::VERTICAL_CENTER,
+          ],
+        ]);
+      }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONTOH DATA (ROW 3)
+    |--------------------------------------------------------------------------
+    */
+    $sheet->setCellValue('A3', '1111');          // NIS SANTRI (TEXT)
+    $sheet->setCellValue('B3', '1234567890');    // NISN SANTRI (TEXT)
+    $sheet->setCellValue('C3', 'Ahmad Fauzi');   // NAMA (TEXT)
+    $sheet->setCellValue('D3', 1);               // ID KELAS (INTEGER)
+    $sheet->setCellValue('E3', 1);               // ID UNIT (INTEGER)
+    $sheet->setCellValue('F3', "08123456789");   // NO WA Ortu
+    $sheet->setCellValue('G3', "L");             // JENIS KELAMIN
+    $sheet->setCellValue('H3', 'Bandung');       // TEMPAT LAHIR
+    $sheet->setCellValue('I3', '2010-05-12');    // TANGGAL LAHIR (yyyy-mm-dd)
+    $sheet->setCellValue('J3', 'Bermain Bola');  // HOBI 
+    $sheet->setCellValue('K3', '085123456789');  // NO. HP SISWA
+    $sheet->setCellValue('L3', 'Jl. Jayabaya');  // ALAMAT
+    $sheet->setCellValue('M3', 'Budi Santoso');  // NAMA AYAH
+    $sheet->setCellValue('N3', 'Siti Aminah');   // NAMA IBU
+
+    // Tentukan batas baris (misal sampai 1000 baris)
+    $maxRow = 1000;
+
+    // Semua kolom default TEXT
+    $sheet->getStyle("A3:N{$maxRow}")
+      ->getNumberFormat()
+      ->setFormatCode(NumberFormat::FORMAT_TEXT);
+
+    // ID KELAS
+    $sheet->getStyle("D3:D{$maxRow}")
+      ->getNumberFormat()
+      ->setFormatCode(NumberFormat::FORMAT_NUMBER);
+
+    // ID UNIT
+    $sheet->getStyle("E3:E{$maxRow}")
+      ->getNumberFormat()
+      ->setFormatCode(NumberFormat::FORMAT_NUMBER);
+
+    // TANGGAL LAHIR → yyyy-mm-dd
+    $sheet->getStyle("I3:I{$maxRow}")
+      ->getNumberFormat()
+      ->setFormatCode('yyyy-mm-dd');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | OUTPUT FILE (DOWNLOAD)
+    |--------------------------------------------------------------------------
+    */
+    $filename = 'Template_Data_Siswa.xlsx';
+
+    // Header download
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Cache-Control: max-age=0');
+    header('Cache-Control: max-age=1');
+    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // cache lama
+    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+    header('Pragma: public');
+
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $writer->save('php://output');
+    exit;
   }
 
   public function pass($offset = NULL)
