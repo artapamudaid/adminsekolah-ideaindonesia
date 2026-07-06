@@ -173,39 +173,33 @@ class Laba_rugi_model extends CI_Model
 
     function get_data_simpanan($kategori)
     {
-
-        if (isset($_REQUEST['tgl_dari']) && isset($_REQUEST['tgl_samp'])) {
-            $tgl_dari = $_REQUEST['tgl_dari'];
-            $tgl_samp = $_REQUEST['tgl_samp'];
-        } else {
-            $tgl_dari = date('Y') . '-01-01';
-            $tgl_samp = date('Y') . '-12-31';
-        }
-
-        if (!empty($kategori) && $kategori == 'PENDAPATAN') {
-            $this->db->like('akunBayar', '4-', 'after');
-            $this->db->or_like('akunBayar', '6-', 'after');
-        }
-
-        // if (!empty($kategori) && $kategori == 'BIAYA') {
-        //     $this->db->or_like('akunBayar', '5-', 'after');
-        //     $this->db->or_like('akunBayar', '7-', 'after');
-        // }
+        $tgl_dari = !empty($_REQUEST['start']) ? $_REQUEST['start'] : date('Y') . '-01-01';
+        $tgl_samp = !empty($_REQUEST['end']) ? $_REQUEST['end'] : date('Y') . '-12-31';
 
         $this->db->select('akunBayar, jenisBayar, SUM(penerimaan) AS debet, SUM(pengeluaran) AS kredit');
         $this->db->from('v_laporan_jurnal');
-        // $this->db->where('DATE(tanggal) >= ', '' . $tgl_dari . '');
-        // $this->db->where('tanggal <= ', '' . $tgl_samp . '');
+        
+        $this->db->where('DATE(tanggal) >=', $tgl_dari);
+        $this->db->where('DATE(tanggal) <=', $tgl_samp);
 
-        $majors_id = NULL;
-        if ($majors_id != "") {
-            $majors_id = $_REQUEST['majors_id'];
-            // $this->db->where('idMajors', $majors_id);
+        if (!empty($kategori) && $kategori == 'PENDAPATAN') {
+            $this->db->like('akunBayar', '4', 'after');
+        }
+
+        if (!empty($kategori) && $kategori == 'BIAYA') {
+            $this->db->like('akunBayar', '5', 'after');
+        }
+
+        $majors_id = isset($_REQUEST['majors_id']) ? $_REQUEST['majors_id'] : (isset($_REQUEST['unit']) ? $_REQUEST['unit'] : '');
+        if ($this->session->userdata('umajorsid') > 0) {
+            $this->db->where('idMajors', $this->session->userdata('umajorsid'));
+        } elseif ($majors_id != "" && $majors_id != "all") {
+            $this->db->where('idMajors', $majors_id);
         }
 
         $this->db->order_by('tanggal', 'ASC');
         $this->db->group_by('akunBayar');
-        // $this->db->limit($limit, $start);
+
         $query = $this->db->get();
         if ($query->num_rows() > 0) {
             $out = $query->result_array();
