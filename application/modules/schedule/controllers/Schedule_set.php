@@ -80,7 +80,7 @@ class Schedule_set extends CI_Controller
         $colWhere = [
           'schedule_class_id' => $scheduleClass,
           'schedule_day' => $scheduleDay,
-          'schedule_semester' => $scheduleSemester,
+          'schedule_semester_id' => $scheduleSemester,
           'schedule_lesson_id' => $scheduleLesson[$i],
           'schedule_jampel' => $scheduleJampel[$i],
         ];
@@ -142,7 +142,7 @@ class Schedule_set extends CI_Controller
       $colWhere = [
         'schedule_class_id' => $class_id,
         'schedule_day' => $scheduleDay,
-        'schedule_semester' => $scheduleSemester,
+        'schedule_semester_id' => $scheduleSemester,
         'schedule_lesson_id' => $scheduleLesson,
         'schedule_jampel' => $scheduleJampel,
       ];
