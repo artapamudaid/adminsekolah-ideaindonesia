@@ -986,7 +986,7 @@ class Billing_set extends CI_Controller
 					$psn = $billing_template;
 
 					$psn .= "\n\n" .
-						'Download Tagihan : ' . base_url() . 'billing/cetak?a=' . base64_encode($period_id) . '&b=' . base64_encode('1') . '&c=' . base64_encode($till) . '&d=' . base64_encode($santri['student_id']) . "\n\n" . '*) Jika tagihan tidak sesuai dengan kartu syahriah atau sudah melakukan pembayaran agar konfirmasi dengan mengirimkan bukti pembayaran / kwitansi yang sah.';
+						'Download Tagihan : ' . base_url() . 'billing/cetak?a=' . base64_encode($period_id) . '&b=' . base64_encode('1') . '&c=' . base64_encode($till) . '&d=' . base64_encode($siswa['student_id']) . "\n\n" . '*) Jika tagihan tidak sesuai dengan kartu syahriah atau sudah melakukan pembayaran agar konfirmasi dengan mengirimkan bukti pembayaran / kwitansi yang sah.';
 
 					send_whatsapp($no_wa, $psn, $set_key, $set_wa);
 				}
