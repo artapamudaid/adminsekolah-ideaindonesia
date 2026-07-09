@@ -130,7 +130,7 @@ class Semester_set extends CI_Controller
       if (!empty($id)) {
         $colWhere['semester_id !='] = $id;
       }
-      if ($this->Semester_model->checkDataExists("semester", $colWhere)) {
+      if ($this->General_model->checkDataExists("semester", $colWhere)) {
         $this->session->set_flashdata('failed', 'Data sudah ada');
         $redirectUrl = ($id) ? "manage/semester/edit/$id" : "manage/semester";
         redirect($redirectUrl);
