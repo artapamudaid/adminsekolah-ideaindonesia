@@ -395,6 +395,10 @@
         autoclose: true,
         todayHighlight: true
       });
+      $('#multidate').datepicker({
+        multidate: true,
+        format: "yyyy-mm-dd"
+      });
     </script>
 
     <?php if ($this->session->flashdata('success')) { ?>

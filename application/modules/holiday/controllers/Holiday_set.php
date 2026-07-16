@@ -54,7 +54,6 @@ class Holiday_set extends CI_Controller
 	{
 		if ($_POST == TRUE) {
 			$input = $_POST['date'];
-			echo $input;
 			$date = explode(',', $input);
 			$cpt = count($date);
 
