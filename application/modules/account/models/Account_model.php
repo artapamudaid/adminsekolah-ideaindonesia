@@ -114,4 +114,32 @@ class Account_model extends CI_Model
         $res = $this->db->get('account');
         return $res->result_array();
     }
+
+    // Get all descendants IDs recursively
+    public function get_descendants_ids($ids)
+    {
+        if (empty($ids)) {
+            return array();
+        }
+
+        $all_ids = array();
+        $current_level_ids = $ids;
+
+        while (!empty($current_level_ids)) {
+            $this->db->select('account_id');
+            $this->db->where_in('account_note', $current_level_ids);
+            $res = $this->db->get('account')->result_array();
+
+            $next_level_ids = array();
+            foreach ($res as $row) {
+                if (!in_array($row['account_id'], $all_ids)) {
+                    $all_ids[] = $row['account_id'];
+                    $next_level_ids[] = $row['account_id'];
+                }
+            }
+            $current_level_ids = $next_level_ids;
+        }
+
+        return $all_ids;
+    }
 }
