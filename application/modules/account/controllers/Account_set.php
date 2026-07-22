@@ -49,7 +49,14 @@ class Account_set extends CI_Controller
         $data['majors'] = $this->Student_model->get_majors();
 
         $data['title'] = 'Akun Biaya';
-        $data['main'] = 'account/account_list';
+
+        // Check uroleid for view routing
+        if ($this->session->userdata('uroleid') == 3) {
+            $data['main'] = 'account/account_list_super';
+        } else {
+            $data['main'] = 'account/account_list';
+        }
+
         $this->load->view('manage/layout', $data);
     }
 
@@ -198,11 +205,85 @@ class Account_set extends CI_Controller
         return $akun_piutang['account_id'];
     }
 
-    public function delete($id = NULL)
+    public function delete_multi()
     {
-        if ($this->session->userdata('uroleid') != SUPERUSER) {
+        if ($this->session->userdata('uroleid') != 3) {
             redirect('manage');
         }
+
+        if ($_POST) {
+            $account_ids = $this->input->post('account_id');
+            $majors_id = $this->input->post('majors_id');
+
+            if (empty($account_ids) || !is_array($account_ids)) {
+                $this->session->set_flashdata('failed', 'Tidak ada data yang dipilih untuk dihapus.');
+                redirect('manage/account/?m=' . $majors_id);
+            }
+
+            // Filter master data (ID 1-7)
+            $account_ids = array_filter($account_ids, function ($id) {
+                return $id > 7;
+            });
+
+            if (empty($account_ids)) {
+                $this->session->set_flashdata('failed', 'Data master tidak dapat dihapus.');
+                redirect('manage/account/?m=' . $majors_id);
+            }
+
+            // Get descendants
+            $descendant_ids = $this->Account_model->get_descendants_ids($account_ids);
+
+            // Gabung dan jadikan unique
+            $all_ids_to_delete = array_unique(array_merge($account_ids, $descendant_ids));
+
+            // Cek relasi POS
+            $this->db->select('account_account_id');
+            $this->db->where_in('account_account_id', $all_ids_to_delete);
+            $pos_relations = $this->db->get('pos')->result_array();
+
+            $pos_account_ids = array_column($pos_relations, 'account_account_id');
+
+            // Pisahkan yang bisa dihapus dan yang tidak
+            $ids_to_delete = array_diff($all_ids_to_delete, $pos_account_ids);
+            $skipped_count = count($all_ids_to_delete) - count($ids_to_delete);
+
+            if (empty($ids_to_delete)) {
+                $this->session->set_flashdata('failed', 'Semua akun yang dipilih terkait dengan POS sehingga tidak dapat dihapus.');
+                redirect('manage/account/?m=' . $majors_id);
+            }
+
+            // Hapus data
+            $this->db->where_in('account_id', $ids_to_delete);
+            $this->db->delete('account');
+
+            // Log activity
+            $this->load->model('logs/Logs_model');
+            $this->Logs_model->add(
+                array(
+                    'log_date' => date('Y-m-d H:i:s'),
+                    'user_id' => $this->session->userdata('uid'),
+                    'log_module' => 'Akun Bayar',
+                    'log_action' => 'Hapus Multi',
+                    'log_info' => 'Hapus ' . count($ids_to_delete) . ' akun (ID: ' . implode(',', $ids_to_delete) . ')'
+                )
+            );
+
+            $msg = 'Berhasil menghapus ' . count($ids_to_delete) . ' akun.';
+            if ($skipped_count > 0) {
+                $msg .= ' ' . $skipped_count . ' akun dilewati karena terhubung dengan POS.';
+            }
+
+            $this->session->set_flashdata('success', $msg);
+            redirect('manage/account/?m=' . $majors_id);
+        }
+    }
+
+    public function delete($id = NULL)
+    {
+        if ($this->session->userdata('uroleid') != SUPERUSER && $this->session->userdata('uroleid') != 3) {
+            redirect('manage');
+        }
+
         if ($_POST) {
 
             $pos = $this->Pos_model->get(array('account_id' => $id));
