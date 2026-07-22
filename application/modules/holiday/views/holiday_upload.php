@@ -16,12 +16,12 @@
 					<!-- /.box-header -->
 					<div class="box-body table-responsive">
 						<h4>Petunjuk Singkat</h4>
-						<p>Penginputan data Agenda bisa dilakukan dengan mengcopy data dari file Ms. Excel. Format file excel harus sesuai kebutuhan aplikasi. Silahkan download formatnya <a href="<?php echo site_url('manage/holiday/download');?>"><span class="label label-success">Disini</span></a>
+						<p>Penginputan data Agenda bisa dilakukan dengan mengcopy data dari file Ms. Excel. Format file excel harus sesuai kebutuhan aplikasi. Silahkan download formatnya <a href="<?php echo site_url('manage/holiday/download'); ?>"><span class="label label-success">Disini</span></a>
 							<br><br>
 							<strong>CATATAN :</strong>
-							<ol>
-								<li>Pengisian jenis data <strong>TANGGAL</strong>  diisi dengan format <strong>YYYY-MM-DD</strong> Contoh <strong>2017-12-21</strong><br> Cara ubah : blok semua tanggal pilih format cell di excel ganti dengan format date pilih yang tahunnya di depan</li>  
-							</ol>
+						<ol>
+							<li>Pengisian jenis data <strong>TANGGAL</strong> diisi dengan format <strong>YYYY-MM-DD</strong> Contoh <strong>2017-12-21</strong><br> Cara ubah : blok semua tanggal pilih format cell di excel ganti dengan format date pilih yang tahunnya di depan</li>
+						</ol>
 						</p>
 						<hr>
 
