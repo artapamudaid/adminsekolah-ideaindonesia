@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 /*
 | -------------------------------------------------------------------------
@@ -49,6 +49,21 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | Examples:	my-controller/index	-> my_controller/index
 |		my-controller/my-method	-> my_controller/my_method
 */
+
+
+// Untuk guru
+$route['guru/auth'] = 'guru/auth_guru/login';
+$route['guru/([a-zA-Z_-]+)'] = '$1/$1_guru';
+$route['guru/auth/(:any)'] = 'guru/auth_guru/$1';
+$route['guru/([a-zA-Z_-]+)/(:any)'] = '$1/$1_guru/$2';
+$route['guru/(:any)/edit/(:num)'] = "$1/$1_guru/add/$2";
+$route['guru/(:any)/(:any)/edit/(:num)'] = "$1/$1_guru/add_$2/$3";
+$route['guru/(:any)/(:any)/(:num)/(:num)'] = "$1/$1_guru/$2/$3/$4";
+$route['guru/(:any)/(:any)/(:num)/(:num)/(:num)'] = "$1/$1_guru/$2/$3/$4/$5";
+$route['guru/(:any)/(:any)/(:num)'] = "$1/$1_guru/$2/$3";
+$route['guru/(:any)/(:any)/(:any)'] = "$1/$1_guru/$3_$2";
+$route['guru'] = "dashboard/Dashboard_guru";
+// untuk guru
 
 $route['manage/auth'] = 'auth/auth_set/login';
 $route['manage/([a-zA-Z_-]+)'] = '$1/$1_set';
