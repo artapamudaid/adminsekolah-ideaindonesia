@@ -538,9 +538,49 @@ class Debit_set extends CI_Controller
             $params['debit_last_update'] = date('Y-m-d H:i:s');
             $params['user_user_id'] = $this->session->userdata('uid');
 
+            $akunLama = '';
+            $kodeAkunLama = '';
+            $debitValueLama = '';
+            if (!empty($params['debit_id'])) {
+                $idDebit = $params['debit_id'];
+                $dataDebit =  $this->db->query("SELECT debit.debit_account_id ,account.account_code, debit.debit_value FROM debit JOIN account ON account.account_id = debit.debit_account_id WHERE debit_id = '$idDebit'")->row();
+
+                $akunLama       = $dataDebit->debit_account_id;
+                $kodeAkunLama   = $dataDebit->account_code;
+                $debitValueLama = $dataDebit->debit_value;
+            }
+
             $status = $this->Debit_model->add($params);
             $paramsupdate['debit_id'] = $status;
             $this->Debit_model->add($paramsupdate);
+
+
+            if (($akunLama != $params['debit_account_id']) or ($debitValueLama != $params['debit_value'])) {
+                $idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
+
+                $data = array();
+
+                if ($akunLama != $params['debit_account_id']) {
+                    $idAkunBaru = $params['debit_account_id'];
+                    $kodeBaru = $this->db->query("SELECT account_code FROM account WHERE account_id = '$idAkunBaru'")->row()->account_code;
+                    $data['kode_baru'] = $kodeBaru;
+                }
+
+                if ($debitValueLama != $params['debit_value']) {
+                    $data['value_baru'] = $params['debit_value'];
+
+                    // Update Total Kas
+                    $total = $this->db->query("SELECT SUM(debit_value) as sumDebit FROM debit WHERE debit_kas_noref = '$noref'")->row_array();
+                    $this->db->query("UPDATE kas SET kas_debit = '" . $total['sumDebit'] . "' WHERE kas_noref = '$noref'");
+
+                    // Update Total Jurnal Kas
+                    $kodeKas  = $this->input->post('kode_kas');
+                    $this->Debit_model->update_detail_jurnal_kas($idJurnal, $kodeKas, $total['sumDebit']);
+                }
+
+                // Update Jurnal Akun
+                $this->Debit_model->update_detail_jurnal_akun($idJurnal, $kodeAkunLama, $data);
+            }
 
             $this->Logs_model->add_trx(
                 array(
@@ -556,10 +596,6 @@ class Debit_set extends CI_Controller
                 )
             );
 
-            $total = $this->db->query("SELECT SUM(debit_value) as sumDebit FROM debit WHERE debit_kas_noref = '$noref'")->row_array();
-
-            $this->db->query("UPDATE kas SET kas_debit = '" . $total['sumDebit'] . "' WHERE kas_noref = '$noref'");
-
             $this->session->set_flashdata('success', $data['operation'] . ' Kas Masuk berhasil');
             redirect('manage/debit');
         } else {
@@ -569,12 +605,13 @@ class Debit_set extends CI_Controller
 
             // Edit mode
             if (!is_null($id)) {
-                $q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN debit ON debit.debit_account_id = account.account_id WHERE account.account_category = '2' AND debit.debit_id = '$id' AND account.account_code LIKE '4%' ORDER BY account.account_code ASC")->row();
+                // $q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN debit ON debit.debit_account_id = account.account_id AND debit.debit_id = '$id' AND account.account_code LIKE '4%' ORDER BY account.account_code ASC")->row();
+                $q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN debit ON debit.debit_account_id = account.account_id AND debit.debit_id = '$id' ORDER BY account.account_code ASC")->row();
                 $majors_id  = $q->id;
                 $data['m']  = $q->id;
                 $data['majors'] = $this->Student_model->get_majors();
                 $data['debit'] = $this->Debit_model->get(array('id' => $id));
-                $data['account'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majors_id' AND account_code LIKE '4%' ORDER BY account_code ASC")->result_array();
+                $data['account'] = $this->db->query("SELECT * FROM account WHERE (account_category = '2' OR account_code LIKE '4-%' ) AND account_majors_id = '$majors_id' ORDER BY account_code ASC")->result_array();
                 $data['tax'] = $this->Tax_model->get();
                 $data['item'] = $this->Item_model->get(array('majors_id' => $majors_id));
             }
@@ -583,7 +620,6 @@ class Debit_set extends CI_Controller
             $this->load->view('manage/layout', $data);
         }
     }
-
 
     // Delete to database
     public function delete($id = NULL)
