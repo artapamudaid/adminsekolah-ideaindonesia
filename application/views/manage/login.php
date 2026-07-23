@@ -7,210 +7,222 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
 ?>
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AdminSekolah | Login</title>
-  <link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AdminSekolah | Login</title>
+    <link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>" />
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="<?php echo media_url() ?>auth/auth.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-  <style>
-    body {
-      min-height: 100vh;
-      background-color: #f8f9fa;
-    }
-
-    .left-section {
-      background-color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-    }
-
-    .right-section {
-      background-color: #2A8DBB;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-
-    .form-check-input {
-      width: 1.25em;
-      height: 1.25em;
-      border: 2px solid white;
-      appearance: none;
-      cursor: pointer;
-    }
-
-    @media (max-width: 1024px) {
-      .left-section {
-        display: none !important;
-      }
-
-      .right-section {
-        flex: 1 0 100%;
-        max-width: 100%;
-      }
-
-      .right-section #announcementCarouselRight {
-        display: block !important;
-      }
-    }
-
-
-
-    .carousel-inner img {
-      max-height: 500px;
-      /* object-fit: cover; */
-    }
-  </style>
+    <link rel="preconnect" href="https://challenges.cloudflare.com">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
-  <div class="container-fluid">
-    <div class="row min-vh-100">
-      <!-- LEFT SECTION -->
-      <div class="col-md-6 left-section">
-        <div id="announcementCarouselLeft" class="carousel slide w-100" data-bs-ride="carousel">
-          <?php if (!empty($pengumuman)): ?>
-            <div class="carousel-indicators">
-              <?php foreach ($pengumuman as $idx => $item): ?>
-                <button type="button" data-bs-target="#announcementCarouselLeft" data-bs-slide-to="<?= $idx ?>" class="<?= $idx == 0 ? 'active' : '' ?>" aria-current="<?= $idx == 0 ? 'true' : 'false' ?>" aria-label="Slide <?= $idx + 1 ?>"></button>
-              <?php endforeach; ?>
-            </div>
-            <div class="carousel-inner">
-              <?php foreach ($pengumuman as $idx => $item): ?>
-                <div class="carousel-item <?= $idx == 0 ? 'active' : '' ?>">
-                  <img src="<?= $item['information_img'] ?>" class="d-block" style="margin: 0 auto 0 auto;" alt="Slide <?= $idx + 1 ?>" />
-                </div>
-              <?php endforeach; ?>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#announcementCarouselLeft" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon"></span>
-              <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#announcementCarouselLeft" data-bs-slide="next">
-              <span class="carousel-control-next-icon"></span>
-              <span class="visually-hidden">Next</span>
-            </button>
-          <?php else: ?>
-            <?php
-            $this->load->model(array('setting/Setting_model'));
-            $setting_logo     = $this->Setting_model->get(array('id' => 6));
-            ?>
-            <center>
-              <?php if (isset($setting_logo) and $setting_logo['setting_value'] == NULL) { ?>
-                <img src="<?php echo media_url('img/logo.svg') ?>" class="img-responsive" style="width:50%">
-              <?php } else { ?>
-                <img src="<?php echo upload_url('school/' . $setting_logo['setting_value']) ?>" class="img-responsive" style="width:50%">
-              <?php } ?>
-            </center>
-          <?php endif; ?>
-        </div>
-      </div>
-
-      <!-- RIGHT SECTION -->
-      <div class="col-md-6 right-section">
-        <div class="w-100" style="max-width: 400px;">
-          <p class="text-center"><strong>Aplikasi AdminSekolah</strong></p>
-          <h3 class="text-center pb-4"><?= $setting_name['setting_value'] ?? '' ?></h3>
-
-          <!-- MOBILE Carousel -->
-          <div id="announcementCarouselRight" class="carousel slide d-md-none mb-4" data-bs-ride="carousel">
-            <?php if (!empty($pengumuman)): ?>
-              <div class="carousel-indicators">
-                <?php foreach ($pengumuman as $idx => $item): ?>
-                  <button type="button" data-bs-target="#announcementCarouselRight" data-bs-slide-to="<?= $idx ?>" class="<?= $idx == 0 ? 'active' : '' ?>" aria-current="<?= $idx == 0 ? 'true' : 'false' ?>" aria-label="Slide <?= $idx + 1 ?>"></button>
-                <?php endforeach; ?>
-              </div>
-              <div class="carousel-inner">
-                <?php foreach ($pengumuman as $idx => $item): ?>
-                  <div class="carousel-item <?= $idx == 0 ? 'active' : '' ?>">
-                    <img src="<?= $item['information_img'] ?>" class="d-block w-100" alt="Slide <?= $idx + 1 ?>" />
-                  </div>
-                <?php endforeach; ?>
-              </div>
-            <?php else: ?>
-              <p>Tidak ada pengumuman.</p>
-            <?php endif; ?>
-          </div>
-
-          <!-- Login Form -->
-          <div class="mb-3">
-            <a href="<?= base_url() ?>" class="text-white fw-bold text-decoration-none">Login</a>
-            <?php $sett = $this->db->query("SELECT setting_value as paket FROM setting WHERE setting_name = 'setting_package'")->row_array();
-
-            $paket = $sett['paket']; ?>
-            <?php if ($paket == 3) { ?>
-              |
-              <a href="<?= base_url('student_presence') ?>" target="_blank" class="text-white fw-bold text-decoration-none">Presensi Siswa</a> |
-              <a href="<?= base_url('employee_presence') ?>" target="_blank" class="text-white fw-bold text-decoration-none">Presensi Pegawai</a>
-            <?php } ?>
-
-          </div>
-
-          <!-- Flash Message -->
-          <?php if ($this->session->flashdata('error')): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              <?= $this->session->flashdata('error'); ?>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          <?php endif; ?>
-          <?php if ($this->session->flashdata('success')): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-              <?= $this->session->flashdata('success'); ?>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          <?php endif; ?>
-
-          <?= form_open('manage/auth/login') ?>
-          <div class="mb-3">
-            <input type="email" class="form-control" name="email" placeholder="Masukan email" required />
-          </div>
-          <div class="mb-3">
-            <div class="input-group">
-              <input type="password" class="form-control" id="password" name="password" placeholder="Masukan password" required />
-              <span class="input-group-text" onclick="togglePassword()" style="cursor:pointer">
-                <i id="toggle-icon" class="bi bi-eye"></i>
-              </span>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-light w-100 mb-3">Login</button>
-
-          <?= form_close() ?>
-
-          <div class="mt-3">
-            <span>Download Aplikasi Mobile di: </span>
-            <i class="fa fa-android text-white"></i>
-            <a href="https://play.google.com/store/apps/dev?id=6395890906220495321" target="_blank" class="text-white fw-bold">Android</a>
-            <span> atau </span>
-            <a href="https://apps.apple.com/id/developer/indoweb-id/id1807922292" target="_blank" class="text-white fw-bold">iOS</a>
-          </div>
-
-        </div>
-      </div>
+    <div class="bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
     </div>
-  </div>
 
-  <!-- Bootstrap 5.3 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <div class="page">
 
-  <script>
-    function togglePassword() {
-      const pw = document.getElementById("password");
-      const icon = document.getElementById("toggle-icon");
-      const isPassword = pw.type === "password";
-      pw.type = isPassword ? "text" : "password";
-      icon.className = isPassword ? "bi bi-eye-slash" : "bi bi-eye";
-    }
-  </script>
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+            <div class="carousel-wrap" id="dCarousel">
+                <div class="carousel-track" id="dTrack">
+                    <?php if (!empty($pengumuman)): ?>
+                        <?php foreach ($pengumuman as $item): ?>
+                            <div class="carousel-slide">
+                                <img src="<?= $item['information_img'] ?>" alt="Pengumuman">
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php
+                        $this->load->model(['setting/Setting_model']);
+                        $setting_logo = $this->Setting_model->get(['id' => 6]);
+                        ?>
+                        <div class="carousel-slide" style="display:flex;align-items:center;justify-content:center;padding:3rem;">
+                            <?php if (isset($setting_logo) && $setting_logo['setting_value'] != NULL): ?>
+                                <img src="<?php echo upload_url('school/' . $setting_logo['setting_value']) ?>" style="width:60%;" alt="Logo">
+                            <?php else: ?>
+                                <img src="<?php echo media_url('img/logo.svg') ?>" style="width:50%;" alt="Logo">
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="carousel-dots" id="dDots"></div>
+            </div>
+        </div>
 
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+            <div class="form-card">
+
+                <!-- Mobile carousel -->
+                <div class="mobile-carousel-wrapper">
+                    <div class="mobile-carousel">
+                        <div class="carousel-track" id="mTrack">
+                            <?php if (!empty($pengumuman)): ?>
+                                <?php foreach ($pengumuman as $item): ?>
+                                    <div class="carousel-slide">
+                                        <img src="<?= $item['information_img'] ?>" alt="Pengumuman">
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="carousel-slide" style="display:flex;align-items:center;justify-content:center;padding:2rem;">
+                                    <img src="<?php echo media_url('img/logo.svg') ?>" style="width:50%" alt="Logo">
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-wrapper">
+                    <div class="form-header">
+                        <img
+                            class="brand-logo"
+                            src="<?php echo media_url('img/as-landscape.png') ?>"
+                            alt="logo" />
+                        <div class="form-eyebrow">Selamat Datang</div>
+                        <div class="form-title"><?= $setting_name['setting_value'] ?? 'AdminSekolah' ?></div>
+                        <div class="form-subtitle">Masuk untuk mengelola sekolah Anda</div>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div class="form-tabs">
+                        <a href="<?= base_url() ?>" class="tab-link active">Login</a>
+                        <a href="<?= base_url('student_presence') ?>" class="tab-link">Presensi Siswa</a>
+                        <a href="<?= base_url('employee_presence') ?>" class="tab-link">Presensi Pegawai</a>
+                        <a href="<?= base_url('guru') ?>" class="tab-link">Guru</a>
+                    </div>
+
+                    <!-- Flash messages -->
+                    <?php if ($this->session->flashdata('error')): ?>
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <?= $this->session->flashdata('error') ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($this->session->flashdata('success')): ?>
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <?= $this->session->flashdata('success') ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?= form_open('manage/auth/login') ?>
+
+                    <div class="input-group">
+                        <label class="input-label">Alamat Email</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <rect x="2" y="4" width="20" height="16" rx="3" />
+                                    <path d="m2 7 10 7 10-7" />
+                                </svg>
+                            </span>
+                            <input type="email" name="email" placeholder="Masukkan email" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                            </span>
+                            <input type="password" id="password" name="password" placeholder="Masukkan password" required>
+                            <button type="button" class="toggle-pw" onclick="togglePassword()" aria-label="Toggle password">
+                                <svg id="pw-eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="turnstile-wrap">
+                        <div class="cf-turnstile"
+                            data-sitekey="<?= $turnstile_site_key ?>"
+                            data-theme="light"
+                            data-size="normal"
+                            data-callback="onSuccess"></div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Masuk ke Dashboard</button>
+
+                    <?= form_close() ?>
+                </div>
+
+                <div class="download-row">
+                    <div class="download-label">TERSEDIA JUGA APLIKASI MOBILE</div>
+                    <div class="download-btns">
+                        <a href="https://play.google.com/store/apps/dev?id=6395890906220495321" target="_blank" class="download-btn">
+                            <i class="bi bi-google-play"></i>
+                            <div>
+                                <div class="store-name">Dapatkan di</div>
+                                <div class="store-big">Android</div>
+                            </div>
+                        </a>
+                        <a href="https://apps.apple.com/id/developer/indoweb-id/id1807922292" target="_blank" class="download-btn">
+                            <i class="bi bi-apple"></i>
+                            <div>
+                                <div class="store-name">Dapatkan di</div>
+                                <div class="store-big">iOS</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pw = document.getElementById("password");
+            const eye = document.getElementById("pw-eye");
+            const isHidden = pw.type === "password";
+            pw.type = isHidden ? "text" : "password";
+            eye.innerHTML = isHidden ?
+                `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>` :
+                `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+        }
+
+        const slideCount = <?= !empty($pengumuman) ? count($pengumuman) : 1 ?>;
+        let dIdx = 0,
+            mIdx = 0;
+
+        function buildDots(containerId, count) {
+            const c = document.getElementById(containerId);
+            if (!c) return;
+            for (let i = 0; i < count; i++) {
+                const d = document.createElement('div');
+                d.className = 'dot' + (i === 0 ? ' active' : '');
+                d.onclick = () => goSlide(i, 'd', containerId);
+                c.appendChild(d);
+            }
+        }
+
+        function goSlide(idx, which, dotsId) {
+            const track = document.getElementById(which + 'Track');
+            if (!track) return;
+            if (which === 'd') dIdx = idx;
+            else mIdx = idx;
+            track.style.transform = `translateX(-${idx * 100}%)`;
+            document.querySelectorAll('#' + dotsId + ' .dot')
+                .forEach((d, i) => d.classList.toggle('active', i === idx));
+        }
+
+        buildDots('dDots', slideCount);
+        setInterval(() => goSlide((dIdx + 1) % slideCount, 'd', 'dDots'), 4000);
+    </script>
 </body>
 
 </html>
