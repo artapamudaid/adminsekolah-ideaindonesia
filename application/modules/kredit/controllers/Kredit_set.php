@@ -533,9 +533,48 @@ class Kredit_set extends CI_Controller
 			$params['kredit_last_update'] = date('Y-m-d H:i:s');
 			$params['user_user_id'] = $this->session->userdata('uid');
 
+			$akunLama = '';
+			$kodeAkunLama = '';
+			$kreditValueLama = '';
+			if (!empty($params['kredit_id'])) {
+				$idKredit = $params['kredit_id'];
+				$dataKredit =  $this->db->query("SELECT kredit.kredit_account_id ,account.account_code, kredit.kredit_value FROM kredit JOIN account ON account.account_id = kredit.kredit_account_id WHERE kredit_id = '$idKredit'")->row();
+
+				$akunLama        = $dataKredit->kredit_account_id;
+				$kodeAkunLama    = $dataKredit->account_code;
+				$kreditValueLama = $dataKredit->kredit_value;
+			}
+
 			$status = $this->Kredit_model->add($params);
 			$paramsupdate['kredit_id'] = $status;
 			$this->Kredit_model->add($paramsupdate);
+
+			if (($akunLama != $params['kredit_account_id']) or ($kreditValueLama != $params['kredit_value'])) {
+				$idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
+
+				$data = array();
+
+				if ($akunLama != $params['kredit_account_id']) {
+					$idAkunBaru = $params['kredit_account_id'];
+					$kodeBaru = $this->db->query("SELECT account_code FROM account WHERE account_id = '$idAkunBaru'")->row()->account_code;
+					$data['kode_baru'] = $kodeBaru;
+				}
+
+				if ($kreditValueLama != $params['kredit_value']) {
+					$data['value_baru'] = $params['kredit_value'];
+
+					// Update Total Kas
+					$total = $this->db->query("SELECT SUM(kredit_value) as sumKredit FROM kredit WHERE kredit_kas_noref = '$noref'")->row_array();
+					$this->db->query("UPDATE kas SET kas_kredit = '" . $total['sumKredit'] . "' WHERE kas_noref = '$noref'");
+
+					// Update Total Jurnal Kas
+					$kodeKas  = $this->input->post('kode_kas');
+					$this->Kredit_model->update_detail_jurnal_kas($idJurnal, $kodeKas, $total['sumKredit']);
+				}
+
+				// Update Jurnal Akun
+				$this->Kredit_model->update_detail_jurnal_akun($idJurnal, $kodeAkunLama, $data);
+			}
 
 			$this->Logs_model->add_trx(
 				array(
@@ -551,10 +590,6 @@ class Kredit_set extends CI_Controller
 				)
 			);
 
-			$total = $this->db->query("SELECT SUM(kredit_value) as sumKredit FROM kredit WHERE kredit_kas_noref = '$noref'")->row_array();
-
-			$this->db->query("UPDATE kas SET kas_kredit = '" . $total['sumKredit'] . "' WHERE kas_noref = '$noref'");
-
 			$this->session->set_flashdata('success', $data['operation'] . ' Kas Keluar berhasil');
 			redirect('manage/kredit');
 		} else {
@@ -564,12 +599,14 @@ class Kredit_set extends CI_Controller
 
 			// Edit mode
 			if (!is_null($id)) {
-				$q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN kredit ON kredit.kredit_account_id = account.account_id WHERE account.account_category = '2' AND kredit.kredit_id = '$id' AND account.account_code LIKE '5%' ORDER BY account.account_code ASC")->row_array();
+				// $q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN kredit ON kredit.kredit_account_id = account.account_id WHERE account.account_category = '2' AND kredit.kredit_id = '$id' AND account.account_code LIKE '5%' ORDER BY account.account_code ASC")->row_array();
+				$q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN kredit ON kredit.kredit_account_id = account.account_id WHERE  kredit.kredit_id = '$id'  ORDER BY account.account_code ASC")->row_array();
 				$majors_id  = $q['id'];
 				$data['m']  = $q['id'];
 				$data['majors'] = $this->Student_model->get_majors();
 				$data['kredit'] = $this->Kredit_model->get(array('id' => $id));
-				$data['account'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majors_id' AND account_code LIKE '5%' ORDER BY account_code ASC")->result_array();
+				// $data['account'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majors_id' AND account_code LIKE '5%' ORDER BY account_code ASC")->result_array();
+				$data['account'] = $this->db->query("SELECT * FROM account WHERE account_majors_id = '$majors_id' ORDER BY account_code ASC")->result_array();
 				$data['tax'] = $this->Tax_model->get();
 				$data['item'] = $this->Item_model->get(array('majors_id' => $majors_id));
 			}
