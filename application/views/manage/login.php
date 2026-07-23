@@ -159,10 +159,6 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
                     <button type="submit" class="btn-submit">Masuk ke Dashboard</button>
 
                     <?= form_close() ?>
-
-                    <div class="register-row">
-                        Belum punya akun? <a href="<?= site_url('registrasi') ?>">Daftar di sini</a>
-                    </div>
                 </div>
 
                 <div class="download-row">
