@@ -318,6 +318,7 @@
                                                                         <div class="form-group">
                                                                             <input type="hidden" required="" name="account_note" class="form-control" value="<?php echo $sub->account_note ?>">
                                                                         </div>
+
                                                                         <!---->
                                                                         <div class="form-group">
                                                                             <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
@@ -1470,8 +1471,16 @@
                 [10, 25, 50, 100, -1],
                 [10, 25, 50, 100, 'All']
             ],
-            pageLength: -1,
-            ordering: false
+            <<
+            <<
+            << < HEAD
+            pageLength: -1 ===
+                ===
+                =
+                pageLength: -1,
+            ordering: false >>>
+                >>>
+                > ad367df71a3f4c038fcbabdd9f7b09817c664ad8
         })
     })
 </script>

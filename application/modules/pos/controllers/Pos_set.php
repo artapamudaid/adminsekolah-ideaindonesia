@@ -199,7 +199,6 @@ class Pos_set extends CI_Controller
     // Delete to database
     public function delete($id = NULL)
     {
-
         if ($this->session->userdata('uroleid') != SUPERUSER && $this->session->userdata('uroleid') != 3) {
             redirect('manage');
         }

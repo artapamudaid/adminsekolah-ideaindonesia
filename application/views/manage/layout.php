@@ -395,6 +395,7 @@
         autoclose: true,
         todayHighlight: true
       });
+
       $('#multidate').datepicker({
         multidate: true,
         format: "yyyy-mm-dd"
