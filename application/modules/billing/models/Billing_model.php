@@ -153,8 +153,8 @@ class Billing_model extends CI_Model
         $sql = "
             SELECT 
                 idStudent, 
-                period_start,
-                period_end,
+                p.period_start,
+                p.period_end,
                 idBulan,
                 keterangan,
                 total
