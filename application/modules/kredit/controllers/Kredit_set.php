@@ -111,11 +111,14 @@ class Kredit_set extends CI_Controller
 
 		if ($totalTrx) {
 			$list_kredit = $this->Kredit_model->list_kredit($length, $start, $search, $data);
+
 			$output['recordsTotal'] = $output['recordsFiltered'] = $totalTrx['totalBaris'];
 
 			$detaKredit = array();
+
 			foreach ($list_kredit->result() as $r) {
 				$row = array();
+
 				$row[] = pretty_date($r->kredit_date, 'Y-m-d', false);
 				$row[] = $r->kredit_kas_noref;
 				$row[] = '[' . $r->accDesc . ']';
@@ -124,14 +127,49 @@ class Kredit_set extends CI_Controller
 				$row[] = 'Rp. ' . number_format($r->kredit_value, 0, ',', '.');
 				$row[] = $r->kredit_tax . ' %';
 				$row[] = $r->kredit_item;
-				$row[] = 'Rp. ' . number_format($r->kredit_value + ($r->kredit_value * ($r->kredit_tax / 100)), 0, ',', '.');
+				$row[] = 'Rp. ' . number_format(
+					$r->kredit_value + ($r->kredit_value * ($r->kredit_tax / 100)),
+					0,
+					',',
+					'.'
+				);
+
+				// Tombol edit hanya ditampilkan jika noref tidak diawali JKTF
+				$buttonEdit = '';
+
+				if (strncmp($r->kredit_kas_noref, 'JKTF', 4) !== 0) {
+					$buttonEdit = '
+						<a href="' . site_url('manage/kredit/edit/' . $r->kredit_id) . '"
+							class="btn btn-xs btn-warning"
+							data-toggle="tooltip"
+							title="Edit">
+							<i class="fa fa-edit"></i>
+						</a>
+					';
+				}
+
 				$row[] = '
-					<a href="' . site_url('manage/kredit/cetakTrx/' . $r->kredit_kas_noref) . '" class="btn btn-xs btn-default" data-toggle="tooltip" title="Cetak Tranksaksi" target="_blank"><i class="fa fa-print"></i></a>
-					<a href="' . site_url('manage/kredit/edit/' . $r->kredit_id) . '" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a>
-					<a class="btn btn-xs btn-danger btnDellKredit" data-kredit="' . $r->kredit_id . '" data-noref="' . $r->kredit_kas_noref . '" data-gaji="' . $r->kredit_gaji_id . '" ><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></a>
+					<a href="' . site_url('manage/kredit/cetakTrx/' . $r->kredit_kas_noref) . '"
+						class="btn btn-xs btn-default"
+						data-toggle="tooltip"
+						title="Cetak Tranksaksi"
+						target="_blank">
+						<i class="fa fa-print"></i>
+					</a>
+
+            		' . $buttonEdit . '
+
+					<a class="btn btn-xs btn-danger btnDellKredit"
+						data-kredit="' . $r->kredit_id . '"
+						data-noref="' . $r->kredit_kas_noref . '"
+						data-gaji="' . $r->kredit_gaji_id . '">
+						<i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i>
+					</a>
 				';
+
 				$detaKredit[] = $row;
 			}
+
 			$output['data'] = $detaKredit;
 		}
 
