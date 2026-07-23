@@ -47,12 +47,17 @@ $config['base_url'] = ($is_https ? 'https' : 'http')
         $_SERVER['SCRIPT_NAME']
     );
 
-
-// $config['turnstile_site_key']   = '0x4AAAAAACrlalzyG7pflMkD'; // punya adminsekolah.net
-// $config['turnstile_secret_key'] = '0x4AAAAAACrlam4eSTElsIJOM1R5fBnNWfg'; // punya adminsekolah.net
-
-$config['turnstile_site_key']   = '0x4AAAAAACwDnlzvjsnFhhGy'; // punya ninetale.my.id
-$config['turnstile_secret_key'] = '0x4AAAAAACwDnrJD61eNs7Gj1wuWvzWn3b4'; // punya ninetale.my.id
+if (ENVIRONMENT === 'development') {
+    // ninetale.my.id
+    $config['turnstile'] = FALSE;
+    $config['turnstile_site_key']   = '0x4AAAAAACwDnlzvjsnFhhGy';
+    $config['turnstile_secret_key'] = '0x4AAAAAACwDnrJD61eNs7Gj1wuWvzWn3b4';
+} else {
+    // adminsekolah.net
+    $config['turnstile'] = TRUE;
+    $config['turnstile_site_key']   = '0x4AAAAAACrlalzyG7pflMkD';
+    $config['turnstile_secret_key'] = '0x4AAAAAACrlam4eSTElsIJOM1R5fBnNWfg';
+}
 
 /*
 |--------------------------------------------------------------------------

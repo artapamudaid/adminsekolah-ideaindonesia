@@ -848,4 +848,111 @@ class Student_model extends CI_Model
         $this->db->limit($limit, $start);
         return $this->db->get();
     }
+
+    function get_jurnal($params = array())
+    {
+
+        if (isset($params['id'])) {
+            $this->db->where('student.student_id', $params['id']);
+        }
+        if (isset($params['student_id'])) {
+            $this->db->where('student.student_id', $params['student_id']);
+        }
+
+        if (isset($params['multiple_id'])) {
+            $this->db->where_in('student.student_id', $params['multiple_id']);
+        }
+
+        if (isset($params['student_search'])) {
+            $this->db->where('student_nis', $params['student_search']);
+            $this->db->or_like('student_full_name', $params['student_search']);
+        }
+
+        if (isset($params['student_nis'])) {
+            $this->db->where('student.student_nis', $params['student_nis']);
+        }
+
+        if (isset($params['nis'])) {
+            $this->db->like('student_nis', $params['nis']);
+        }
+
+        if (isset($params['password'])) {
+            $this->db->like('student_password', $params['password']);
+        }
+
+        if (isset($params['student_full_name'])) {
+            $this->db->where('student.student_full_name', $params['student_full_name']);
+        }
+
+        if (isset($params['status'])) {
+            $this->db->where('student.student_status', $params['status']);
+        } else {
+            $this->db->where('student.student_status', '1');
+        }
+
+        if (isset($params['date'])) {
+            $this->db->where('student_input_date', $params['date']);
+        }
+
+        if (isset($params['class_id'])) {
+            $this->db->where('class_class_id', $params['class_id']);
+        }
+
+        if (isset($params['c_id'])) {
+            $this->db->where_in('class_class_id', $params['c_id']);
+        }
+
+        if (isset($params['majors_id'])) {
+            $this->db->where('class.majors_majors_id', $params['majors_id']);
+        }
+
+        if (isset($params['class_name'])) {
+            $this->db->like('class_name', $params['class_name']);
+        }
+
+        if (isset($params['name_like'])) {
+            $this->db->like('student_full_name', $params['name_like']);
+        }
+
+        if (isset($params['group'])) {
+
+            $this->db->group_by('student.class_class_id');
+        }
+
+
+        if (isset($params['limit'])) {
+            if (!isset($params['offset'])) {
+                $params['offset'] = NULL;
+            }
+
+            $this->db->limit($params['limit'], $params['offset']);
+        }
+
+        if (isset($params['order_by'])) {
+            $this->db->order_by($params['order_by'], 'asc');
+        } else {
+            $this->db->order_by('majors_id', 'asc');
+            $this->db->order_by('class_name', 'asc');
+            $this->db->order_by('student_full_name', 'asc');
+        }
+
+        $this->db->where('majors_status', '1');
+
+        $this->db->select('student.student_id, student_nis, student_gender, student_full_name, student_status, student_input_date, student_last_update');
+        $this->db->select('class.class_id, student.class_class_id, class.class_name, class.majors_majors_id');
+        $this->db->select('majors_id, majors_name, majors_short_name, majors_status');
+
+        $this->db->join('class', 'class.class_id = student.class_class_id', 'left');
+        $this->db->join('majors', 'majors.majors_id = class.majors_majors_id', 'left');
+
+        $res = $this->db->get('student');
+
+        if (isset($params['id'])) {
+            return $res->row_array();
+        } else if (isset($params['student_nis'])) {
+            return $res->row_array();
+        } else {
+            return $res->result_array();
+        }
+    }
 }

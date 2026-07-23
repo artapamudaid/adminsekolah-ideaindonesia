@@ -51,6 +51,8 @@ class Auth_guru extends CI_Controller
             $password = $this->input->post('password', TRUE);
 
             $employees = $this->Employees_model->get_employee(array('nip' => $nip, 'password' => md5($password)));
+            // pre($employees);
+            // die;
             // echo count($employees);
             // exit;
             if (count($employees) > 0) {
