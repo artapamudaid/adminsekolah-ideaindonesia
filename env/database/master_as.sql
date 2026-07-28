@@ -1442,20 +1442,9 @@ CREATE TABLE IF NOT EXISTS `gaji_slip` (
 -- Data exporting was unselected.
 
 -- Dumping structure for function master_as.get_status_absen
-DELIMITER //
-CREATE FUNCTION `get_status_absen`(`p_status_absen_temp` VARCHAR(50), `p_status_absen` VARCHAR(50)) RETURNS varchar(100) CHARSET latin1 COLLATE latin1_swedish_ci
-BEGIN
-
-declare v_return varchar(100);
-
-if p_status_absen_temp = 'UNLOCK' then
-	set v_return := 'N' ;
-	else
-	set v_return := p_status_absen ;
-	end if;
-	return v_return;
-
-END//
+DELIMITER $$
+CREATE FUNCTION get_status_absen(p_status_absen VARCHAR(50), p_status_absen_temp VARCHAR(50)) RETURNS varchar(100) CHARSET utf8 COLLATE utf8_general_ci
+BEGIN declare v_return varchar(100); if p_status_absen_temp = 'UNLOCK' then set v_return := 'N' ; else set v_return := p_status_absen ; end if; return v_return; END$$
 DELIMITER ;
 
 -- Dumping structure for table master_as.hak_akses
