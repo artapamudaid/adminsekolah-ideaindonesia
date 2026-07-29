@@ -41,7 +41,7 @@ class Employees_set extends CI_Controller
       $params['majors_id'] = $s['m'];
     }
 
-    if (isset($s['p']) && !empty($s['p']) && $s['p'] != '') {
+    if (isset($s['p']) && !empty($s['p']) && $s['p'] != 'all') {
       $params['employee_position_id'] = $s['p'];
     }
 
