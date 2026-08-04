@@ -5,96 +5,37 @@
     <title>Presensi Pegawai</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
     <link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>">
-    <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <!-- Bootstrap 3.3.7 -->
-    <link rel="stylesheet" href="<?php echo media_url() ?>/css/bootstrap.min.css">
-    <!-- Font Awesome -->
-    <!-- Theme style -->
-    <link rel="stylesheet" href="<?php echo media_url() ?>/css/AdminLTE.min.css">
-    <link rel="stylesheet" href="<?php echo media_url() ?>/css/style.css">
-    <link rel="stylesheet" href="<?php echo media_url() ?>/css/frontend-style.css">
-    <link rel="stylesheet" href="<?php echo media_url() ?>/css/load-font-googleapis.css">
-    <link rel="stylesheet" href="<?php echo media_url() ?>/css/jquery.toast.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="<?php echo media_url() ?>auth/auth.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
     <script src="<?php echo media_url() ?>/js/jquery.min.js"></script>
-    <script src="<?php echo media_url() ?>js/jquery.toast.js"></script>
-
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            /* align-items: center; */
-            background-color: #fff;
-            font-family: Arial, sans-serif;
-        }
-
-        .container {
-            text-align: center;
-            /* padding: 20px; */
-            /* border: 3px solid #2f4f4f; */
-            border-radius: 5px;
-            background-color: #fff;
-        }
-
         input[type="text"] {
             padding: 8px 12px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            width: 200px;
             margin-bottom: 20px;
         }
 
-        nav.navbar {
-            max-width: 500px;
-            margin: 0 auto;
-            width: 100%;
-            background-color: #3c8dbc;
-        }
-
-        .navbar-header {
-            text-align: center;
-        }
-
-        .navbar-brand {
-            float: none !important;
-            display: inline-block;
-        }
-
-        section.content {
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            border-radius: 8px;
-        }
-
-        .box {
-            margin: 0 auto;
-        }
-
-        #presensiForm {
-            text-align: center;
+        .form-tabs {
+            margin-top: 30px;
+            margin-bottom: 0 !important;
+            flex-wrap: wrap;
         }
 
         .form-group {
-            width: 100%;
+            margin-bottom: 20px;
         }
 
-        .form-group select {
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
-        .form-group input[type="text"] {
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
+        .form-group #rfid,
+        .form-group #jenis-absen {
+            margin-top: 6px;
         }
 
         #area-foto img {
@@ -114,53 +55,108 @@
         #foto-pegawai.show {
             visibility: visible;
         }
-
-        [data-letters] {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: #00a65a;
-            color: white;
-            font-weight: bold;
-            font-size: 100px;
-            font-family: sans-serif;
-        }
-
-        [data-letters]::before {
-            content: attr(data-letters);
-        }
     </style>
-
 </head>
 
-<body>
-    <div class="container">
-        <nav class="navbar navbar-default">
-            <div class="navbar-header text-center" style="width: 100%;">
-                <a class="navbar-brand" href="#" style="display: inline-block; float: none;">
-                    <?php if (isset($setting_logo) and $setting_logo['setting_value'] != NULL) { ?>
-                        <img src="<?php echo upload_url('school/' . $setting_logo['setting_value']) ?>" style="height: 50px; margin-top: -10px;" />
-                    <?php } else { ?>
-                        <img src="<?php echo media_url('img/logo.svg') ?>" style="height: 50px; margin-top: -10px; margin-right: 5px;" />
-                    <?php } ?>
-                </a>
-                <div>
-                    <font size="4"><b><?php echo $setting_school['setting_value'] ?></b></font><br>
-                    <font size="2"><?php echo $setting_address['setting_value'] . ' ' . $setting_district['setting_value'] . ' - ' . $setting_city['setting_value'] . '<br> Telp. ' . $setting_phone['setting_value'] ?></font>
-                </div>
-            </div>
-        </nav>
-
-
-        <?php $this->load->view($main) ?>
+<body class="presence-body">
+    <div class="bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
     </div>
 
+    <div class="presence-page">
+
+        <!-- Navbar -->
+        <div class="presence-navbar">
+            <?php if (isset($setting_logo) && $setting_logo['setting_value'] != NULL): ?>
+                <img src="<?php echo upload_url('school/' . $setting_logo['setting_value']) ?>" alt="Logo">
+            <?php else: ?>
+                <img src="<?php echo media_url('img/as-landscape-white.png') ?>" alt="Logo">
+            <?php endif; ?>
+            <div class="school-name"><?php echo $setting_school['setting_value'] ?></div>
+            <div class="school-detail">
+                <?php echo $setting_address['setting_value'] . ' ' . $setting_district['setting_value'] . ' - ' . $setting_city['setting_value'] ?>
+                &nbsp;·&nbsp; Telp. <?php echo $setting_phone['setting_value'] ?>
+            </div>
+
+            <div class="form-tabs">
+                <a href="<?= base_url('manage/auth/login') ?>" class="tab-link">Login</a>
+                <a href="<?= base_url('student_presence') ?>" class="tab-link">Presensi Siswa</a>
+                <a href="<?= base_url('employee_presence') ?>" class="tab-link active">Presensi Pegawai</a>
+                <a href="<?= base_url('guru') ?>" class="tab-link">Guru</a>
+            </div>
+        </div>
+
+        <!-- Datetime -->
+        <div class="presence-datetime">
+            <div class="date-display" id="date-display"></div>
+            <div class="time-display" id="time-display"></div>
+            <div class="time-label">
+                <span>Jam</span>
+                <span>Menit</span>
+                <span>Detik</span>
+            </div>
+        </div>
+
+        <div class="presence-content">
+            <?php $this->load->view($main) ?>
+        </div>
+
+    </div>
 
     <script src="<?php echo media_url() ?>/js/bootstrap.min.js"></script>
-</body>
 
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            document.getElementById('date-display').textContent = now.toLocaleDateString('id-ID', options);
+            document.getElementById('time-display').textContent = now.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+    </script>
+
+    <?php if ($this->session->flashdata('success')): ?>
+        <script>
+            $(document).ready(function() {
+                $.toast({
+                    heading: 'Berhasil',
+                    text: '<?php echo $this->session->flashdata('success') ?>',
+                    position: 'top-right',
+                    loaderBg: '#3080bd',
+                    icon: 'success',
+                    hideAfter: 3500,
+                    stack: 6
+                });
+            });
+        </script>
+    <?php endif; ?>
+
+    <?php if ($this->session->flashdata('failed')): ?>
+        <script>
+            $(document).ready(function() {
+                $.toast({
+                    heading: 'Gagal',
+                    text: '<?php echo $this->session->flashdata('failed') ?>',
+                    position: 'top-right',
+                    loaderBg: '#dc2626',
+                    icon: 'error',
+                    hideAfter: 3500,
+                    stack: 6
+                });
+            });
+        </script>
+    <?php endif; ?>
+</body>
 
 </html>
