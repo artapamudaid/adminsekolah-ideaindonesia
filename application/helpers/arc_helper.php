@@ -119,6 +119,20 @@ if (!function_exists('pretty_date')) {
     }
 }
 
+if (!function_exists('upload_prove_url')) {
+
+    function upload_prove_url($name = '')
+    {
+        if (stristr($name, '://') !== FALSE) {
+            // If it contains a full URL, strip any directory prefixes (like 'users/https://...')
+            $parts = explode('://', $name);
+            return 'https://' . ltrim($parts[1], '/'); // Rebuild using actual URL
+        } else {
+            return base_url('uploads/prove/' . $name);
+        }
+    }
+}
+
 if (! function_exists('idr_format')) {
     function idr_format($param = '')
     {
