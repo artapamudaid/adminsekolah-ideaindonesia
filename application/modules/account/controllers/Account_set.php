@@ -93,34 +93,47 @@ class Account_set extends CI_Controller
 
                 if ($accountCat == '1') {
 
-                    $akun_piutang = $this->akun_piutang($accountMajorsId);
+                    // Data POS & Jenis Bayar dari wizard di modal (jika ada)
+                    if ($this->input->post('piutang_account_id')) {
+                        $piutang_id     = $this->input->post('piutang_account_id');
+                        $pos_name       = $this->input->post('pos_name');
+                        $pos_desc       = $this->input->post('pos_description');
+                        $period_id      = $this->input->post('period_id');
+                        $payment_type   = $this->input->post('payment_type') ?: 'BULAN';
+                        $payment_mode   = $this->input->post('paymentModes') ?: 'TETAP';
+                        $is_batch       = $this->input->post('paymentIsBatchs') ?: '0';
+                    } else {
+                        // Fallback: perilaku lama (auto)
+                        $piutang_id   = $this->akun_piutang($accountMajorsId);
+                        $pos_name     = $accountKet;
+                        $pos_desc     = $accountKet;
+                        $period       = $this->db->query("SELECT period_id as id FROM period WHERE period_status = '1'")->row_array();
+                        $period_id    = $period['id'];
+                        $payment_type = 'BULAN';
+                        $payment_mode = 'TETAP';
+                        $is_batch     = '0';
+                    }
 
-                    if (isset($akun_piutang)) {
-
-                        $check_account = $this->db->get_where('pos', array('account_account_id', $account_id))->num_rows();
+                    if (isset($piutang_id)) {
+                        $check_account = $this->db->get_where('pos', ['account_account_id' => $account_id])->num_rows();
 
                         if ($check_account == 0) {
-                            $insert_pos = $this->db->query("INSERT INTO pos(pos_name, pos_description,
-                                                            account_account_id, piutang_account_id)
-                                                            VALUES
-                                                            ('$accountKet','$accountKet','$account_id','$akun_piutang')");
+                            $this->db->insert('pos', [
+                                'pos_name'           => $pos_name,
+                                'pos_description'    => $pos_desc,
+                                'account_account_id' => $account_id,
+                                'piutang_account_id' => $piutang_id,
+                            ]);
 
-                            if ($insert_pos) {
-                                $pos_id = $this->db->insert_id();
+                            $pos_id = $this->db->insert_id();
 
-                                $period = $this->db->query("SELECT period_id as id FROM period
-                                                            WHERE period_status = '1'")->row_array();
-
-                                $payment = array(
-                                    'payment_type' => 'BULAN',
-                                    'payment_mode' => 'TETAP',
-                                    'payment_is_batch' => '0',
-                                    'period_period_id' => $period['id'],
-                                    'pos_pos_id' => $pos_id
-                                );
-
-                                $this->db->insert('payment', $payment);
-                            }
+                            $this->db->insert('payment', [
+                                'payment_type'     => $payment_type,
+                                'payment_mode'     => $payment_mode,
+                                'payment_is_batch' => $is_batch,
+                                'period_period_id' => $period_id,
+                                'pos_pos_id'       => $pos_id,
+                            ]);
                         }
                     }
                 }
@@ -1262,7 +1275,8 @@ class Account_set extends CI_Controller
         } else {
             $params['id'] = $id;
             $account = $this->Account_model->get($params);
-
+            $account['account_pos_name'] = $account['account_description'];
+            $account['account_pos_description'] = 'POS Pembayaran ' . $account['account_description'];
             $data['account'] = $account;
 
             // $majors_id = $this->session->userdata('umajorsid');

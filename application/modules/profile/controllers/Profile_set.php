@@ -108,8 +108,25 @@ class Profile_set extends CI_Controller
     {
         $this->load->model('Logs_model');
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('user_password', 'Password', 'required|matches[passconf]|min_length[6]');
-        $this->form_validation->set_rules('passconf', 'Password Confirmation', 'required|min_length[6]');
+        $this->form_validation->set_rules(
+            'user_password',
+            'Password',
+            array(
+                'required',
+                'matches[passconf]',
+                array(
+                    'complex_password',
+                    function ($str) {
+                        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/', $str)) {
+                            $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus.');
+                            return FALSE;
+                        }
+                        return TRUE;
+                    }
+                )
+            )
+        );
+        $this->form_validation->set_rules('passconf', 'Password Confirmation', 'required');
         $this->form_validation->set_rules('user_current_password', 'Old Password', 'required');
         $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
         if ($_POST and $this->form_validation->run() == TRUE) {
@@ -117,6 +134,7 @@ class Profile_set extends CI_Controller
             $user_id                    = $this->input->post('user_id');
 
             $params['user_password']    = md5($this->input->post('user_password'));
+            $params['user_password_last_update'] = date('Y-m-d H:i:s');
 
             $current_password = $this->db->query("SELECT user_id FROM users WHERE user_id = '$user_id' AND user_password= '$old_password'")->num_rows();
 
@@ -160,5 +178,12 @@ class Profile_set extends CI_Controller
             $this->form_validation->set_message('check_current_password', 'The Password did not same with the current password');
             return FALSE;
         }
+    }
+
+    public function dismiss_password_reminder()
+    {
+        $user_id = $this->session->userdata('uid');
+        $this->session->set_userdata('password_reminder_dismissed_' . $user_id, true);
+        echo json_encode(['status' => 'ok']);
     }
 }

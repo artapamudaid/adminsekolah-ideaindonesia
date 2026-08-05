@@ -105,8 +105,26 @@ class Users_set extends CI_Controller
         $this->load->library('form_validation');
 
         if (!$this->input->post('user_id')) {
-            $this->form_validation->set_rules('user_password', 'Password', 'trim|required|xss_clean|min_length[6]');
-            $this->form_validation->set_rules('passconf', 'Konfirmasi password', 'trim|required|xss_clean|min_length[6]|matches[user_password]');
+            $this->form_validation->set_rules(
+                'user_password',
+                'Password',
+                array(
+                    'trim',
+                    'required',
+                    'xss_clean',
+                    array(
+                        'complex_password',
+                        function ($str) {
+                            if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/', $str)) {
+                                $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus.');
+                                return FALSE;
+                            }
+                            return TRUE;
+                        }
+                    )
+                )
+            );
+            $this->form_validation->set_rules('passconf', 'Konfirmasi password', 'trim|required|xss_clean|matches[user_password]');
             $this->form_validation->set_rules('user_email', 'Email', 'trim|required|xss_clean|is_unique[users.user_email]');
             $this->form_validation->set_message('passconf', 'Password dan konfirmasi password tidak cocok');
         }
@@ -123,6 +141,7 @@ class Users_set extends CI_Controller
                 $params['user_input_date'] = date('Y-m-d H:i:s');
                 $params['user_email'] = $this->input->post('user_email');
                 $params['user_password'] = md5($this->input->post('user_password'));
+                $params['user_password_last_update'] = date('Y-m-d H:i:s');
             }
             $params['user_email'] = $this->input->post('user_email');
             $params['user_role_role_id'] = $this->input->post('role_id');
@@ -357,12 +376,31 @@ class Users_set extends CI_Controller
     function rpw($id = NULL)
     {
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('user_password', 'Password', 'trim|required|xss_clean|min_length[6]');
-        $this->form_validation->set_rules('passconf', 'Password Confirmation', 'trim|required|xss_clean|min_length[6]|matches[user_password]');
+        $this->form_validation->set_rules(
+            'user_password',
+            'Password',
+            array(
+                'trim',
+                'required',
+                'xss_clean',
+                array(
+                    'complex_password',
+                    function ($str) {
+                        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/', $str)) {
+                            $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus.');
+                            return FALSE;
+                        }
+                        return TRUE;
+                    }
+                )
+            )
+        );
+        $this->form_validation->set_rules('passconf', 'Password Confirmation', 'trim|required|xss_clean|matches[user_password]');
         $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
         if ($_POST and $this->form_validation->run() == TRUE) {
             $id = $this->input->post('user_id');
             $params['user_password'] = md5($this->input->post('user_password'));
+            $params['user_password_last_update'] = date('Y-m-d H:i:s');
             $status = $this->Users_model->change_password($id, $params);
 
             // activity log

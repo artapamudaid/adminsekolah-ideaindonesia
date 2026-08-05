@@ -42,10 +42,12 @@ class Prove_set extends CI_Controller
 
     if (isset($s['m']) && !empty($s['m']) && $s['m'] != '') {
       $params['majors_id'] = $s['m'];
-    }
 
-    if (isset($s['s']) && !empty($s['s']) && $s['m'] != '') {
-      $params['status'] = $s['s'];
+      if ($s['s'] != '1') {
+        $params['status'] = $s['s'];
+      } else {
+        $params['status']   = '1';
+      }
     }
 
     $data['prove']      = $this->Prove_model->get($params);
@@ -59,6 +61,129 @@ class Prove_set extends CI_Controller
     $data['title'] = 'Bukti Bayar Transfer';
     $data['main'] = 'prove/prove_list';
     $this->load->view('manage/layout', $data);
+  }
+
+  function datatable_prove()
+  {
+    $m = $this->input->post('m');
+    $c = $this->input->post('c');
+    $s = $this->input->post('s');
+
+    $data = array();
+
+    if (isset($m) && !empty($m) && $m != 'all') {
+      $data['majors_id'] = $m;
+    }
+
+    if (isset($c) && !empty($c) && $c != 'all') {
+      $data['class_id'] = $c;
+    }
+
+    if (isset($s) && $s !== '' && $s != 'all') {
+      $data['status'] = $s;
+    }
+
+    $draw = $this->input->post('draw');
+    $length = $this->input->post('length') ? $this->input->post('length') : 10;
+    $start = $this->input->post('start') ? $this->input->post('start') : 0;
+    $search = isset($_POST['search']['value']) ? $_POST['search']['value'] : '';
+
+    if (!empty($search)) {
+      $data['search'] = $search;
+    }
+
+    if (isset($_POST['order'][0]['column'])) {
+      $order_column_index = $_POST['order'][0]['column'];
+      $order_dir = $_POST['order'][0]['dir'];
+      $columns = [
+        0 => 'prove.prove_id',
+        1 => 'student_nis',
+        2 => 'student_full_name',
+        3 => 'class_name',
+        4 => 'prove_date',
+        5 => 'prove_img',
+        6 => 'prove_note',
+        7 => 'prove_status',
+        8 => 'prove.prove_id'
+      ];
+      $data['order_column'] = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'prove_date';
+      $data['order_dir'] = $order_dir;
+    } else {
+      $data['order_column'] = 'prove_date';
+      $data['order_dir'] = 'desc';
+    }
+
+    $recordsTotal = $this->Prove_model->count_all(array());
+    $recordsFiltered = $this->Prove_model->count_all($data);
+
+    $list = $this->Prove_model->list_prove($length, $start, $search, $data);
+
+    $data_output = array();
+    $i = $start + 1;
+
+    foreach ($list as $row) {
+      $date = date_create($row['prove_date']);
+      $formatted_date = date_format($date, "d-m-Y H:i:s");
+
+      $img_url = upload_prove_url($row['prove_img']);
+      $bukti_bayar = '<a href="' . $img_url . '" target="_blank"><img src="' . $img_url . '" width="70"></a>';
+
+      $status_label = '';
+      if ($row['prove_status'] == 1) {
+        $status_label = '<label class="label label-success">DIVERIFIKASI [Sudah Diverifikasi Admin]</label>';
+      } else if ($row['prove_status'] == 0) {
+        $status_label = '<label class="label label-danger">DIBATALKAN [Dibatalkan oleh Pengirim]</label>';
+      } else if ($row['prove_status'] == 2) {
+        $status_label = '<label class="label label-warning">DIBAYAR [Menunggu Verifikasi Admin]</label>';
+      } else if ($row['prove_status'] == 3) {
+        $status_label = '<label class="label label-danger">DITOLAK [Bukti Transfer Ditolak Admin]</label>';
+      }
+
+      $aksi = '';
+      if ($row['prove_status'] == 2) {
+        $aksi = '<a href="#verificationProve' . $row['prove_id'] . '" data-toggle="modal" class="btn btn-xs btn-success">Verifikasi Transaksi</a>';
+        $aksi .= '<div class="modal modal-default fade" id="verificationProve' . $row['prove_id'] . '">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span></button>
+                          <h3 class="modal-title"><span class="fa fa-warning"></span> Konfirmasi Verifikasi Transfer Wali Murid</h3>
+                        </div>
+                        <div class="modal-body">
+                          <center>
+                            <a href="' . site_url('manage/prove/approve/' . $row['prove_id']) . '" type="button" class="btn btn-success">Verifikasi</a>
+                            <a href="' . site_url('manage/prove/ignore/' . $row['prove_id']) . '" type="button" class="btn btn-danger">Tolak</a>
+                          </center>
+                        </div>
+                        <div class="modal-footer">
+                        </div>
+                      </div>
+                    </div>
+                  </div>';
+      }
+
+      $data_output[] = array(
+        $i++,
+        $row['student_nis'],
+        $row['student_full_name'],
+        $row['majors_short_name'] . ' - ' . $row['class_name'],
+        $formatted_date,
+        $bukti_bayar,
+        $row['prove_note'],
+        $status_label,
+        $aksi
+      );
+    }
+
+    $output = array(
+      "draw" => intval($draw),
+      "recordsTotal" => $recordsTotal,
+      "recordsFiltered" => $recordsFiltered,
+      "data" => $data_output
+    );
+
+    echo json_encode($output);
   }
 
   function class_searching()

@@ -84,7 +84,7 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <div class="col-sm-10">
-                                        <input type="text" name="pos_name" id="input_pos_name" placeholder="Tulis Nama POS" class="form-control" autocomplete="off" required value="<?= $account['account_description'] ?>">
+                                        <input type="text" name="pos_name" id="input_pos_name" placeholder="Tulis Nama POS" class="form-control" autocomplete="off" required value="<?= $account['account_pos_name'] ?>">
                                         <?php echo form_error('pos_name') ?>
                                     </div>
                                 </div>
@@ -94,7 +94,7 @@
                                         <span class="text-danger">*</span>
                                     </label>
                                     <div class="col-sm-10">
-                                        <input type="text" name="pos_description" id="input_pos_description" placeholder="Tulis Keterangan POS" class="form-control" autocomplete="off" required value="<?= $account['account_description'] ?>">
+                                        <input type="text" name="pos_description" id="input_pos_description" placeholder="Tulis Keterangan POS" class="form-control" autocomplete="off" required value="<?= $account['account_pos_description'] ?>">
                                         <?php echo form_error('pos_description') ?>
                                     </div>
                                 </div>

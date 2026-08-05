@@ -24,3 +24,10 @@ $hook['post_controller_constructor'][] = array(
     'filename' => 'SuspendInfoHook.php',
     'filepath' => 'hooks'
 );
+
+$hook['post_controller_constructor'][] = array(
+    'class'    => 'PasswordReminderHook',
+    'function' => 'check_reminder',
+    'filename' => 'PasswordReminderHook.php',
+    'filepath' => 'hooks'
+);

@@ -237,70 +237,161 @@
                                                         <button type="button" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#editSubAccount<?php echo $sub->account_id ?>" title="Edit Sub Akun"><i class="fa fa-pencil"></i></button>
                                                     </td>
                                                 </tr>
-                                                <div class="modal fade" id="addSubAccount<?php echo $sub->account_id ?>" role="dialog">
+                                                <div class="modal fade modal-add-sub" id="addSubAccount<?php echo $sub->account_id ?>" role="dialog" data-unit-name="<?php
+                                                                                                                                                                        if (isset($s['m']) && $s['m'] != '') {
+                                                                                                                                                                            $uNameRow = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '" . $s['m'] . "'")->row();
+                                                                                                                                                                            if ($uNameRow) echo $uNameRow->majors_short_name;
+                                                                                                                                                                        }
+                                                                                                                                                                        ?>">
                                                     <div class="modal-dialog modal-md">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                                                                 <h4 class="modal-title">Tambah Sub Akun</h4>
                                                             </div>
-                                                            <?php echo form_open('manage/account/add_glob', array('method' => 'post')); ?>
+                                                            <?php echo form_open('manage/account/add_glob', array('method' => 'post', 'class' => 'form-multi-step')); ?>
                                                             <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-8">
-                                                                        <?php
-                                                                        $sub_code = $this->db->query("SELECT MAX(account_code) as maxSub FROM account WHERE account_note = '$sub_id'")->row();
-                                                                        $childParams = substr($sub_code->maxSub, 2);
-                                                                        if ($childParams > 0) {
-                                                                            $childFront = substr($sub_code->maxSub, 0, 2);
-                                                                            $childBack = substr($sub_code->maxSub, 2);
-                                                                            $childAccount = $childBack + 1;
-                                                                        } else {
-                                                                            $childFront = substr($sub->account_code, 0, 2);
-                                                                            $childBack = substr($sub->account_code, 2);
-                                                                            $childAccount = $childBack + 1;
-                                                                        }
-                                                                        ?>
-                                                                        <div class="form-group">
-                                                                            <label>Kode Akun</label>
-                                                                            <input type="text" required="" readonly="" name="account_code" class="form-control" value="<?php echo $childFront . $childAccount ?>">
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <label>Keterangan</label>
-                                                                            <input type="text" required="" name="account_description" class="form-control" placeholder="Masukkan Keterangan">
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <input type="hidden" required="" name="account_note" class="form-control" value="<?php echo $sub->account_id ?>">
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <label>Kategori <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                            <select required="" name="account_category" class="form-control">
-                                                                                <option value="">-Pilih Kategori-</option>
-                                                                                <option value="1">Pembayaran</option>
-                                                                                <option value="2">Keuangan</option>
-                                                                            </select>
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
-                                                                                <option value="">-Pilih Unit Pesantren-</option>
-                                                                                <?php foreach ($majors as $row) {
-                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
-                                                                                ?>
-                                                                                    <option
-                                                                                        value="<?php echo $row['majors_id']; ?>"
-                                                                                        <?= $selected ?>>
-                                                                                        <?php echo $row['majors_short_name'] ?>
-                                                                                    </option>
-                                                                                <?php } ?>
-                                                                            </select>
+                                                                <?php
+                                                                $sub_code = $this->db->query("SELECT MAX(account_code) as maxSub FROM account WHERE account_note = '$sub_id'")->row();
+                                                                $childParams = substr($sub_code->maxSub, 2);
+                                                                if ($childParams > 0) {
+                                                                    $childFront = substr($sub_code->maxSub, 0, 2);
+                                                                    $childBack = substr($sub_code->maxSub, 2);
+                                                                    $childAccount = $childBack + 1;
+                                                                } else {
+                                                                    $childFront = substr($sub->account_code, 0, 2);
+                                                                    $childBack = substr($sub->account_code, 2);
+                                                                    $childAccount = $childBack + 1;
+                                                                }
+
+                                                                $is_expense = (substr($childFront, 0, 1) === '4'); // Akun Biaya
+                                                                ?>
+
+                                                                <div class="step-section step-1" data-step="1">
+                                                                    <div class="row">
+                                                                        <div class="col-md-12">
+                                                                            <?php if ($is_expense): ?>
+                                                                                <p class="text-info step-indicator"><strong>Langkah 1 dari 3: Data Akun</strong></p>
+                                                                            <?php endif; ?>
+                                                                            <div class="form-group">
+                                                                                <label>Kode Akun</label>
+                                                                                <input type="text" required="" readonly="" name="account_code" class="form-control" value="<?php echo $childFront . $childAccount ?>">
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <label>Keterangan</label>
+                                                                                <input type="text" required="" name="account_description" class="form-control input-account-desc" placeholder="Masukkan Keterangan">
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <input type="hidden" required="" name="account_note" class="form-control" value="<?php echo $sub->account_id ?>">
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <label>Kategori <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+                                                                                <select required="" name="account_category" class="form-control select-category" data-is-expense="<?php echo $is_expense ? '1' : '0' ?>">
+                                                                                    <option value="">-Pilih Kategori-</option>
+                                                                                    <option value="1">Pembayaran</option>
+                                                                                    <option value="2">Keuangan</option>
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+                                                                                <select required="" name="account_majors_id" class="form-control select-unit" <?= $attribute ?>>
+                                                                                    <option value="">-Pilih Unit Pesantren-</option>
+                                                                                    <?php foreach ($majors as $row) {
+                                                                                        $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                    ?>
+                                                                                        <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>>
+                                                                                            <?php echo $row['majors_short_name'] ?>
+                                                                                        </option>
+                                                                                    <?php } ?>
+                                                                                </select>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
+
+                                                                <?php if ($is_expense): ?>
+                                                                    <div class="step-section step-2" data-step="2" style="display: none;">
+                                                                        <div class="row">
+                                                                            <div class="col-md-12">
+                                                                                <p class="text-info step-indicator"><strong>Langkah 2 dari 3: Data POS</strong></p>
+                                                                                <div class="form-group">
+                                                                                    <label>Akun Piutang <span class="text-danger">*</span></label>
+                                                                                    <select name="piutang_account_id" class="form-control input-piutang">
+                                                                                        <option value="">-Pilih Akun Piutang-</option>
+                                                                                        <?php
+                                                                                        $piutangMajors = ($sub->account_majors_id != '0') ? "AND account_majors_id = '" . $sub->account_majors_id . "'" : "";
+                                                                                        $piutangs = $this->db->query("SELECT * FROM account WHERE account_code LIKE '1%' AND account_description LIKE '%Piutang%' AND account_category = '2' $piutangMajors")->result();
+                                                                                        foreach ($piutangs as $row):
+                                                                                        ?>
+                                                                                            <option value="<?php echo $row->account_id ?>"><?php echo $row->account_code . ' - ' . $row->account_description ?></option>
+                                                                                        <?php endforeach; ?>
+                                                                                    </select>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label>Nama POS <span class="text-danger">*</span></label>
+                                                                                    <input type="text" name="pos_name" class="form-control input-pos-name" placeholder="Tulis Nama POS">
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label>Keterangan <span class="text-danger">*</span></label>
+                                                                                    <input type="text" name="pos_description" class="form-control input-pos-desc" placeholder="Tulis Keterangan POS">
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="step-section step-3" data-step="3" style="display: none;">
+                                                                        <div class="row">
+                                                                            <div class="col-md-12">
+                                                                                <p class="text-info step-indicator"><strong>Langkah 3 dari 3: Data Jenis Bayar</strong></p>
+                                                                                <div class="form-group">
+                                                                                    <label>Tahun Ajaran <span class="text-danger">*</span></label>
+                                                                                    <select name="period_id" class="form-control input-period">
+                                                                                        <option value="">-Pilih Tahun Ajaran-</option>
+                                                                                        <?php
+                                                                                        $periods = $this->db->query("SELECT * FROM period WHERE period_status = '1'")->result();
+                                                                                        foreach ($periods as $row) :
+                                                                                        ?>
+                                                                                            <option value="<?php echo $row->period_id; ?>" selected><?php echo $row->period_start . '/' . $row->period_end; ?></option>
+                                                                                        <?php endforeach; ?>
+                                                                                    </select>
+                                                                                </div>
+                                                                                <div class="form-group div-payment-type">
+                                                                                    <label>Tipe <span class="text-danger">*</span></label>
+                                                                                    <select name="payment_type" class="form-control select-payment-type">
+                                                                                        <option value="BULAN">Bulanan</option>
+                                                                                        <option value="BEBAS">Bebas</option>
+                                                                                    </select>
+                                                                                </div>
+                                                                                <div class="form-group toggle-by-type">
+                                                                                    <label>Model Pembayaran <span class="text-danger">*</span></label>
+                                                                                    <div class="radio">
+                                                                                        <label><input type="radio" name="paymentModes" value="TETAP" checked> Tetap</label>
+                                                                                    </div>
+                                                                                    <div class="radio">
+                                                                                        <label><input type="radio" name="paymentModes" value="TIDAK TETAP"> Tidak Tetap</label>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="form-group toggle-by-type">
+                                                                                    <label>Apakah Item Paket Pembayaran <span class="text-danger">*</span></label>
+                                                                                    <br>
+                                                                                    <span class="help">Pilih Ya jika item ini merupakan bagian dari paket pembayaran</span>
+                                                                                    <div class="radio">
+                                                                                        <label><input type="radio" name="paymentIsBatchs" value="1" checked> Ya</label>
+                                                                                    </div>
+                                                                                    <div class="radio">
+                                                                                        <label><input type="radio" name="paymentIsBatchs" value="0"> Tidak</label>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                <?php endif; ?>
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <button type="submit" class="btn btn-success">Simpan</button>
+                                                                <button type="button" class="btn btn-default pull-left btn-prev" style="display: none;">Sebelumnya</button>
                                                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                                <button type="button" class="btn btn-primary btn-next" style="display: none;">Selanjutnya</button>
+                                                                <button type="submit" class="btn btn-success btn-simpan">Simpan</button>
                                                             </div>
                                                             <?php echo form_close(); ?>
                                                         </div>
@@ -369,7 +460,7 @@
                                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $child->account_code ?></td>
                                                             <td><?php echo $child->account_description ?></td>
                                                             <td><?php echo ($child->account_status == 0) ? 'Header' : 'Non-Header'  ?></td>
-                                                            <td>Sub Akun 2-1</td>
+                                                            <td>Sub Akun 2</td>
                                                             <td>
                                                                 <?php
                                                                 if ($child->account_category == '1') {
@@ -1019,7 +1110,7 @@
                                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $child->account_code ?></td>
                                                             <td><?php echo $child->account_description ?></td>
                                                             <td><?php echo ($child->account_status == 0) ? 'Header' : 'Non-Header'  ?></td>
-                                                            <td>Sub Akun 2-2</td>
+                                                            <td>Sub Akun 2</td>
                                                             <td>
                                                                 <?php
                                                                 if ($child->account_category == '1') {
@@ -1249,71 +1340,161 @@
                                                         <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteSubAccount<?php echo $sub->account_id ?>" title="Hapus Sub Akun"><i class="fa fa-trash"></i></button>
                                                     </td>
                                                 </tr>
-                                                <div class="modal fade" id="addSubAccount<?php echo $sub->account_id ?>" role="dialog">
+                                                <div class="modal fade modal-add-sub" id="addSubAccount<?php echo $sub->account_id ?>" role="dialog" data-unit-name="<?php
+                                                                                                                                                                        if (isset($s['m']) && $s['m'] != '') {
+                                                                                                                                                                            $uNameRow = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '" . $s['m'] . "'")->row();
+                                                                                                                                                                            if ($uNameRow) echo $uNameRow->majors_short_name;
+                                                                                                                                                                        }
+                                                                                                                                                                        ?>">
                                                     <div class="modal-dialog modal-md">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                                                                 <h4 class="modal-title">Tambah Sub Akun</h4>
                                                             </div>
-                                                            <?php echo form_open('manage/account/add_glob', array('method' => 'post')); ?>
+                                                            <?php echo form_open('manage/account/add_glob', array('method' => 'post', 'class' => 'form-multi-step')); ?>
                                                             <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-8">
-                                                                        <?php
-                                                                        $sub_code = $this->db->query("SELECT MAX(account_code) as maxSub FROM account WHERE account_note = '$sub_id'")->row();
-                                                                        // $childParams = substr($sub_code->maxSub, 2);
-                                                                        $childParams = !empty($sub_code->maxSub) ? substr($sub_code->maxSub, 2) : '';
-                                                                        if ($childParams > 0) {
-                                                                            $childFront = substr($sub_code->maxSub, 0, 2);
-                                                                            $childBack = substr($sub_code->maxSub, 2);
-                                                                            $childAccount = $childBack + 1;
-                                                                        } else {
-                                                                            $childFront = substr($sub->account_code, 0, 2);
-                                                                            $childBack = substr($sub->account_code, 2);
-                                                                            $childAccount = $childBack + 1;
-                                                                        }
-                                                                        ?>
-                                                                        <div class="form-group">
-                                                                            <label>Kode Akun</label>
-                                                                            <input type="text" required="" readonly="" name="account_code" class="form-control" value="<?php echo $childFront . $childAccount ?>">
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <label>Keterangan</label>
-                                                                            <input type="text" required="" name="account_description" class="form-control" placeholder="Masukkan Keterangan">
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <input type="hidden" required="" name="account_note" class="form-control" value="<?php echo $sub->account_id ?>">
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <label>Kategori <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                            <select required="" name="account_category" class="form-control">
-                                                                                <option value="">-Pilih Kategori-</option>
-                                                                                <option value="1">Pembayaran</option>
-                                                                                <option value="2">Keuangan</option>
-                                                                            </select>
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-                                                                            <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
-                                                                                <option value="">-Pilih Unit Pesantren-</option>
-                                                                                <?php foreach ($majors as $row) {
-                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
-                                                                                ?>
-                                                                                    <option
-                                                                                        value="<?php echo $row['majors_id']; ?>"
-                                                                                        <?= $selected ?>>
-                                                                                        <?php echo $row['majors_short_name'] ?>
-                                                                                    </option>
-                                                                                <?php } ?>
-                                                                            </select>
+                                                                <?php
+                                                                $sub_code = $this->db->query("SELECT MAX(account_code) as maxSub FROM account WHERE account_note = '$sub_id'")->row();
+                                                                $childParams = !empty($sub_code->maxSub) ? substr($sub_code->maxSub, 2) : '';
+                                                                if ($childParams > 0) {
+                                                                    $childFront = substr($sub_code->maxSub, 0, 2);
+                                                                    $childBack = substr($sub_code->maxSub, 2);
+                                                                    $childAccount = $childBack + 1;
+                                                                } else {
+                                                                    $childFront = substr($sub->account_code, 0, 2);
+                                                                    $childBack = substr($sub->account_code, 2);
+                                                                    $childAccount = $childBack + 1;
+                                                                }
+
+                                                                $is_expense = (substr($childFront, 0, 1) === '4'); // Akun Biaya
+                                                                ?>
+
+                                                                <div class="step-section step-1" data-step="1">
+                                                                    <div class="row">
+                                                                        <div class="col-md-12">
+                                                                            <?php if ($is_expense): ?>
+                                                                                <p class="text-info step-indicator"><strong>Langkah 1 dari 3: Data Akun</strong></p>
+                                                                            <?php endif; ?>
+                                                                            <div class="form-group">
+                                                                                <label>Kode Akun</label>
+                                                                                <input type="text" required="" readonly="" name="account_code" class="form-control" value="<?php echo $childFront . $childAccount ?>">
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <label>Keterangan</label>
+                                                                                <input type="text" required="" name="account_description" class="form-control input-account-desc" placeholder="Masukkan Keterangan">
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <input type="hidden" required="" name="account_note" class="form-control" value="<?php echo $sub->account_id ?>">
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <label>Kategori <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+                                                                                <select required="" name="account_category" class="form-control select-category" data-is-expense="<?php echo $is_expense ? '1' : '0' ?>">
+                                                                                    <option value="">-Pilih Kategori-</option>
+                                                                                    <option value="1">Pembayaran</option>
+                                                                                    <option value="2">Keuangan</option>
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <label>Unit Pesantren <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+                                                                                <select required="" name="account_majors_id" class="form-control select-unit" <?= $attribute ?>>
+                                                                                    <option value="">-Pilih Unit Pesantren-</option>
+                                                                                    <?php foreach ($majors as $row) {
+                                                                                        $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                    ?>
+                                                                                        <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>>
+                                                                                            <?php echo $row['majors_short_name'] ?>
+                                                                                        </option>
+                                                                                    <?php } ?>
+                                                                                </select>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
+
+                                                                <?php if ($is_expense): ?>
+                                                                    <div class="step-section step-2" data-step="2" style="display: none;">
+                                                                        <div class="row">
+                                                                            <div class="col-md-12">
+                                                                                <p class="text-info step-indicator"><strong>Langkah 2 dari 3: Data POS</strong></p>
+                                                                                <div class="form-group">
+                                                                                    <label>Akun Piutang <span class="text-danger">*</span></label>
+                                                                                    <select name="piutang_account_id" class="form-control input-piutang">
+                                                                                        <option value="">-Pilih Akun Piutang-</option>
+                                                                                        <?php
+                                                                                        $piutangMajors = ($sub->account_majors_id != '0') ? "AND account_majors_id = '" . $sub->account_majors_id . "'" : "";
+                                                                                        $piutangs = $this->db->query("SELECT * FROM account WHERE account_code LIKE '1%' AND account_description LIKE '%Piutang%' AND account_category = '2' $piutangMajors")->result();
+                                                                                        foreach ($piutangs as $row):
+                                                                                        ?>
+                                                                                            <option value="<?php echo $row->account_id ?>"><?php echo $row->account_code . ' - ' . $row->account_description ?></option>
+                                                                                        <?php endforeach; ?>
+                                                                                    </select>
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label>Nama POS <span class="text-danger">*</span></label>
+                                                                                    <input type="text" name="pos_name" class="form-control input-pos-name" placeholder="Tulis Nama POS">
+                                                                                </div>
+                                                                                <div class="form-group">
+                                                                                    <label>Keterangan <span class="text-danger">*</span></label>
+                                                                                    <input type="text" name="pos_description" class="form-control input-pos-desc" placeholder="Tulis Keterangan POS">
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="step-section step-3" data-step="3" style="display: none;">
+                                                                        <div class="row">
+                                                                            <div class="col-md-12">
+                                                                                <p class="text-info step-indicator"><strong>Langkah 3 dari 3: Data Jenis Bayar</strong></p>
+                                                                                <div class="form-group">
+                                                                                    <label>Tahun Ajaran <span class="text-danger">*</span></label>
+                                                                                    <select name="period_id" class="form-control input-period">
+                                                                                        <option value="">-Pilih Tahun Ajaran-</option>
+                                                                                        <?php
+                                                                                        $periods = $this->db->query("SELECT * FROM period WHERE period_status = '1'")->result();
+                                                                                        foreach ($periods as $row) :
+                                                                                        ?>
+                                                                                            <option value="<?php echo $row->period_id; ?>" selected><?php echo $row->period_start . '/' . $row->period_end; ?></option>
+                                                                                        <?php endforeach; ?>
+                                                                                    </select>
+                                                                                </div>
+                                                                                <div class="form-group div-payment-type">
+                                                                                    <label>Tipe <span class="text-danger">*</span></label>
+                                                                                    <select name="payment_type" class="form-control select-payment-type">
+                                                                                        <option value="BULAN">Bulanan</option>
+                                                                                        <option value="BEBAS">Bebas</option>
+                                                                                    </select>
+                                                                                </div>
+                                                                                <div class="form-group toggle-by-type">
+                                                                                    <label>Model Pembayaran <span class="text-danger">*</span></label>
+                                                                                    <div class="radio">
+                                                                                        <label><input type="radio" name="paymentModes" value="TETAP" checked> Tetap</label>
+                                                                                    </div>
+                                                                                    <div class="radio">
+                                                                                        <label><input type="radio" name="paymentModes" value="TIDAK TETAP"> Tidak Tetap</label>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="form-group toggle-by-type">
+                                                                                    <label>Apakah Item Paket Pembayaran <span class="text-danger">*</span></label>
+                                                                                    <br>
+                                                                                    <span class="help">Pilih Ya jika item ini merupakan bagian dari paket pembayaran</span>
+                                                                                    <div class="radio">
+                                                                                        <label><input type="radio" name="paymentIsBatchs" value="1" checked> Ya</label>
+                                                                                    </div>
+                                                                                    <div class="radio">
+                                                                                        <label><input type="radio" name="paymentIsBatchs" value="0"> Tidak</label>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                <?php endif; ?>
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <button type="submit" class="btn btn-success">Simpan</button>
+                                                                <button type="button" class="btn btn-default pull-left btn-prev" style="display: none;">Sebelumnya</button>
                                                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                                <button type="button" class="btn btn-primary btn-next" style="display: none;">Selanjutnya</button>
+                                                                <button type="submit" class="btn btn-success btn-simpan">Simpan</button>
                                                             </div>
                                                             <?php echo form_close(); ?>
                                                         </div>
@@ -1576,6 +1757,119 @@
 
         $('#btn-confirm-multi-delete').on('click', function() {
             $('#form-multi-delete')[0].submit();
+        });
+
+        // Multi-step wizard untuk modal addSubAccount (kode akun prefix 4-)
+        $('.modal-add-sub').each(function() {
+            var $modal = $(this);
+            var $form = $modal.find('.form-multi-step');
+            var $steps = $modal.find('.step-section');
+            var $cat = $modal.find('.select-category');
+            var isExpense = $cat.data('is-expense') == '1';
+            var currentStep = 1;
+            var maxStep = isExpense ? 3 : 1;
+
+            var $btnNext = $modal.find('.btn-next');
+            var $btnPrev = $modal.find('.btn-prev');
+            var $btnSimpan = $modal.find('.btn-simpan');
+
+            function showStep(step) {
+                $steps.hide();
+                $modal.find('.step-' + step).show();
+
+                if (step === 1 && $cat.val() === '1') {
+                    $btnNext.show();
+                    $btnSimpan.hide();
+                } else if (step === maxStep) {
+                    $btnNext.hide();
+                    $btnSimpan.show();
+                } else {
+                    $btnNext.show();
+                    $btnSimpan.hide();
+                }
+
+                $btnPrev.toggle(step > 1);
+                currentStep = step;
+            }
+
+            function validateStep(step) {
+                var valid = true;
+                $modal.find('.step-' + step + ' [required], .step-' + step + ' .input-piutang, .step-' + step + ' .input-pos-name, .step-' + step + ' .input-pos-desc, .step-' + step + ' .input-period').each(function() {
+                    if ($(this).val() === '') {
+                        valid = false;
+                        $(this).closest('.form-group').addClass('has-error');
+                    } else {
+                        $(this).closest('.form-group').removeClass('has-error');
+                    }
+                });
+                return valid;
+            }
+
+            // Kategori change
+            $cat.change(function() {
+                var val = $(this).val();
+                if (isExpense && val === '1') {
+                    showStep(1);
+                } else {
+                    $btnNext.hide();
+                    $btnPrev.hide();
+                    $btnSimpan.show();
+                    $steps.hide();
+                    $modal.find('.step-1').show();
+                    currentStep = 1;
+                }
+            });
+
+            // Next
+            $btnNext.click(function() {
+                if (!validateStep(currentStep)) {
+                    toastNotifikasi('error', 'Lengkapi field wajib pada langkah ini!', 'Gagal');
+                    return;
+                }
+                if (currentStep < maxStep) {
+                    showStep(currentStep + 1);
+                }
+            });
+
+            // Prev
+            $btnPrev.click(function() {
+                if (currentStep > 1) {
+                    showStep(currentStep - 1);
+                }
+            });
+
+            // Auto-fill POS name & description: [akun] [unit] / POS Pembayaran [akun] [unit]
+            // Unit diambil dari majors_short_name hasil query (data-unit-name), bukan text option (bisa ada spasi/indentasi)
+            function fillPosLabels() {
+                var desc = ($modal.find('.input-account-desc').val() || '').trim();
+                var unit = $modal.data('unit-name') || $modal.find('.select-unit option:selected').text().trim();
+                if (!desc) return;
+                var label = desc + (unit ? ' ' + unit : '');
+                $modal.find('.input-pos-name').val(label);
+                $modal.find('.input-pos-desc').val('POS Pembayaran ' + label);
+            }
+            $modal.find('.input-account-desc').on('blur', fillPosLabels);
+            $modal.find('.select-unit').on('change', fillPosLabels);
+
+            // Toggle jenis bayar fields by tipe
+            var $typeSel = $modal.find('.select-payment-type');
+
+            function toggleType() {
+                if ($typeSel.val() === 'BULAN') {
+                    $modal.find('.toggle-by-type').show();
+                } else {
+                    $modal.find('.toggle-by-type').hide();
+                }
+            }
+            $typeSel.change(toggleType);
+            toggleType();
+
+            // Reset on modal open
+            $modal.on('show.bs.modal', function() {
+                $form[0].reset();
+                $cat.val('');
+                showStep(1);
+            });
         });
     });
 </script>

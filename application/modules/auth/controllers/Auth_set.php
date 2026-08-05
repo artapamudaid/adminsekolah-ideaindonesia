@@ -79,6 +79,8 @@ class Auth_set extends CI_Controller
                     $this->session->set_userdata('urolename', $user[0]['role_name']);
                     $this->session->set_userdata('user_image', $user[0]['user_image']);
                     $this->session->set_userdata('suspend_date', $setting_end_value);
+                    $this->session->set_userdata('user_password_last_update', $user[0]['user_password_last_update']);
+                    $this->session->set_userdata('user_input_date', $user[0]['user_input_date']);
                     if ($location != '') {
                         header("Location:" . htmlspecialchars($location));
                     } else {
@@ -199,6 +201,12 @@ class Auth_set extends CI_Controller
     // Logout Processing
     function logout()
     {
+        // Reset password reminder dismiss flag so it appears again on next login
+        $uid = $this->session->userdata('uid');
+        if ($uid) {
+            $this->session->unset_userdata('password_reminder_dismissed_' . $uid);
+        }
+
         $this->session->unset_userdata('logged');
         $this->session->unset_userdata('uid');
         $this->session->unset_userdata('uemail');
