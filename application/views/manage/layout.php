@@ -597,6 +597,13 @@
 
           $(".content-wrapper").prepend(suspendUI);
         }
+
+        // Password reminder
+        let pwd_reminder_show = <?= isset($this->password_reminder_info['show']) ? json_encode($this->password_reminder_info['show']) : 'false'; ?>;
+        if (pwd_reminder_show) {
+          let pwdReminderUI = <?= isset($this->password_reminder_info['ui']) ? json_encode($this->password_reminder_info['ui']) : '""'; ?>;
+          $(".content-wrapper").prepend(pwdReminderUI);
+        }
       });
     </script>
 </body>
