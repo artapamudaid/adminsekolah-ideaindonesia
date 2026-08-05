@@ -115,8 +115,8 @@ class Users_set extends CI_Controller
                     array(
                         'complex_password',
                         function ($str) {
-                            if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/', $str)) {
-                                $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus.');
+                            if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$&])[a-zA-Z\d@#$&]{12,}$/', $str)) {
+                                $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus (@#$&).');
                                 return FALSE;
                             }
                             return TRUE;
@@ -386,8 +386,8 @@ class Users_set extends CI_Controller
                 array(
                     'complex_password',
                     function ($str) {
-                        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/', $str)) {
-                            $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus.');
+                        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$&])[a-zA-Z\d@#$&]{12,}$/', $str)) {
+                            $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus (@#$&).');
                             return FALSE;
                         }
                         return TRUE;

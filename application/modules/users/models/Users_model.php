@@ -103,7 +103,7 @@ class Users_model extends CI_Model
         }
 
         $this->db->select('users.user_id, user_password, user_full_name, user_description,
-            user_email, user_is_deleted, user_image, user_input_date, user_last_update, user_majors_id');
+            user_email, user_is_deleted, user_image, user_input_date, user_last_update, user_majors_id, user_password_last_update');
         $this->db->select('user_role_role_id, user_roles.role_name');
         $this->db->select('majors.majors_id, majors.majors_name, majors.majors_short_name');
         $this->db->join('user_roles', 'user_roles.role_id = users.user_role_role_id', 'left');

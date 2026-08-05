@@ -39,6 +39,13 @@ if (isset($user)) {
 				<div class="box box-primary">
 					<!-- /.box-header -->
 					<div class="box-body">
+						<?php if (isset($user) && isset($user['user_password_last_update'])) { ?>
+							<div class="alert alert-info alert-dismissible">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+								<h4><i class="icon fa fa-info"></i> Info!</h4>
+								Password terakhir diubah pada <?php echo time_passed($user['user_password_last_update']); ?>.
+							</div>
+						<?php } ?>
 						<?php echo validation_errors(); ?>
 						<?php if (isset($user)) { ?>
 							<input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
@@ -59,7 +66,7 @@ if (isset($user)) {
 								</label>
 								<button type="button" class="btn btn-xs btn-info pull-right" onclick="generatePassword()">Generate Password</button>
 								<div class="input-group">
-									<input name="user_password" id="user_password" type="password" class="form-control" placeholder="Password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$" title="Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus." required>
+									<input name="user_password" id="user_password" type="password" class="form-control" placeholder="Password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$&])[a-zA-Z\d@#$&]{12,}$" title="Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus (@#$&)." required>
 									<span class="input-group-addon" onclick="togglePassword('user_password', 'toggleIcon1')"><i class="fa fa-eye" id="toggleIcon1"></i></span>
 								</div>
 							</div>
@@ -67,7 +74,7 @@ if (isset($user)) {
 							<div class="form-group">
 								<label>Konfirmasi Password <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
 								<div class="input-group">
-									<input name="passconf" id="passconf" type="password" class="form-control" placeholder="Konfirmasi Password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$" title="Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus." required>
+									<input name="passconf" id="passconf" type="password" class="form-control" placeholder="Konfirmasi Password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$&])[a-zA-Z\d@#$&]{12,}$" title="Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus (@#$&)." required>
 									<span class="input-group-addon" onclick="togglePassword('passconf', 'toggleIcon2')"><i class="fa fa-eye" id="toggleIcon2"></i></span>
 								</div>
 							</div>
@@ -156,7 +163,7 @@ if (isset($user)) {
 
 	function generatePassword() {
 		var length = 7,
-			charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+			charset = "abcdefghjklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789@#$&";
 		var hasUpper = false;
 		var hasLower = false;
 		var hasNum = false;
@@ -174,7 +181,7 @@ if (isset($user)) {
 				if (/[a-z]/.test(char)) hasLower = true;
 				if (/[A-Z]/.test(char)) hasUpper = true;
 				if (/[0-9]/.test(char)) hasNum = true;
-				if (/[\W_]/.test(char)) hasSym = true;
+				if (/[@#$&]/.test(char)) hasSym = true;
 			}
 		}
 		var d = new Date();
