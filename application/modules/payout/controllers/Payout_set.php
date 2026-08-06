@@ -1758,7 +1758,7 @@ class Payout_set extends CI_Controller
     $lastletter = $this->Letter_model->get(array('limit' => 1));
     $student = $this->Bulan_model->get(array('student_id' => $student_id, 'id' => $id));
 
-    if ($lastletter['letter_year'] < date('Y') or count($lastletter) == 0) {
+    if (empty($lastletter) || $lastletter['letter_year'] < date('Y')) {
       $this->Letter_model->add(array('letter_number' => '00001', 'letter_month' => date('m'), 'letter_year' => date('Y')));
       $nomor = sprintf('%05d', '00001');
       $nofull = date('Y') . date('m') . $nomor;
@@ -1855,11 +1855,13 @@ class Payout_set extends CI_Controller
 
     //delete jurnal umum
     $id_jurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row_array();
-    $this->db->where('id_jurnal', $id_jurnal['id'])->delete("jurnal_umum_detail");
-    $this->db->where('id', $id_jurnal['id'])->delete("jurnal_umum");
+    if (!empty($id_jurnal)) {
+      $this->db->where('id_jurnal', $id_jurnal['id'])->delete("jurnal_umum_detail");
+      $this->db->where('id', $id_jurnal['id'])->delete("jurnal_umum");
+    }
 
     $kas = $this->db->query("SELECT kas_debit FROM kas WHERE kas_noref = '$noref'")->row_array();
-    $kasDebit = $kas['kas_debit'];
+    $kasDebit = isset($kas['kas_debit']) ? $kas['kas_debit'] : 0;
 
     $newKasDebit = $kasDebit - $bill;
 

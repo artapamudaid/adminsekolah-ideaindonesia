@@ -229,11 +229,13 @@
           <ul class="nav navbar-nav">
             <!-- Messages: style can be found in dropdown.less-->
             <?php
-            $notifTrx = $this->db->query(
-              "SELECT vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi
-                                    FROM v_transaksi_tertunda vtt 
-                                    GROUP BY vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod"
-            )->result_array();
+            $umajorsid = $this->session->userdata('umajorsid');
+            if ($umajorsid != 0) {
+              $this->db->where('idMajors', $umajorsid);
+            }
+            $this->db->select("vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi ");
+            $this->db->group_by("vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod");
+            $notifTrx = $this->db->get('v_transaksi_tertunda vtt')->result_array();
             $totalNotif = count($notifTrx);
             ?>
             <!-- Language Switcher -->
