@@ -237,9 +237,9 @@ class Presensi_pelajaran_set extends CI_Controller
 
 		if (!empty($data['student'])) {
 			$student_ids = array_column($data['student'], 'student_id');
-			$period_id = $q['p'];
-			$month_id = $q['m'];
-			$lesson_id = $q['l'];
+			$period_id = @$q['p'];
+			$month_id = @$q['m'];
+			$lesson_id = @$q['l'];
 			// $id_mapel = $data['id_mapel'] ?? null;
 
 			// ambil semua presensi dalam 1x query

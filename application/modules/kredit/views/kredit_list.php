@@ -127,7 +127,7 @@
 
 <script>
 	$(document).ready(function() {
-		var param = "<?php echo $param; ?>";
+		var param = <?php echo json_encode($param); ?>;
 		var ds = $("#ds").val();
 		var de = $("#de").val();
 		var majors = $("#m").val();
@@ -165,7 +165,7 @@
 	});
 
 	$("#searchKredit").click(function() {
-		var param = "<?php echo $param; ?>";
+		var param = <?php echo json_encode($param); ?>;
 		var ds = $("#ds").val();
 		var de = $("#de").val();
 		var majors = $("#m").val();

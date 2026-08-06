@@ -132,7 +132,7 @@ class Hutang_model extends CI_Model
     }
 
     $this->db->select('hutang.hutang_id, hutang_noref, hutang_bill, hutang_input_date, hutang_last_update');
-    $this->db->select('haccount.account_majors_id, majors_id, majors_name, majors_short_name');
+    $this->db->select('account.account_majors_id, majors_id, majors_name, majors_short_name');
     $this->db->select('hutang_settinghutang_id, poshutang_name');
     $this->db->select('hutang_pay.hutang_pay_id, hutang_pay_bill, hutang_input_date, hutang_last_update');
 

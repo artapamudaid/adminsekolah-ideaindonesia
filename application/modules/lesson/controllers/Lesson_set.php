@@ -52,7 +52,7 @@ class Lesson_set extends CI_Controller
       $lessonCode    = sanitizeStrict($_POST['lesson_code']);
       $lessonName    = sanitizeStrict($_POST['lesson_name']);
       $lessonTeacher = sanitizeStrict($_POST['lesson_teacher']);
-      $lessonMajors  = sanitizeStrict($_POST['lesson_majors_id']);
+      $lessonMajors  = isset($_POST['lesson_majors_id']) ? sanitizeStrict($_POST['lesson_majors_id']) : '0';
 
       $cpt = count($lessonName);
 

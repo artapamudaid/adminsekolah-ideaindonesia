@@ -213,7 +213,8 @@
 			if (id_majors != '') {
 				tampil_data();
 			} else {
-				alert("Unit Sekolah Belum Dipilih!");
+				// alert("Unit Sekolah Belum Dipilih!");
+				toastNotifikasi('error', 'Unit Sekolah Belum Dipilih!', 'Gagal');
 			}
 		}
 	}
@@ -391,6 +392,7 @@
 				.fail(function(xhr) {
 					console.log(xhr);
 					alert("Gagal load data kredit");
+					toastNotifikasi('error', 'Unit Sekolah Belum Dipilih!', 'Gagal');
 				});
 		});
 
@@ -400,7 +402,7 @@
 			if (id_majors != '') {
 				tampil_data();
 			} else {
-				alert("Unit Sekolah Belum Dipilih!");
+				toastNotifikasi('error', 'Unit Sekolah Belum Dipilih!', 'Gagal');
 			}
 		});
 
@@ -437,12 +439,12 @@
 						changeLoc();
 					},
 					error: function(msg) {
-						alert('msg');
+						toastNotifikasi('error', 'Gagal menyimpan data!', 'Gagal');
 					}
 				});
 				return false;
 			} else {
-				alert("Ada Kolom yang Kosong, Tolong Dicek Kembali.");
+				toastNotifikasi('error', 'Ada Kolom yang Kosong, Tolong Dicek Kembali.', 'Gagal');
 			}
 		});
 
@@ -490,12 +492,12 @@
 						tampil_data();
 					},
 					error: function(msg) {
-						alert('msg');
+						toastNotifikasi('error', 'Gagal menyimpan data!', 'Gagal');
 					}
 				});
 				return false;
 			} else {
-				alert("Ada Kolom yang Kosong, Tolong Dicek Kembali.");
+				toastNotifikasi('error', 'Ada Kolom yang Kosong, Tolong Dicek Kembali.', 'Gagal');
 			}
 		});
 

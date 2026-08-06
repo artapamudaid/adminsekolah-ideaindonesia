@@ -54,6 +54,7 @@ class Kredit_set extends CI_Controller
 
 		//$data['account'] = $this->db->query("SELECT * FROM account WHERE account_note = '2' AND account_category = '2'")->result_array();
 
+		$data['param'] = $params;
 		$data['title'] = 'Kas Keluar';
 		$data['main'] = 'kredit/kredit_list';
 		$this->load->view('manage/layout', $data);
