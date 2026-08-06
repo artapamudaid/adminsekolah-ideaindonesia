@@ -114,24 +114,25 @@
 
 				<?php if ($q and !empty($student)) { ?>
 					<div class="box box-success">
-						<div class="box-body table-responsive">
-							<table class="table table-responsive table-bordered" style="white-space: nowrap;">
+						<div class="box-body">
+							<table width="100%" class="table table-responsive table-bordered" style="white-space: nowrap;">
 								<thead>
 									<tr>
-										<th width='5' rowspan='2'>No.</th>
-										<th rowspan="2">Tanggal</th>
-										<th rowspan="2">Guru</th>
-										<th rowspan="2">Kelas</th>
-										<th rowspan="2">Mapel</th>
+										<th style="width: 3%;" rowspan="2">No.</th>
+										<th style="width: 5%;" rowspan="2">Tanggal</th>
+										<th style="width: 15%;" rowspan="2">Guru</th>
+										<th style="width: 5%;" rowspan="2">Kelas</th>
+										<th style="width: 15%;" rowspan="2">Mapel</th>
 										<th rowspan="2">Materi</th>
-										<th colspan="4">Kehadiran</th>
-										<th rowspan="2">Keterangan</th>
+										<th colspan="5">Kehadiran</th>
+										<th style="width: 5%;" rowspan="2">Keterangan</th>
 									</tr>
 									<tr>
-										<th>H</th>
-										<th>S</th>
-										<th>I</th>
-										<th>A</th>
+										<th style="width: 3%;">H</th>
+										<th style="width: 3%;">S</th>
+										<th style="width: 3%;">I</th>
+										<th style="width: 3%;">A</th>
+										<th style="width: 3%;">D</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -155,7 +156,7 @@
 											<td><?= $teach['employee_name']; ?></td>
 											<td><?= $teach['class_name']; ?></td>
 											<td><?= $teach['lesson_name']; ?></td>
-											<td><?= $teach['teaching_materi']; ?></td>
+											<td style="overflow-wrap: break-word; white-space: normal; word-wrap: break-word; max-width: 350px;"><?= $teach['teaching_materi']; ?></td>
 											<td>
 												<?php
 												$hadir = 0;
@@ -201,6 +202,17 @@
 												?>
 											</td>
 											<td>
+												<?php
+												$dispen = 0;
+												foreach ($presens as $presen) :
+													if ($presen['c_pre'] == 'D' and $presen['teach_id'] == $teach['teaching_id']) {
+														$dispen += 1;
+													}
+												endforeach;
+												echo $dispen;
+												?>
+											</td>
+											<td>
 												<center><a href="#viewModal<?php echo $teach['teaching_id']; ?>" data-toggle="modal" class="btn btn-xs btn-warning"><i class="fa fa-eye" data-toggle="tooltip" title="Hapus"> Detail Data</i></a></center>
 											</td>
 										</tr>
@@ -214,10 +226,12 @@
 														<h3 class="modal-title"><span class="fa fa-folder-open-o"></span> Detail Data</h3>
 													</div>
 													<div class="modal-body">
-														Sakit :
 														<?php
+														if ($sakit > 0) {
+															echo "Sakit : ";
+														}
 														foreach ($presens as $presen) :
-															if ($presen['c_pre'] == 'S' and $presen['les_id'] == $teach['lesson_id']) {
+															if ($presen['c_pre'] == 'S' and $presen['teach_id'] == $teach['teaching_id']) {
 																$s_sakit = $presen['student_full_name'];
 														?>
 																<ul>
@@ -227,23 +241,28 @@
 															}
 														endforeach;
 														?>
-														Izin :
+
 														<?php
+														if ($ijin > 0) {
+															echo "Izin : ";
+														}
 														foreach ($presens as $presen) :
-															if ($presen['c_pre'] == 'I' and $presen['les_id'] == $teach['lesson_id']) {
+															if ($presen['c_pre'] == 'I' and $presen['teach_id'] == $teach['teaching_id']) {
 																$s_ijin = $presen['student_full_name'];
 														?>
 																<ul>
 																	<li><?php echo $s_ijin; ?></li>
 																</ul>
-														<?php
-															}
+														<?php }
 														endforeach;
 														?>
-														Alpha :
+
 														<?php
+														if ($alpha > 0) {
+															echo "Alpha : ";
+														}
 														foreach ($presens as $presen) :
-															if ($presen['c_pre'] == 'A' and $presen['les_id'] == $teach['lesson_id']) {
+															if ($presen['c_pre'] == 'A' and $presen['teach_id'] == $teach['teaching_id']) {
 																$s_alpha = $presen['student_full_name'];
 														?>
 																<ul>
@@ -253,10 +272,26 @@
 															}
 														endforeach;
 														?>
+
+														<?php
+														if ($dispen > 0) {
+															echo "Dispen";
+														}
+														foreach ($presens as $presen) :
+															if ($presen['c_pre'] == 'D' and $presen['teach_id'] == $teach['teaching_id']) {
+																$s_dispen = $presen['student_full_name'];
+														?>
+																<ul>
+																	<li><?php echo $s_dispen; ?></li>
+																</ul>
+														<?php
+															}
+														endforeach;
+														?>
 													</div>
 													<div class="modal-footer">
-														<?php echo form_open('manage/class/delete/' . $row['class_id']); ?>
-														<input type="hidden" name="delName" value="<?php echo $row['class_name']; ?>">
+														<?php echo form_open('manage/class/delete/' . $teach['class_id']); ?>
+														<input type="hidden" name="delName" value="<?php echo $teach['class_name']; ?>">
 														<button type="button" class="btn btn-danger pull-right" data-dismiss="modal"><span class="fa fa-undo"></span> Kembali</button>
 														<!-- <button type="submit" class="btn btn-danger"><span class="fa fa-check"></span> Hapus</button> -->
 														<?php echo form_close(); ?>

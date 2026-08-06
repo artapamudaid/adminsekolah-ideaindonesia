@@ -80,6 +80,7 @@
 									</div>
 								</div>
 							</div>
+
 							<div class="col-md-2">
 								<div style="margin-top:25px;">
 									<button type="button" class="btn btn-primary" id="btn-cari"><i class="fa fa-search"></i> Cari</button>
@@ -144,19 +145,13 @@
 											<td><?php echo $no++ ?></td>
 											<td><?php echo $row['student_nis'] ?></td>
 											<td><?php echo $row['student_full_name'] ?></td>
-											<?php
-											foreach ($daterange as $dt) {
+											<?php foreach ($daterange as $dt):
 												$date = $dt->format("Y-m-d");
-												$period_id = $q['p'];
-												$month_id = $q['m'];
-												$class_id = $q['c'];
-												$lesson_id = $q['l'];
 												$student_id = $row['student_id'];
-
-												$presensi = $this->db->query("SELECT presensi_pelajaran_status FROM presensi_pelajaran WHERE presensi_pelajaran_date = '$date' AND presensi_pelajaran_period_id = '$period_id' AND presensi_pelajaran_month_id = '$month_id' AND presensi_pelajaran_class_id = '$class_id' AND presensi_pelajaran_lesson_id = '$lesson_id' AND presensi_pelajaran_student_id = '$student_id'")->row_array();
-												echo (isset($presensi['presensi_pelajaran_status'])) ? '<td>' . $presensi['presensi_pelajaran_status'] . '</td>' : '<td>-</td>';
-											}
+												$status = $presensiMap[$student_id][$date] ?? '-';
 											?>
+												<td><?= $status ?></td>
+											<?php endforeach; ?>
 										</tr>
 									<?php endforeach ?>
 								</tbody>
@@ -201,7 +196,7 @@
 		var class_id = $("#class_id").val();
 		//alert(id_jurusan+id_kelas);
 		$.ajax({
-			url: '<?php echo base_url(); ?>manage/presensi_pelajaran/lesson_searching',
+			url: '<?php echo base_url(); ?>manage/presensi_pelajaran/lesson_report_jurnal',
 			type: 'POST',
 			data: {
 				'class_id': class_id,
