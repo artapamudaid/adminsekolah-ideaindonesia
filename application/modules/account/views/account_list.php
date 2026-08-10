@@ -96,7 +96,7 @@
                                 }
 
                                 $attribute = "";
-                                if (@$s['m'] != 'all') {
+                                if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
                                     $attribute = "readonly ";
                                     $attribute .= "style='pointer-events: none;'";
                                 }
@@ -174,7 +174,7 @@
                                                                     <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                         <option value="">-Pilih Unit Pesantren-</option>
                                                                         <?php foreach ($majors as $row) {
-                                                                            $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                            $selected = ($s['m'] == $row['majors_id'] || $majors_id == $row['majors_id']) ? 'selected' : '';
                                                                         ?>
                                                                             <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>><?php echo $row['majors_short_name'] ?></option>
                                                                         <?php } ?>
@@ -203,7 +203,7 @@
                                                 <tr style="font-weight: bold;">
                                                     <td><?php echo $no++ ?></td>
                                                     <td>&nbsp;&nbsp;<?php echo $sub->account_code ?></td>
-                                                    <td><?php echo $sub->account_description ?></td>
+                                                    <td><?php echo $sub->account_description ?> id majors: <?php echo $sub->account_majors_id ?></td>
                                                     <td><?php echo ($sub->account_status == 0) ? 'Header' : 'Non-Header'  ?></td>
                                                     <td>Sub Akun 1</td>
                                                     <td>
@@ -249,6 +249,10 @@
                                                                 }
 
                                                                 $is_expense = (substr($childFront, 0, 1) === '4'); // Akun Biaya
+                                                                if ($sub->account_majors_id) {
+                                                                    $attribute = "readonly ";
+                                                                    $attribute .= "style='pointer-events: none;'";
+                                                                }
                                                                 ?>
 
                                                                 <div class="step-section step-1" data-step="1">
@@ -281,7 +285,7 @@
                                                                                 <select required="" name="account_majors_id" class="form-control select-unit" <?= $attribute ?>>
                                                                                     <option value="">-Pilih Unit Pesantren-</option>
                                                                                     <?php foreach ($majors as $row) {
-                                                                                        $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                        $selected = ($s['m'] == $row['majors_id'] || $majors_id == $row['majors_id'] || $sub->account_majors_id == $row['majors_id']) ? 'selected' : '';
                                                                                     ?>
                                                                                         <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>>
                                                                                             <?php echo $row['majors_short_name'] ?>
@@ -430,6 +434,7 @@
                                                     </div>
                                                 </div>
                                                 <?php
+                                                $attribute = "";
                                                 foreach ($child_account as $child) {
 
                                                     $child_id = $child->account_id;
@@ -437,6 +442,11 @@
                                                     $grandchild_account = $this->db->query($sql_grandchild)->result();
 
                                                     if (count($grandchild_account) > 0) {
+
+                                                        if ($child->account_majors_id) {
+                                                            $attribute = "readonly ";
+                                                            $attribute .= "style='pointer-events: none;'";
+                                                        }
                                                 ?>
                                                         <tr>
                                                             <td><?php echo $no++ ?></td>
@@ -511,7 +521,7 @@
                                                                                     <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                         <option value="">-Pilih Unit Pesantren-</option>
                                                                                         <?php foreach ($majors as $row) {
-                                                                                            $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                            $selected = ($s['m'] == $row['majors_id'] || $majors_id == $row['majors_id'] || $child->account_majors_id == $row['majors_id']) ? 'selected' : '';
                                                                                         ?>
                                                                                             <option
                                                                                                 value="<?php echo $row['majors_id']; ?>"
@@ -677,7 +687,7 @@
                                                                                             <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                                 <option value="">-Pilih Unit Pesantren-</option>
                                                                                                 <?php foreach ($majors as $row) {
-                                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                                    $selected = ($s['m'] == $row['majors_id'] || $majors_id == $row['majors_id']) ? 'selected' : '';
                                                                                                 ?>
                                                                                                     <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>><?php echo $row['majors_short_name'] ?></option>
                                                                                                 <?php } ?>
@@ -881,6 +891,10 @@
                                                                 <?php
                                                                 }
                                                             } else {
+                                                                if ($grandchild->account_majors_id) {
+                                                                    $attribute = "readonly ";
+                                                                    $attribute .= "style='pointer-events: none;'";
+                                                                }
                                                                 ?>
                                                                 <tr>
                                                                     <td><?php echo $no++ ?></td>
@@ -959,7 +973,7 @@
                                                                                             <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                                 <option value="">-Pilih Unit Pesantren-</option>
                                                                                                 <?php foreach ($majors as $row) {
-                                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                                    $selected = ($s['m'] == $row['majors_id'] || $majors_id == $row['majors_id'] || $grandchild->account_majors_id == $row['majors_id']) ? 'selected' : '';
                                                                                                 ?>
                                                                                                     <option
                                                                                                         value="<?php echo $row['majors_id']; ?>"
@@ -1074,6 +1088,11 @@
                                                         if ($countQPos > 0) $disabledAssignPosButton = "disabled";
                                                         else $disabledAssignPosButton = "";
 
+                                                        if ($child->account_majors_id) {
+                                                            $attribute = "readonly ";
+                                                            $attribute .= "style='pointer-events: none;'";
+                                                        }
+
                                                         ?>
 
                                                         <tr>
@@ -1180,7 +1199,7 @@
                                                                                     <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                         <option value="">-Pilih Unit Pesantren-</option>
                                                                                         <?php foreach ($majors as $row) {
-                                                                                            $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                            $selected = ($s['m'] == $row['majors_id'] || $majors_id == $row['majors_id'] || $child->account_majors_id == $row['majors_id']) ? 'selected' : '';
                                                                                         ?>
                                                                                             <option
                                                                                                 value="<?php echo $row['majors_id']; ?>"
@@ -1357,7 +1376,7 @@
                                                                             <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                                 <option value="">-Pilih Unit Pesantren-</option>
                                                                                 <?php foreach ($majors as $row) {
-                                                                                    $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                                    $selected = ($s['m'] == $row['majors_id'] || $majors_id == $row['majors_id']) ? 'selected' : '';
                                                                                 ?>
                                                                                     <option
                                                                                         value="<?php echo $row['majors_id']; ?>"
@@ -1517,7 +1536,7 @@
                                                                     <select required="" name="account_majors_id" class="form-control" <?= $attribute ?>>
                                                                         <option value="">-Pilih Unit Pesantren-</option>
                                                                         <?php foreach ($majors as $row) {
-                                                                            $selected = ($s['m'] == $row['majors_id']) ? 'selected' : '';
+                                                                            $selected = ($s['m'] == $row['majors_id'] || $majors_id == $row['majors_id']) ? 'selected' : '';
                                                                         ?>
                                                                             <option value="<?php echo $row['majors_id']; ?>" <?= $selected ?>><?php echo $row['majors_short_name'] ?></option>
                                                                         <?php } ?>

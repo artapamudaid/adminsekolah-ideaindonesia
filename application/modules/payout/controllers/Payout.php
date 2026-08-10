@@ -38,6 +38,12 @@ class Payout extends CI_Controller
       $siswa = $this->Student_model->get_student(array('student_nis' => base64_decode($f['r'])));
     }
 
+    if (empty($siswa)) {
+      $this->session->set_flashdata('error', 'Data Siswa Tidak Ditemukan');
+      redirect('manage/payout');
+      exit;
+    }
+
     if (isset($f['f']) && !empty($f['f']) && $f['f'] != '') {
       $kas['noref']      = base64_decode($f['f']);
       $param['noref']    = base64_decode($f['f']);
