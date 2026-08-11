@@ -169,9 +169,11 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body">
-                        <div class="table-responsive">
-                            <canvas id="Chart_guru_pegawai"></canvas>
-                        </div>
+                        <?php if ($total_all > 0): ?>
+                            <div class="table-responsive">
+                                <canvas id="Chart_guru_pegawai"></canvas>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -237,7 +239,7 @@
 
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title"><?php echo $this->lang->line('dash_student_per_level'); ?></h3>
+                        <h3 class="box-title"><?php echo $widget_jumlah_siswa_title; ?></h3>
                         <div class="box-tools pull-right">
                             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
                             </button>
@@ -404,32 +406,34 @@
     });
 
     // Pie Chart JUMLAH STATUS GURU DAN PEGAWAI
-    var ctx = document.getElementById("Chart_guru_pegawai").getContext("2d");
-    var piechart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ["Total Guru dan Pegawai", "Total Guru Tetap", "Total Guru Tidak Tetap"],
-            datasets: [{
-                label: "",
-                data: [<?= $total_all ?>, <?= $total_tetap ?>, <?= $total_non_tetap ?>],
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)'
-                ],
-                hoverOffset: 1
-            }]
-        },
-        options: {
-            plugins: {
-                labels: {
-                    fontSize: 20,
-                    fontColor: 'black',
-                    render: 'value'
+    <?php if ($total_all > 0):    ?>
+        var ctx = document.getElementById("Chart_guru_pegawai").getContext("2d");
+        var piechart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ["Total Guru dan Pegawai", "Total Guru Tetap", "Total Guru Tidak Tetap"],
+                datasets: [{
+                    label: "",
+                    data: [<?= $total_all ?>, <?= $total_tetap ?>, <?= $total_non_tetap ?>],
+                    backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)'
+                    ],
+                    hoverOffset: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    labels: {
+                        fontSize: 20,
+                        fontColor: 'black',
+                        render: 'value'
+                    }
                 }
             }
-        }
-    });
+        });
+    <?php endif; ?>
 </script>
 
 <script>
@@ -593,7 +597,9 @@
 </script>
 
 <script>
-    get_data();
+    $(document).ready(function() {
+        get_data();
+    });
 
     function get_data() {
         var period = $("#period").val();
@@ -608,9 +614,17 @@
                 start: start,
                 end: end,
             },
-
+            beforeSend: function() {
+                loadingOverlay();
+            },
             success: function(data) {
                 $("#data_tabel").html(data);
+            },
+            error: function(jqXHR, textStatus) {
+                handleAjaxError(jqXHR, textStatus)
+            },
+            complete: function() {
+                $.LoadingOverlay("hide");
             }
         });
     }

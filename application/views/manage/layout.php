@@ -375,6 +375,7 @@
     <script src="<?php echo media_url() ?>js/adminlte.min.js"></script>
     <!-- Notyfy JS -->
     <script src="<?php echo media_url() ?>js/jquery.toast.js"></script>
+    <script src="<?php echo media_url() ?>js/loadingoverlay.min.js"></script>
 
     <!-- select2 -->
     <link href="<?php echo media_url() ?>select2_css/select2.min.css" rel="stylesheet" />

@@ -59,7 +59,7 @@ class Dashboard_model extends CI_Model
                                     LEFT JOIN `period` ON `period`.`period_id` = `payment`.`period_period_id` 
                                     LEFT JOIN `majors` ON `majors`.`majors_id` = `student`.`majors_majors_id` 
                                     WHERE 1 $whereDateBulan $wherePeriod $whereMajors
-                                    GROUP BY pos.pos_id ORDER BY pos.pos_name ASC")->result_array();
+                                    GROUP BY pos.pos_id, majors.majors_id, majors.majors_short_name, pos.pos_name ORDER BY pos.pos_name ASC")->result_array();
 
         $rp_bebas       = $this->db->query("SELECT
                                     majors.majors_id,
@@ -74,7 +74,7 @@ class Dashboard_model extends CI_Model
                                     JOIN majors ON majors.majors_id = account.account_majors_id 
                                     JOIN student on bebas.student_student_id = student.student_id 
                                     WHERE 1 $wherePeriod $whereMajors
-                                    GROUP BY pos.pos_id")->result_array();
+                                    GROUP BY pos.pos_id, majors.majors_id, majors.majors_short_name, pos.pos_name")->result_array();
 
         $data = array(
             'period'    => $period['period_start'] . '_' . $period['period_end'],

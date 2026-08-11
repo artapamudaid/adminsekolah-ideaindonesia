@@ -45,8 +45,22 @@ class Dashboard_set extends CI_Controller
 
         $id = $this->session->userdata('uid');
         $uRole = $this->session->userdata('uroleid');
+        $umajorsid = $this->session->userdata('umajorsid');
 
-        $hasDashboard = false;
+        // NOTES: Custom condition by majors on specific logic
+        $widget_jumlah_siswa_title = $this->lang->line('dash_student_per_level');
+        $where_majors_v_laporan_jurnal = "";
+        $where_majors_student = "";
+        $where_majors_employee = "";
+        $where_majors_banking = "";
+        if ($umajorsid != 0) {
+            $widget_jumlah_siswa_title = 'Jumlah Siswa Unit ' . $this->mapping_singkatan_unit($umajorsid);
+            $where_majors_v_laporan_jurnal = "AND idMajors = '$umajorsid'";
+            $where_majors_student = "AND majors_majors_id = '$umajorsid'";
+            $where_majors_employee = "AND employee_majors_id = '$umajorsid'";
+            $where_majors_banking = "AND s.majors_majors_id = '$umajorsid'";
+        }
+
         $hasDashboard = false;
         if ($uRole) {
             $cekAksesDashboard = $this->db->query("SELECT hak_akses_id FROM hak_akses WHERE menu_id = 1 AND role_id = $uRole LIMIT 1")->row();
@@ -84,28 +98,33 @@ class Dashboard_set extends CI_Controller
             $data['kasTotal'] = $this->db->query(
                 "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
                     FROM v_laporan_jurnal 
-                    WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd'
+                    WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd' $where_majors_v_laporan_jurnal
                     GROUP BY jenisTransaksi"
             )->result_array();
 
             $data['kasMonth'] = $this->db->query(
                 "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
                     FROM v_laporan_jurnal 
-                    WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd' AND MONTH(tanggal) = MONTH(CURRENT_DATE())
+                    WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd' AND MONTH(tanggal) = MONTH(CURRENT_DATE()) $where_majors_v_laporan_jurnal
                     GROUP BY jenisTransaksi"
             )->result_array();
 
             $data['kasToday'] = $this->db->query(
                 "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
                     FROM v_laporan_jurnal 
-                    WHERE tanggal = CURDATE()
+                    WHERE tanggal = CURDATE() $where_majors_v_laporan_jurnal
                     GROUP BY jenisTransaksi"
             )->result_array();
 
-            $data['student'] = $this->db->query("SELECT student_status, majors_majors_id FROM student")->result_array();
-            $data['employee'] = $this->db->query("SELECT employee_category FROM employee")->result_array();
+            $data['student'] = $this->db->query("SELECT student_status, majors_majors_id FROM student WHERE 1=1 $where_majors_student")->result_array();
+            $data['employee'] = $this->db->query("SELECT employee_category FROM employee WHERE 1=1 $where_majors_employee")->result_array();
 
-            $banking = $this->db->query("SELECT SUM(banking_debit) AS total_setor, SUM(banking_kredit) AS total_tarik FROM banking")->row_array();
+            $banking = $this->db->query("SELECT 
+            SUM(b.banking_debit) AS total_setor, 
+            SUM(b.banking_kredit) AS total_tarik 
+            FROM banking b
+            JOIN student s ON s.student_id = b.banking_student_id
+            WHERE 1=1 $where_majors_banking")->row_array();
 
             $data['total_setoran'] = (int)$banking['total_setor'] ?? 0;
             $data['total_penarikan'] = (int)$banking['total_tarik'] ?? 0;
@@ -114,6 +133,7 @@ class Dashboard_set extends CI_Controller
             $data['majors'] = $this->Student_model->get_majors();
             $data['numStudents'] = $this->db->query("SELECT COUNT(student_id) as numbers
                                                     FROM student
+                                                    WHERE 1=1 $where_majors_student
                                                     GROUP BY majors_majors_id
                                                     ORDER BY majors_majors_id ASC")->result_array();
 
@@ -245,6 +265,8 @@ class Dashboard_set extends CI_Controller
                     redirect('manage');
                 }
             }
+
+            $data['widget_jumlah_siswa_title'] = $widget_jumlah_siswa_title;
 
             $dates['tgl_awal'] = date('Y-m-d');
             $dates['tgl_akhir'] = date('Y-m-d');
@@ -449,5 +471,14 @@ class Dashboard_set extends CI_Controller
         $round = number_format($round, 1);
 
         return $round;
+    }
+
+    private function mapping_singkatan_unit(String $unit = null)
+    {
+        $majors = $this->db->query("SELECT majors_id, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
+
+        $mapping = array_column($majors, 'majors_short_name', 'majors_id');
+
+        return isset($mapping[$unit]) ? $mapping[$unit] : $unit;
     }
 }
