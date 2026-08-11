@@ -3,14 +3,16 @@
 
 <?php
 $this->load->model(array('setting/Setting_model'));
+$setting_name = $this->Setting_model->get(['id' => 1]);
 $setting_logo     = $this->Setting_model->get(array('id' => 6));
+$setting_package = $this->Setting_model->get(['id' => 97]);
 ?>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Sekolah | Login</title>
-	<link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>">
+    <link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="<?php echo base_url() ?>b-asset/css/iofrm-style.css">
@@ -46,9 +48,9 @@ $setting_logo     = $this->Setting_model->get(array('id' => 6));
                         <div class="website-logo-inside">
                             <div class="page-links">
                                 <!-- <a href="<?php echo base_url() ?>">Login</a> -->
-                                <a href="<?php echo base_url('student') ?>"  class="active">Login</a>
-                                <!-- <a href="<?php echo base_url('employees')?>">Lynan. Guru</a>
-                                <a href="<?php echo base_url('layanan_publik')?>">Lynan. Publik</a> -->
+                                <a href="<?php echo base_url('student') ?>" class="active">Login</a>
+                                <!-- <a href="<?php echo base_url('employees') ?>">Lynan. Guru</a>
+                                <a href="<?php echo base_url('layanan_publik') ?>">Lynan. Publik</a> -->
                             </div>
                             <?php echo form_open('student/auth/login', array('class' => 'login100-form validate-form')); ?>
                             <input type="text" required="" autofocus="" name="nis" placeholder="Masukan NIS Siswa" class="form-control flat">

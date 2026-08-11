@@ -4,6 +4,7 @@
 <?php
 $this->load->model(['setting/Setting_model']);
 $setting_name = $this->Setting_model->get(['id' => 1]);
+$setting_package = $this->Setting_model->get(['id' => 97]);
 ?>
 
 <head>
@@ -95,9 +96,15 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
                     <!-- Tab Navigation -->
                     <div class="form-tabs">
                         <a href="<?= base_url() ?>" class="tab-link active">Login</a>
-                        <a href="<?= base_url('student_presence') ?>" class="tab-link">Presensi Siswa</a>
-                        <a href="<?= base_url('employee_presence') ?>" class="tab-link">Presensi Pegawai</a>
-                        <a href="<?= base_url('guru') ?>" class="tab-link">Guru</a>
+                        <?php if ($is_rfid_subscription): ?>
+                            <a href="<?= base_url('student_presence') ?>" class="tab-link">Presensi Siswa</a>
+                        <?php endif; ?>
+                        <?php if ($is_rfid_subscription_employee): ?>
+                            <a href="<?= base_url('employee_presence') ?>" class="tab-link">Presensi Pegawai</a>
+                        <?php endif; ?>
+                        <?php if ($setting_package && $setting_package['setting_value'] == '3'): ?>
+                            <a href="<?= base_url('guru') ?>" class="tab-link">Guru</a>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Flash messages -->

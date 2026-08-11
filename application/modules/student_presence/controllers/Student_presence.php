@@ -26,6 +26,10 @@ class Student_presence extends CI_Controller
     $data['setting_address']            = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone']              = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
+    // NOTE: Check RFID Subscription
+    $data['is_rfid_subscription'] = table_exists_cached('cards');
+    $data['is_rfid_subscription_employee'] = table_exists_cached('employee_cards');
+
     $data['title'] = 'Presensi Harian Siswa';
     $data['main'] = 'student_presence/student_presence_add';
     // $this->load->view('frontend/new_student_presence', $data);

@@ -245,3 +245,36 @@ if (!function_exists('sanitizeStrict')) {
         }
     }
 }
+
+if (!function_exists('table_exists_cached')) {
+
+    /**
+     * Cek apakah tabel ada dengan cache.
+     *
+     * @param string $table_name
+     * @param int    $ttl
+     * @return bool
+     */
+    function table_exists_cached($table_name, $ttl = 3600)
+    {
+        $CI = &get_instance();
+
+        $CI->load->driver('cache', ['adapter' => 'file']);
+
+        if ($CI->input->get('clear_cache') == '1') {
+            $CI->cache->clean();
+        }
+
+        $cache_key = 'table_exists_' . strtolower($table_name);
+
+        $exists = $CI->cache->get($cache_key);
+
+        if ($exists === FALSE) {
+            $exists = $CI->db->table_exists($table_name);
+
+            $CI->cache->save($cache_key, $exists, $ttl);
+        }
+
+        return (bool) $exists;
+    }
+}

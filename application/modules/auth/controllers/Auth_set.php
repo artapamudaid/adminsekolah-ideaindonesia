@@ -149,6 +149,10 @@ class Auth_set extends CI_Controller
             $data['setting_school'] = $this->Setting_model->get(array('id' => 1));
             $data['setting_logo'] = $this->Setting_model->get(array('id' => SCHOOL_LOGO));
 
+            // NOTE: Check RFID Subscription
+            $data['is_rfid_subscription'] = table_exists_cached('cards');
+            $data['is_rfid_subscription_employee'] = table_exists_cached('employee_cards');
+
             $url_pengumuman = 'https://api.epesantren.co.id/api/pengumuman-web-as?token=e6df5137d38410fbd27ab211d56a16c3';
 
             $ch = curl_init();
