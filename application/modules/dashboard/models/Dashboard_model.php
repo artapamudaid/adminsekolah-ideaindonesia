@@ -31,6 +31,17 @@ class Dashboard_model extends CI_Model
         $umajors = $this->session->userdata('umajorsid');
 
         $whereMajors = "";
+        $whereMajorsRealisasi = "";
+        if (!empty($_GET['majors_id']) && $_GET['majors_id'] != 0) {
+            $majorsFilter = (int) $_GET['majors_id'];
+            $whereMajorsRealisasi = " AND student.majors_majors_id = '$majorsFilter'";
+        }
+
+        $whereMajorsBebas = "";
+        if (!empty($_GET['majors_id']) && $_GET['majors_id'] != 0) {
+            $majorsFilter = (int) $_GET['majors_id'];
+            $whereMajorsBebas = " AND account.account_majors_id = '$majorsFilter'";
+        }
 
         if ($umajors != 0) {
             $whereMajors = " AND majors_id = '$umajors'";
@@ -58,7 +69,7 @@ class Dashboard_model extends CI_Model
                                     LEFT JOIN `pos` ON `pos`.`pos_id` = `payment`.`pos_pos_id` 
                                     LEFT JOIN `period` ON `period`.`period_id` = `payment`.`period_period_id` 
                                     LEFT JOIN `majors` ON `majors`.`majors_id` = `student`.`majors_majors_id` 
-                                    WHERE 1 $whereDateBulan $wherePeriod $whereMajors
+                                    WHERE 1 $whereDateBulan $wherePeriod $whereMajors $whereMajorsRealisasi
                                     GROUP BY pos.pos_id, majors.majors_id, majors.majors_short_name, pos.pos_name ORDER BY pos.pos_name ASC")->result_array();
 
         $rp_bebas       = $this->db->query("SELECT
@@ -73,7 +84,7 @@ class Dashboard_model extends CI_Model
                                     JOIN account ON account.account_id = pos.account_account_id 
                                     JOIN majors ON majors.majors_id = account.account_majors_id 
                                     JOIN student on bebas.student_student_id = student.student_id 
-                                    WHERE 1 $wherePeriod $whereMajors
+                                    WHERE 1 $wherePeriod $whereMajors $whereMajorsBebas
                                     GROUP BY pos.pos_id, majors.majors_id, majors.majors_short_name, pos.pos_name")->result_array();
 
         $data = array(

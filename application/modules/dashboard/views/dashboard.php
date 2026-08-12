@@ -12,6 +12,30 @@
 
     <!-- Main content -->
     <section class="content">
+        <?php if ($this->session->userdata('uroleid') == SUPERUSER && $this->session->userdata('umajorsid') == 0): ?>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-success">
+                        <div class="box-body">
+                            <form method="get" action="">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Filter Berdasarkan Unit </label>
+                                    <select name="majors_id" class="form-control" onchange="this.form.submit()">
+                                        <option value="">Semua Unit</option>
+                                        <?php
+                                        $majors_id = $this->input->get('majors_id');
+                                        foreach ($majors as $m): ?>
+                                            <option value="<?php echo $m['majors_id'] ?>" <?php echo ($majors_id == $m['majors_id']) ? 'selected' : '' ?>><?php echo $m['majors_short_name'] ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <div class="row">
             <div class="col-md-3 col-sm-6 col-xs-12">
                 <div class="info-box bg-aqua-gradient">
@@ -406,6 +430,7 @@
     });
 
     // Pie Chart JUMLAH STATUS GURU DAN PEGAWAI
+    console.log('total_all: <?= $total_all ?>');
     <?php if ($total_all > 0):    ?>
         var ctx = document.getElementById("Chart_guru_pegawai").getContext("2d");
         var piechart = new Chart(ctx, {
@@ -605,6 +630,7 @@
         var period = $("#period").val();
         var start = $("#start").val();
         var end = $("#end").val();
+        var majors_id = "<?= $selected_majors ?>";
 
         $.ajax({
             type: "GET",
@@ -613,6 +639,7 @@
                 period: period,
                 start: start,
                 end: end,
+                majors_id: majors_id,
             },
             beforeSend: function() {
                 loadingOverlay();

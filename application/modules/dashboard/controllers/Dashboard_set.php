@@ -47,18 +47,26 @@ class Dashboard_set extends CI_Controller
         $uRole = $this->session->userdata('uroleid');
         $umajorsid = $this->session->userdata('umajorsid');
 
+        $selected_majors = $umajorsid;
+        if ($umajorsid == 0) {
+            $get_majors = $this->input->get('majors_id');
+            if ($get_majors !== NULL && $get_majors !== '') {
+                $selected_majors = (int)$get_majors;
+            }
+        }
+
         // NOTES: Custom condition by majors on specific logic
         $widget_jumlah_siswa_title = $this->lang->line('dash_student_per_level');
         $where_majors_v_laporan_jurnal = "";
         $where_majors_student = "";
         $where_majors_employee = "";
         $where_majors_banking = "";
-        if ($umajorsid != 0) {
-            $widget_jumlah_siswa_title = 'Jumlah Siswa Unit ' . $this->mapping_singkatan_unit($umajorsid);
-            $where_majors_v_laporan_jurnal = "AND idMajors = '$umajorsid'";
-            $where_majors_student = "AND majors_majors_id = '$umajorsid'";
-            $where_majors_employee = "AND employee_majors_id = '$umajorsid'";
-            $where_majors_banking = "AND s.majors_majors_id = '$umajorsid'";
+        if ($selected_majors != 0) {
+            $widget_jumlah_siswa_title = 'Jumlah Siswa Unit ' . $this->mapping_singkatan_unit($selected_majors);
+            $where_majors_v_laporan_jurnal = "AND idMajors = '$selected_majors'";
+            $where_majors_student = "AND majors_majors_id = '$selected_majors'";
+            $where_majors_employee = "AND employee_majors_id = '$selected_majors'";
+            $where_majors_banking = "AND s.majors_majors_id = '$selected_majors'";
         }
 
         $hasDashboard = false;
@@ -117,7 +125,15 @@ class Dashboard_set extends CI_Controller
             )->result_array();
 
             $data['student'] = $this->db->query("SELECT student_status, majors_majors_id FROM student WHERE 1=1 $where_majors_student")->result_array();
-            $data['employee'] = $this->db->query("SELECT employee_category FROM employee WHERE 1=1 $where_majors_employee")->result_array();
+
+            $where_majors_employee_v = "";
+            if ($selected_majors != 0) {
+                $where_majors_employee_v = "AND employee_majors_id = '$selected_majors'";
+            }
+            $data['employee'] = $this->db->query("SELECT employee_category FROM employee WHERE 1=1 $where_majors_employee_v")->result_array();
+            // echo $this->db->last_query();
+            // echo "<hr>";
+            // die;
 
             $banking = $this->db->query("SELECT 
             SUM(b.banking_debit) AS total_setor, 
@@ -131,6 +147,7 @@ class Dashboard_set extends CI_Controller
 
             $data['information'] = $this->Information_model->get(array('information_publish' => 1));
             $data['majors'] = $this->Student_model->get_majors();
+            $data['selected_majors'] = $selected_majors;
             $data['numStudents'] = $this->db->query("SELECT COUNT(student_id) as numbers
                                                     FROM student
                                                     WHERE 1=1 $where_majors_student
@@ -140,7 +157,7 @@ class Dashboard_set extends CI_Controller
             $data['lastPayments'] = $this->db->query("SELECT s.student_full_name, MAX(l.log_trx_input_date) AS last_payment
                                                             FROM log_trx l
                                                             JOIN student s ON s.student_id = l.student_student_id
-                                                            WHERE DATE(l.log_trx_input_date) = CURRENT_DATE
+                                                            WHERE DATE(l.log_trx_input_date) = CURRENT_DATE $where_majors_student
                                                             GROUP BY l.student_student_id, s.student_full_name
                                                             ORDER BY last_payment DESC
                                                             LIMIT 5")->result_array();
