@@ -259,6 +259,10 @@ class Users_model extends CI_Model
             $this->db->set('user_input_date', $data['user_input_date']);
         }
 
+        if (isset($data['user_password_last_update'])) {
+            $this->db->set('user_password_last_update', $data['user_password_last_update']);
+        }
+
         if (isset($data['user_last_update'])) {
             $this->db->set('user_last_update', $data['user_last_update']);
         }

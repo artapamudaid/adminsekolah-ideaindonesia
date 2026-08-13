@@ -19,14 +19,14 @@
 							<div class="alert alert-info alert-dismissible">
 								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 								<h4><i class="icon fa fa-info"></i> Info!</h4>
-								Password terakhir diubah pada <?php echo time_passed($user['user_password_last_update']); ?>.
+								Password terakhir diubah <?php echo time_passed($user['user_password_last_update']); ?>.
 							</div>
 						<?php } ?>
 						<?php echo form_open(current_url()); ?>
 						<?php echo validation_errors(); ?>
 						<div class="form-group">
 							<?php if ($this->uri->segment(3) == 'cpw') { ?>
-								<label>Password lama * cek</label>
+								<label>Password lama *</label>
 								<input type="password" name="user_current_password" class="form-control" placeholder="Password lama">
 							<?php } ?>
 						</div>

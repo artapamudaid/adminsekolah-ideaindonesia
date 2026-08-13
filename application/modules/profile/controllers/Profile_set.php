@@ -140,6 +140,8 @@ class Profile_set extends CI_Controller
 
             if ($current_password > 0) {
                 $status    = $this->Users_model->change_password($this->session->userdata('uid'), $params);
+                $this->session->set_userdata('user_password_last_update', date('Y-m-d H:i:s'));
+                $this->session->unset_userdata('password_reminder_dismissed_' . $this->session->userdata('uid'));
             } else {
                 $this->session->set_flashdata('failed', 'Password lama salah bisa hubungi administrator');
                 redirect('manage/profile/cpw');

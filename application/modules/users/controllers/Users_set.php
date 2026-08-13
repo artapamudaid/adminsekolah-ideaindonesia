@@ -402,6 +402,7 @@ class Users_set extends CI_Controller
             $params['user_password'] = md5($this->input->post('user_password'));
             $params['user_password_last_update'] = date('Y-m-d H:i:s');
             $status = $this->Users_model->change_password($id, $params);
+            $this->session->set_userdata('user_password_last_update', date('Y-m-d H:i:s'));
 
             // activity log
             $this->load->model('logs/Logs_model');

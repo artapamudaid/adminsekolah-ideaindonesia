@@ -43,7 +43,7 @@ if (isset($user)) {
 							<div class="alert alert-info alert-dismissible">
 								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 								<h4><i class="icon fa fa-info"></i> Info!</h4>
-								Password terakhir diubah pada <?php echo time_passed($user['user_password_last_update']); ?>.
+								Password terakhir diubah <?php echo time_passed($user['user_password_last_update']); ?>.
 							</div>
 						<?php } ?>
 						<?php echo validation_errors(); ?>
