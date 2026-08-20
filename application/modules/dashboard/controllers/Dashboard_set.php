@@ -61,12 +61,14 @@ class Dashboard_set extends CI_Controller
         $where_majors_student = "";
         $where_majors_employee = "";
         $where_majors_banking = "";
+        $whereMajors = "";
         if ($selected_majors != 0) {
             $widget_jumlah_siswa_title = 'Jumlah Siswa Unit ' . $this->mapping_singkatan_unit($selected_majors);
             $where_majors_v_laporan_jurnal = "AND idMajors = '$selected_majors'";
             $where_majors_student = "AND majors_majors_id = '$selected_majors'";
             $where_majors_employee = "AND employee_majors_id = '$selected_majors'";
             $where_majors_banking = "AND s.majors_majors_id = '$selected_majors'";
+            $whereMajors = " AND majors_id = '$selected_majors'";
         }
 
         $hasDashboard = false;
@@ -131,9 +133,6 @@ class Dashboard_set extends CI_Controller
                 $where_majors_employee_v = "AND employee_majors_id = '$selected_majors'";
             }
             $data['employee'] = $this->db->query("SELECT employee_category FROM employee WHERE 1=1 $where_majors_employee_v")->result_array();
-            // echo $this->db->last_query();
-            // echo "<hr>";
-            // die;
 
             $banking = $this->db->query("SELECT 
             SUM(b.banking_debit) AS total_setor, 
@@ -146,13 +145,17 @@ class Dashboard_set extends CI_Controller
             $data['total_penarikan'] = (int)$banking['total_tarik'] ?? 0;
 
             $data['information'] = $this->Information_model->get(array('information_publish' => 1));
-            $data['majors'] = $this->Student_model->get_majors();
+            $data['majors_chart'] = $this->db->query("SELECT * FROM majors WHERE 1 $whereMajors")->result_array();
+
             $data['selected_majors'] = $selected_majors;
-            $data['numStudents'] = $this->db->query("SELECT COUNT(student_id) as numbers
-                                                    FROM student
-                                                    WHERE 1=1 $where_majors_student
-                                                    GROUP BY majors_majors_id
-                                                    ORDER BY majors_majors_id ASC")->result_array();
+            $data['numStudents']    = $this->db->query(
+                "SELECT majors.majors_short_name AS unit,COUNT(student.student_id) AS numbers
+            FROM majors
+            LEFT JOIN student ON student.majors_majors_id = majors.majors_id
+            WHERE 1=1 $whereMajors $where_majors_student
+            GROUP BY majors.majors_id
+            ORDER BY majors.majors_id ASC"
+            )->result_array();
 
             $data['lastPayments'] = $this->db->query("SELECT s.student_full_name, MAX(l.log_trx_input_date) AS last_payment
                                                             FROM log_trx l

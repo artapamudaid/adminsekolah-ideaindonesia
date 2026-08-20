@@ -598,7 +598,7 @@
     var myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: [<?php foreach ($majors as $major) {
+            labels: [<?php foreach ($majors_chart as $major) {
                             echo '"' . $major['majors_short_name'] . '", ';
                         } ?>],
             datasets: [{
