@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
@@ -328,7 +329,7 @@ class Employees_set extends CI_Controller
     force_download($name, $data);
   }
 
-  public function do_import()
+  public function do_import_old()
   {
     $default = "123456";
     // $this->load->library('excel');
@@ -407,6 +408,273 @@ class Employees_set extends CI_Controller
       }
       redirect('manage/employees');
     }
+  }
+
+  function do_upload_xls($name = NULL, $fileName = NULL)
+  {
+    $this->load->library('upload');
+
+    $config['upload_path'] = FCPATH . 'uploads/xls_tmp/';
+
+    /* create directory if not exist */
+    if (!is_dir($config['upload_path'])) {
+      mkdir($config['upload_path'], 0777, TRUE);
+    }
+
+    $config['allowed_types'] = 'xls|xlsx|csv';
+    $config['max_size'] = '10240';
+    $config['file_name'] = $fileName;
+    $this->upload->initialize($config);
+
+    if (!$this->upload->do_upload($name)) {
+      $this->session->set_flashdata('success', $this->upload->display_errors('', ''));
+      redirect(uri_string());
+    }
+
+    $upload_data = $this->upload->data();
+
+    return $upload_data['file_name'];
+  }
+
+  public function do_import()
+  {
+    if (!isset($_FILES['file']['name']) || $_FILES['file']['name'] === '') {
+      $this->session->set_flashdata('failed', 'Tidak ada file yang diunggah.');
+      redirect('manage/employees/import_employees');
+      return;
+    }
+
+    $fileExt = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
+    if (!in_array($fileExt, ['xls', 'xlsx'])) {
+      $this->session->set_flashdata('failed', 'Format file tidak didukung. Hanya .xls atau .xlsx yang diperbolehkan.');
+      redirect('manage/employees/import_employees');
+      return;
+    }
+
+    $file = $this->do_upload_xls('file', base64_encode('imemp' . date('ymdHis')));
+    if (!$file) {
+      $this->session->set_flashdata('failed', 'Gagal mengupload file.');
+      redirect('manage/employees/import_employees');
+      return;
+    }
+
+    $pathFile = FCPATH . 'uploads/xls_tmp/' . $file;
+
+    try {
+      $readerType = ($fileExt === 'xls') ? 'Xls' : 'Xlsx';
+      $reader = IOFactory::createReader($readerType);
+      $reader->setReadDataOnly(true);
+      $spreadSheet = $reader->load($pathFile);
+      $excelSheet = $spreadSheet->getActiveSheet();
+      $spreadSheetAry = $excelSheet->toArray(null, true, true, true);
+    } catch (Exception $e) {
+      if (file_exists($pathFile)) {
+        unlink($pathFile);
+      }
+      $this->session->set_flashdata('failed', 'Gagal membaca file Excel: ' . $e->getMessage());
+      redirect('manage/employees/import_employees');
+      return;
+    }
+
+    // $valid_majors_raw = $this->db->select('majors_id')->get('majors')->result_array();
+    // $valid_majors = array_column($valid_majors_raw, 'majors_id');
+
+    $allMajors = [];
+    foreach ($this->db->select('majors_id, sekolah_id')->where('majors_status', 1)->get('majors')->result_array() as $m) {
+      $allMajors[(int) $m['majors_id']] = $m;
+    }
+
+    $valid_positions_raw = $this->db->select('position_id')->get('position')->result_array();
+    $valid_positions = array_column($valid_positions_raw, 'position_id');
+
+    $errors = [];
+    $data_to_insert = [];
+    $file_combinations = [];
+    $default_password = md5("123456");
+
+    // Pass 1: Kumpulkan NIP untuk di-cek di DB sekaligus
+    $nips_from_file = [];
+    $rows_to_process = [];
+    foreach ($spreadSheetAry as $row_index => $row_data) {
+      if ($row_index <= 2) {
+        continue;
+      }
+
+      $employee_nip         = isset($row_data['A']) ? trim($row_data['A']) : '';
+      $employee_name        = isset($row_data['B']) ? trim($row_data['B']) : '';
+      $employee_majors_id   = isset($row_data['C']) ? trim($row_data['C']) : '';
+      $employee_position_id = isset($row_data['D']) ? trim($row_data['D']) : '';
+
+      // Skip entirely empty rows
+      if ($employee_nip === '' && $employee_name === '' && $employee_majors_id === '' && $employee_position_id === '') {
+        continue;
+      }
+
+      if ($employee_nip !== '') {
+        $nips_from_file[] = str_replace("'", "", $employee_nip);
+      }
+      $rows_to_process[$row_index] = $row_data;
+    }
+
+    // Ambil data yang sudah ada di DB berdasarkan NIP yang ada di file Excel
+    $existing_combinations = [];
+    if (!empty($nips_from_file)) {
+      $this->db->select('employee_nip, employee_majors_id, employee_position_id');
+      $this->db->from('employee');
+      $this->db->where_in('employee_nip', array_unique($nips_from_file));
+      $existing_data_raw = $this->db->get()->result_array();
+
+      foreach ($existing_data_raw as $ed) {
+        $existing_combinations[] = $ed['employee_nip'] . '_' . $ed['employee_majors_id'] . '_' . $ed['employee_position_id'];
+      }
+    }
+
+    // Pass 2: Iterasi dan Validasi
+    foreach ($rows_to_process as $row_index => $row_data) {
+      $employee_nip         = isset($row_data['A']) ? trim($row_data['A']) : '';
+      $employee_name        = isset($row_data['B']) ? trim($row_data['B']) : '';
+      $employee_majors_id   = isset($row_data['C']) ? trim($row_data['C']) : '';
+      $employee_position_id = isset($row_data['D']) ? trim($row_data['D']) : '';
+      $employee_status      = isset($row_data['E']) ? trim($row_data['E']) : '';
+      $employee_wa          = isset($row_data['F']) ? trim($row_data['F']) : '';
+      // $gender               = isset($row_data['G']) ? trim($row_data['G']) : '';
+      // $tempat_lahir         = isset($row_data['H']) ? trim($row_data['H']) : '';
+      // $tgl_lahir            = isset($row_data['I']) ? trim($row_data['I']) : '';
+      // $pendidikan           = isset($row_data['J']) ? trim($row_data['J']) : '';
+      // $alamat               = isset($row_data['K']) ? trim($row_data['K']) : '';
+      // $email                = isset($row_data['L']) ? trim($row_data['L']) : '';
+      // $status_kepegawaian   = isset($row_data['M']) ? trim($row_data['M']) : '';
+
+      $row_errors = [];
+      $clean_nip = str_replace("'", "", $employee_nip);
+
+      if ($clean_nip === '') {
+        $row_errors[] = "NIP kosong";
+      }
+
+      if ($employee_name === '') {
+        $row_errors[] = "Nama kosong";
+      }
+
+      // if ($employee_majors_id === '' || !is_numeric($employee_majors_id) || $employee_majors_id <= 0) {
+      //   $row_errors[] = "ID Unit tidak valid";
+      // } elseif (!in_array($employee_majors_id, $valid_majors)) {
+      //   $row_errors[] = "ID Unit ($employee_majors_id) tidak terdaftar di database";
+      // }
+
+      $majors_id = 0;
+      $sekolah_id = '';
+      if ($employee_majors_id !== '') {
+        $unitKey = (int) $employee_majors_id;
+        if (isset($allMajors[$unitKey])) {
+          $majors_id = $unitKey;
+          $sekolah_id = $allMajors[$unitKey]['sekolah_id'];
+        } else {
+          $row_errors[] = "ID Unit ($employee_majors_id) tidak ditemukan di database";
+        }
+      }
+
+      if ($employee_position_id === '' || !is_numeric($employee_position_id) || $employee_position_id <= 0) {
+        $row_errors[] = "ID Posisi tidak valid";
+      } elseif (!in_array($employee_position_id, $valid_positions)) {
+        $row_errors[] = "ID Posisi ($employee_position_id) tidak terdaftar di database";
+      }
+
+      // Validasi duplikat internal (dalam file Excel) & Database
+      $combo_key = $clean_nip . '_' . $employee_majors_id . '_' . $employee_position_id;
+      if ($clean_nip !== '' && $employee_majors_id !== '' && $employee_position_id !== '') {
+        if (in_array($combo_key, $file_combinations)) {
+          $row_errors[] = "Duplikat NIP $clean_nip pada Unit $employee_majors_id dan Posisi $employee_position_id dalam file Excel ini";
+        } else {
+          $file_combinations[] = $combo_key;
+        }
+
+        // Validasi duplikat ke database
+        if (in_array($combo_key, $existing_combinations)) {
+          $row_errors[] = "Duplikat NIP $clean_nip pada Unit $employee_majors_id dan Posisi $employee_position_id sudah ada di database";
+        }
+      }
+
+      if (!empty($row_errors)) {
+        $errors[] = "Baris $row_index: " . implode(", ", $row_errors);
+        continue; // skip the rest for this row if it has errors
+      }
+
+      $hp = '';
+      if ($employee_wa !== '') {
+        $employee_wa = str_replace(["'", " ", "(", ")", "."], "", $employee_wa);
+        if (!preg_match('/[^+0-9]/', $employee_wa)) {
+          if (substr($employee_wa, 0, 1) == '+') {
+            $hp = $employee_wa;
+          } elseif (substr($employee_wa, 0, 1) == '0') {
+            $hp = '+62' . substr($employee_wa, 1);
+          } elseif (substr($employee_wa, 0, 2) == '62') {
+            $hp = '+' . $employee_wa;
+          } elseif (substr($employee_wa, 0, 1) == '8') {
+            $hp = '+62' . $employee_wa;
+          } else {
+            $hp = '+' . $employee_wa;
+          }
+        }
+      }
+
+      $employee_status = ($employee_status === '') ? 1 : $employee_status;
+
+      $pegawai = [
+        'employee_nip'          => $clean_nip,
+        'employee_name'         => $employee_name,
+        'employee_password'     => $default_password,
+        'employee_majors_id'    => $majors_id,
+        'employee_position_id'  => $employee_position_id,
+        'employee_status'       => $employee_status,
+        'employee_phone'        => $hp,
+        'employee_input_date'   => date('Y-m-d H:i:s'),
+        'employee_last_update'  => date('Y-m-d H:i:s'),
+        'sekolah_id'            => $sekolah_id
+      ];
+
+      // if ($gender !== '') $pegawai['employee_gender'] = $gender;
+      // if ($tempat_lahir !== '') $pegawai['employee_born_place'] = $tempat_lahir;
+      // if ($tgl_lahir !== '') $pegawai['employee_born_date'] = $tgl_lahir;
+      // if ($alamat !== '') $pegawai['employee_address'] = $alamat;
+      // if ($pendidikan !== '') $pegawai['employee_strata'] = $pendidikan;
+      // if ($email !== '') $pegawai['employee_email'] = $email;
+      // if ($status_kepegawaian !== '') $pegawai['employee_category'] = $status_kepegawaian;
+
+      $data_to_insert[] = $pegawai;
+    }
+
+    if (!empty($errors)) {
+      $this->session->set_flashdata('import_error_rows', $errors);
+    }
+
+    if (!empty($data_to_insert)) {
+      $this->db->insert_batch('employee', $data_to_insert);
+      $inserted_count = count($data_to_insert);
+
+      $this->load->model('logs/Logs_model');
+      $this->Logs_model->add([
+        'log_date' => date('Y-m-d H:i:s'),
+        'user_id' => $this->session->userdata('uid'),
+        'log_module' => 'Pegawai',
+        'log_action' => 'Import',
+        'log_info' => 'Total: ' . $inserted_count . ' data pegawai'
+      ]);
+
+      $success_msg = "Import Data Pegawai Berhasil. Total $inserted_count data berhasil diimport.";
+      if (!empty($errors)) {
+        $success_msg .= " Terdapat " . count($errors) . " baris gagal diimport.";
+      }
+      $this->session->set_flashdata('success', $success_msg);
+    } else {
+      $this->session->set_flashdata('failed', "Tidak ada data yang valid untuk diimport.");
+    }
+
+    if (file_exists($pathFile)) {
+      unlink($pathFile);
+    }
+
+    redirect('manage/employees/import_employees');
   }
 
   function rpw($id = NULL)
