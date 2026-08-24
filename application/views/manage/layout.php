@@ -1,3 +1,64 @@
+<?php
+// MOD - 24082026
+$umajorsid = $this->session->userdata('umajorsid');
+// if ($umajorsid != 0) {
+//   $this->db->where('idMajors', $umajorsid);
+// }
+// $this->db->select("vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi ");
+// $this->db->group_by("vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod");
+// $notifTrx = $this->db->get('v_transaksi_tertunda vtt')->result_array();
+// $totalNotif = count($notifTrx);
+
+// MOD - 24082026- Reference demo-epesantren - implement caching
+$this->load->driver('cache', array('adapter' => 'file', 'backup' => 'file'));
+$cache_name = 'v_transaksi_tertunda_cache_opt_' . $umajorsid;
+$notifTrx = $this->cache->get($cache_name);
+
+if ($notifTrx === FALSE) {
+
+  $this->db->select('bl.bulan_noref AS noref, s.student_full_name AS nama, s.student_nis AS nis, py.period_period_id AS idPeriod, bl.bulan_bill AS penerimaan');
+  $this->db->from('bulan bl');
+  $this->db->join('student s', 's.student_id = bl.student_student_id');
+  $this->db->join('payment py', 'py.payment_id = bl.payment_payment_id');
+  $this->db->where('bl.bulan_status', 1);
+  $this->db->where('bl.bulan_bill > ', 0);
+  $this->db->where('bl.bulan_noref IS NOT NULL', NULL, FALSE);
+  $this->db->where('NOT EXISTS (SELECT 1 FROM kas ks WHERE ks.kas_noref = bl.bulan_noref)', NULL, FALSE);
+  $this->db->where('NOT EXISTS (SELECT 1 FROM jurnal_umum ju WHERE ju.noref = bl.bulan_noref)', NULL, FALSE);
+
+  if ($umajorsid != 0) {
+    $this->db->where('s.majors_majors_id', $umajorsid);
+  }
+
+  $query1 = $this->db->get_compiled_select();
+
+  $this->db->select('bp.bebas_pay_noref AS noref, s.student_full_name AS nama, s.student_nis AS nis, py.period_period_id AS idPeriod, bp.bebas_pay_bill AS penerimaan');
+  $this->db->from('bebas_pay bp');
+  $this->db->join('bebas b', 'b.bebas_id = bp.bebas_bebas_id');
+  $this->db->join('student s', 's.student_id = b.student_student_id');
+  $this->db->join('payment py', 'py.payment_id = b.payment_payment_id');
+  $this->db->where('bp.bebas_pay_noref IS NOT NULL', NULL, FALSE);
+  $this->db->where('NOT EXISTS (SELECT 1 FROM kas ks WHERE ks.kas_noref = bp.bebas_pay_noref)', NULL, FALSE);
+  $this->db->where('NOT EXISTS (SELECT 1 FROM jurnal_umum ju WHERE ju.noref = bp.bebas_pay_noref)', NULL, FALSE);
+
+  if ($umajorsid != 0) {
+    $this->db->where('s.majors_majors_id', $umajorsid);
+  }
+
+  $query2 = $this->db->get_compiled_select();
+
+  $this->db->select('noref, nama, nis, idPeriod, SUM(penerimaan) AS totalTransaksi');
+  $this->db->from("($query1 UNION ALL $query2) AS vtt");
+  $this->db->group_by(array('nama', 'nis', 'idPeriod'));
+
+  $notifTrx = $this->db->get()->result_array();
+
+  // Cache for 5 minutes (300 seconds)
+  $this->cache->save($cache_name, $notifTrx, 300);
+}
+
+$totalNotif = count($notifTrx);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -228,16 +289,6 @@
         <div class="navbar-custom-menu">
           <ul class="nav navbar-nav">
             <!-- Messages: style can be found in dropdown.less-->
-            <?php
-            $umajorsid = $this->session->userdata('umajorsid');
-            if ($umajorsid != 0) {
-              $this->db->where('idMajors', $umajorsid);
-            }
-            $this->db->select("vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi ");
-            $this->db->group_by("vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod");
-            $notifTrx = $this->db->get('v_transaksi_tertunda vtt')->result_array();
-            $totalNotif = count($notifTrx);
-            ?>
             <!-- Language Switcher -->
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -250,28 +301,31 @@
             </li>
 
             <li class="dropdown dropdown-notif user user-menu">
-              <a href="#" class="dropdown-toggle bell-icon has-notification" data-toggle="dropdown">
-                <i class="fa fa-bell" aria-hidden="true"></i>
-                <?php if ($totalNotif > 0) { ?>
+              <?php if ($totalNotif > 0): ?>
+                <a href="#" class="dropdown-toggle bell-icon has-notification" data-toggle="dropdown">
+                  <i class="fa fa-bell" aria-hidden="true"></i>
                   <div class="badge-2">
                     <?php echo $totalNotif; ?>
                   </div>
-                <?php
-                } ?>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-notif" id="notificationDropdown">
-                <li class="notification-header">Pembayaran Belum Tersimpan</li>
-                <?php foreach ($notifTrx as $nTrx) { ?>
-                  <li class="notification-item">
-                    <span>
-                      <?php echo $nTrx['nama'] ?>
-                    </span>
-                    <a href="<?php echo base_url('manage/payout?n=') . $nTrx['idPeriod'] . '&r=' . $nTrx['nis'] ?>"
-                      class="notification-link">Detail</a>
-                  </li>
-                <?php
-                } ?>
-              </ul>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-notif" id="notificationDropdown">
+                  <li class="notification-header">Pembayaran Belum Tersimpan</li>
+                  <?php foreach ($notifTrx as $nTrx) { ?>
+                    <li class="notification-item">
+                      <span>
+                        <?php echo $nTrx['nama'] ?>
+                      </span>
+                      <a href="<?php echo base_url('manage/payout?n=') . $nTrx['idPeriod'] . '&r=' . $nTrx['nis'] ?>"
+                        class="notification-link">Detail</a>
+                    </li>
+                  <?php
+                  } ?>
+                </ul>
+              <?php else: ?>
+                <a href="javascript:void(0)" class="dropdown-toggle bell-icon has-notification">
+                  <i class="fa fa-bell" aria-hidden="true"></i>
+                </a>
+              <?php endif; ?>
             </li>
 
 

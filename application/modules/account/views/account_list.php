@@ -203,7 +203,7 @@
                                                 <tr style="font-weight: bold;">
                                                     <td><?php echo $no++ ?></td>
                                                     <td>&nbsp;&nbsp;<?php echo $sub->account_code ?></td>
-                                                    <td><?php echo $sub->account_description ?> id majors: <?php echo $sub->account_majors_id ?></td>
+                                                    <td><?php echo $sub->account_description ?></td>
                                                     <td><?php echo ($sub->account_status == 0) ? 'Header' : 'Non-Header'  ?></td>
                                                     <td>Sub Akun 1</td>
                                                     <td>

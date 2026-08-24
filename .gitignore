@@ -15,6 +15,14 @@ media/barcode_tahfidz/
 application/config/database.php
 composer.lock
 
+.clinerules/
+reviews/
+RFCs/
+FEATURES.md
+PRD.md
+PRD-REVIEW.md
+RULES.md
+TEST_PLAN.md
 
 .DS_Store
 media/barcode_hutang/*

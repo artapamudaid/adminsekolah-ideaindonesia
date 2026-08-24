@@ -14,6 +14,11 @@ class Employees_model extends CI_Model
     // Get From Databases
     function get($params = array())
     {
+        $cache_key = 'employee_get_' . md5(json_encode($params)) . '_' . get_cache_version('employee');
+        $cached_data = $this->cache->get($cache_key);
+        if ($cached_data !== FALSE) {
+            return $cached_data;
+        }
 
         if (isset($params['id'])) {
             $this->db->where('employee.employee_id', $params['id']);
@@ -92,16 +97,24 @@ class Employees_model extends CI_Model
         $res = $this->db->get('employee');
 
         if (isset($params['id'])) {
-            return $res->row_array();
+            $result = $res->row_array();
         } else if (isset($params['employee_nip'])) {
-            return $res->row_array();
+            $result = $res->row_array();
         } else {
-            return $res->result_array();
+            $result = $res->result_array();
         }
+
+        $this->cache->save($cache_key, $result, CACHE_TTL);
+        return $result;
     }
 
     function get_employee($params = array())
     {
+        $cache_key = 'employee_get_employee_' . md5(json_encode($params)) . '_' . get_cache_version('employee');
+        $cached_data = $this->cache->get($cache_key);
+        if ($cached_data !== FALSE) {
+            return $cached_data;
+        }
 
         if (isset($params['id'])) {
             $this->db->where('employee.employee_id', $params['id']);
@@ -187,12 +200,15 @@ class Employees_model extends CI_Model
         $res = $this->db->get('employee');
 
         if (isset($params['id'])) {
-            return $res->row_array();
+            $result = $res->row_array();
         } else if (isset($params['employee_nip'])) {
-            return $res->row_array();
+            $result = $res->row_array();
         } else {
-            return $res->result_array();
+            $result = $res->result_array();
         }
+
+        $this->cache->save($cache_key, $result, CACHE_TTL);
+        return $result;
     }
 
     function add($data = array())
@@ -292,12 +308,14 @@ class Employees_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('employee');
         return ($status == 0) ? FALSE : $id;
     }
     function delete($id)
     {
         $this->db->where('employee_id', $id);
         $this->db->delete('employee');
+        bump_cache_version('employee');
     }
     /*
     public function is_exist($field, $value)
