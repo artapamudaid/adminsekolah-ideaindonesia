@@ -9,6 +9,8 @@ uploadimage/
 markdown/
 structure_db/
 
+application/cache
+
 media/barcode_employees/
 media/barcode_tahfidz/
 
@@ -21,8 +23,9 @@ RFCs/
 FEATURES.md
 PRD.md
 PRD-REVIEW.md
+RFCS.md
 RULES.md
-TEST_PLAN.md
+TEST*PLAN.md
 
 .DS_Store
 media/barcode_hutang/*

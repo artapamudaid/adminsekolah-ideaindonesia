@@ -596,7 +596,7 @@ class Employees_set extends CI_Controller
       }
 
       if (!empty($row_errors)) {
-        $errors[] = "Baris $row_index: " . implode(", ", $row_errors);
+        $errors[] = ['baris' => $row_index, 'nip' => $clean_nip, 'nama' => $employee_name, 'keterangan' => implode(", ", $row_errors)];
         continue; // skip the rest for this row if it has errors
       }
 

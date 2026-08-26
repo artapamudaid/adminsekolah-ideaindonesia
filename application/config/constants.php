@@ -85,3 +85,12 @@ defined('EXIT__AUTO_MIN')      or define('EXIT__AUTO_MIN', 9); // lowest automat
 defined('EXIT__AUTO_MAX')      or define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
 
 define('APP_VERSION', '1.2.0');
+
+/*
+|--------------------------------------------------------------------------
+| Cache Time-To-Live
+|--------------------------------------------------------------------------
+| Cache entry lifetime in seconds. Used by the file cache driver and the
+| cache_version_helper for module cache versioning. 86400 = 24 hours.
+*/
+defined('CACHE_TTL') or define('CACHE_TTL', 86400);

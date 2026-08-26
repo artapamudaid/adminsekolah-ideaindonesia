@@ -13,6 +13,19 @@ class Period_model extends CI_Model
     // Get period from database
     function get($params = array())
     {
+        $cache_key = get_session_cache_key('period', $params);
+        try {
+            if (!isset($this->cache)) {
+                $this->load->driver('cache', array('adapter' => 'file'));
+            }
+            $cached = $this->cache->get($cache_key);
+            if ($cached !== FALSE) {
+                return $cached;
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache read error in Period_model::get: ' . $e->getMessage());
+        }
+
         if (isset($params['id'])) {
             $this->db->where('period_id', $params['id']);
         }
@@ -45,10 +58,20 @@ class Period_model extends CI_Model
         $res = $this->db->get('period');
 
         if (isset($params['id'])) {
-            return $res->row_array();
+            $result = $res->row_array();
         } else {
-            return $res->result_array();
+            $result = $res->result_array();
         }
+
+        try {
+            if (isset($this->cache)) {
+                $this->cache->save($cache_key, $result, CACHE_TTL);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache write error in Period_model::get: ' . $e->getMessage());
+        }
+
+        return $result;
     }
 
     // Add and update to database
@@ -86,6 +109,7 @@ class Period_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('period');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -94,5 +118,6 @@ class Period_model extends CI_Model
     {
         $this->db->where('period_id', $id);
         $this->db->delete('period');
+        bump_cache_version('period');
     }
 }

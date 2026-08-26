@@ -14,6 +14,18 @@ class Student_model extends CI_Model
     // Get From Databases
     function get($params = array())
     {
+        $cache_key = get_session_cache_key('student', $params);
+        try {
+            if (!isset($this->cache)) {
+                $this->load->driver('cache', array('adapter' => 'file'));
+            }
+            $cached = $this->cache->get($cache_key);
+            if ($cached !== FALSE) {
+                return $cached;
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache read error in Student_model::get: ' . $e->getMessage());
+        }
 
         if (isset($params['id'])) {
             $this->db->where('student.student_id', $params['id']);
@@ -117,13 +129,29 @@ class Student_model extends CI_Model
 
         $res = $this->db->get('student');
 
-        if (isset($params['id'])) {
-            return $res->row_array();
-        } else if (isset($params['student_nis'])) {
-            return $res->row_array();
+        if (isset($params['id']) || isset($params['student_nis'])) {
+            $result = $res->row_array();
+            if ($result && isset($result['student_password'])) {
+                $result['student_password'] = '[PROTECTED]';
+            }
         } else {
-            return $res->result_array();
+            $result = $res->result_array();
+            foreach ($result as &$row) {
+                if (isset($row['student_password'])) {
+                    $row['student_password'] = '[PROTECTED]';
+                }
+            }
         }
+
+        try {
+            if (isset($this->cache)) {
+                $this->cache->save($cache_key, $result, CACHE_TTL);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache write error in Student_model::get: ' . $e->getMessage());
+        }
+
+        return $result;
     }
 
     function get_home($params = array())
@@ -694,6 +722,7 @@ class Student_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('student');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -722,6 +751,7 @@ class Student_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('student');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -777,6 +807,7 @@ class Student_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('student');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -784,18 +815,21 @@ class Student_model extends CI_Model
     {
         $this->db->where('student_id', $id);
         $this->db->delete('student');
+        bump_cache_version('student');
     }
 
     function delete_class($id)
     {
         $this->db->where('class_id', $id);
         $this->db->delete('class');
+        bump_cache_version('student');
     }
 
     function delete_majors($id)
     {
         $this->db->where('majors_id', $id);
         $this->db->delete('majors');
+        bump_cache_version('student');
     }
 
     public function is_exist($field, $value)
@@ -809,6 +843,7 @@ class Student_model extends CI_Model
     {
         $this->db->where('student_id', $id);
         $this->db->update('student', $params);
+        bump_cache_version('student');
     }
 
     function count_all($params = array())
