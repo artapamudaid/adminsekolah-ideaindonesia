@@ -27,20 +27,7 @@
 					</div>
 				</div>
 			<?php endif; ?>
-			<?php $importErrors = $this->session->flashdata('import_error_rows'); ?>
-			<?php if (!empty($importErrors)): ?>
-				<div class="col-xs-12">
-					<div class="alert alert-warning alert-dismissible">
-						<button type="button" class="close" data-dismiss="alert">&times;</button>
-						<strong>Detail Baris Gagal:</strong>
-						<ul class="margin-top-5">
-							<?php foreach ($importErrors as $errLine): ?>
-								<li><?php echo htmlspecialchars($errLine); ?></li>
-							<?php endforeach; ?>
-						</ul>
-					</div>
-				</div>
-			<?php endif; ?>
+
 			<div class="col-xs-12">
 				<div class="box">
 					<!-- /.box-header -->
@@ -89,6 +76,61 @@
 					</div>
 				</div>
 			</div>
+
+			<?php $importErrors = $this->session->flashdata('import_error_rows'); ?>
+			<?php if (!empty($importErrors)): ?>
+				<div class="col-xs-12">
+					<div class="box box-danger">
+						<div class="box-header with-border">
+							<h3 class="box-title text-danger"><i class="fa fa-warning"></i> Detail Data Gagal Diimport</h3>
+						</div>
+						<div class="box-body">
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr>
+											<th width="10%" class="text-center">Baris Excel</th>
+											<th width="15%">NIS</th>
+											<th width="25%">Nama Lengkap</th>
+											<th width="50%">Keterangan Error</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php foreach ($importErrors as $err): ?>
+											<tr>
+												<td class="text-center"><?php echo isset($err['baris']) ? htmlspecialchars($err['baris']) : ''; ?></td>
+												<td class="text-center"><?php echo isset($err['nis']) ? htmlspecialchars($err['nis']) : ''; ?></td>
+												<td><?php echo isset($err['nama']) ? htmlspecialchars($err['nama']) : ''; ?></td>
+												<td>
+													<?php
+													if (isset($err['keterangan'])) {
+														$messages = preg_split('/[;,]/', $err['keterangan']);
+														if (count($messages) > 1) {
+															echo '<ul style="padding-left: 15px; margin-bottom: 0;">';
+															foreach ($messages as $msg) {
+																$msg = trim($msg);
+																if ($msg !== '') {
+																	echo '<li>' . htmlspecialchars($msg) . '</li>';
+																}
+															}
+															echo '</ul>';
+														} else {
+															echo htmlspecialchars(trim($err['keterangan']));
+														}
+													} else {
+														echo htmlspecialchars(is_string($err) ? $err : '');
+													}
+													?>
+												</td>
+											</tr>
+										<?php endforeach; ?>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			<?php endif; ?>
 		</div>
 	</section>
 	<!-- /.content -->

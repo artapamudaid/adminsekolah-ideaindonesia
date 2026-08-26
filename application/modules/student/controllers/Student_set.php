@@ -820,7 +820,7 @@ class Student_set extends CI_Controller
       }
 
       if (!empty($errors)) {
-        $error_rows[] = "Baris $numrow: " . implode('; ', $errors);
+        $error_rows[] = ['baris' => $numrow, 'nis' => $student_nis, 'nama' => $student_full_name, 'keterangan' => implode('; ', $errors)];
         $numrow++;
         continue;
       }
