@@ -222,70 +222,72 @@
       ?>
     </table>
 
-    <h4>Pembayaran Bebas</h4>
-    <table width="100%" border="1" style="white-space: nowrap;" class="table-bebas">
-      <tr>
-        <th style="height: 30px;">NO</th>
-        <th>NAMA PEMBAYARAN</th>
-        <th>TAGIHAN</th>
-        <th>DISKON</th>
-        <th>TOTAL TAGIHAN</th>
-        <th>DIBAYAR</th>
-        <th>SISA TAGIHAN</th>
-      </tr>
-      <?php
-      $j = 1;
-      foreach ($bebas as $row) :
-        $namePayFree = $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'];
-        $sisaTagihan = $row['bebas_bill'] - $row['bebas_diskon'] -  $row['bebas_total_pay'];
-      ?>
+    <?php if (isset($bebas) && !empty($bebas)): ?>
+      <h4>Pembayaran Bebas</h4>
+      <table width="100%" border="1" style="white-space: nowrap;" class="table-bebas">
         <tr>
-          <td style="text-align: center;"><?php echo $j ?></td>
-          <td><?php echo $namePayFree ?></td>
-          <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_bill'], 0, ',', '.') ?></td>
-          <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_diskon'], 0, ',', '.') ?></td>
-          <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_bill'] - $row['bebas_diskon'], 0, ',', '.') ?></td>
-          <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_total_pay'], 0, ',', '.') ?></td>
-          <td style="text-align: right;"><?php echo 'Rp. ' . number_format($sisaTagihan, 0, ',', '.') ?></td>
+          <th style="height: 30px;">NO</th>
+          <th>NAMA PEMBAYARAN</th>
+          <th>TAGIHAN</th>
+          <th>DISKON</th>
+          <th>TOTAL TAGIHAN</th>
+          <th>DIBAYAR</th>
+          <th>SISA TAGIHAN</th>
         </tr>
-        <?php if (isset($rincian_bebas[$row['pos_name']])) { ?>
+        <?php
+        $j = 1;
+        foreach ($bebas as $row) :
+          $namePayFree = $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'];
+          $sisaTagihan = $row['bebas_bill'] - $row['bebas_diskon'] -  $row['bebas_total_pay'];
+        ?>
           <tr>
-            <td colspan="7"><b>Rincian</b></td>
+            <td style="text-align: center;"><?php echo $j ?></td>
+            <td><?php echo $namePayFree ?></td>
+            <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_bill'], 0, ',', '.') ?></td>
+            <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_diskon'], 0, ',', '.') ?></td>
+            <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_bill'] - $row['bebas_diskon'], 0, ',', '.') ?></td>
+            <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_total_pay'], 0, ',', '.') ?></td>
+            <td style="text-align: right;"><?php echo 'Rp. ' . number_format($sisaTagihan, 0, ',', '.') ?></td>
           </tr>
-          <tr>
-            <td></td>
-            <td colspan="6">
-              <table>
-                <thead>
-                  <th>No</th>
-                  <th>Tanggal</th>
-                  <th>Dibayar Via</th>
-                  <th>Nominal</th>
-                </thead>
-                <tbody>
-                  <?php
-                  $no = 1;
-                  foreach ($rincian_bebas[$row['pos_name']] as $item) {
-                    echo '<tr>';
-                    echo '<td>' . $no . '</td>';
-                    echo '<td>' . $item['tanggal'] . '</td>';
-                    echo '<td>' . $item['namaKas'] . '</td>';
-                    echo '<td>Rp ' . number_format($item['penerimaan'], 0, ",", ".") . '</td>';
-                    echo '</tr>';
-                    $no++;
-                  }
-                  ?>
-                </tbody>
-              </table>
-            </td>
-          </tr>
-        <?php } ?>
-      <?php
-        $j++;
-      endforeach
-      ?>
+          <?php if (isset($rincian_bebas[$row['pos_name']])) { ?>
+            <tr>
+              <td colspan="7"><b>Rincian</b></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td colspan="6">
+                <table>
+                  <thead>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Dibayar Via</th>
+                    <th>Nominal</th>
+                  </thead>
+                  <tbody>
+                    <?php
+                    $no = 1;
+                    foreach ($rincian_bebas[$row['pos_name']] as $item) {
+                      echo '<tr>';
+                      echo '<td>' . $no . '</td>';
+                      echo '<td>' . $item['tanggal'] . '</td>';
+                      echo '<td>' . $item['namaKas'] . '</td>';
+                      echo '<td>Rp ' . number_format($item['penerimaan'], 0, ",", ".") . '</td>';
+                      echo '</tr>';
+                      $no++;
+                    }
+                    ?>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          <?php } ?>
+        <?php
+          $j++;
+        endforeach
+        ?>
 
-    </table>
+      </table>
+    <?php endif; ?>
   <?php } else redirect('manage/payout?n=' . $f['n'] . '&r=' . $f['r'])  ?>
 
 
