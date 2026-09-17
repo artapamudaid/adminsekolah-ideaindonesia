@@ -59,19 +59,24 @@
       font-size: 14pt;
       text-align: center;
       font-weight: bold;
-      padding-bottom: -10px;
+      margin: 0 0 2px 0;
+      line-height: 1.05;
     }
 
     .tp {
       font-size: 12pt;
       text-align: center;
       font-weight: bold;
+      margin: 0 0 2px 0;
+      line-height: 1.05;
     }
 
     .unit-siswa {
       font-size: 10pt;
       text-align: center;
       font-weight: bold;
+      margin: 0;
+      line-height: 1.05;
     }
 
     hr {
@@ -94,7 +99,11 @@
       width: 100%;
     }
 
-    td {
+    .table-bulanan td {
+      padding: 3px;
+    }
+
+    .table-bebas td {
       padding: 3px;
     }
   </style>
@@ -130,7 +139,8 @@
       <?php endforeach; ?>
     </p>
   <?php } ?>
-  <table style="font-size: 10pt;" width="100%" border="0">
+  <br>
+  <table class="table-siswa" style="font-size: 10pt;" width="100%" border="0">
     <tr>
       <td width="100">NIS</td>
       <td width="5">:</td>
@@ -152,11 +162,11 @@
         <td><?php echo $row['class_name'] ?></td>
       <?php endforeach; ?>
     </tr>
-  </table><br>
+  </table>
   <?php if ($f['n'] and $f['r'] != NULL) { ?>
 
     <h4>Pembayaran Bulanan</h4>
-    <table width="100%" border="1" style="white-space: nowrap;">
+    <table width="100%" border="1" style="white-space: nowrap;" class="table-bulanan">
       <tr>
         <th style="height: 30px;">NO</th>
         <th>NAMA PEMBAYARAN</th>
@@ -213,7 +223,7 @@
     </table>
 
     <h4>Pembayaran Bebas</h4>
-    <table width="100%" border="1" style="white-space: nowrap;">
+    <table width="100%" border="1" style="white-space: nowrap;" class="table-bebas">
       <tr>
         <th style="height: 30px;">NO</th>
         <th>NAMA PEMBAYARAN</th>
