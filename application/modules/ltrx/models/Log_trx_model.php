@@ -1,14 +1,17 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Log_trx_model extends CI_Model {
+class Log_trx_model extends CI_Model
+{
 
-	function __construct() {
+    function __construct()
+    {
         parent::__construct();
     }
 
     // Get From Databases
-    function get($params = array()) {
+    function get($params = array())
+    {
         if (isset($params['id'])) {
             $this->db->where('log_trx.log_trx_id', $params['id']);
         }
@@ -16,7 +19,7 @@ class Log_trx_model extends CI_Model {
         if (isset($params['bulan_id'])) {
             $this->db->where('bulan_bulan_id', $params['bulan_id']);
         }
-        
+
         if (isset($params['payment_noref'])) {
             /*$this->db->where('kasMonth.kas_noref !=', $params['payment_noref']);
             $this->db->or_where('kasBebas.kas_noref !=', $params['payment_noref']);*/
@@ -24,7 +27,7 @@ class Log_trx_model extends CI_Model {
             $this->db->where('bulan_noref !=', $params['payment_noref']);
             $this->db->or_where('bebas_pay_noref !=', $params['payment_noref']);
         }
-        
+
         if (isset($params['bebas_pay_id'])) {
             $this->db->where('bebas_pay_bebas_pay_id', $params['bebas_pay_id']);
         }
@@ -63,9 +66,9 @@ class Log_trx_model extends CI_Model {
         } else {
             $this->db->order_by('log_trx_id', 'desc');
         }
-        
+
         $this->db->select('log_trx.log_trx_id, log_trx_input_date, log_trx_last_update');
-        $this->db->select('bulan_bulan_id, log_trx.student_student_id, student_nis, bulan_bill, bulan_account_id, bulan_noref, month_name, bebas_pay_bill, bebas_pay_account_id, bebas_pay_noref');
+        $this->db->select('bulan_bulan_id, log_trx.student_student_id, student_nis, bulan.bulan_bill, bulan_account_id, bulan_noref, month_name, bebas_pay_bill, bebas_pay_account_id, bebas_pay_noref');
 
         $this->db->select('posMonth.pos_name AS posmonth_name, posBebas.pos_name AS posbebas_name, periodMonth.period_start AS period_start_month, periodMonth.period_end AS period_end_month');
         $this->db->select('periodBebas.period_start AS period_start_bebas, periodBebas.period_end AS period_end_bebas');
@@ -93,11 +96,11 @@ class Log_trx_model extends CI_Model {
         } else {
             return $res->result_array();
         }
-        
     }
-    
-    function get_history($params = array()){
-        
+
+    function get_history($params = array())
+    {
+
         if (isset($params['payment_noref'])) {
             $noref = $params['payment_noref'];
         } else {
@@ -115,9 +118,9 @@ class Log_trx_model extends CI_Model {
         } else {
             $student_nis = NULL;
         }
-        
+
         $res = $this->db->query("SELECT `log_trx`.`log_trx_id`, `log_trx_input_date`, `log_trx_last_update`, `bulan_bulan_id`, 
-        `log_trx`.`student_student_id`, `student_nis`, `bulan_bill`, `bulan_account_id`, `bulan_noref`, `month_name`, `bebas_pay_bill`, 
+        `log_trx`.`student_student_id`, `student_nis`, `bulan`.`bulan_bill`, `bulan_account_id`, `bulan_noref`, `month_name`, `bebas_pay_bill`, 
         `bebas_pay_account_id`, `bebas_pay_noref`, `accountMonth`.`account_description` AS accMonth, `accountBebas`.`account_description` AS accBebas, `posMonth`.`pos_name` AS `posmonth_name`, `posBebas`.`pos_name` AS `posbebas_name`, 
         `periodMonth`.`period_start` AS `period_start_month`, `periodMonth`.`period_end` AS `period_end_month`, 
         `periodBebas`.`period_start` AS `period_start_bebas`, `periodBebas`.`period_end` AS `period_end_bebas` 
@@ -140,12 +143,12 @@ class Log_trx_model extends CI_Model {
         WHERE (`log_trx`.`student_student_id` = '$student_id' AND `student_nis` = '$student_nis' AND `bulan_noref` != '' AND `bulan_noref` != '$noref') 
         OR (`bebas_pay_noref` != '$noref' AND `log_trx`.`student_student_id` = '$student_id' AND `student_nis` = '$student_nis') 
         ORDER BY `log_trx_id` DESC");
-        
+
         return $res->result_array();
-            
     }
-    
-    function get_trx($params = array()) {
+
+    function get_trx($params = array())
+    {
         if (isset($params['id'])) {
             $this->db->where('log_trx.log_trx_id', $params['id']);
         }
@@ -153,7 +156,7 @@ class Log_trx_model extends CI_Model {
         if (isset($params['bulan_id'])) {
             $this->db->where('bulan_bulan_id', $params['bulan_id']);
         }
-        
+
         if (isset($params['payment_noref'])) {
             $this->db->where('bulan_noref =', $params['payment_noref']);
             $this->db->or_where('bebas_pay_noref =', $params['payment_noref']);
@@ -198,7 +201,7 @@ class Log_trx_model extends CI_Model {
             $this->db->order_by('log_trx_id', 'desc');
         }
         $this->db->select('log_trx.log_trx_id, log_trx_input_date, log_trx_last_update');
-        $this->db->select('bulan_bulan_id, log_trx.student_student_id, student_nis, bulan_bill, bulan_account_id, bulan_noref, month_name, bebas_pay_bill, bebas_pay_account_id, bebas_pay_noref');
+        $this->db->select('bulan_bulan_id, log_trx.student_student_id, student_nis, bulan.bulan_bill, bulan_account_id, bulan_noref, month_name, bebas_pay_bill, bebas_pay_account_id, bebas_pay_noref');
 
         $this->db->select('posMonth.pos_name AS posmonth_name, posBebas.pos_name AS posbebas_name, periodMonth.period_start AS period_start_month, periodMonth.period_end AS period_end_month');
         $this->db->select('periodBebas.period_start AS period_start_bebas, periodBebas.period_end AS period_end_bebas');
@@ -229,7 +232,8 @@ class Log_trx_model extends CI_Model {
     }
 
     // Insert some data to table
-    function add($data = array()) {
+    function add($data = array())
+    {
 
         if (isset($data['log_trx_id'])) {
             $this->db->set('log_trx_id', $data['log_trx_id']);
@@ -269,15 +273,17 @@ class Log_trx_model extends CI_Model {
         return ($status == 0) ? FALSE : $id;
     }
 
-      // Delete log_trx to database
-    function delete($id) {
+    // Delete log_trx to database
+    function delete($id)
+    {
         $this->db->where('log_trx_id', $id);
         $this->db->delete('log_trx');
     }
 
-      // Delete log_trx to database
-    function delete_log($params = array()) {
-        
+    // Delete log_trx to database
+    function delete_log($params = array())
+    {
+
         if (isset($params['bulan_id'])) {
             $this->db->where('bulan_bulan_id', $params['bulan_id']);
         }
@@ -292,8 +298,9 @@ class Log_trx_model extends CI_Model {
 
         $this->db->delete('log_trx');
     }
-    
-    function trx_finish($data = array()) {
+
+    function trx_finish($data = array())
+    {
 
         if (isset($data['kas_id'])) {
             $this->db->set('kas_id', $data['kas_id']);
@@ -322,11 +329,11 @@ class Log_trx_model extends CI_Model {
         if (isset($data['kas_majors_id'])) {
             $this->db->set('kas_majors_id', $data['kas_majors_id']);
         }
-        
+
         if (isset($data['kas_debit'])) {
             $this->db->set('kas_debit', $data['kas_debit']);
         }
-        
+
         if (isset($data['kas_note'])) {
             $this->db->set('kas_note', $data['kas_note']);
         }
@@ -346,7 +353,7 @@ class Log_trx_model extends CI_Model {
         if (isset($data['kas_last_update'])) {
             $this->db->set('kas_last_update', $data['kas_last_update']);
         }
-        
+
         $this->db->insert('kas');
         $id = $this->db->insert_id();
 
@@ -354,7 +361,8 @@ class Log_trx_model extends CI_Model {
         return ($status == 0) ? FALSE : $id;
     }
 
-    function send_pesan($data = array()) {
+    function send_pesan($data = array())
+    {
 
         if (isset($data['pesan'])) {
             $this->db->set('pesan', $data['pesan']);
@@ -379,15 +387,14 @@ class Log_trx_model extends CI_Model {
         if (isset($data['created_date'])) {
             $this->db->set('created_date', $data['created_date']);
         }
-        
-       
+
+
         $this->db->insert('pesan');
         $id = $this->db->insert_id();
 
         $status = $this->db->affected_rows();
         return ($status == 0) ? FALSE : $id;
     }
-
 }
 
 /* End of file Log_trx_model.php */
