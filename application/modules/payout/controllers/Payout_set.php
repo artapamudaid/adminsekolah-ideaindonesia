@@ -379,7 +379,7 @@ class Payout_set extends CI_Controller
     $this->barcode2($bcode['kas_noref'], '');
 
     $data['huruf'] = number_to_words($data['sumpaket'] + $data['summonth'] + $data['sumbeb']);
-    $file_pdf = 'Cetak_Struk_' . $siswa['student_full_name'] . '_' . base64_decode($f['d']);
+    $file_pdf = 'Cetak_Struk_' . $siswa['student_full_name'] . '_' . date('Y-m-d');
 
     $paper = 'A4';
 
