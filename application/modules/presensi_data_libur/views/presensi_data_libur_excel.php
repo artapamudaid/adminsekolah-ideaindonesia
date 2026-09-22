@@ -45,8 +45,8 @@ foreach ($presensi_data_libur as $row):
   ?>  
     <tr height="25">   
         <td><?=$no++?></td>
-        <td><?=$row[hari]?></td>
-        <td><?=$row[keterangan]?></td>
+        <td><?=$row['hari']?></td>
+        <td><?=$row['keterangan']?></td>
     </tr>   
   <?php  
 endforeach;  
