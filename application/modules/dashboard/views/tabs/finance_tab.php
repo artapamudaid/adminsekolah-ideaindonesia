@@ -1,11 +1,11 @@
-<!-- Row 1: 3 Kolom (Ikhtisar Keuangan, Arus Kas X Bulan Terakhir, Tagihan Bulan Ini) -->
+<!-- 3 widget pertama: 3 Kolom (Ikhtisar Keuangan, Tagihan Bulan Ini, Arus Kas X Bulan Terakhir) -->
 <div class="row">
 
     <!-- Kolom 1: Ikhtisar Keuangan -->
-    <div class="col-md-4">
+    <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title">Ikhtisar Keuangan</h3>
+                <h3 class="box-title"><?= $this->lang->line('dash_financial_overview') ?></h3>
                 <div class="box-tools pull-right">
                     <?php
                     $nama_bulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -45,7 +45,7 @@
                         <div style="margin-bottom: 12px;">
                             <div style="display:flex; align-items:center; margin-bottom: 2px;">
                                 <span style="display:inline-block; width:10px; height:10px; background-color:#28a745; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
-                                <span style="font-size: 11px; font-weight: 600; color: #444;">Pemasukan</span>
+                                <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_income'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
                                 <span id="ikhtisar_pemasukan_text"><?= !empty($dummy_ikhtisar_doughnut['pemasukan']['text']) ? $dummy_ikhtisar_doughnut['pemasukan']['text'] : '0' ?></span> (<span id="ikhtisar_pemasukan_pct"><?= !empty($dummy_ikhtisar_doughnut['pemasukan']['pct']) ? $dummy_ikhtisar_doughnut['pemasukan']['pct'] : '0%' ?></span>)
@@ -54,7 +54,7 @@
                         <div style="margin-bottom: 12px;">
                             <div style="display:flex; align-items:center; margin-bottom: 2px;">
                                 <span style="display:inline-block; width:10px; height:10px; background-color:#dc3545; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
-                                <span style="font-size: 11px; font-weight: 600; color: #444;">Pengeluaran</span>
+                                <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_expense'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
                                 <span id="ikhtisar_pengeluaran_text"><?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['text']) ? $dummy_ikhtisar_doughnut['pengeluaran']['text'] : '0' ?></span> (<span id="ikhtisar_pengeluaran_pct"><?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['pct']) ? $dummy_ikhtisar_doughnut['pengeluaran']['pct'] : '0%' ?></span>)
@@ -63,7 +63,7 @@
                         <div>
                             <div style="display:flex; align-items:center; margin-bottom: 2px;">
                                 <span style="display:inline-block; width:10px; height:10px; background-color:#007bff; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
-                                <span style="font-size: 11px; font-weight: 600; color: #444;">Saldo Akhir</span>
+                                <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_ending_balance'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
                                 <span id="ikhtisar_saldo_text"><?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['text']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['text'] : '0' ?></span> (<span id="ikhtisar_saldo_pct"><?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['pct']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['pct'] : '0%' ?></span>)
@@ -75,30 +75,8 @@
         </div>
     </div>
 
-    <!-- Kolom 2: Arus Kas 6 bulan Terakhir -->
-    <div class="col-md-4">
-        <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title" id="title_arus_kas">Arus Kas 6 Bulan Terakhir</h3>
-                <div class="box-tools pull-right">
-                    <select id="filter_arus_kas_bulan" class="form-control input-sm" style="width:auto; display:inline-block; font-size:11px; height:28px; padding:2px 8px;">
-                        <option value="3">3 Bulan</option>
-                        <option value="6" selected>6 Bulan</option>
-                        <option value="9">9 Bulan</option>
-                        <option value="12">12 Bulan</option>
-                    </select>
-                </div>
-            </div>
-            <div class="box-body" style="min-height: 200px;">
-                <div style="position: relative; height: 160px; width: 100%;">
-                    <canvas id="Chart_arusKas"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Kolom 3: Tagihan Bulan Ini -->
-    <div class="col-md-4">
+    <!-- Kolom 2: Tagihan Bulan Ini -->
+    <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title">Tagihan Bulan Ini</h3>
@@ -118,13 +96,33 @@
         </div>
     </div>
 
+    <!-- Kolom 3: Arus Kas 6 bulan Terakhir -->
+    <div class="col-lg-4 col-md-12 col-sm-12">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title" id="title_arus_kas">Arus Kas 6 Bulan Terakhir</h3>
+                <div class="box-tools pull-right">
+                    <select id="filter_arus_kas_bulan" class="form-control input-sm" style="width:auto; display:inline-block; font-size:11px; height:28px; padding:2px 8px;">
+                        <option value="3">3 Bulan</option>
+                        <option value="6" selected>6 Bulan</option>
+                        <option value="9">9 Bulan</option>
+                        <option value="12">12 Bulan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="box-body" style="min-height: 200px;">
+                <div style="position: relative; height: 160px; width: 100%;">
+                    <canvas id="Chart_arusKas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Row 2: 3 Kolom (Grafik Pembayaran SPP, Transaksi Terbaru, Tabungan Siswa) -->
+<!-- 3 widget kedua: 3 Kolom (Grafik Pembayaran SPP, Transaksi Terbaru, Tabungan Siswa) -->
 <div class="row">
-
     <!-- Kolom 1: Grafik Pembayaran (SPP) -->
-    <div class="col-md-4">
+    <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title">Grafik Pembayaran (SPP)</h3>
@@ -138,7 +136,7 @@
     </div>
 
     <!-- Kolom 2: Transaksi Terbaru -->
-    <div class="col-md-4">
+    <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title">Transaksi Terbaru</h3>
@@ -175,7 +173,7 @@
     </div>
 
     <!-- Kolom 3: Top 5 Tabungan Siswa -->
-    <div class="col-md-4">
+    <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title">5 Siswa Tabungan Terbesar</h3>

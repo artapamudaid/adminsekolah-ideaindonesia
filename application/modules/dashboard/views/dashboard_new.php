@@ -1,19 +1,8 @@
 <style>
     .info-box-icon {
-        /* height: 100%; */
         margin-left: 0;
     }
 
-    /*
-    Jika layar kecil, maka terapkan style
-    @media (max-width: 768px) {
-        .display-xs {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-    }
-    */
     @media (max-width: 768px) {
         .display-xs {
             display: flex;
@@ -22,6 +11,7 @@
         }
     }
 </style>
+
 <div class="content-wrapper">
     <section class="content-header">
         <h1><?= $this->lang->line('dash_title'); ?></h1>
@@ -38,17 +28,16 @@
 
     <section class="content">
 
-        <!-- Header Bar -->
         <div class="box">
             <div class="box-body">
                 <div class="row display-xs">
                     <div class="col-lg-4 col-md-12 col-sm-7 col-xs-12">
-                        <h4 class="box-title">Selamat Datang, <?= $role_name; ?>!</h4>
-                        <span class="text-muted">Dashboard Ringkasan <?= (isset($nama_unit) ? $nama_unit : '') ?></span>
+                        <h4 class="box-title"><?= $this->lang->line('dash_greeting') ?>, <?= $role_name; ?>!</h4>
+                        <span class="text-muted"><?= $this->lang->line('dash_summary') ?> <?= (isset($nama_unit) ? $nama_unit : '') ?></span>
                     </div>
                     <div class="col-lg-3 col-md-4 col-sm-5 col-xs-12">
                         <select name="majors_id" id="select_majors" class="form-control" onchange="if(this.value){ window.location.href='?m='+this.value; } else { window.location.href='<?= site_url('manage') ?>'; }">
-                            <option value="">Semua Unit</option>
+                            <option value=""><?= $this->lang->line('dash_all_units') ?></option>
                             <?php
                             if (!empty($filter_majors)):
                                 foreach ($filter_majors as $maj):
@@ -63,18 +52,17 @@
                         </select>
                     </div>
                     <div class="col-lg-3 col-md-4 col-sm-7 col-xs-12">
-                        <input type="text" class="form-control" placeholder="Cari siswa, tagihan, transaksi...">
+                        <input type="text" class="form-control" placeholder="<?= $this->lang->line('dash_search_placeholder') ?>">
                     </div>
                     <div class="col-lg-2 col-md-4 col-sm-5 col-xs-12">
                         <a href="" class="btn btn-default btn-block">
-                            Lihat Website <i class="fa fa-external-link"></i>
+                            <?= $this->lang->line('dash_visit_website') ?> <i class="fa fa-external-link"></i>
                         </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Top Metrics Row -->
         <div class="row">
             <?php
             if (!empty($dummy_top_metrics)):
@@ -106,16 +94,16 @@
                 <div class="nav-tabs-custom">
                     <ul class="nav nav-tabs">
                         <li class="active">
-                            <a href="#finance-tab" data-toggle="tab" aria-expanded="true">Keuangan</a>
+                            <a href="#finance-tab" data-toggle="tab" aria-expanded="true"><?= $this->lang->line('dash_tab_finance') ?></a>
                         </li>
                         <li class="">
-                            <a href="#student-tab" data-toggle="tab" aria-expanded="false">Kesiswaan</a>
+                            <a href="#student-tab" data-toggle="tab" aria-expanded="false"><?= $this->lang->line('dash_tab_student') ?></a>
                         </li>
                         <li class="">
-                            <a href="#staffing-tab" data-toggle="tab" aria-expanded="false">Kepegawaian</a>
+                            <a href="#employee-tab" data-toggle="tab" aria-expanded="false"><?= $this->lang->line('dash_tab_employee') ?></a>
                         </li>
                         <li class="">
-                            <a href="#academic-tab" data-toggle="tab" aria-expanded="false">Akademik</a>
+                            <a href="#academic-tab" data-toggle="tab" aria-expanded="false"><?= $this->lang->line('dash_tab_academic') ?></a>
                         </li>
                     </ul>
 

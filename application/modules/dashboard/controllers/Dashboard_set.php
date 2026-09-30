@@ -696,11 +696,11 @@ class Dashboard_set extends CI_Controller
         $diff_abs = abs($diff);
 
         return [
-            'title' => 'TOTAL SISWA',
+            'title' => $this->lang->line('dash_total_students'),
             'icon' => 'fa-users',
             'value' => number_format($current, 0, ',', '.'),
-            'label' => 'Aktif',
-            'subtext' => $diff != 0 ? "{$trend_icon} {$diff_abs} dari tahun lalu" : '',
+            'label' => $this->lang->line('dash_active'),
+            'subtext' => $diff != 0 ? "{$trend_icon} {$diff_abs} {$this->lang->line('dash_FLY')}" : '',
             'color' => $trend_color,
             'subcolor' => $trend_subcolor
         ];
@@ -725,11 +725,11 @@ class Dashboard_set extends CI_Controller
         $diff_abs = abs($diff);
 
         return [
-            'title' => 'TOTAL GURU',
+            'title' => $this->lang->line('dash_total_teachers'),
             'icon' => 'fa-graduation-cap',
             'value' => number_format($current, 0, ',', '.'),
-            'label' => 'Aktif',
-            'subtext' => $diff != 0 ? "{$trend_icon} {$diff_abs} dari tahun lalu" : '',
+            'label' => $this->lang->line('dash_active'),
+            'subtext' => $diff != 0 ? "{$trend_icon} {$diff_abs} {$this->lang->line('dash_FLY')}" : '',
             'color' => '#007bff',
             'subcolor' => $trend_subcolor
         ];
@@ -740,10 +740,10 @@ class Dashboard_set extends CI_Controller
         $current = $this->db->query("SELECT COUNT(class_id) as total FROM class WHERE 1 {$where_majors_class}")->row()->total;
 
         return [
-            'title' => 'TOTAL KELAS',
+            'title' => $this->lang->line('dash_total_classes'),
             'icon' => 'fa-building',
             'value' => number_format($current, 0, ',', '.'),
-            'label' => 'Kelas Aktif',
+            'label' => $this->lang->line('dash_active'),
             'subtext' => null,
             'color' => '#6f42c1',
             'subcolor' => null
@@ -803,11 +803,11 @@ class Dashboard_set extends CI_Controller
         $formatted_growth = number_format(abs($growth_percentage), 1, ',', '.');
 
         return [
-            'title' => 'SALDO KAS SEKOLAH',
+            'title' => $this->lang->line('dash_school_cash_balance'),
             'icon' => 'fa-money',
             'value' => 'Rp ' . number_format($total_kas, 0, ',', '.'),
-            'label' => 'Total Kas',
-            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_growth}% dari bulan lalu" : '',
+            'label' => $this->lang->line('dash_total_cash'),
+            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_growth}% {$this->lang->line('dash_FLM')}" : '',
             'color' => '#fd7e14',
             'subcolor' => $trend_subcolor
         ];
@@ -868,11 +868,11 @@ class Dashboard_set extends CI_Controller
         $formatted_rate = number_format($rate_current, 2, ',', '.');
 
         return [
-            'title' => 'COLLECTION RATE',
+            'title' => $this->lang->line('dash_collection_rate'),
             'icon' => 'fa-calculator',
             'value' => "{$formatted_rate}%",
-            'label' => 'Tagihan Lunas',
-            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_diff}% dari bulan lalu" : '',
+            'label' => $this->lang->line('dash_bill_paid'),
+            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_diff}% {$this->lang->line('dash_FLM')}" : '',
             'color' => '#17a2b8',
             'subcolor' => $trend_subcolor
         ];
@@ -908,11 +908,11 @@ class Dashboard_set extends CI_Controller
         $formatted_growth = number_format(abs($growth_percentage), 1, ',', '.');
 
         return [
-            'title' => 'TABUNGAN SISWA',
+            'title' => $this->lang->line('dash_student_savings'),
             'icon' => 'fa-credit-card',
             'value' => 'Rp ' . number_format($total_saldo, 0, ',', '.'),
-            'label' => 'Total Saldo',
-            'subtext' => "{$trend_icon} {$formatted_growth}% dari bulan lalu",
+            'label' => $this->lang->line('dash_total_savings'),
+            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_growth}% {$this->lang->line('dash_FLM')}" : '',
             'color' => '#007bff',
             'subcolor' => $trend_subcolor
         ];

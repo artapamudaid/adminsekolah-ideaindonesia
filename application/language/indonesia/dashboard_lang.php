@@ -27,3 +27,39 @@ $lang['dash_bill'] = 'Tagihan';
 $lang['dash_paid'] = 'Terbayar';
 $lang['dash_unpaid'] = 'Belum Terbayar';
 $lang['dash_achievement'] = 'Pencapaian';
+
+// add 30092026
+$lang['dash_no_data'] = 'Tidak ada data untuk ditampilkan';
+$lang['dash_active'] = 'Aktif';
+$lang['dash_FLY'] = 'dari tahun lalu';
+$lang['dash_FLM'] = 'dari bulan lalu';
+$lang['dash_greeting'] = 'Selamat Datang';
+$lang['dash_summary'] = 'Dashboard Ringkasan';
+$lang['dash_all_units'] = 'Semua Unit';
+$lang['dash_search_placeholder'] = 'Cari siswa, tagihan, transaksi...';
+$lang['dash_visit_website'] = 'Kunjungi Website';
+$lang['dash_total_students'] = 'Total Siswa';
+$lang['dash_total_teachers'] = 'Total Guru';
+$lang['dash_total_classes'] = 'Total Kelas';
+$lang['dash_school_cash_balance'] = 'Saldo Kas Sekolah';
+$lang['dash_total_cash'] = 'Total Kas';
+$lang['dash_collection_rate'] = 'Collection Rate';
+$lang['dash_bill_paid'] = 'Tagihan Lunas';
+$lang['dash_student_savings'] = 'Tabungan Siswa';
+$lang['dash_total_savings'] = 'Total Tabungan';
+
+// tab keuangan
+$lang['dash_tab_finance'] = 'Keuangan';
+$lang['dash_financial_overview'] = 'Tinjauan Keuangan';
+$lang['dash_income'] = 'Pemasukan';
+$lang['dash_expense'] = 'Pengeluaran';
+$lang['dash_ending_balance'] = 'Saldo Akhir';
+
+// tab kesiswaan
+$lang['dash_tab_student'] = 'Kesiswaan';
+
+// tab kepegawaian
+$lang['dash_tab_employee'] = 'Kepegawaian';
+
+// tab akademik
+$lang['dash_tab_academic'] = 'Akademik';
