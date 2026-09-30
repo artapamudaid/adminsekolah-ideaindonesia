@@ -39,7 +39,7 @@ class Dashboard_set extends CI_Controller
         }
     }
 
-    public function index()
+    public function index_old()
     {
         $year = date('Y');
 
@@ -309,6 +309,154 @@ class Dashboard_set extends CI_Controller
         }
 
         $data['title'] = 'Dashboard';
+        $this->load->view('manage/layout', $data);
+    }
+
+    public function index()
+    {
+
+        $id = $this->session->userdata('uid');
+        $uRole = $this->session->userdata('uroleid');
+        $umajorsid = $this->session->userdata('umajorsid');
+
+        $selected_majors = $umajorsid;
+        if ($umajorsid == 0) {
+            $get_majors = $this->input->get('majors_id');
+            if ($get_majors !== NULL && $get_majors !== '') {
+                $selected_majors = (int)$get_majors;
+            }
+        }
+
+        // NOTES: Custom condition by majors on specific logic
+        $widget_jumlah_siswa_title = $this->lang->line('dash_student_per_level');
+        $where_majors_v_laporan_jurnal = "";
+        $where_majors_student = "";
+        $where_majors_employee = "";
+        $where_majors_banking = "";
+        $whereMajors = "";
+        if ($selected_majors != 0) {
+            $widget_jumlah_siswa_title = 'Jumlah Siswa Unit ' . $this->mapping_singkatan_unit($selected_majors);
+            $where_majors_v_laporan_jurnal = "AND idMajors = '$selected_majors'";
+            $where_majors_student = "AND majors_majors_id = '$selected_majors'";
+            $where_majors_employee = "AND employee_majors_id = '$selected_majors'";
+            $where_majors_banking = "AND s.majors_majors_id = '$selected_majors'";
+            $whereMajors = " AND majors_id = '$selected_majors'";
+        }
+
+        $hasDashboard = false;
+        if ($uRole) {
+            $cekAksesDashboard = $this->db->query("SELECT hak_akses_id FROM hak_akses WHERE menu_id = 1 AND role_id = $uRole LIMIT 1")->row();
+            if ($cekAksesDashboard) {
+                $hasDashboard = true;
+            }
+        }
+
+        if ($hasDashboard) {
+            $data['active_majors'] = $this->db->query("SELECT majors_id, majors_name, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
+
+            $data['dummy_top_metrics'] = [
+                ['title' => 'TOTAL SISWA', 'icon' => 'fa-users', 'value' => '362', 'label' => 'Aktif', 'subtext' => '↑ 12 dari bulan lalu', 'color' => '#28a745', 'subcolor' => 'text-green'],
+                ['title' => 'TOTAL GURU', 'icon' => 'fa-graduation-cap', 'value' => '28', 'label' => 'Aktif', 'subtext' => '↑ 2 dari bulan lalu', 'color' => '#007bff', 'subcolor' => 'text-green'],
+                ['title' => 'TOTAL KELAS', 'icon' => 'fa-book', 'value' => '12', 'label' => 'Kelas Aktif', 'subtext' => '- dari bulan lalu', 'color' => '#6f42c1', 'subcolor' => 'text-muted'],
+                ['title' => 'SALDO KAS SEKOLAH', 'icon' => 'fa-money', 'value' => 'Rp 245.750.000', 'label' => 'Total Kas', 'subtext' => '↑ 12,5% dari bulan lalu', 'color' => '#fd7e14', 'subcolor' => 'text-green'],
+                ['title' => 'COLLECTION RATE', 'icon' => 'fa-percent', 'value' => '92,45%', 'label' => 'Tagihan Lunas', 'subtext' => '↑ 3,8% dari bulan lalu', 'color' => '#17a2b8', 'subcolor' => 'text-green'],
+                ['title' => 'TABUNGAN SISWA', 'icon' => 'fa-credit-card', 'value' => 'Rp 3.765.930', 'label' => 'Total Saldo', 'subtext' => '↑ 8,7% dari bulan lalu', 'color' => '#007bff', 'subcolor' => 'text-green']
+            ];
+
+            $data['dummy_tagihan_bulan'] = [
+                ['name' => 'SPP Kelas 7', 'progress' => 90, 'text' => '72/80', 'bar' => 'progress-bar-success'],
+                ['name' => 'SPP Kelas 8', 'progress' => 87, 'text' => '68/78', 'bar' => 'progress-bar-success'],
+                ['name' => 'SPP Kelas 9', 'progress' => 93, 'text' => '70/75', 'bar' => 'progress-bar-success'],
+                ['name' => 'Uang Pangkal', 'progress' => 50, 'text' => '5/10', 'bar' => 'progress-bar-warning'],
+                ['name' => 'Seragam', 'progress' => 67, 'text' => '40/60', 'bar' => 'progress-bar-info'],
+            ];
+
+            $data['dummy_transaksi'] = [
+                ['tgl' => '23 Mei 2025', 'desc' => 'Pembayaran SPP - Mei', 'kategori' => 'Pemasukan', 'nominal' => 'Rp 2.450.000', 'status' => 'Lunas', 'label' => 'label-success'],
+                ['tgl' => '23 Mei 2025', 'desc' => 'Pembelian ATK', 'kategori' => 'Pengeluaran', 'nominal' => 'Rp 850.000', 'status' => 'Selesai', 'label' => 'label-default'],
+                ['tgl' => '22 Mei 2025', 'desc' => 'Setoran Tabungan', 'kategori' => 'Pemasukan', 'nominal' => 'Rp 1.250.000', 'status' => 'Lunas', 'label' => 'label-success'],
+                ['tgl' => '21 Mei 2025', 'desc' => 'Pembayaran Kegiatan', 'kategori' => 'Pemasukan', 'nominal' => 'Rp 750.000', 'status' => 'Lunas', 'label' => 'label-success'],
+                ['tgl' => '21 Mei 2025', 'desc' => 'Pembelian Buku', 'kategori' => 'Pengeluaran', 'nominal' => 'Rp 450.000', 'status' => 'Selesai', 'label' => 'label-primary'],
+            ];
+
+            $data['dummy_aktivitas'] = [
+                ['icon' => 'fa-users bg-green', 'title' => 'Presensi Siswa', 'desc' => '315 siswa hadir hari ini', 'time' => '07:30'],
+                ['icon' => 'fa-book bg-blue', 'title' => 'Jurnal Mengajar', 'desc' => '14 guru mengisi jurnal', 'time' => '08:15'],
+                ['icon' => 'fa-money bg-yellow', 'title' => 'Pembayaran Diterima', 'desc' => '12 transaksi pembayaran', 'time' => '09:20'],
+                ['icon' => 'fa-bullhorn bg-red', 'title' => 'Pengumuman Baru', 'desc' => 'Libur akhir semester', 'time' => '10:00'],
+                ['icon' => 'fa-file-text-o bg-blue', 'title' => 'Perizinan Siswa', 'desc' => '3 pengajuan izin', 'time' => '10:15'],
+            ];
+
+            $data['dummy_tabungan'] = [
+                ['no' => 1, 'nama' => 'Ahmad Rizky', 'kelas' => 'Kelas 9A', 'nominal' => 'Rp 1.250.000'],
+                ['no' => 2, 'nama' => 'Naila Putri', 'kelas' => 'Kelas 8B', 'nominal' => 'Rp 1.100.000'],
+                ['no' => 3, 'nama' => 'Fauzan Alfarizi', 'kelas' => 'Kelas 9B', 'nominal' => 'Rp 950.000'],
+                ['no' => 4, 'nama' => 'Siti Aisyah', 'kelas' => 'Kelas 7A', 'nominal' => 'Rp 900.000'],
+                ['no' => 5, 'nama' => 'Muhammad Fikri', 'kelas' => 'Kelas 8A', 'nominal' => 'Rp 850.000'],
+            ];
+
+            $data['dummy_pengumuman'] = [
+                ['type' => 'Penting', 'label' => 'text-red', 'border' => 'border-color: red;', 'title' => 'Libur Akhir Semester', 'desc' => 'Kegiatan belajar mengajar diliburkan mulai tgl 1 - 7 Juni 2025.', 'date' => '23 Mei 2025', 'icon' => 'fa-bullhorn'],
+                ['type' => 'Info', 'label' => 'text-blue', 'border' => 'border-color: blue;', 'title' => 'Pembayaran SPP Bulan Juni', 'desc' => 'Diharapkan seluruh wali siswa melakukan pembayaran sebelum tgl 10 Juni 2025.', 'date' => '22 Mei 2025', 'icon' => 'fa-info-circle'],
+            ];
+
+            $data['dummy_jadwal'] = [
+                ['time' => '07:00 - 07:30', 'title' => 'Upacara Bendera', 'desc' => 'Lapangan Sekolah', 'color' => 'bg-green'],
+                ['time' => '07:30 - 09:00', 'title' => 'Matematika - Kelas 7A', 'desc' => 'Ruang 1 | Bpk. Andi', 'color' => 'bg-blue'],
+                ['time' => '09:15 - 10:45', 'title' => 'IPA - Kelas 8B', 'desc' => 'Ruang 2 | Ibu Rina', 'color' => 'bg-yellow'],
+                ['time' => '11:00 - 12:30', 'title' => 'Bahasa Inggris - Kelas 9A', 'desc' => 'Ruang 3 | Bpk. Dedi', 'color' => 'bg-purple'],
+            ];
+
+            $data['dummy_ikhtisar'] = [
+                'pemasukan' => 'Rp 150.000.000',
+                'pengeluaran' => 'Rp 75.000.000',
+                'saldo' => 'Rp 75.000.000'
+            ];
+            $data['dummy_ikhtisar_doughnut'] = [
+                'total_display' => '245,75 JT',
+                'pemasukan' => ['val' => 312450000, 'text' => '312.450.000', 'pct' => '56.2%'],
+                'pengeluaran' => ['val' => 198230000, 'text' => '198.230.000', 'pct' => '35.6%'],
+                'saldo_akhir' => ['val' => 245750000, 'text' => '245.750.000', 'pct' => '8.2%']
+            ];
+
+            $data['dummy_spp_chart'] = [
+                'labels' => ['Kelas 7A', 'Kelas 7B', 'Kelas 8A', 'Kelas 8B', 'Kelas 9A', 'Kelas 9B'],
+                'lunas' => [28, 25, 30, 27, 32, 29],
+                'belum_lunas' => [4, 5, 2, 5, 1, 3],
+                'collection_rate' => [87.5, 83.3, 93.8, 84.4, 97.0, 90.6]
+            ];
+            $data['dummy_arus_kas'] = [
+                3 => [
+                    'labels' => ['Maret', 'April', 'Mei'],
+                    'pemasukan' => [45000000, 52000000, 60000000],
+                    'pengeluaran' => [28000000, 31000000, 35000000],
+                ],
+                6 => [
+                    'labels' => ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'],
+                    'pemasukan' => [38000000, 42000000, 45000000, 52000000, 60000000, 58000000],
+                    'pengeluaran' => [25000000, 27000000, 28000000, 31000000, 35000000, 33000000],
+                ],
+                9 => [
+                    'labels' => ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September'],
+                    'pemasukan' => [38000000, 42000000, 45000000, 52000000, 60000000, 58000000, 65000000, 70000000, 68000000],
+                    'pengeluaran' => [25000000, 27000000, 28000000, 31000000, 35000000, 33000000, 40000000, 42000000, 39000000],
+                ],
+                12 => [
+                    'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                    'pemasukan' => [38000000, 42000000, 45000000, 52000000, 60000000, 58000000, 65000000, 70000000, 68000000, 72000000, 75000000, 80000000],
+                    'pengeluaran' => [25000000, 27000000, 28000000, 31000000, 35000000, 33000000, 40000000, 42000000, 39000000, 45000000, 48000000, 50000000],
+                ]
+            ];
+
+
+
+            $data['title'] = 'Dashboard';
+            $data['main'] = 'dashboard/dashboard_new';
+        } else {
+            $data['title'] = 'Dashboard';
+            $data['main'] = 'dashboard/dashboard_employees';
+        }
+
         $this->load->view('manage/layout', $data);
     }
 
