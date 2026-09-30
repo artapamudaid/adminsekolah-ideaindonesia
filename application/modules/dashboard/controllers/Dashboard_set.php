@@ -388,8 +388,8 @@ class Dashboard_set extends CI_Controller
                 $this->top_metrics_teacher($where_majors_employee),
                 $this->top_metrics_class($where_majors_class),
                 $this->top_metrics_kas($where_majors_v_laporan_jurnal),
-                ['title' => 'COLLECTION RATE', 'icon' => 'fa-percent', 'value' => '92,45%', 'label' => 'Tagihan Lunas', 'subtext' => '↑ 3,8% dari bulan lalu', 'color' => '#17a2b8', 'subcolor' => 'text-green'],
-                ['title' => 'TABUNGAN SISWA', 'icon' => 'fa-credit-card', 'value' => 'Rp 3.765.930', 'label' => 'Total Saldo', 'subtext' => '↑ 8,7% dari bulan lalu', 'color' => '#007bff', 'subcolor' => 'text-green']
+                $this->top_metrics_collection_rate($selected_majors),
+                $this->top_metrics_tabungan($where_majors_banking)
             ];
 
             $data['dummy_tagihan_bulan'] = [
@@ -699,7 +699,7 @@ class Dashboard_set extends CI_Controller
             'icon' => 'fa-users',
             'value' => number_format($current, 0, ',', '.'),
             'label' => 'Aktif',
-            'subtext' => "{$trend_icon} {$diff_abs} dari tahun lalu",
+            'subtext' => $diff != 0 ? "{$trend_icon} {$diff_abs} dari tahun lalu" : '',
             'color' => $trend_color,
             'subcolor' => $trend_subcolor
         ];
@@ -728,7 +728,7 @@ class Dashboard_set extends CI_Controller
             'icon' => 'fa-graduation-cap',
             'value' => number_format($current, 0, ',', '.'),
             'label' => 'Aktif',
-            'subtext' => "{$trend_icon} {$diff_abs} dari tahun lalu",
+            'subtext' => $diff != 0 ? "{$trend_icon} {$diff_abs} dari tahun lalu" : '',
             'color' => '#007bff',
             'subcolor' => $trend_subcolor
         ];
@@ -751,29 +751,169 @@ class Dashboard_set extends CI_Controller
 
     private function top_metrics_kas($where_majors_v_laporan_jurnal = "")
     {
-        $period                 = $this->db->query("SELECT period_id,period_start,period_end FROM period WHERE period_status = 1")->row_array();
-        $periodActive           = $period['period_id'];
-        $periodStart = $period['period_start'];
-        $periodEnd   = $period['period_end'];
+        $period = $this->db->query("SELECT period_id,period_start,period_end FROM period WHERE period_status = 1")->row_array();
+        if (!$period) {
+            $periodStart = date('Y');
+            $periodEnd = date('Y') + 1;
+        } else {
+            $periodStart = $period['period_start'];
+            $periodEnd   = $period['period_end'];
+        }
 
         $dateStart = "$periodStart-07-01";
         $dateEnd  = "$periodEnd-06-30";
 
-        $current = $this->db->query(
-            "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
-                    FROM v_laporan_jurnal 
-                    WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd' $where_majors_v_laporan_jurnal
-                    GROUP BY jenisTransaksi"
-        )->result_array();
+        // Query current month vs last month logic
+        $current_month = date('n');
+        $current_year = date('Y');
+        $last_month = $current_month - 1;
+        $last_month_year = $current_year;
+
+        if ($last_month == 0) {
+            $last_month = 12;
+            $last_month_year = $current_year - 1;
+        }
+
+        $query = $this->db->query(
+            "SELECT 
+                SUM(penerimaan - pengeluaran) AS total_kas,
+                SUM(CASE WHEN MONTH(tanggal) = {$current_month} AND YEAR(tanggal) = {$current_year} THEN penerimaan - pengeluaran ELSE 0 END) AS saldo_bulan_ini,
+                SUM(CASE WHEN MONTH(tanggal) = {$last_month} AND YEAR(tanggal) = {$last_month_year} THEN penerimaan - pengeluaran ELSE 0 END) AS saldo_bulan_lalu
+            FROM v_laporan_jurnal 
+            WHERE tanggal BETWEEN '$dateStart' AND '$dateEnd' {$where_majors_v_laporan_jurnal}"
+        )->row_array();
+
+        $total_kas = (float)($query['total_kas'] ?? 0);
+        $bulan_ini = (float)($query['saldo_bulan_ini'] ?? 0);
+        $bulan_lalu = (float)($query['saldo_bulan_lalu'] ?? 0);
+
+        // Menghitung growth percentage
+        if ($bulan_lalu == 0) {
+            $growth_percentage = $bulan_ini > 0 ? 100 : 0;
+            $diff = $bulan_ini;
+        } else {
+            $diff = $bulan_ini - $bulan_lalu;
+            $growth_percentage = ($diff / abs($bulan_lalu)) * 100;
+        }
+
+        $trend_icon = $diff >= 0 ? '<i class="fa fa-arrow-up" aria-hidden="true"></i>' : '<i class="fa fa-arrow-down" aria-hidden="true"></i>';
+        $trend_color = $diff >= 0 ? '#fd7e14' : '#dc3545';
+        $trend_subcolor = $diff >= 0 ? 'text-green' : 'text-red';
+        $formatted_growth = number_format(abs($growth_percentage), 1, ',', '.');
 
         return [
             'title' => 'SALDO KAS SEKOLAH',
             'icon' => 'fa-money',
-            'value' => 'Rp 245.750.000',
+            'value' => 'Rp ' . number_format($total_kas, 0, ',', '.'),
             'label' => 'Total Kas',
-            'subtext' => '↑ 12,5% dari bulan lalu',
+            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_growth}% dari bulan lalu" : '',
             'color' => '#fd7e14',
-            'subcolor' => 'text-green'
+            'subcolor' => $trend_subcolor
+        ];
+    }
+
+    private function top_metrics_collection_rate($selected_majors = 0)
+    {
+        $period = $this->db->query("SELECT period_id FROM period WHERE period_status = 1")->row_array();
+        $period_id = $period ? $period['period_id'] : 1;
+        $last_month_date = date('Y-m-d', strtotime('last day of previous month'));
+
+        $where_student = $selected_majors != 0 ? "AND student.majors_majors_id = '{$selected_majors}'" : "";
+
+        $sql_bulan = "SELECT 
+            SUM(bulan.bulan_bill) as total_bill,
+            SUM(CASE WHEN bulan.bulan_status = 1 THEN bulan.bulan_bill ELSE 0 END) as total_paid,
+            SUM(CASE WHEN bulan.bulan_status = 1 AND bulan.bulan_date_pay <= '{$last_month_date}' THEN bulan.bulan_bill ELSE 0 END) as total_paid_last_month
+        FROM bulan 
+        JOIN payment ON payment.payment_id = bulan.payment_payment_id
+        JOIN student ON student.student_id = bulan.student_student_id
+        WHERE payment.period_period_id = '{$period_id}' {$where_student}";
+
+        $bulan_data = $this->db->query($sql_bulan)->row_array();
+
+        $where_bebas = $selected_majors != 0 ? "AND account.account_majors_id = '{$selected_majors}'" : "";
+
+        $sql_bebas = "SELECT 
+            SUM(bebas.bebas_bill - bebas.bebas_diskon) as total_bill,
+            SUM(bebas.bebas_total_pay) as total_paid,
+            (SELECT COALESCE(SUM(bp.bebas_pay_bill), 0) 
+             FROM bebas_pay bp 
+             JOIN bebas b ON b.bebas_id = bp.bebas_bebas_id 
+             JOIN payment p ON p.payment_id = b.payment_payment_id 
+             JOIN pos po ON po.pos_id = p.pos_pos_id
+             JOIN account a ON a.account_id = po.account_account_id
+             WHERE p.period_period_id = '{$period_id}' AND bp.bebas_pay_input_date <= '{$last_month_date}'
+             " . ($selected_majors != 0 ? "AND a.account_majors_id = '{$selected_majors}'" : "") . ") as total_paid_last_month
+        FROM bebas
+        JOIN payment ON payment.payment_id = bebas.payment_payment_id
+        JOIN pos ON pos.pos_id = payment.pos_pos_id
+        JOIN account ON account.account_id = pos.account_account_id
+        WHERE payment.period_period_id = '{$period_id}' {$where_bebas}";
+
+        $bebas_data = $this->db->query($sql_bebas)->row_array();
+
+        $total_bill = ($bulan_data['total_bill'] ?? 0) + ($bebas_data['total_bill'] ?? 0);
+        $total_paid = ($bulan_data['total_paid'] ?? 0) + ($bebas_data['total_paid'] ?? 0);
+        $total_paid_last = ($bulan_data['total_paid_last_month'] ?? 0) + ($bebas_data['total_paid_last_month'] ?? 0);
+
+        $rate_current = $total_bill > 0 ? ($total_paid / $total_bill) * 100 : 0;
+        $rate_last = $total_bill > 0 ? ($total_paid_last / $total_bill) * 100 : 0;
+        $diff = $rate_current - $rate_last;
+
+        $trend_icon = $diff >= 0 ? '<i class="fa fa-arrow-up" aria-hidden="true"></i>' : '<i class="fa fa-arrow-down" aria-hidden="true"></i>';
+        $trend_color = $diff >= 0 ? '#17a2b8' : '#dc3545';
+        $trend_subcolor = $diff >= 0 ? 'text-green' : 'text-red';
+        $formatted_diff = number_format(abs($diff), 2, ',', '.');
+        $formatted_rate = number_format($rate_current, 2, ',', '.');
+
+        return [
+            'title' => 'COLLECTION RATE',
+            'icon' => 'fa-percent',
+            'value' => "{$formatted_rate}%",
+            'label' => 'Tagihan Lunas',
+            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_diff}% dari bulan lalu" : '',
+            'color' => '#17a2b8',
+            'subcolor' => $trend_subcolor
+        ];
+    }
+
+    private function top_metrics_tabungan($where_majors_banking = "")
+    {
+        $last_month_end = date('Y-m-d', strtotime('last day of previous month'));
+
+        $query = $this->db->query(
+            "SELECT 
+            SUM(b.banking_debit - b.banking_kredit) AS total_saldo,
+            SUM(CASE WHEN b.banking_date <= '{$last_month_end}' THEN b.banking_debit - b.banking_kredit ELSE 0 END) AS saldo_bulan_lalu
+            FROM banking b
+            JOIN student s ON s.student_id = b.banking_student_id
+            WHERE 1=1 {$where_majors_banking}"
+        )->row_array();
+
+        $total_saldo = (float)($query['total_saldo'] ?? 0);
+        $saldo_bulan_lalu = (float)($query['saldo_bulan_lalu'] ?? 0);
+
+        if ($saldo_bulan_lalu == 0) {
+            $growth_percentage = $total_saldo > 0 ? 100 : 0;
+            $diff = $total_saldo;
+        } else {
+            $diff = $total_saldo - $saldo_bulan_lalu;
+            $growth_percentage = ($diff / abs($saldo_bulan_lalu)) * 100;
+        }
+
+        $trend_icon = $diff >= 0 ? '<i class="fa fa-arrow-up" aria-hidden="true"></i>' : '<i class="fa fa-arrow-down" aria-hidden="true"></i>';
+        $trend_color = $diff >= 0 ? '#007bff' : '#dc3545';
+        $trend_subcolor = $diff >= 0 ? 'text-green' : 'text-red';
+        $formatted_growth = number_format(abs($growth_percentage), 1, ',', '.');
+
+        return [
+            'title' => 'TABUNGAN SISWA',
+            'icon' => 'fa-credit-card',
+            'value' => 'Rp ' . number_format($total_saldo, 0, ',', '.'),
+            'label' => 'Total Saldo',
+            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_growth}% dari bulan lalu" : '',
+            'color' => '#007bff',
+            'subcolor' => $trend_subcolor
         ];
     }
 }
