@@ -321,17 +321,36 @@ class Dashboard_set extends CI_Controller
 
         $selected_majors = $umajorsid;
         if ($umajorsid == 0) {
-            $get_majors = $this->input->get('majors_id');
+            $get_majors = sanitizeStrict($this->input->get('m'));
             if ($get_majors !== NULL && $get_majors !== '') {
                 $selected_majors = (int)$get_majors;
             }
         }
+        /*
+        Array
+        (
+            [__ci_last_regenerate] => 1790737293
+            [logged] => 1
+            [uid] => 2
+            [uemail] => ts@indoweb.id
+            [ufullname] => Technical Support Indoweb.id
+            [uroleid] => 1
+            [umajorsid] => 0
+            [umajorsname] => 
+            [urolename] => ADMIN
+            [user_image] => 
+            [suspend_date] => 2027-07-16
+            [user_password_last_update] => 
+            [user_input_date] => 2024-07-17 06:43:46
+        )
+        */
 
         // NOTES: Custom condition by majors on specific logic
         $widget_jumlah_siswa_title = $this->lang->line('dash_student_per_level');
         $where_majors_v_laporan_jurnal = "";
         $where_majors_student = "";
         $where_majors_employee = "";
+        $where_majors_class = "";
         $where_majors_banking = "";
         $whereMajors = "";
         if ($selected_majors != 0) {
@@ -339,6 +358,7 @@ class Dashboard_set extends CI_Controller
             $where_majors_v_laporan_jurnal = "AND idMajors = '$selected_majors'";
             $where_majors_student = "AND majors_majors_id = '$selected_majors'";
             $where_majors_employee = "AND employee_majors_id = '$selected_majors'";
+            $where_majors_class = "AND majors_majors_id = '$selected_majors'";
             $where_majors_banking = "AND s.majors_majors_id = '$selected_majors'";
             $whereMajors = " AND majors_id = '$selected_majors'";
         }
@@ -351,14 +371,23 @@ class Dashboard_set extends CI_Controller
             }
         }
 
-        if ($hasDashboard) {
-            $data['active_majors'] = $this->db->query("SELECT majors_id, majors_name, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
+        $data['role_name'] = $this->session->userdata('urolename');
+        $filter_majors = $this->db->query("SELECT majors_id, majors_name, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
+        $data['filter_majors'] = $filter_majors;
+        $school_name = $this->Setting_model->get(array('id' => 1));
+        $data['nama_unit'] = 'Semua Unit ' . $school_name['setting_value'];
 
+        if ($hasDashboard) {
+            foreach ($filter_majors as $row) {
+                if ($row['majors_id'] == $selected_majors) {
+                    $data['nama_unit'] = $row['majors_short_name'] . ' - ' . $school_name['setting_value'];
+                }
+            }
             $data['dummy_top_metrics'] = [
-                ['title' => 'TOTAL SISWA', 'icon' => 'fa-users', 'value' => '362', 'label' => 'Aktif', 'subtext' => '↑ 12 dari bulan lalu', 'color' => '#28a745', 'subcolor' => 'text-green'],
-                ['title' => 'TOTAL GURU', 'icon' => 'fa-graduation-cap', 'value' => '28', 'label' => 'Aktif', 'subtext' => '↑ 2 dari bulan lalu', 'color' => '#007bff', 'subcolor' => 'text-green'],
-                ['title' => 'TOTAL KELAS', 'icon' => 'fa-book', 'value' => '12', 'label' => 'Kelas Aktif', 'subtext' => '- dari bulan lalu', 'color' => '#6f42c1', 'subcolor' => 'text-muted'],
-                ['title' => 'SALDO KAS SEKOLAH', 'icon' => 'fa-money', 'value' => 'Rp 245.750.000', 'label' => 'Total Kas', 'subtext' => '↑ 12,5% dari bulan lalu', 'color' => '#fd7e14', 'subcolor' => 'text-green'],
+                $this->top_metrics_student($where_majors_student),
+                $this->top_metrics_teacher($where_majors_employee),
+                $this->top_metrics_class($where_majors_class),
+                $this->top_metrics_kas($where_majors_v_laporan_jurnal),
                 ['title' => 'COLLECTION RATE', 'icon' => 'fa-percent', 'value' => '92,45%', 'label' => 'Tagihan Lunas', 'subtext' => '↑ 3,8% dari bulan lalu', 'color' => '#17a2b8', 'subcolor' => 'text-green'],
                 ['title' => 'TABUNGAN SISWA', 'icon' => 'fa-credit-card', 'value' => 'Rp 3.765.930', 'label' => 'Total Saldo', 'subtext' => '↑ 8,7% dari bulan lalu', 'color' => '#007bff', 'subcolor' => 'text-green']
             ];
@@ -648,5 +677,103 @@ class Dashboard_set extends CI_Controller
         $mapping = array_column($majors, 'majors_short_name', 'majors_id');
 
         return isset($mapping[$unit]) ? $mapping[$unit] : $unit;
+    }
+
+    private function top_metrics_student($where_majors_student = "")
+    {
+        $year = date('Y');
+        $last_year = $year - 1;
+
+        $current = $this->db->query("SELECT COUNT(student_id) as total FROM student WHERE student_status = 1 {$where_majors_student}")->row()->total;
+        $this_year_count = $this->db->query("SELECT COUNT(student_id) as total FROM student WHERE student_status = 1 AND YEAR(student_input_date) = {$year} {$where_majors_student}")->row()->total;
+        $last_year_count = $this->db->query("SELECT COUNT(student_id) as total FROM student WHERE student_status = 1 AND YEAR(student_input_date) = {$last_year} {$where_majors_student}")->row()->total;
+
+        $diff = $this_year_count - $last_year_count;
+        $trend_icon = $diff >= 0 ? '<i class="fa fa-arrow-up" aria-hidden="true"></i>' : '<i class="fa fa-arrow-down" aria-hidden="true"></i>';
+        $trend_color = $diff >= 0 ? '#28a745' : '#dc3545';
+        $trend_subcolor = $diff >= 0 ? 'text-green' : 'text-red';
+        $diff_abs = abs($diff);
+
+        return [
+            'title' => 'TOTAL SISWA',
+            'icon' => 'fa-users',
+            'value' => number_format($current, 0, ',', '.'),
+            'label' => 'Aktif',
+            'subtext' => "{$trend_icon} {$diff_abs} dari tahun lalu",
+            'color' => $trend_color,
+            'subcolor' => $trend_subcolor
+        ];
+    }
+
+    private function top_metrics_teacher($where_majors_employee = "")
+    {
+        $year = date('Y');
+        $last_year = $year - 1;
+
+        $sql_base = "SELECT COUNT(DISTINCT employee_name) as total FROM employee 
+                     JOIN position ON position.position_id = employee.employee_position_id 
+                     WHERE employee_status = 1 AND LOWER(position_name) LIKE '%guru%' {$where_majors_employee}";
+
+        $current = $this->db->query($sql_base)->row()->total;
+        $this_year_count = $this->db->query($sql_base . " AND YEAR(employee_input_date) = {$year}")->row()->total;
+        $last_year_count = $this->db->query($sql_base . " AND YEAR(employee_input_date) = {$last_year}")->row()->total;
+
+        $diff = $this_year_count - $last_year_count;
+        $trend_icon = $diff >= 0 ? '<i class="fa fa-arrow-up" aria-hidden="true"></i>' : '<i class="fa fa-arrow-down" aria-hidden="true"></i>';
+        $trend_subcolor = $diff >= 0 ? 'text-green' : 'text-red';
+        $diff_abs = abs($diff);
+
+        return [
+            'title' => 'TOTAL GURU',
+            'icon' => 'fa-graduation-cap',
+            'value' => number_format($current, 0, ',', '.'),
+            'label' => 'Aktif',
+            'subtext' => "{$trend_icon} {$diff_abs} dari tahun lalu",
+            'color' => '#007bff',
+            'subcolor' => $trend_subcolor
+        ];
+    }
+
+    private function top_metrics_class($where_majors_class = "")
+    {
+        $current = $this->db->query("SELECT COUNT(class_id) as total FROM class WHERE 1 {$where_majors_class}")->row()->total;
+
+        return [
+            'title' => 'TOTAL KELAS',
+            'icon' => 'fa-building',
+            'value' => number_format($current, 0, ',', '.'),
+            'label' => 'Kelas Aktif',
+            'subtext' => null,
+            'color' => '#6f42c1',
+            'subcolor' => null
+        ];
+    }
+
+    private function top_metrics_kas($where_majors_v_laporan_jurnal = "")
+    {
+        $period                 = $this->db->query("SELECT period_id,period_start,period_end FROM period WHERE period_status = 1")->row_array();
+        $periodActive           = $period['period_id'];
+        $periodStart = $period['period_start'];
+        $periodEnd   = $period['period_end'];
+
+        $dateStart = "$periodStart-07-01";
+        $dateEnd  = "$periodEnd-06-30";
+
+        $current = $this->db->query(
+            "SELECT jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
+                    FROM v_laporan_jurnal 
+                    WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd' $where_majors_v_laporan_jurnal
+                    GROUP BY jenisTransaksi"
+        )->result_array();
+
+        return [
+            'title' => 'SALDO KAS SEKOLAH',
+            'icon' => 'fa-money',
+            'value' => 'Rp 245.750.000',
+            'label' => 'Total Kas',
+            'subtext' => '↑ 12,5% dari bulan lalu',
+            'color' => '#fd7e14',
+            'subcolor' => 'text-green'
+        ];
     }
 }
