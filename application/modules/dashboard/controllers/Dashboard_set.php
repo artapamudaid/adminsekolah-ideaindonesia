@@ -383,6 +383,10 @@ class Dashboard_set extends CI_Controller
                     $data['nama_unit'] = $row['majors_short_name'] . ' - ' . $school_name['setting_value'];
                 }
             }
+
+            $data['selected_majors'] = $selected_majors;
+
+            // Top Metrics
             $data['dummy_top_metrics'] = [
                 $this->top_metrics_student($where_majors_student),
                 $this->top_metrics_teacher($where_majors_employee),
@@ -391,6 +395,15 @@ class Dashboard_set extends CI_Controller
                 $this->top_metrics_collection_rate($selected_majors),
                 $this->top_metrics_tabungan($where_majors_banking)
             ];
+
+            // Ikhtisar Keuangan
+            $ikhtisar_month = date('n');
+            $ikhtisar_year  = date('Y');
+            $period = $this->db->query("SELECT period_start, period_end FROM period WHERE period_status = 1 LIMIT 1")->row_array();
+            $data['ikhtisar_period'] = $period;
+            $data['ikhtisar_month']  = $ikhtisar_month;
+            $data['ikhtisar_year']   = $ikhtisar_year;
+            $data['dummy_ikhtisar_doughnut'] = $this->get_ikhtisar_keuangan($ikhtisar_month, $ikhtisar_year, $where_majors_v_laporan_jurnal);
 
             $data['dummy_tagihan_bulan'] = [
                 ['name' => 'SPP Kelas 7', 'progress' => 90, 'text' => '72/80', 'bar' => 'progress-bar-success'],
@@ -434,18 +447,6 @@ class Dashboard_set extends CI_Controller
                 ['time' => '07:30 - 09:00', 'title' => 'Matematika - Kelas 7A', 'desc' => 'Ruang 1 | Bpk. Andi', 'color' => 'bg-blue'],
                 ['time' => '09:15 - 10:45', 'title' => 'IPA - Kelas 8B', 'desc' => 'Ruang 2 | Ibu Rina', 'color' => 'bg-yellow'],
                 ['time' => '11:00 - 12:30', 'title' => 'Bahasa Inggris - Kelas 9A', 'desc' => 'Ruang 3 | Bpk. Dedi', 'color' => 'bg-purple'],
-            ];
-
-            $data['dummy_ikhtisar'] = [
-                'pemasukan' => 'Rp 150.000.000',
-                'pengeluaran' => 'Rp 75.000.000',
-                'saldo' => 'Rp 75.000.000'
-            ];
-            $data['dummy_ikhtisar_doughnut'] = [
-                'total_display' => '245,75 JT',
-                'pemasukan' => ['val' => 312450000, 'text' => '312.450.000', 'pct' => '56.2%'],
-                'pengeluaran' => ['val' => 198230000, 'text' => '198.230.000', 'pct' => '35.6%'],
-                'saldo_akhir' => ['val' => 245750000, 'text' => '245.750.000', 'pct' => '8.2%']
             ];
 
             $data['dummy_spp_chart'] = [
@@ -868,7 +869,7 @@ class Dashboard_set extends CI_Controller
 
         return [
             'title' => 'COLLECTION RATE',
-            'icon' => 'fa-percent',
+            'icon' => 'fa-calculator',
             'value' => "{$formatted_rate}%",
             'label' => 'Tagihan Lunas',
             'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_diff}% dari bulan lalu" : '',
@@ -911,9 +912,78 @@ class Dashboard_set extends CI_Controller
             'icon' => 'fa-credit-card',
             'value' => 'Rp ' . number_format($total_saldo, 0, ',', '.'),
             'label' => 'Total Saldo',
-            'subtext' => $diff != 0 ? "{$trend_icon} {$formatted_growth}% dari bulan lalu" : '',
+            'subtext' => "{$trend_icon} {$formatted_growth}% dari bulan lalu",
             'color' => '#007bff',
             'subcolor' => $trend_subcolor
         ];
+    }
+
+    public function ajax_ikhtisar_keuangan()
+    {
+        $month = $this->input->post('month');
+        $year = $this->input->post('year');
+        $majors = $this->input->post('majors');
+
+        $where_majors = '';
+        if (!empty($majors) && $majors != 0) {
+            $where_majors = "AND idMajors = '$majors'";
+        }
+
+        $data = $this->get_ikhtisar_keuangan($month, $year, $where_majors);
+
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit;
+    }
+
+    private function get_ikhtisar_keuangan($month, $year, $where_majors = "")
+    {
+        $query = $this->db->query("SELECT 
+            SUM(penerimaan) AS total_pemasukan,
+            SUM(pengeluaran) AS total_pengeluaran,
+            SUM(penerimaan - pengeluaran) AS saldo_akhir
+            FROM v_laporan_jurnal
+            WHERE MONTH(tanggal) = '$month' 
+            AND YEAR(tanggal) = '$year'
+            {$where_majors}
+        ")->row_array();
+
+        $pemasukan = (float)($query['total_pemasukan'] ?? 0);
+        $pengeluaran = (float)($query['total_pengeluaran'] ?? 0);
+        $saldo = (float)($query['saldo_akhir'] ?? 0);
+        $total_all = $pemasukan + $pengeluaran + abs($saldo);
+
+        return [
+            'total_display' => $this->format_short_amount($total_all),
+            'pemasukan' => [
+                'val'  => $pemasukan,
+                'text' => number_format($pemasukan, 0, ',', '.'),
+                'pct'  => ($total_all > 0 ? number_format(($pemasukan / $total_all) * 100, 1) : 0) . '%'
+            ],
+            'pengeluaran' => [
+                'val'  => $pengeluaran,
+                'text' => number_format($pengeluaran, 0, ',', '.'),
+                'pct'  => ($total_all > 0 ? number_format(($pengeluaran / $total_all) * 100, 1) : 0) . '%'
+            ],
+            'saldo_akhir' => [
+                'val'  => $saldo,
+                'text' => number_format($saldo, 0, ',', '.'),
+                'pct'  => ($total_all > 0 ? number_format((abs($saldo) / $total_all) * 100, 1) : 0) . '%'
+            ]
+        ];
+    }
+
+    private function format_short_amount($amount)
+    {
+        if ($amount >= 1000000000000) {
+            return rtrim(rtrim(number_format($amount / 1000000000000, 2, ',', '.'), '0'), ',') . ' T';
+        } elseif ($amount >= 1000000000) {
+            return rtrim(rtrim(number_format($amount / 1000000000, 2, ',', '.'), '0'), ',') . ' M';
+        } elseif ($amount >= 1000000) {
+            return rtrim(rtrim(number_format($amount / 1000000, 2, ',', '.'), '0'), ',') . ' JT';
+        } elseif ($amount >= 1000) {
+            return rtrim(rtrim(number_format($amount / 1000, 2, ',', '.'), '0'), ',') . ' RB';
+        }
+        return number_format($amount, 0, ',', '.');
     }
 }

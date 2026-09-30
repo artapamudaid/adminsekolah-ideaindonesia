@@ -3,6 +3,24 @@
         /* height: 100%; */
         margin-left: 0;
     }
+
+    /*
+    Jika layar kecil, maka terapkan style
+    @media (max-width: 768px) {
+        .display-xs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+    */
+    @media (max-width: 768px) {
+        .display-xs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
 </style>
 <div class="content-wrapper">
     <section class="content-header">
@@ -21,34 +39,38 @@
     <section class="content">
 
         <!-- Header Bar -->
-        <div class="row" style="margin-bottom: 15px;">
-            <div class="col-md-4">
-                <strong>Selamat Datang, <?= $role_name; ?>!</strong><br>
-                <span class="text-muted">Dashboard Ringkasan <?= (isset($nama_unit) ? $nama_unit : '') ?></span>
-            </div>
-            <div class="col-md-3">
-                <select name="majors_id" id="select_majors" class="form-control" onchange="if(this.value){ window.location.href='?m='+this.value; } else { window.location.href='<?= site_url('manage') ?>'; }">
-                    <option value="">Semua Unit</option>
-                    <?php
-                    if (!empty($filter_majors)):
-                        foreach ($filter_majors as $maj):
-                    ?>
-                            <option value="<?= $maj['majors_id'] ?>" <?= (isset($_GET['m']) && $_GET['m'] == $maj['majors_id']) ? 'selected' : '' ?>>
-                                <?= !empty($maj['majors_short_name']) ? $maj['majors_short_name'] . ' - ' . $maj['majors_name'] : $maj['majors_name'] ?>
-                            </option>
-                    <?php
-                        endforeach;
-                    endif;
-                    ?>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <input type="text" class="form-control" placeholder="Cari siswa, tagihan, transaksi...">
-            </div>
-            <div class="col-md-2">
-                <a href="" class="btn btn-default btn-block">
-                    Lihat Website <i class="fa fa-external-link"></i>
-                </a>
+        <div class="box">
+            <div class="box-body">
+                <div class="row display-xs">
+                    <div class="col-lg-4 col-md-12 col-sm-7 col-xs-12">
+                        <h4 class="box-title">Selamat Datang, <?= $role_name; ?>!</h4>
+                        <span class="text-muted">Dashboard Ringkasan <?= (isset($nama_unit) ? $nama_unit : '') ?></span>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-5 col-xs-12">
+                        <select name="majors_id" id="select_majors" class="form-control" onchange="if(this.value){ window.location.href='?m='+this.value; } else { window.location.href='<?= site_url('manage') ?>'; }">
+                            <option value="">Semua Unit</option>
+                            <?php
+                            if (!empty($filter_majors)):
+                                foreach ($filter_majors as $maj):
+                            ?>
+                                    <option value="<?= $maj['majors_id'] ?>" <?= (isset($_GET['m']) && $_GET['m'] == $maj['majors_id']) ? 'selected' : '' ?>>
+                                        <?= !empty($maj['majors_short_name']) ? $maj['majors_short_name'] . ' - ' . $maj['majors_name'] : $maj['majors_name'] ?>
+                                    </option>
+                            <?php
+                                endforeach;
+                            endif;
+                            ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-7 col-xs-12">
+                        <input type="text" class="form-control" placeholder="Cari siswa, tagihan, transaksi...">
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-5 col-xs-12">
+                        <a href="" class="btn btn-default btn-block">
+                            Lihat Website <i class="fa fa-external-link"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -58,7 +80,7 @@
             if (!empty($dummy_top_metrics)):
                 foreach ($dummy_top_metrics as $m):
             ?>
-                    <div class="col-md-2 col-sm-4 col-xs-6">
+                    <div class="col-lg-2 col-md-4 col-sm-6">
                         <div class="info-box" style="border-left: 4px solid <?= $m['color'] ?>;">
                             <span class="info-box-icon" style="background:<?= $m['color'] ?>; font-size:22px; width:60px;">
                                 <i class="fa <?= $m['icon'] ?>" style="color:white;"></i>
@@ -122,16 +144,17 @@
 
         // 1. Doughnut Chart: Ikhtisar Keuangan
         var ctxDoughnut = document.getElementById("Chart_ikhtisarDoughnut");
+        var chartIkhtisarInstance = null;
         if (ctxDoughnut) {
-            new Chart(ctxDoughnut.getContext('2d'), {
+            chartIkhtisarInstance = new Chart(ctxDoughnut.getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: ['Pemasukan', 'Pengeluaran', 'Saldo Akhir'],
                     datasets: [{
                         data: [
-                            <?= !empty($dummy_ikhtisar_doughnut['pemasukan']['val']) ? $dummy_ikhtisar_doughnut['pemasukan']['val'] : 312450000 ?>,
-                            <?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['val']) ? $dummy_ikhtisar_doughnut['pengeluaran']['val'] : 198230000 ?>,
-                            <?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['val']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['val'] : 245750000 ?>
+                            <?= !empty($dummy_ikhtisar_doughnut['pemasukan']['val']) ? $dummy_ikhtisar_doughnut['pemasukan']['val'] : 0 ?>,
+                            <?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['val']) ? $dummy_ikhtisar_doughnut['pengeluaran']['val'] : 0 ?>,
+                            <?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['val']) ? abs($dummy_ikhtisar_doughnut['saldo_akhir']['val']) : 0 ?>
                         ],
                         backgroundColor: ['#28a745', '#dc3545', '#007bff'],
                         borderWidth: 2
@@ -140,7 +163,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutoutPercentage: 70,
+                    cutoutPercentage: 61,
                     legend: {
                         display: false
                     },
@@ -156,6 +179,43 @@
                 }
             });
         }
+
+        $('#filter_bulan_ikhtisar').on('change', function() {
+            var selectedMonth = $(this).val();
+            var selectedYear = $(this).find(':selected').data('year');
+            var selectedMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+
+            $.ajax({
+                url: '<?= site_url('manage/dashboard/ajax_ikhtisar_keuangan') ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    month: selectedMonth,
+                    year: selectedYear,
+                    majors: selectedMajors
+                },
+                success: function(res) {
+                    if (res) {
+                        $('#ikhtisar_total_display').text(res.total_display);
+                        $('#ikhtisar_pemasukan_text').text(res.pemasukan.text);
+                        $('#ikhtisar_pemasukan_pct').text(res.pemasukan.pct);
+                        $('#ikhtisar_pengeluaran_text').text(res.pengeluaran.text);
+                        $('#ikhtisar_pengeluaran_pct').text(res.pengeluaran.pct);
+                        $('#ikhtisar_saldo_text').text(res.saldo_akhir.text);
+                        $('#ikhtisar_saldo_pct').text(res.saldo_akhir.pct);
+
+                        if (chartIkhtisarInstance) {
+                            chartIkhtisarInstance.data.datasets[0].data = [
+                                res.pemasukan.val,
+                                res.pengeluaran.val,
+                                Math.abs(res.saldo_akhir.val)
+                            ];
+                            chartIkhtisarInstance.update();
+                        }
+                    }
+                }
+            });
+        });
 
         // 2. Line Chart: Arus Kas X Bulan Terakhir (dengan filter [3, 6, 9, 12])
         var dummyArusKas = <?= !empty($dummy_arus_kas) ? json_encode($dummy_arus_kas) : json_encode([

@@ -7,19 +7,26 @@
             <div class="box-header with-border">
                 <h3 class="box-title">Ikhtisar Keuangan</h3>
                 <div class="box-tools pull-right">
+                    <?php
+                    $nama_bulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                    $period_start = !empty($ikhtisar_period['period_start']) ? (int)$ikhtisar_period['period_start'] : (int)date('Y');
+                    $period_end   = !empty($ikhtisar_period['period_end'])   ? (int)$ikhtisar_period['period_end']   : (int)date('Y') + 1;
+                    $bulan_opsi = [];
+                    for ($m = 7; $m <= 12; $m++) {
+                        $bulan_opsi[] = ['m' => $m, 'y' => $period_start];
+                    }
+                    for ($m = 1; $m <= 6; $m++) {
+                        $bulan_opsi[] = ['m' => $m, 'y' => $period_end];
+                    }
+                    $active_m = !empty($ikhtisar_month) ? (int)$ikhtisar_month : (int)date('n');
+                    $active_y = !empty($ikhtisar_year)  ? (int)$ikhtisar_year  : (int)date('Y');
+                    ?>
                     <select id="filter_bulan_ikhtisar" class="form-control input-sm" style="width:auto; display:inline-block; font-size:11px; height:28px; padding:2px 8px;">
-                        <option value="1">Januari 2026</option>
-                        <option value="2">Februari 2026</option>
-                        <option value="3">Maret 2026</option>
-                        <option value="4">April 2026</option>
-                        <option value="5" selected>Mei 2026</option>
-                        <option value="6">Juni 2026</option>
-                        <option value="7">Juli 2026</option>
-                        <option value="8">Agustus 2026</option>
-                        <option value="9">September 2026</option>
-                        <option value="10">Oktober 2026</option>
-                        <option value="11">November 2026</option>
-                        <option value="12">Desember 2026</option>
+                        <?php foreach ($bulan_opsi as $bo): ?>
+                            <option value="<?= $bo['m'] ?>" data-year="<?= $bo['y'] ?>" <?= ($bo['m'] == $active_m && $bo['y'] == $active_y) ? 'selected' : '' ?>>
+                                <?= $nama_bulan[$bo['m']] . ' ' . $bo['y'] ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
             </div>
@@ -30,7 +37,7 @@
                             <canvas id="Chart_ikhtisarDoughnut"></canvas>
                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
                                 <span style="font-size: 10px; color: #888; display: block; line-height: 1;">Total</span>
-                                <strong style="font-size: 13px; color: #333; line-height: 1.2; display: block; margin-top: 2px;"><?= !empty($dummy_ikhtisar_doughnut['total_display']) ? $dummy_ikhtisar_doughnut['total_display'] : '245,75 JT' ?></strong>
+                                <strong id="ikhtisar_total_display" style="font-size: 13px; color: #333; line-height: 1.2; display: block; margin-top: 2px;"><?= !empty($dummy_ikhtisar_doughnut['total_display']) ? $dummy_ikhtisar_doughnut['total_display'] : '0' ?></strong>
                             </div>
                         </div>
                     </div>
@@ -41,7 +48,7 @@
                                 <span style="font-size: 11px; font-weight: 600; color: #444;">Pemasukan</span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
-                                <?= !empty($dummy_ikhtisar_doughnut['pemasukan']['text']) ? $dummy_ikhtisar_doughnut['pemasukan']['text'] : '312.450.000' ?> (<?= !empty($dummy_ikhtisar_doughnut['pemasukan']['pct']) ? $dummy_ikhtisar_doughnut['pemasukan']['pct'] : '56.2%' ?>)
+                                <span id="ikhtisar_pemasukan_text"><?= !empty($dummy_ikhtisar_doughnut['pemasukan']['text']) ? $dummy_ikhtisar_doughnut['pemasukan']['text'] : '0' ?></span> (<span id="ikhtisar_pemasukan_pct"><?= !empty($dummy_ikhtisar_doughnut['pemasukan']['pct']) ? $dummy_ikhtisar_doughnut['pemasukan']['pct'] : '0%' ?></span>)
                             </div>
                         </div>
                         <div style="margin-bottom: 12px;">
@@ -50,7 +57,7 @@
                                 <span style="font-size: 11px; font-weight: 600; color: #444;">Pengeluaran</span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
-                                <?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['text']) ? $dummy_ikhtisar_doughnut['pengeluaran']['text'] : '198.230.000' ?> (<?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['pct']) ? $dummy_ikhtisar_doughnut['pengeluaran']['pct'] : '35.6%' ?>)
+                                <span id="ikhtisar_pengeluaran_text"><?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['text']) ? $dummy_ikhtisar_doughnut['pengeluaran']['text'] : '0' ?></span> (<span id="ikhtisar_pengeluaran_pct"><?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['pct']) ? $dummy_ikhtisar_doughnut['pengeluaran']['pct'] : '0%' ?></span>)
                             </div>
                         </div>
                         <div>
@@ -59,7 +66,7 @@
                                 <span style="font-size: 11px; font-weight: 600; color: #444;">Saldo Akhir</span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
-                                <?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['text']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['text'] : '245.750.000' ?> (<?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['pct']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['pct'] : '8.2%' ?>)
+                                <span id="ikhtisar_saldo_text"><?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['text']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['text'] : '0' ?></span> (<span id="ikhtisar_saldo_pct"><?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['pct']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['pct'] : '0%' ?></span>)
                             </div>
                         </div>
                     </div>
