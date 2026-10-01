@@ -285,6 +285,108 @@ class Dashboard_model extends CI_Model
     }
 
 
+    /**
+     * Get 5 siswa tabungan terbesar
+     * @param int|null $majors_id
+     * @return array
+     */
+    public function get_top_5_tabungan($majors_id = null)
+    {
+        $umajors = $this->session->userdata('umajorsid');
+        if ($umajors != 0) {
+            $majors_id = $umajors;
+        }
+
+        $whereMajors = '';
+        if (!empty($majors_id) && $majors_id != 0) {
+            $m = (int)$majors_id;
+            $whereMajors = "AND s.majors_majors_id = '$m'";
+        }
+
+        $sql = "SELECT 
+                    s.student_id,
+                    s.student_full_name,
+                    s.student_nis,
+                    c.class_name,
+                    m.majors_short_name,
+                    m.majors_name,
+                    SUM(b.banking_debit - b.banking_kredit) AS total_saldo
+                FROM banking b
+                JOIN student s ON s.student_id = b.banking_student_id
+                LEFT JOIN class c ON c.class_id = s.class_class_id
+                LEFT JOIN majors m ON m.majors_id = s.majors_majors_id
+                WHERE s.student_status = 1 $whereMajors
+                GROUP BY s.student_id
+                HAVING total_saldo > 0
+                ORDER BY total_saldo DESC
+                LIMIT 5";
+
+        return $this->db->query($sql)->result_array();
+    }
+
+    /**
+     * Get detail transaksi tabungan siswa
+     * @param int $student_id
+     * @return array [student => [...], mutasi => [...], total_setoran => ..., total_penarikan => ..., saldo_akhir => ...]
+     */
+    public function get_detail_tabungan($student_id)
+    {
+        $student_id = (int)$student_id;
+
+        $student = $this->db->query(
+            "SELECT s.student_id, s.student_full_name, s.student_nis, c.class_name, m.majors_name, m.majors_short_name 
+             FROM student s
+             LEFT JOIN class c ON c.class_id = s.class_class_id
+             LEFT JOIN majors m ON m.majors_id = s.majors_majors_id
+             WHERE s.student_id = $student_id LIMIT 1"
+        )->row_array();
+
+        if (!$student) {
+            return null;
+        }
+
+        $rows = $this->db->query(
+            "SELECT banking_id, banking_date, banking_debit, banking_kredit, banking_note 
+             FROM banking 
+             WHERE banking_student_id = $student_id 
+             ORDER BY banking_date ASC, banking_id ASC"
+        )->result_array();
+
+        $running_balance = 0;
+        $total_debit = 0;
+        $total_kredit = 0;
+        $mutasi = [];
+
+        foreach ($rows as $i => $r) {
+            $debit = (float)$r['banking_debit'];
+            $kredit = (float)$r['banking_kredit'];
+            $running_balance += ($debit - $kredit);
+
+            $total_debit += $debit;
+            $total_kredit += $kredit;
+
+            $mutasi[] = [
+                'no'           => $i + 1,
+                'date'         => pretty_date($r['banking_date'], 'd M Y', false),
+                'debit'        => $debit > 0 ? 'Rp' . number_format($debit, 0, ',', '.') : '-',
+                'kredit'       => $kredit > 0 ? 'Rp' . number_format($kredit, 0, ',', '.') : '-',
+                'note'         => html_escape($r['banking_note']),
+                'saldo'        => 'Rp' . number_format($running_balance, 0, ',', '.'),
+                'debit_raw'    => $debit,
+                'kredit_raw'   => $kredit,
+                'saldo_raw'    => $running_balance
+            ];
+        }
+
+        return [
+            'student'         => $student,
+            'mutasi'          => $mutasi,
+            'total_setoran'   => 'Rp' . number_format($total_debit, 0, ',', '.'),
+            'total_penarikan' => 'Rp' . number_format($total_kredit, 0, ',', '.'),
+            'saldo_akhir'     => 'Rp' . number_format($running_balance, 0, ',', '.')
+        ];
+    }
+
     private function get_month(String $date = null)
     {
         $month_name = pretty_date($date, 'F', false);

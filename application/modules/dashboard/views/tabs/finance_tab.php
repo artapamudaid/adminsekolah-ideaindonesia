@@ -32,8 +32,14 @@
                         </select>
                     </div>
                     <div class="col-lg-3 col-md-12 col-sm-12 form-group" style="display: flex; flex-direction: row;justify-content: flex-end;align-items: center;gap: 5px;">
-                        <button class="btn btn-primary" id="btn_filter_realisasi"><?= $this->lang->line('dash_filter') ?></button>
-                        <button class="btn btn-success" id="btn_export_realisasi"><i class="fa fa-file-excel-o"></i> <?= $this->lang->line('dash_export_xls') ?></button>
+                        <button class="btn btn-default" id="btn_filter_realisasi">
+                            <i class="fa fa-filter"></i>
+                            <?= $this->lang->line('dash_filter') ?>
+                        </button>
+                        <button class="btn btn-success" id="btn_export_realisasi">
+                            <i class="fa fa-file-excel-o"></i>
+                            <?= $this->lang->line('dash_export_xls') ?>
+                        </button>
                     </div>
                 </div>
 
@@ -71,7 +77,6 @@
 
 <!-- 3 widget kedua: 3 Kolom (Ikhtisar Keuangan, Tagihan Bulan Ini, Arus Kas X Bulan Terakhir) -->
 <div class="row">
-
     <!-- Kolom 1: Ikhtisar Keuangan -->
     <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="box box-primary" id="box_ikhtisar_keuangan">
@@ -134,7 +139,7 @@
                         <div>
                             <div style="display:flex; align-items:center; margin-bottom: 2px;">
                                 <span style="display:inline-block; width:10px; height:10px; background-color:#007bff; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
-                                <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_ending_balance'); ?></span>
+                                <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_final_balance'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
                                 <span id="ikhtisar_saldo_text"><?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['text']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['text'] : '0' ?></span> (<span id="ikhtisar_saldo_pct"><?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['pct']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['pct'] : '0%' ?></span>)
@@ -166,7 +171,8 @@
                                 <div class="progress-bar <?= $tg['bar'] ?>" style="width: <?= $tg['progress'] ?>%"></div>
                             </div>
                         </div>
-                <?php endforeach; else: ?>
+                    <?php endforeach;
+                else: ?>
                     <p class="text-muted text-center" style="margin-top: 50px;">Tidak ada tagihan bulan ini</p>
                 <?php endif; ?>
             </div>
@@ -177,7 +183,9 @@
     <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title" id="title_arus_kas" data-title-template="<?= htmlspecialchars($this->lang->line('dash_cash_flow_title')) ?>"><?= sprintf($this->lang->line('dash_cash_flow_title'), 6) ?></h3>
+                <h3 class="box-title" id="title_arus_kas" data-title-template="<?= htmlspecialchars($this->lang->line('dash_cash_flow_title')) ?>">
+                    <?= sprintf($this->lang->line('dash_cash_flow_title'), 6) ?>
+                </h3>
                 <div class="box-tools pull-right">
                     <select id="filter_arus_kas_bulan" class="form-control input-sm" style="width:auto; display:inline-block; font-size:11px; height:28px; padding:2px 8px;">
                         <option value="3"><?= sprintf($this->lang->line('dash_x_months'), 3) ?></option>
@@ -253,37 +261,43 @@
     <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title">5 Siswa Tabungan Terbesar</h3>
-                <div class="box-tools pull-right">
-                    <button class="btn btn-default btn-sm">Detail</button>
-                </div>
+                <h3 class="box-title"><?= $this->lang->line('dash_top_5_savings') ?: '5 Siswa Tabungan Terbesar' ?></h3>
             </div>
             <div class="box-body no-padding" style="min-height: 200px;">
-                <table class="table table-condensed table-striped no-margin">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Nama</th>
-                            <th>Kelas</th>
-                            <th>Saldo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($dummy_tabungan)): foreach ($dummy_tabungan as $tb): ?>
+                <div class="table-responsive">
+                    <table class="table table-condensed table-striped table-hover no-margin">
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th style="text-align: left;"><?= $this->lang->line('dash_student_name') ?: 'Nama' ?></th>
+                                <th class="text-center"><?= $this->lang->line('dash_class') ?: 'Kelas' ?></th>
+                                <th class="text-center"><?= $this->lang->line('dash_unit') ?: 'Unit' ?></th>
+                                <th class="text-right"><?= $this->lang->line('dash_nominal') ?: 'Saldo' ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($top_5_tabungan)): $no = 1;
+                                foreach ($top_5_tabungan as $tb): ?>
+                                    <tr class="row-tabungan-siswa" data-student-id="<?= $tb['student_id'] ?>" style="cursor: pointer;" title="Klik untuk lihat detail transaksi">
+                                        <td class="text-center" style="font-size: 11px;"><?= $no++ ?></td>
+                                        <td style="font-size:11px; font-weight: 600;"><?= html_escape($tb['student_full_name']) ?></td>
+                                        <td class="text-center" style="font-size:11px;"><?= html_escape($tb['class_name'] ?: '-') ?></td>
+                                        <td class="text-center" style="font-size:11px;"><?= html_escape($tb['majors_short_name'] ?: '-') ?></td>
+                                        <td class="text-right" style="font-size:11px; font-weight: 600;">Rp <?= number_format($tb['total_saldo'], 0, ',', '.') ?></td>
+                                    </tr>
+                                <?php endforeach;
+                            else: ?>
                                 <tr>
-                                    <td><?= $tb['no'] ?></td>
-                                    <td><?= $tb['nama'] ?></td>
-                                    <td><?= $tb['kelas'] ?></td>
-                                    <td><?= $tb['nominal'] ?></td>
+                                    <td colspan="5" class="text-center text-muted"><?= $this->lang->line('dash_no_data'); ?></td>
                                 </tr>
-                        <?php endforeach;
-                        endif; ?>
-                    </tbody>
-                </table>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-
+</div>
 
 <!-- Modal Lihat Semua Tagihan Bulan Ini -->
 <div class="modal fade" id="modal_tagihan_bulan_ini" tabindex="-1" role="dialog" aria-labelledby="modalTagihanLabel">
@@ -308,4 +322,64 @@
     </div>
 </div>
 
+<!-- Modal Detail Tabungan Siswa -->
+<div class="modal fade" id="modal_detail_tabungan" tabindex="-1" role="dialog" aria-labelledby="modalDetailTabunganLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modalDetailTabunganLabel"><?= $this->lang->line('dash_savings_details') ?: 'Detail Tabungan Siswa' ?></h4>
+            </div>
+            <div class="modal-body">
+                <div id="modal_tabungan_loading" class="text-center" style="padding: 30px;">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                </div>
+                <div id="modal_tabungan_info" style="display:none; margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-left: 4px solid #3c8dbc; border-radius: 3px;">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <small class="text-muted">NIS</small><br><strong id="info_nis">-</strong>
+                        </div>
+                        <div class="col-xs-6">
+                            <small class="text-muted"><?= $this->lang->line('dash_student_name') ?: 'Nama Siswa' ?></small><br><strong id="info_nama">-</strong>
+                        </div>
+                        <div class="col-xs-6" style="margin-top:8px;">
+                            <small class="text-muted"><?= $this->lang->line('dash_unit') ?: 'Unit' ?></small><br><strong id="info_unit">-</strong>
+                        </div>
+                        <div class="col-xs-6" style="margin-top:8px;">
+                            <small class="text-muted"><?= $this->lang->line('dash_class') ?: 'Kelas' ?></small><br><strong id="info_kelas">-</strong>
+                        </div>
+                    </div>
+                </div>
+                <div id="modal_tabungan_table_wrap" style="display:none;">
+                    <div class="table-responsive">
+                        <table id="table_detail_tabungan" class="table table-bordered table-striped table-condensed" style="width:100%;">
+                            <thead>
+                                <tr>
+                                    <th><?= $this->lang->line('dash_no') ?: 'No' ?></th>
+                                    <th><?= $this->lang->line('dash_transaction_date') ?: 'Tanggal' ?></th>
+                                    <th><?= $this->lang->line('dash_deposit') ?: 'Setoran' ?></th>
+                                    <th><?= $this->lang->line('dash_withdrawal') ?: 'Penarikan' ?></th>
+                                    <th><?= $this->lang->line('dash_note') ?: 'Keterangan' ?></th>
+                                    <th><?= $this->lang->line('dash_balance') ?: 'Saldo' ?></th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal_tabungan_tbody"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2"><?= $this->lang->line('dash_total') ?: 'Total' ?></th>
+                                    <th id="tfoot_setoran">-</th>
+                                    <th id="tfoot_penarikan">-</th>
+                                    <th><?= $this->lang->line('dash_final_balance') ?: 'Saldo Akhir' ?></th>
+                                    <th id="tfoot_saldo_akhir">-</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
 </div>

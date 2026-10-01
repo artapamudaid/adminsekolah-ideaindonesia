@@ -323,6 +323,48 @@
             });
         });
 
+        // 3. Modal Tagihan Bulan Ini
+        $('#modal_tagihan_bulan_ini').on('show.bs.modal', function() {
+            var $loading = $('#modal_tagihan_loading');
+            var $content = $('#modal_tagihan_content');
+
+            $loading.show();
+            $content.hide().empty();
+
+            var currentMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_tagihan_bulan_ini") ?>',
+                type: 'POST',
+                data: {
+                    majors_id: currentMajors
+                },
+                dataType: 'json',
+                success: function(res) {
+                    $loading.hide();
+                    if (res && res.data && res.data.length > 0) {
+                        var html = '';
+                        $.each(res.data, function(i, item) {
+                            html += '<div class="progress-group" style="margin-bottom: 12px;">';
+                            html += '  <span class="progress-text" style="font-size: 12px; font-weight: bold;">' + item.name + '</span>';
+                            html += '  <span class="progress-number pull-right" style="font-size: 12px;"><b>' + item.text + '</b> (' + item.progress + '%)</span>';
+                            html += '  <div class="progress sm" style="margin-top: 5px; margin-bottom: 0; height: 10px;">';
+                            html += '    <div class="progress-bar ' + item.bar + '" style="width: ' + item.progress + '%"></div>';
+                            html += '  </div>';
+                            html += '</div>';
+                        });
+                        $content.html(html).show();
+                    } else {
+                        $content.html('<p class="text-muted text-center">Tidak ada data tagihan bulan ini.</p>').show();
+                    }
+                },
+                error: function() {
+                    $loading.hide();
+                    $content.html('<p class="text-danger text-center">Gagal mengambil data tagihan.</p>').show();
+                }
+            });
+        });
+
         // 4. Line Chart: Arus Kas X Bulan Terakhir (dengan filter [3, 6, 9, 12])
         var dataArusKas = <?= !empty($arus_kas) ? json_encode($arus_kas) : json_encode([]) ?>;
 
@@ -335,7 +377,7 @@
                 data: {
                     labels: dataArusKas[6].labels,
                     datasets: [{
-                            label: 'Pemasukan',
+                            label: '<?= $this->lang->line('dash_income') ?>',
                             data: dataArusKas[6].pemasukan,
                             borderColor: '#28a745',
                             backgroundColor: 'rgba(40, 167, 69, 0.1)',
@@ -345,7 +387,7 @@
                             borderWidth: 2
                         },
                         {
-                            label: 'Pengeluaran',
+                            label: '<?= $this->lang->line('dash_expense') ?>',
                             data: dataArusKas[6].pengeluaran,
                             borderColor: '#dc3545',
                             backgroundColor: 'rgba(220, 53, 69, 0.1)',
@@ -380,7 +422,17 @@
                                 beginAtZero: true,
                                 fontSize: 10,
                                 callback: function(value) {
-                                    return 'Rp ' + (value / 1000000).toLocaleString('id-ID') + ' JT';
+                                    if (value >= 1000000000000) {
+                                        return (value / 1000000000000).toLocaleString('id-ID') + ' <?= $this->lang->line('singkatan_triliun') ?>';
+                                    } else if (value >= 1000000000) {
+                                        return (value / 1000000000).toLocaleString('id-ID') + ' <?= $this->lang->line('singkatan_miliar') ?>';
+                                    } else if (value >= 1000000) {
+                                        return (value / 1000000).toLocaleString('id-ID') + ' <?= $this->lang->line('singkatan_juta') ?>';
+                                    } else if (value >= 1000) {
+                                        return (value / 1000).toLocaleString('id-ID') + ' <?= $this->lang->line('singkatan_ribu') ?>';
+                                    } else {
+                                        return value.toLocaleString('id-ID');
+                                    }
                                 }
                             },
                             scaleLabel: {
@@ -507,47 +559,87 @@
                     }
                 }
             });
+        }
 
-        // Modal Tagihan Bulan Ini
-        $('#modal_tagihan_bulan_ini').on('show.bs.modal', function () {
-            var $loading = $('#modal_tagihan_loading');
-            var $content = $('#modal_tagihan_content');
-            
+        // 7. Modal Detail Tabungan Siswa
+        var dtDetailTabungan = null;
+        $(document).on('click', '.row-tabungan-siswa', function() {
+            var studentId = $(this).data('student-id');
+            if (!studentId) return;
+
+            $('#modal_detail_tabungan').modal('show');
+            var $loading = $('#modal_tabungan_loading');
+            var $info = $('#modal_tabungan_info');
+            var $tableWrap = $('#modal_tabungan_table_wrap');
+
             $loading.show();
-            $content.hide().empty();
+            $info.hide();
+            $tableWrap.hide();
 
-            var currentMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+            if (dtDetailTabungan) {
+                dtDetailTabungan.destroy();
+                dtDetailTabungan = null;
+            }
+            $('#modal_tabungan_tbody').empty();
 
             $.ajax({
-                url: '<?= site_url("manage/dashboard/ajax_tagihan_bulan_ini") ?>',
+                url: '<?= site_url("manage/dashboard/ajax_detail_tabungan_siswa") ?>',
                 type: 'POST',
-                data: { majors_id: currentMajors },
+                data: {
+                    student_id: studentId
+                },
                 dataType: 'json',
-                success: function (res) {
+                success: function(res) {
                     $loading.hide();
-                    if (res && res.data && res.data.length > 0) {
-                        var html = '';
-                        $.each(res.data, function (i, item) {
-                            html += '<div class="progress-group" style="margin-bottom: 12px;">';
-                            html += '  <span class="progress-text" style="font-size: 12px; font-weight: bold;">' + item.name + '</span>';
-                            html += '  <span class="progress-number pull-right" style="font-size: 12px;"><b>' + item.text + '</b> (' + item.progress + '%)</span>';
-                            html += '  <div class="progress sm" style="margin-top: 5px; margin-bottom: 0; height: 10px;">';
-                            html += '    <div class="progress-bar ' + item.bar + '" style="width: ' + item.progress + '%"></div>';
-                            html += '  </div>';
-                            html += '</div>';
+                    if (res && res.student) {
+                        $('#info_nis').text(res.student.student_nis || '-');
+                        $('#info_nama').text(res.student.student_full_name || '-');
+                        $('#info_unit').text(res.student.majors_name || res.student.majors_short_name || '-');
+                        $('#info_kelas').text(res.student.class_name || '-');
+                        $info.show();
+
+                        $('#tfoot_setoran').text(res.total_setoran || 'Rp0');
+                        $('#tfoot_penarikan').text(res.total_penarikan || 'Rp0');
+                        $('#tfoot_saldo_akhir').text(res.saldo_akhir || 'Rp0');
+
+                        var rowsHtml = '';
+                        if (res.data && res.data.length > 0) {
+                            $.each(res.data, function(i, item) {
+                                rowsHtml += '<tr>';
+                                rowsHtml += '<td class="text-center">' + item.no + '</td>';
+                                rowsHtml += '<td>' + item.date + '</td>';
+                                rowsHtml += '<td class="text-right">' + item.debit + '</td>';
+                                rowsHtml += '<td class="text-right">' + item.kredit + '</td>';
+                                rowsHtml += '<td>' + (item.note || '-') + '</td>';
+                                rowsHtml += '<td class="text-right font-weight-bold">' + item.saldo + '</td>';
+                                rowsHtml += '</tr>';
+                            });
+                        }
+                        $('#modal_tabungan_tbody').html(rowsHtml);
+                        $tableWrap.show();
+
+                        dtDetailTabungan = $('#table_detail_tabungan').DataTable({
+                            paging: true,
+                            searching: true,
+                            ordering: false,
+                            info: true,
+                            autoWidth: false,
+                            pageLength: 10,
+                            lengthMenu: [
+                                [10, 25, 50, -1],
+                                [10, 25, 50, "Semua"]
+                            ]
                         });
-                        $content.html(html).show();
                     } else {
-                        $content.html('<p class="text-muted text-center">Tidak ada data tagihan bulan ini.</p>').show();
+                        $('#modal_tabungan_tbody').html('<tr><td colspan="6" class="text-center text-muted">Data tidak ditemukan.</td></tr>');
+                        $tableWrap.show();
                     }
                 },
-                error: function () {
+                error: function() {
                     $loading.hide();
-                    $content.html('<p class="text-danger text-center">Gagal mengambil data tagihan.</p>').show();
+                    alert('Gagal mengambil detail tabungan siswa.');
                 }
             });
         });
-
-        }
     });
 </script>

@@ -432,13 +432,9 @@ class Dashboard_set extends CI_Controller
                 ['icon' => 'fa-file-text-o bg-blue', 'title' => 'Perizinan Siswa', 'desc' => '3 pengajuan izin', 'time' => '10:15'],
             ];
 
-            $data['dummy_tabungan'] = [
-                ['no' => 1, 'nama' => 'Ahmad Rizky', 'kelas' => 'Kelas 9A', 'nominal' => 'Rp 1.250.000'],
-                ['no' => 2, 'nama' => 'Naila Putri', 'kelas' => 'Kelas 8B', 'nominal' => 'Rp 1.100.000'],
-                ['no' => 3, 'nama' => 'Fauzan Alfarizi', 'kelas' => 'Kelas 9B', 'nominal' => 'Rp 950.000'],
-                ['no' => 4, 'nama' => 'Siti Aisyah', 'kelas' => 'Kelas 7A', 'nominal' => 'Rp 900.000'],
-                ['no' => 5, 'nama' => 'Muhammad Fikri', 'kelas' => 'Kelas 8A', 'nominal' => 'Rp 850.000'],
-            ];
+            // top 5 tabungan
+            $data['top_5_tabungan'] = $this->Dashboard_model->get_top_5_tabungan($selected_majors);
+            $data['show_unit_tabungan'] = (empty($selected_majors) || $selected_majors == 0);
 
             $data['dummy_pengumuman'] = [
                 ['type' => 'Penting', 'label' => 'text-red', 'border' => 'border-color: red;', 'title' => 'Libur Akhir Semester', 'desc' => 'Kegiatan belajar mengajar diliburkan mulai tgl 1 - 7 Juni 2025.', 'date' => '23 Mei 2025', 'icon' => 'fa-bullhorn'],
@@ -813,6 +809,32 @@ class Dashboard_set extends CI_Controller
 
         header('Content-Type: application/json');
         echo json_encode(['data' => $result]);
+        exit;
+    }
+
+    public function ajax_detail_tabungan_siswa()
+    {
+        $student_id = sanitizeStrict($this->input->post('student_id'));
+        if (empty($student_id)) {
+            echo json_encode(['data' => [], 'student' => null]);
+            exit;
+        }
+
+        $result = $this->Dashboard_model->get_detail_tabungan($student_id);
+
+        if (!$result) {
+            echo json_encode(['data' => [], 'student' => null]);
+            exit;
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'data'            => $result['mutasi'],
+            'student'         => $result['student'],
+            'total_setoran'   => $result['total_setoran'],
+            'total_penarikan' => $result['total_penarikan'],
+            'saldo_akhir'     => $result['saldo_akhir']
+        ]);
         exit;
     }
 
