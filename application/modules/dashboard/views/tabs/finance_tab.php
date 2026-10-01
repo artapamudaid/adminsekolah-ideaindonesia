@@ -1,4 +1,74 @@
-<!-- 3 widget pertama: 3 Kolom (Ikhtisar Keuangan, Tagihan Bulan Ini, Arus Kas X Bulan Terakhir) -->
+<!-- 1 widget pertama: 1 Kolom (Realisasi Akun Pembayaran) -->
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title"><?= $this->lang->line('dash_payment_realization') ?></h3>
+            </div>
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-4 col-sm-4 form-group">
+                        <select class="form-control s2" id="filter_period_realisasi" style="width: 100%;">
+                            <?php if (!empty($periods_list)): foreach ($periods_list as $per): ?>
+                                <option value="<?= $per['period_id'] ?>" <?= ($per['period_status'] == 1) ? 'selected' : '' ?>>
+                                    T.A. <?= $per['period_start'] ?>/<?= $per['period_end'] ?>
+                                </option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-4 form-group">
+                        <select class="form-control s2" id="start_month" style="width: 100%;">
+                            <?php foreach ($months_list as $m): ?>
+                                <option value="<?= $m['month_id'] ?>"><?= $m['month_name'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-4 form-group">
+                        <select class="form-control s2" id="end_month" style="width: 100%;">
+                            <?php foreach ($months_list as $m): ?>
+                                <option value="<?= $m['month_id'] ?>" <?= ($m['month_id'] == 12) ? 'selected' : '' ?>><?= $m['month_name'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-12 col-sm-12 form-group" style="display: flex; flex-direction: row;justify-content: flex-end;align-items: center;gap: 5px;">
+                        <button class="btn btn-primary" id="btn_filter_realisasi"><?= $this->lang->line('dash_filter') ?></button>
+                        <button class="btn btn-success" id="btn_export_realisasi"><i class="fa fa-file-excel-o"></i> <?= $this->lang->line('dash_export_xls') ?></button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="table_realisasi_akun">
+                                <thead>
+                                    <tr>
+                                        <th><?= $this->lang->line('dash_unit') ?></th>
+                                        <th><?= $this->lang->line('dash_payment_account') ?></th>
+                                        <th><?= $this->lang->line('dash_bill') ?></th>
+                                        <th><?= $this->lang->line('dash_paid') ?></th>
+                                        <th><?= $this->lang->line('dash_unpaid') ?></th>
+                                        <th><?= $this->lang->line('dash_achievement') ?></th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr style="background-color: #f9f9f9; font-weight: bold;">
+                                        <th colspan="2" class="text-right">Total</th>
+                                        <th class="text-right"></th>
+                                        <th class="text-right"></th>
+                                        <th class="text-right"></th>
+                                        <th class="text-center"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3 widget kedua: 3 Kolom (Ikhtisar Keuangan, Tagihan Bulan Ini, Arus Kas X Bulan Terakhir) -->
 <div class="row">
 
     <!-- Kolom 1: Ikhtisar Keuangan -->
@@ -119,7 +189,7 @@
     </div>
 </div>
 
-<!-- 3 widget kedua: 3 Kolom (Grafik Pembayaran SPP, Transaksi Terbaru, Tabungan Siswa) -->
+<!-- 3 widget ketiga: 3 Kolom (Grafik Pembayaran SPP, Transaksi Terbaru, Tabungan Siswa) -->
 <div class="row">
     <!-- Kolom 1: Grafik Pembayaran (SPP) -->
     <div class="col-lg-4 col-md-12 col-sm-12">

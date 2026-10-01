@@ -56,6 +56,10 @@ $lang['dash_expense'] = 'Pengeluaran';
 $lang['dash_ending_balance'] = 'Saldo Akhir';
 $lang['dash_cash_flow_title'] = 'Arus Kas %s Bulan Terakhir';
 $lang['dash_x_months'] = '%s Bulan';
+$lang['singkatan_ribu'] = 'Rb';
+$lang['singkatan_juta'] = 'Jt';
+$lang['singkatan_miliar'] = 'M';
+$lang['singkatan_triliun'] = 'T';
 
 // tab kesiswaan
 $lang['dash_tab_student'] = 'Kesiswaan';

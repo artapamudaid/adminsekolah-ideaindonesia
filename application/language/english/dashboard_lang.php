@@ -56,6 +56,10 @@ $lang['dash_expense'] = 'Expense';
 $lang['dash_ending_balance'] = 'Ending Balance';
 $lang['dash_cash_flow_title'] = 'Cash Flow Last %s Months';
 $lang['dash_x_months'] = '%s Months';
+$lang['singkatan_ribu'] = 'K';
+$lang['singkatan_juta'] = 'B';
+$lang['singkatan_miliar'] = 'M';
+$lang['singkatan_triliun'] = 'T';
 
 // tab kesiswaan
 $lang['dash_tab_student'] = 'Student';

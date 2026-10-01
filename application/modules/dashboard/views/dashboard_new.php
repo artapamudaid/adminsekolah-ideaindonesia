@@ -125,12 +125,120 @@
 
 <script>
     $(document).ready(function() {
+        var selectedMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+
         $('#select_majors').select2({
             width: '100%',
             theme: 'classic',
         });
 
-        // 1. Doughnut Chart: Ikhtisar Keuangan
+        // 1. DataTables Realisasi Akun Pembayaran
+        if ($('#table_realisasi_akun').length) {
+            $('#filter_period_realisasi').select2({
+                width: '100%',
+                theme: 'classic'
+            });
+            $('#start_month').select2({
+                theme: 'classic',
+                width: '100%',
+            });
+            $('#end_month').select2({
+                theme: 'classic',
+                width: '100%'
+            });
+
+            var tableRealisasi = $('#table_realisasi_akun').DataTable({
+                "processing": true,
+                "serverSide": false,
+                "paging": false,
+                "ordering": false,
+                "info": false,
+                "searching": false,
+                "ajax": {
+                    "url": "<?= site_url('manage/dashboard/ajax_realisasi_akun') ?>",
+                    "type": "POST",
+                    "data": function(d) {
+                        d.period_id = $('#filter_period_realisasi').val();
+                        d.start_month = $('#start_month').val();
+                        d.end_month = $('#end_month').val();
+                        d.majors_id = selectedMajors;
+                    }
+                },
+                "columns": [{
+                        "data": "majors_short_name",
+                        "className": "text-center"
+                    },
+                    {
+                        "data": "unit"
+                    },
+                    {
+                        "data": "tagihan",
+                        "className": "text-right"
+                    },
+                    {
+                        "data": "terbayar",
+                        "className": "text-right"
+                    },
+                    {
+                        "data": "belum",
+                        "className": "text-right"
+                    },
+                    {
+                        "data": "pencapaian",
+                        "className": "text-center"
+                    }
+                ],
+                "language": {
+                    "emptyTable": "<?= $this->lang->line('dash_no_data') ?>",
+                    "zeroRecords": "<?= $this->lang->line('dash_no_data') ?>"
+                },
+                "footerCallback": function(row, data, start, end, display) {
+                    var api = this.api();
+                    var sumCol = function(col) {
+                        return api.column(col).data().reduce(function(a, b) {
+                            var n = parseFloat(String(b).replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            return a + n;
+                        }, 0);
+                    };
+                    var tagihan = api.column(2).data().reduce(function(a, b) {
+                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                    }, 0);
+                    var terbayar = api.column(3).data().reduce(function(a, b) {
+                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                    }, 0);
+                    var belum = api.column(4).data().reduce(function(a, b) {
+                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                    }, 0);
+                    var pct = tagihan > 0 ? (terbayar / tagihan * 100).toFixed(1) : '0.0';
+
+                    var fmt = function(n) {
+                        return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    };
+                    $(api.column(2).footer()).html(fmt(tagihan));
+                    $(api.column(3).footer()).html(fmt(terbayar));
+                    $(api.column(4).footer()).html(fmt(belum));
+                    $(api.column(5).footer()).html('<span class="label ' + (pct >= 100 ? 'label-success' : pct >= 75 ? 'label-primary' : pct >= 50 ? 'label-warning' : 'label-danger') + '">' + pct.replace('.', ',') + '%</span>');
+                },
+                "bDestroy": true,
+                "responsive": true,
+                "autoWidth": false
+            });
+
+            $('#btn_filter_realisasi').on('click', function() {
+                tableRealisasi.ajax.reload();
+            });
+
+            $('#btn_export_realisasi').on('click', function(e) {
+                e.preventDefault();
+                var period_id = $('#filter_period_realisasi').val() || '';
+                var start_month = $('#start_month').val() || '';
+                var end_month = $('#end_month').val() || '';
+                var url = "<?= site_url('manage/dashboard/export_realisasi_excel') ?>?period_id=" + period_id + "&start_month=" + start_month + "&end_month=" + end_month;
+                window.open(url, '_blank');
+            });
+        }
+
+        // 2. Doughnut Chart: Ikhtisar Keuangan
         var ctxDoughnut = document.getElementById("Chart_ikhtisarDoughnut");
         var chartIkhtisarInstance = null;
         if (ctxDoughnut) {
@@ -170,7 +278,6 @@
         $('#filter_bulan_ikhtisar').on('change', function() {
             var selectedMonth = $(this).val();
             var selectedYear = $(this).find(':selected').data('year');
-            var selectedMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
 
             $.ajax({
                 url: '<?= site_url('manage/dashboard/ajax_ikhtisar_keuangan') ?>',
@@ -209,14 +316,8 @@
             });
         });
 
-        // 2. Line Chart: Arus Kas X Bulan Terakhir (dengan filter [3, 6, 9, 12])
-        var dummyArusKas = <?= !empty($dummy_arus_kas) ? json_encode($dummy_arus_kas) : json_encode([
-                                6 => [
-                                    'labels' => ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'],
-                                    'pemasukan' => [38000000, 42000000, 45000000, 52000000, 60000000, 58000000],
-                                    'pengeluaran' => [25000000, 27000000, 28000000, 31000000, 35000000, 33000000]
-                                ]
-                            ]) ?>;
+        // 4. Line Chart: Arus Kas X Bulan Terakhir (dengan filter [3, 6, 9, 12])
+        var dataArusKas = <?= !empty($arus_kas) ? json_encode($arus_kas) : json_encode([]) ?>;
 
         var ctxArusKas = document.getElementById("Chart_arusKas");
         var chartArusKasInstance = null;
@@ -225,10 +326,10 @@
             chartArusKasInstance = new Chart(ctxArusKas.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: dummyArusKas[6].labels,
+                    labels: dataArusKas[6].labels,
                     datasets: [{
                             label: 'Pemasukan',
-                            data: dummyArusKas[6].pemasukan,
+                            data: dataArusKas[6].pemasukan,
                             borderColor: '#28a745',
                             backgroundColor: 'rgba(40, 167, 69, 0.1)',
                             pointBackgroundColor: '#28a745',
@@ -238,7 +339,7 @@
                         },
                         {
                             label: 'Pengeluaran',
-                            data: dummyArusKas[6].pengeluaran,
+                            data: dataArusKas[6].pengeluaran,
                             borderColor: '#dc3545',
                             backgroundColor: 'rgba(220, 53, 69, 0.1)',
                             pointBackgroundColor: '#dc3545',
@@ -298,15 +399,15 @@
             var titleTemplate = $('#title_arus_kas').data('title-template') || 'Arus Kas %s Bulan Terakhir';
             $('#title_arus_kas').text(titleTemplate.replace('%s', selectedBulan));
 
-            if (chartArusKasInstance && dummyArusKas[selectedBulan]) {
-                chartArusKasInstance.data.labels = dummyArusKas[selectedBulan].labels;
-                chartArusKasInstance.data.datasets[0].data = dummyArusKas[selectedBulan].pemasukan;
-                chartArusKasInstance.data.datasets[1].data = dummyArusKas[selectedBulan].pengeluaran;
+            if (chartArusKasInstance && dataArusKas[selectedBulan]) {
+                chartArusKasInstance.data.labels = dataArusKas[selectedBulan].labels;
+                chartArusKasInstance.data.datasets[0].data = dataArusKas[selectedBulan].pemasukan;
+                chartArusKasInstance.data.datasets[1].data = dataArusKas[selectedBulan].pengeluaran;
                 chartArusKasInstance.update();
             }
         });
 
-        // 3. Combo Bar & Line Chart: Grafik Pembayaran SPP
+        // 5. Combo Bar & Line Chart: Grafik Pembayaran SPP
         var ctxSpp = document.getElementById("Chart_pembayaranSPP");
         if (ctxSpp) {
             new Chart(ctxSpp.getContext('2d'), {

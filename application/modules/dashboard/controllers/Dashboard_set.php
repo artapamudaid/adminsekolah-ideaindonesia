@@ -377,6 +377,9 @@ class Dashboard_set extends CI_Controller
         $school_name = $this->Setting_model->get(array('id' => 1));
         $data['nama_unit'] = 'Semua Unit ' . $school_name['setting_value'];
 
+        $data['months_list'] = $this->db->query("SELECT month_id, month_name FROM month ORDER BY month_id ASC")->result_array();
+        $data['periods_list'] = $this->Period_model->get();
+
         if ($hasDashboard) {
             foreach ($filter_majors as $row) {
                 if ($row['majors_id'] == $selected_majors) {
@@ -404,6 +407,9 @@ class Dashboard_set extends CI_Controller
             $data['ikhtisar_month']  = $ikhtisar_month;
             $data['ikhtisar_year']   = $ikhtisar_year;
             $data['dummy_ikhtisar_doughnut'] = $this->get_ikhtisar_keuangan($ikhtisar_month, $ikhtisar_year, $where_majors_v_laporan_jurnal);
+
+            // arus kas
+            $data['arus_kas'] = $this->get_arus_kas_data($where_majors_v_laporan_jurnal);
 
             $data['dummy_tagihan_bulan'] = [
                 ['name' => 'SPP Kelas 7', 'progress' => 90, 'text' => '72/80', 'bar' => 'progress-bar-success'],
@@ -455,7 +461,6 @@ class Dashboard_set extends CI_Controller
                 'belum_lunas' => [4, 5, 2, 5, 1, 3],
                 'collection_rate' => [87.5, 83.3, 93.8, 84.4, 97.0, 90.6]
             ];
-            $data['dummy_arus_kas'] = $this->get_arus_kas_data($where_majors_v_laporan_jurnal);
 
 
 
@@ -526,125 +531,77 @@ class Dashboard_set extends CI_Controller
 
 
 
-    public function realisasi()
+    public function ajax_realisasi_akun()
     {
-        $umajors = $this->session->userdata('umajorsid');
+        $period_id   = sanitizeStrict($this->input->post('period_id'));
+        $start_month = sanitizeStrict($this->input->post('start_month'));
+        $end_month   = sanitizeStrict($this->input->post('end_month'));
+        $majors_id   = sanitizeStrict($this->input->post('majors_id'));
 
-        $whereMajors = "";
-
-        if ($umajors != 0) {
-
-            $whereMajors = " AND majors_id = '$umajors'";
-        }
-
-        $majors = $this->db->query("SELECT * FROM majors WHERE 1  $whereMajors")->result_array();
-
-        $getRealisasi = $this->Dashboard_model->get_realisasi();
-
-        $dataRealisasi = json_decode($getRealisasi, true);
-        $rBulan = $dataRealisasi['rp_bulan'];
-        $rBebas = $dataRealisasi['rp_bebas'];
-
-        $html = '<thead>
-                <tr>
-                <th>' . $this->lang->line('dash_unit') . '</th>
-                <th>' . $this->lang->line('dash_payment_account') . '</th>
-                <th>' . $this->lang->line('dash_bill') . '</th>
-                <th>' . $this->lang->line('dash_paid') . '</th>
-                <th>' . $this->lang->line('dash_unpaid') . '</th>
-                <th>' . $this->lang->line('dash_achievement') . '</th>
-                </tr>
-                </thead>';
-
-        $html .= '<tbody>';
-
-
-        $sumTagihanBulan = 0;
-        $sumTerbayarBulan = 0;
-        $sumBelumBulan = 0;
-        $sumPresentaseBulan = 0;
-
-        $sumTagihanBebas = 0;
-        $sumTerbayarBebas = 0;
-        $sumBelumBebas = 0;
-        $sumPresentaseBebas = 0;
-
-        foreach ($majors as $major) {
-            foreach ($rBulan as $dBulan) {
-                if ($major['majors_id'] == $dBulan['majors_id']) {
-
-                    $terbayar = (int)$dBulan['terbayar'];
-                    $belum = (int)$dBulan['belum'];
-                    $totalBulan = $terbayar + $belum;
-
-                    $pembulatanBulan = $totalBulan > 0
-                        ? $this->pembulatan(($terbayar / $totalBulan) * 100)
-                        : 0;
-
-                    $html .= '<tr style="text-align: right;">
-                    <td style="text-align: left;">' . $dBulan['majors_short_name'] . '</td>
-                    <td style="text-align: left;">' . $dBulan['unit'] . '</td>
-                    <td>Rp ' . number_format($totalBulan, '0', ',', '.') . '</td>
-                    <td>Rp ' . number_format($dBulan['terbayar'], '0', ',', '.') . '</td>
-                    <td>Rp ' . number_format($dBulan['belum'], '0', ',', '.') . '</td>
-                    <td>' . $pembulatanBulan . '% </td>
-                    </tr>';
-
-                    $sumTagihanBulan += $totalBulan;
-                    $sumTerbayarBulan += $dBulan['terbayar'];
-                    $sumBelumBulan += $dBulan['belum'];
-                    $sumPresentaseBulan += $pembulatanBulan;
-                }
-            }
-            foreach ($rBebas as $dBebas) {
-                if ($major['majors_id'] == $dBebas['majors_id']) {
-
-                    $terbayar = (int)$dBebas['terbayar'];
-                    $belum = (int)$dBebas['belum'];
-                    $totalBebas = $terbayar + $belum;
-
-                    $pembulatanBebas = $totalBebas > 0
-                        ? $this->pembulatan(($terbayar / $totalBebas) * 100)
-                        : 0;
-
-                    $html .= '<tr style="text-align: right;">
-                    <td style="text-align: left;">' . $dBebas['majors_short_name'] . '</td>
-                    <td style="text-align: left;">' . $dBebas['unit'] . '</td>
-                    <td>Rp ' . number_format($totalBebas, '0', ',', '.') . '</td>
-                    <td>Rp ' . number_format($dBebas['terbayar'], '0', ',', '.') . '</td>
-                    <td>Rp ' . number_format($dBebas['belum'], '0', ',', '.') . '</td>
-                    <td>' . $pembulatanBebas . '% </td></tr>';
-
-                    $sumTagihanBebas += $totalBebas;
-                    $sumTerbayarBebas += $dBebas['terbayar'];
-                    $sumBelumBebas += $dBebas['belum'];
-                    $sumPresentaseBebas += $pembulatanBebas;
-                }
+        if (empty($majors_id)) {
+            $majors_id = $this->session->userdata('umajorsid');
+            if ($majors_id == 0 && $this->input->get('m')) {
+                $majors_id = $this->input->get('m');
             }
         }
 
-        $sumTagihanTotal = $sumTagihanBulan + $sumTagihanBebas;
-        $sumTerbayarTotal = $sumTerbayarBulan + $sumTerbayarBebas;
+        $result = $this->Dashboard_model->get_realisasi_akun_dt($period_id, $start_month, $end_month, $majors_id);
 
-        // Cek apakah penyebut nol sebelum pembagian
-        $persentase = ($sumTagihanTotal != 0) ? ($sumTerbayarTotal / $sumTagihanTotal) * 100 : 0;
+        header('Content-Type: application/json');
+        echo json_encode(['data' => $result]);
+        exit;
+    }
 
-        // Panggil fungsi pembulatan
-        $hasilPresentase = $this->pembulatan($persentase);
+    public function export_realisasi_excel()
+    {
+        $period_id   = $this->input->get('period_id');
+        $start_month = $this->input->get('start_month');
+        $end_month   = $this->input->get('end_month');
+        $majors_id   = $this->input->get('majors_id');
 
-        $html .= '</tbody>';
+        if (empty($majors_id)) {
+            $majors_id = $this->session->userdata('umajorsid');
+        }
 
-        $html .= '<tfoot>
-                <tr style="font-weight: bold; text-align: right;">
-                <td></td>
-                <td></td>
-                <td>Rp ' . number_format($sumTagihanBulan + $sumTagihanBebas, '0', ',', '.') . '</td>
-                <td>Rp ' . number_format($sumTerbayarBulan + $sumTerbayarBebas, '0', ',', '.') . '</td>
-                <td>Rp ' . number_format($sumBelumBulan + $sumBelumBebas, '0', ',', '.') . '</td>
-                <td>' . $hasilPresentase . '%</td></tr>
-                </tfoot>';
+        $data = $this->Dashboard_model->get_realisasi_akun_dt($period_id, $start_month, $end_month, $majors_id);
 
-        echo $html;
+        $filename = "Realisasi_Akun_Pembayaran_" . date('Ymd_His') . ".xls";
+
+        header("Content-Type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=\"$filename\"");
+        header("Cache-Control: max-age=0");
+
+        echo '<table border="1">';
+        echo '<thead>';
+        echo '<tr style="background-color: #f4f6f9;">';
+        echo '<th>Unit</th>';
+        echo '<th>Akun Pembayaran</th>';
+        echo '<th>Tagihan</th>';
+        echo '<th>Terbayar</th>';
+        echo '<th>Belum Terbayar</th>';
+        echo '<th>Pencapaian (%)</th>';
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
+
+        if (!empty($data)) {
+            foreach ($data as $row) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($row['majors_short_name']) . '</td>';
+                echo '<td>' . htmlspecialchars($row['unit']) . '</td>';
+                echo '<td style="text-align: right;">' . number_format($row['tagihan_raw'], 0, ',', '.') . '</td>';
+                echo '<td style="text-align: right;">' . number_format($row['terbayar_raw'], 0, ',', '.') . '</td>';
+                echo '<td style="text-align: right;">' . number_format($row['belum_raw'], 0, ',', '.') . '</td>';
+                echo '<td style="text-align: right;">' . number_format($row['pencapaian_raw'], 1, ',', '.') . '%</td>';
+                echo '</tr>';
+            }
+        } else {
+            echo '<tr><td colspan="6" style="text-align: center;">Tidak ada data untuk ditampilkan</td></tr>';
+        }
+
+        echo '</tbody>';
+        echo '</table>';
+        exit;
     }
 
     public function realisasi_xls()
@@ -1023,13 +980,13 @@ class Dashboard_set extends CI_Controller
     private function format_short_amount($amount)
     {
         if ($amount >= 1000000000000) {
-            return rtrim(rtrim(number_format($amount / 1000000000000, 2, ',', '.'), '0'), ',') . ' T';
+            return rtrim(rtrim(number_format($amount / 1000000000000, 2, ',', '.'), '0'), ',') . ' ' . $this->lang->line('singkatan_triliun');
         } elseif ($amount >= 1000000000) {
-            return rtrim(rtrim(number_format($amount / 1000000000, 2, ',', '.'), '0'), ',') . ' M';
+            return rtrim(rtrim(number_format($amount / 1000000000, 2, ',', '.'), '0'), ',') . ' ' . $this->lang->line('singkatan_miliar');
         } elseif ($amount >= 1000000) {
-            return rtrim(rtrim(number_format($amount / 1000000, 2, ',', '.'), '0'), ',') . ' JT';
+            return rtrim(rtrim(number_format($amount / 1000000, 2, ',', '.'), '0'), ',') . ' ' . $this->lang->line('singkatan_juta');
         } elseif ($amount >= 1000) {
-            return rtrim(rtrim(number_format($amount / 1000, 2, ',', '.'), '0'), ',') . ' RB';
+            return rtrim(rtrim(number_format($amount / 1000, 2, ',', '.'), '0'), ',') . ' ' . $this->lang->line('singkatan_ribu');
         }
         return number_format($amount, 0, ',', '.');
     }
