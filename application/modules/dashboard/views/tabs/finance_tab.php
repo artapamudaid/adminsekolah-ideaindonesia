@@ -3,7 +3,7 @@
 
     <!-- Kolom 1: Ikhtisar Keuangan -->
     <div class="col-lg-4 col-md-6 col-sm-12">
-        <div class="box box-primary">
+        <div class="box box-primary" id="box_ikhtisar_keuangan">
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_financial_overview') ?></h3>
                 <div class="box-tools pull-right">
@@ -100,13 +100,13 @@
     <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title" id="title_arus_kas">Arus Kas 6 Bulan Terakhir</h3>
+                <h3 class="box-title" id="title_arus_kas" data-title-template="<?= htmlspecialchars($this->lang->line('dash_cash_flow_title')) ?>"><?= sprintf($this->lang->line('dash_cash_flow_title'), 6) ?></h3>
                 <div class="box-tools pull-right">
                     <select id="filter_arus_kas_bulan" class="form-control input-sm" style="width:auto; display:inline-block; font-size:11px; height:28px; padding:2px 8px;">
-                        <option value="3">3 Bulan</option>
-                        <option value="6" selected>6 Bulan</option>
-                        <option value="9">9 Bulan</option>
-                        <option value="12">12 Bulan</option>
+                        <option value="3"><?= sprintf($this->lang->line('dash_x_months'), 3) ?></option>
+                        <option value="6" selected><?= sprintf($this->lang->line('dash_x_months'), 6) ?></option>
+                        <option value="9"><?= sprintf($this->lang->line('dash_x_months'), 9) ?></option>
+                        <option value="12"><?= sprintf($this->lang->line('dash_x_months'), 12) ?></option>
                     </select>
                 </div>
             </div>

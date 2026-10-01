@@ -137,14 +137,13 @@
             chartIkhtisarInstance = new Chart(ctxDoughnut.getContext('2d'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Pemasukan', 'Pengeluaran', 'Saldo Akhir'],
+                    labels: ['Pemasukan', 'Pengeluaran'],
                     datasets: [{
                         data: [
                             <?= !empty($dummy_ikhtisar_doughnut['pemasukan']['val']) ? $dummy_ikhtisar_doughnut['pemasukan']['val'] : 0 ?>,
-                            <?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['val']) ? $dummy_ikhtisar_doughnut['pengeluaran']['val'] : 0 ?>,
-                            <?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['val']) ? abs($dummy_ikhtisar_doughnut['saldo_akhir']['val']) : 0 ?>
+                            <?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['val']) ? $dummy_ikhtisar_doughnut['pengeluaran']['val'] : 0 ?>
                         ],
-                        backgroundColor: ['#28a745', '#dc3545', '#007bff'],
+                        backgroundColor: ['#28a745', '#dc3545'],
                         borderWidth: 2
                     }]
                 },
@@ -182,6 +181,9 @@
                     year: selectedYear,
                     majors: selectedMajors
                 },
+                beforeSend: function() {
+                    $('#box_ikhtisar_keuangan').append('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
+                },
                 success: function(res) {
                     if (res) {
                         $('#ikhtisar_total_display').text(res.total_display);
@@ -195,12 +197,14 @@
                         if (chartIkhtisarInstance) {
                             chartIkhtisarInstance.data.datasets[0].data = [
                                 res.pemasukan.val,
-                                res.pengeluaran.val,
-                                Math.abs(res.saldo_akhir.val)
+                                res.pengeluaran.val
                             ];
                             chartIkhtisarInstance.update();
                         }
                     }
+                },
+                complete: function() {
+                    $('#box_ikhtisar_keuangan .overlay').remove();
                 }
             });
         });
@@ -291,7 +295,8 @@
 
         $('#filter_arus_kas_bulan').on('change', function() {
             var selectedBulan = $(this).val();
-            $('#title_arus_kas').text('Arus Kas ' + selectedBulan + ' Bulan Terakhir');
+            var titleTemplate = $('#title_arus_kas').data('title-template') || 'Arus Kas %s Bulan Terakhir';
+            $('#title_arus_kas').text(titleTemplate.replace('%s', selectedBulan));
 
             if (chartArusKasInstance && dummyArusKas[selectedBulan]) {
                 chartArusKasInstance.data.labels = dummyArusKas[selectedBulan].labels;

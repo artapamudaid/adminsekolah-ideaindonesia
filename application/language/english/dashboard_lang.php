@@ -54,6 +54,8 @@ $lang['dash_financial_overview'] = 'Financial Overview';
 $lang['dash_income'] = 'Income';
 $lang['dash_expense'] = 'Expense';
 $lang['dash_ending_balance'] = 'Ending Balance';
+$lang['dash_cash_flow_title'] = 'Cash Flow Last %s Months';
+$lang['dash_x_months'] = '%s Months';
 
 // tab kesiswaan
 $lang['dash_tab_student'] = 'Student';

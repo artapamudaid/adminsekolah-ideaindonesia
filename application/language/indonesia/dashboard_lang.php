@@ -54,6 +54,8 @@ $lang['dash_financial_overview'] = 'Tinjauan Keuangan';
 $lang['dash_income'] = 'Pemasukan';
 $lang['dash_expense'] = 'Pengeluaran';
 $lang['dash_ending_balance'] = 'Saldo Akhir';
+$lang['dash_cash_flow_title'] = 'Arus Kas %s Bulan Terakhir';
+$lang['dash_x_months'] = '%s Bulan';
 
 // tab kesiswaan
 $lang['dash_tab_student'] = 'Kesiswaan';

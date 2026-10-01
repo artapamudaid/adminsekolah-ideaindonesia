@@ -455,28 +455,7 @@ class Dashboard_set extends CI_Controller
                 'belum_lunas' => [4, 5, 2, 5, 1, 3],
                 'collection_rate' => [87.5, 83.3, 93.8, 84.4, 97.0, 90.6]
             ];
-            $data['dummy_arus_kas'] = [
-                3 => [
-                    'labels' => ['Maret', 'April', 'Mei'],
-                    'pemasukan' => [45000000, 52000000, 60000000],
-                    'pengeluaran' => [28000000, 31000000, 35000000],
-                ],
-                6 => [
-                    'labels' => ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'],
-                    'pemasukan' => [38000000, 42000000, 45000000, 52000000, 60000000, 58000000],
-                    'pengeluaran' => [25000000, 27000000, 28000000, 31000000, 35000000, 33000000],
-                ],
-                9 => [
-                    'labels' => ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September'],
-                    'pemasukan' => [38000000, 42000000, 45000000, 52000000, 60000000, 58000000, 65000000, 70000000, 68000000],
-                    'pengeluaran' => [25000000, 27000000, 28000000, 31000000, 35000000, 33000000, 40000000, 42000000, 39000000],
-                ],
-                12 => [
-                    'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-                    'pemasukan' => [38000000, 42000000, 45000000, 52000000, 60000000, 58000000, 65000000, 70000000, 68000000, 72000000, 75000000, 80000000],
-                    'pengeluaran' => [25000000, 27000000, 28000000, 31000000, 35000000, 33000000, 40000000, 42000000, 39000000, 45000000, 48000000, 50000000],
-                ]
-            ];
+            $data['dummy_arus_kas'] = $this->get_arus_kas_data($where_majors_v_laporan_jurnal);
 
 
 
@@ -489,6 +468,63 @@ class Dashboard_set extends CI_Controller
 
         $this->load->view('manage/layout', $data);
     }
+    private function get_arus_kas_data($where_majors_v_laporan_jurnal = "")
+    {
+        $months = [];
+        $month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+        $current_first = date('Y-m-01');
+
+        for ($i = 11; $i >= 0; $i--) {
+            $time = strtotime("$current_first -$i month");
+            $key = date('Y-m', $time);
+            $m = (int)date('n', $time);
+            $months[$key] = [
+                'label' => $month_names[$m],
+                'month' => $m,
+                'pemasukan' => 0,
+                'pengeluaran' => 0
+            ];
+        }
+
+        $start_date = date('Y-m-01', strtotime("$current_first -11 month"));
+        $end_date = date('Y-m-t');
+
+        $sql = "SELECT 
+                    DATE_FORMAT(tanggal, '%Y-%m') AS ym,
+                    SUM(penerimaan) AS pemasukan,
+                    SUM(pengeluaran) AS pengeluaran
+                FROM v_laporan_jurnal
+                WHERE tanggal >= '$start_date' AND tanggal <= '$end_date 23:59:59'
+                $where_majors_v_laporan_jurnal
+                GROUP BY DATE_FORMAT(tanggal, '%Y-%m')
+                ORDER BY ym ASC";
+
+        $query = $this->db->query($sql)->result_array();
+        foreach ($query as $row) {
+            if (isset($months[$row['ym']])) {
+                $months[$row['ym']]['pemasukan'] = (float)$row['pemasukan'];
+                $months[$row['ym']]['pengeluaran'] = (float)$row['pengeluaran'];
+            }
+        }
+
+        $all_months = array_values($months);
+        $total_count = count($all_months);
+
+        $result = [];
+        foreach ([3, 6, 9, 12] as $k) {
+            $slice = array_slice($all_months, max(0, $total_count - $k));
+            $result[$k] = [
+                'labels' => array_column($slice, 'label'),
+                'pemasukan' => array_column($slice, 'pemasukan'),
+                'pengeluaran' => array_column($slice, 'pengeluaran'),
+            ];
+        }
+
+        return $result;
+    }
+
+
 
     public function realisasi()
     {
@@ -497,6 +533,7 @@ class Dashboard_set extends CI_Controller
         $whereMajors = "";
 
         if ($umajors != 0) {
+
             $whereMajors = " AND majors_id = '$umajors'";
         }
 
@@ -938,37 +975,47 @@ class Dashboard_set extends CI_Controller
 
     private function get_ikhtisar_keuangan($month, $year, $where_majors = "")
     {
-        $query = $this->db->query("SELECT 
-            SUM(penerimaan) AS total_pemasukan,
-            SUM(pengeluaran) AS total_pengeluaran,
-            SUM(penerimaan - pengeluaran) AS saldo_akhir
+        $period = $this->db->query("SELECT period_start, period_end FROM period WHERE period_status = 1 LIMIT 1")->row_array();
+        if (!$period) {
+            $period_date_start = date('Y') . '-07-01';
+        } else {
+            $period_date_start = $period['period_start'] . '-07-01';
+        }
+
+        $last_day = date('Y-m-t', mktime(0, 0, 0, (int)$month, 1, (int)$year));
+
+        $query = $this->db->query("SELECT
+            SUM(CASE WHEN MONTH(tanggal) = '$month' AND YEAR(tanggal) = '$year' THEN penerimaan ELSE 0 END) AS pemasukan_bulan,
+            SUM(CASE WHEN MONTH(tanggal) = '$month' AND YEAR(tanggal) = '$year' THEN pengeluaran ELSE 0 END) AS pengeluaran_bulan,
+            SUM(CASE WHEN tanggal <= '$last_day' THEN penerimaan - pengeluaran ELSE 0 END) AS saldo_kumulatif
             FROM v_laporan_jurnal
-            WHERE MONTH(tanggal) = '$month' 
-            AND YEAR(tanggal) = '$year'
+            WHERE tanggal >= '$period_date_start'
             {$where_majors}
         ")->row_array();
 
-        $pemasukan = (float)($query['total_pemasukan'] ?? 0);
-        $pengeluaran = (float)($query['total_pengeluaran'] ?? 0);
-        $saldo = (float)($query['saldo_akhir'] ?? 0);
-        $total_all = $pemasukan + $pengeluaran + abs($saldo);
+        $pemasukan   = (float)($query['pemasukan_bulan']  ?? 0);
+        $pengeluaran = (float)($query['pengeluaran_bulan'] ?? 0);
+        $saldo       = (float)($query['saldo_kumulatif']  ?? 0);
+
+        // Doughnut: 2 slice (pemasukan vs pengeluaran bulan ini), center = saldo kumulatif
+        $total_chart = $pemasukan + $pengeluaran;
 
         return [
-            'total_display' => $this->format_short_amount($total_all),
+            'total_display' => $this->format_short_amount($saldo),
             'pemasukan' => [
                 'val'  => $pemasukan,
                 'text' => number_format($pemasukan, 0, ',', '.'),
-                'pct'  => ($total_all > 0 ? number_format(($pemasukan / $total_all) * 100, 1) : 0) . '%'
+                'pct'  => ($total_chart > 0 ? number_format(($pemasukan / $total_chart) * 100, 1) : 0) . '%'
             ],
             'pengeluaran' => [
                 'val'  => $pengeluaran,
                 'text' => number_format($pengeluaran, 0, ',', '.'),
-                'pct'  => ($total_all > 0 ? number_format(($pengeluaran / $total_all) * 100, 1) : 0) . '%'
+                'pct'  => ($total_chart > 0 ? number_format(($pengeluaran / $total_chart) * 100, 1) : 0) . '%'
             ],
             'saldo_akhir' => [
                 'val'  => $saldo,
                 'text' => number_format($saldo, 0, ',', '.'),
-                'pct'  => ($total_all > 0 ? number_format((abs($saldo) / $total_all) * 100, 1) : 0) . '%'
+                'pct'  => '100%'
             ]
         ];
     }
