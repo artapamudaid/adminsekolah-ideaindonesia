@@ -411,13 +411,10 @@ class Dashboard_set extends CI_Controller
             // arus kas
             $data['arus_kas'] = $this->get_arus_kas_data($where_majors_v_laporan_jurnal);
 
-            $data['dummy_tagihan_bulan'] = [
-                ['name' => 'SPP Kelas 7', 'progress' => 90, 'text' => '72/80', 'bar' => 'progress-bar-success'],
-                ['name' => 'SPP Kelas 8', 'progress' => 87, 'text' => '68/78', 'bar' => 'progress-bar-success'],
-                ['name' => 'SPP Kelas 9', 'progress' => 93, 'text' => '70/75', 'bar' => 'progress-bar-success'],
-                ['name' => 'Uang Pangkal', 'progress' => 50, 'text' => '5/10', 'bar' => 'progress-bar-warning'],
-                ['name' => 'Seragam', 'progress' => 67, 'text' => '40/60', 'bar' => 'progress-bar-info'],
-            ];
+            // tagihan bulan ini
+            $all_tagihan = $this->Dashboard_model->get_tagihan_bulan_ini($selected_majors);
+            $data['tagihan_bulan_ini'] = array_slice($all_tagihan, 0, 4);
+            $data['has_more_tagihan']  = count($all_tagihan) > 4;
 
             $data['dummy_transaksi'] = [
                 ['tgl' => '23 Mei 2025', 'desc' => 'Pembayaran SPP - Mei', 'kategori' => 'Pemasukan', 'nominal' => 'Rp 2.450.000', 'status' => 'Lunas', 'label' => 'label-success'],
@@ -778,6 +775,24 @@ class Dashboard_set extends CI_Controller
             'color' => '#007bff',
             'subcolor' => $trend_subcolor
         ];
+    }
+
+    public function ajax_tagihan_bulan_ini()
+    {
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+
+        if (empty($majors_id)) {
+            $majors_id = $this->session->userdata('umajorsid');
+            if ($majors_id == 0 && $this->input->get('m')) {
+                $majors_id = sanitizeStrict($this->input->get('m'));
+            }
+        }
+
+        $result = $this->Dashboard_model->get_tagihan_bulan_ini($majors_id);
+
+        header('Content-Type: application/json');
+        echo json_encode(['data' => $result]);
+        exit;
     }
 
     public function ajax_realisasi_akun()

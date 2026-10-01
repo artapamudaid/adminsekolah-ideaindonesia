@@ -206,6 +206,85 @@ class Dashboard_model extends CI_Model
     }
 
 
+
+    /**
+     * Get tagihan bulan ini dari tabel bulan.
+     * @param int|null $majors_id  filter unit (null = semua)
+     * @param int|null $limit      null = semua (untuk modal), angka = preview (untuk widget)
+     * @return array
+     */
+    public function get_tagihan_bulan_ini($majors_id = null, $limit = null)
+    {
+        $period = $this->db->query("SELECT period_id FROM period WHERE period_status = 1 LIMIT 1")->row_array();
+        $pr = $period ? (int)$period['period_id'] : 1;
+        $month_id = (int)date('n');
+
+        $umajors = $this->session->userdata('umajorsid');
+        if ($umajors != 0) {
+            $majors_id = $umajors;
+        }
+
+        $whereMajors = '';
+        if (!empty($majors_id) && $majors_id != 0) {
+            $m = (int)$majors_id;
+            $whereMajors = "AND s.majors_majors_id = '$m'";
+        }
+
+        $sql = "SELECT
+                    p.pos_name,
+                    m.majors_short_name,
+                    COUNT(b.bulan_id)                                                     AS total,
+                    SUM(CASE WHEN b.bulan_status = 1 THEN 1 ELSE 0 END)                  AS terbayar
+                FROM bulan b
+                JOIN payment py  ON py.payment_id        = b.payment_payment_id
+                JOIN pos p       ON p.pos_id             = py.pos_pos_id
+                JOIN student s   ON s.student_id         = b.student_student_id
+                JOIN majors m    ON m.majors_id          = s.majors_majors_id
+                WHERE py.period_period_id = $pr
+                  AND b.month_month_id   = $month_id
+                  AND s.student_status   = 1
+                  $whereMajors
+                GROUP BY p.pos_id, m.majors_id
+                ORDER BY p.pos_name ASC, m.majors_short_name ASC";
+
+        $rows = $this->db->query($sql)->result_array();
+        $show_unit = (empty($majors_id) || $majors_id == 0);
+
+        $result = [];
+        foreach ($rows as $r) {
+            $total    = (int)$r['total'];
+            $paid     = (int)$r['terbayar'];
+            $pct      = $total > 0 ? round($paid / $total * 100, 1) : 0;
+
+            if ($pct >= 75) {
+                $bar = 'progress-bar-success';
+            } elseif ($pct >= 50) {
+                $bar = 'progress-bar-info';
+            } elseif ($pct >= 25) {
+                $bar = 'progress-bar-warning';
+            } else {
+                $bar = 'progress-bar-danger';
+            }
+
+            $name = $r['pos_name'];
+            if ($show_unit) {
+                $name .= ' - ' . $r['majors_short_name'];
+            }
+
+            $result[] = [
+                'name'     => $name,
+                'progress' => $pct,
+                'text'     => $paid . '/' . $total,
+                'bar'      => $bar,
+                'total'    => $total,
+                'terbayar' => $paid,
+            ];
+        }
+
+        return $result;
+    }
+
+
     private function get_month(String $date = null)
     {
         $month_name = pretty_date($date, 'F', false);

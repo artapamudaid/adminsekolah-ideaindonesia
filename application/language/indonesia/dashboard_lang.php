@@ -47,6 +47,9 @@ $lang['dash_collection_rate'] = 'Collection Rate';
 $lang['dash_bill_paid'] = 'Tagihan Lunas';
 $lang['dash_student_savings'] = 'Tabungan Siswa';
 $lang['dash_total_savings'] = 'Total Tabungan';
+$lang['dash_monthly_bills'] = 'Tagihan Bulan Ini';
+$lang['dash_view_all'] = 'Lihat Semua';
+$lang['dash_modal_all_bills'] = 'Semua Tagihan Bulan Ini';
 
 // tab keuangan
 $lang['dash_tab_finance'] = 'Keuangan';

@@ -150,22 +150,25 @@
     <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title">Tagihan Bulan Ini</h3>
+                <h3 class="box-title"><?= $this->lang->line('dash_monthly_bills') ?: 'Tagihan Bulan Ini' ?></h3>
                 <div class="box-tools pull-right">
-                    <button class="btn btn-default btn-sm">Lihat Semua</button>
+                    <?php if (!empty($has_more_tagihan)): ?>
+                        <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#modal_tagihan_bulan_ini"><?= $this->lang->line('dash_view_all') ?: 'Lihat Semua' ?></button>
+                    <?php endif; ?>
                 </div>
             </div>
-            <div class="box-body" style="min-height: 200px;">
-                <?php if (!empty($dummy_tagihan_bulan)): foreach ($dummy_tagihan_bulan as $tg): ?>
+            <div class="box-body" style="min-height: 200px;" id="container_tagihan_bulan_ini">
+                <?php if (!empty($tagihan_bulan_ini)): foreach ($tagihan_bulan_ini as $tg): ?>
                         <div class="progress-group" style="margin-bottom: 8px;">
-                            <span class="progress-text" style="font-size: 11px;"><?= $tg['name'] ?></span>
+                            <span class="progress-text" style="font-size: 11px;"><?= html_escape($tg['name']) ?></span>
                             <span class="progress-number pull-right" style="font-size: 11px;"><b><?= $tg['text'] ?></b> (<?= $tg['progress'] ?>%)</span>
                             <div class="progress sm" style="margin-top: 3px; margin-bottom: 0; height: 8px;">
                                 <div class="progress-bar <?= $tg['bar'] ?>" style="width: <?= $tg['progress'] ?>%"></div>
                             </div>
                         </div>
-                <?php endforeach;
-                endif; ?>
+                <?php endforeach; else: ?>
+                    <p class="text-muted text-center" style="margin-top: 50px;">Tidak ada tagihan bulan ini</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -280,5 +283,29 @@
             </div>
         </div>
     </div>
+
+
+<!-- Modal Lihat Semua Tagihan Bulan Ini -->
+<div class="modal fade" id="modal_tagihan_bulan_ini" tabindex="-1" role="dialog" aria-labelledby="modalTagihanLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modalTagihanLabel"><?= $this->lang->line('dash_modal_all_bills'); ?></h4>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div id="modal_tagihan_loading" class="text-center" style="display: none; padding: 20px;">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                </div>
+                <div id="modal_tagihan_content">
+                    <!-- Loaded via AJAX -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </div>

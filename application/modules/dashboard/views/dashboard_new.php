@@ -507,6 +507,47 @@
                     }
                 }
             });
+
+        // Modal Tagihan Bulan Ini
+        $('#modal_tagihan_bulan_ini').on('show.bs.modal', function () {
+            var $loading = $('#modal_tagihan_loading');
+            var $content = $('#modal_tagihan_content');
+            
+            $loading.show();
+            $content.hide().empty();
+
+            var currentMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_tagihan_bulan_ini") ?>',
+                type: 'POST',
+                data: { majors_id: currentMajors },
+                dataType: 'json',
+                success: function (res) {
+                    $loading.hide();
+                    if (res && res.data && res.data.length > 0) {
+                        var html = '';
+                        $.each(res.data, function (i, item) {
+                            html += '<div class="progress-group" style="margin-bottom: 12px;">';
+                            html += '  <span class="progress-text" style="font-size: 12px; font-weight: bold;">' + item.name + '</span>';
+                            html += '  <span class="progress-number pull-right" style="font-size: 12px;"><b>' + item.text + '</b> (' + item.progress + '%)</span>';
+                            html += '  <div class="progress sm" style="margin-top: 5px; margin-bottom: 0; height: 10px;">';
+                            html += '    <div class="progress-bar ' + item.bar + '" style="width: ' + item.progress + '%"></div>';
+                            html += '  </div>';
+                            html += '</div>';
+                        });
+                        $content.html(html).show();
+                    } else {
+                        $content.html('<p class="text-muted text-center">Tidak ada data tagihan bulan ini.</p>').show();
+                    }
+                },
+                error: function () {
+                    $loading.hide();
+                    $content.html('<p class="text-danger text-center">Gagal mengambil data tagihan.</p>').show();
+                }
+            });
+        });
+
         }
     });
 </script>
