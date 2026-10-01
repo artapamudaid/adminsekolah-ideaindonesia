@@ -188,6 +188,13 @@
                         "className": "text-center"
                     }
                 ],
+                "createdRow": function(row, data, dataIndex) {
+                    if (dataIndex % 2 === 0) {
+                        $(row).css('background-color', '#a8e9f4');
+                        // $(row).addClass('bg-aqua-gradient');
+                        // $(row).addClass('bg-light-blue');
+                    }
+                },
                 "language": {
                     "emptyTable": "<?= $this->lang->line('dash_no_data') ?>",
                     "zeroRecords": "<?= $this->lang->line('dash_no_data') ?>"

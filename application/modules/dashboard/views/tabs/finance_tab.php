@@ -10,10 +10,11 @@
                     <div class="col-lg-3 col-md-4 col-sm-4 form-group">
                         <select class="form-control s2" id="filter_period_realisasi" style="width: 100%;">
                             <?php if (!empty($periods_list)): foreach ($periods_list as $per): ?>
-                                <option value="<?= $per['period_id'] ?>" <?= ($per['period_status'] == 1) ? 'selected' : '' ?>>
-                                    T.A. <?= $per['period_start'] ?>/<?= $per['period_end'] ?>
-                                </option>
-                            <?php endforeach; endif; ?>
+                                    <option value="<?= $per['period_id'] ?>" <?= ($per['period_status'] == 1) ? 'selected' : '' ?>>
+                                        T.A. <?= $per['period_start'] ?>/<?= $per['period_end'] ?>
+                                    </option>
+                            <?php endforeach;
+                            endif; ?>
                         </select>
                     </div>
                     <div class="col-lg-3 col-md-4 col-sm-4 form-group">
@@ -41,7 +42,7 @@
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped" id="table_realisasi_akun">
                                 <thead>
-                                    <tr>
+                                    <tr class="bg-gray">
                                         <th><?= $this->lang->line('dash_unit') ?></th>
                                         <th><?= $this->lang->line('dash_payment_account') ?></th>
                                         <th><?= $this->lang->line('dash_bill') ?></th>
@@ -51,7 +52,7 @@
                                     </tr>
                                 </thead>
                                 <tfoot>
-                                    <tr style="background-color: #f9f9f9; font-weight: bold;">
+                                    <tr>
                                         <th colspan="2" class="text-right">Total</th>
                                         <th class="text-right"></th>
                                         <th class="text-right"></th>
@@ -150,6 +151,9 @@
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title">Tagihan Bulan Ini</h3>
+                <div class="box-tools pull-right">
+                    <button class="btn btn-default btn-sm">Lihat Semua</button>
+                </div>
             </div>
             <div class="box-body" style="min-height: 200px;">
                 <?php if (!empty($dummy_tagihan_bulan)): foreach ($dummy_tagihan_bulan as $tg): ?>

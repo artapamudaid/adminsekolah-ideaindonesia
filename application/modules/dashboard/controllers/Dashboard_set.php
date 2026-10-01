@@ -462,8 +462,6 @@ class Dashboard_set extends CI_Controller
                 'collection_rate' => [87.5, 83.3, 93.8, 84.4, 97.0, 90.6]
             ];
 
-
-
             $data['title'] = 'Dashboard';
             $data['main'] = 'dashboard/dashboard_new';
         } else {
@@ -472,136 +470,6 @@ class Dashboard_set extends CI_Controller
         }
 
         $this->load->view('manage/layout', $data);
-    }
-    private function get_arus_kas_data($where_majors_v_laporan_jurnal = "")
-    {
-        $months = [];
-        $month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
-        $current_first = date('Y-m-01');
-
-        for ($i = 11; $i >= 0; $i--) {
-            $time = strtotime("$current_first -$i month");
-            $key = date('Y-m', $time);
-            $m = (int)date('n', $time);
-            $months[$key] = [
-                'label' => $month_names[$m],
-                'month' => $m,
-                'pemasukan' => 0,
-                'pengeluaran' => 0
-            ];
-        }
-
-        $start_date = date('Y-m-01', strtotime("$current_first -11 month"));
-        $end_date = date('Y-m-t');
-
-        $sql = "SELECT 
-                    DATE_FORMAT(tanggal, '%Y-%m') AS ym,
-                    SUM(penerimaan) AS pemasukan,
-                    SUM(pengeluaran) AS pengeluaran
-                FROM v_laporan_jurnal
-                WHERE tanggal >= '$start_date' AND tanggal <= '$end_date 23:59:59'
-                $where_majors_v_laporan_jurnal
-                GROUP BY DATE_FORMAT(tanggal, '%Y-%m')
-                ORDER BY ym ASC";
-
-        $query = $this->db->query($sql)->result_array();
-        foreach ($query as $row) {
-            if (isset($months[$row['ym']])) {
-                $months[$row['ym']]['pemasukan'] = (float)$row['pemasukan'];
-                $months[$row['ym']]['pengeluaran'] = (float)$row['pengeluaran'];
-            }
-        }
-
-        $all_months = array_values($months);
-        $total_count = count($all_months);
-
-        $result = [];
-        foreach ([3, 6, 9, 12] as $k) {
-            $slice = array_slice($all_months, max(0, $total_count - $k));
-            $result[$k] = [
-                'labels' => array_column($slice, 'label'),
-                'pemasukan' => array_column($slice, 'pemasukan'),
-                'pengeluaran' => array_column($slice, 'pengeluaran'),
-            ];
-        }
-
-        return $result;
-    }
-
-
-
-    public function ajax_realisasi_akun()
-    {
-        $period_id   = sanitizeStrict($this->input->post('period_id'));
-        $start_month = sanitizeStrict($this->input->post('start_month'));
-        $end_month   = sanitizeStrict($this->input->post('end_month'));
-        $majors_id   = sanitizeStrict($this->input->post('majors_id'));
-
-        if (empty($majors_id)) {
-            $majors_id = $this->session->userdata('umajorsid');
-            if ($majors_id == 0 && $this->input->get('m')) {
-                $majors_id = $this->input->get('m');
-            }
-        }
-
-        $result = $this->Dashboard_model->get_realisasi_akun_dt($period_id, $start_month, $end_month, $majors_id);
-
-        header('Content-Type: application/json');
-        echo json_encode(['data' => $result]);
-        exit;
-    }
-
-    public function export_realisasi_excel()
-    {
-        $period_id   = $this->input->get('period_id');
-        $start_month = $this->input->get('start_month');
-        $end_month   = $this->input->get('end_month');
-        $majors_id   = $this->input->get('majors_id');
-
-        if (empty($majors_id)) {
-            $majors_id = $this->session->userdata('umajorsid');
-        }
-
-        $data = $this->Dashboard_model->get_realisasi_akun_dt($period_id, $start_month, $end_month, $majors_id);
-
-        $filename = "Realisasi_Akun_Pembayaran_" . date('Ymd_His') . ".xls";
-
-        header("Content-Type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        header("Cache-Control: max-age=0");
-
-        echo '<table border="1">';
-        echo '<thead>';
-        echo '<tr style="background-color: #f4f6f9;">';
-        echo '<th>Unit</th>';
-        echo '<th>Akun Pembayaran</th>';
-        echo '<th>Tagihan</th>';
-        echo '<th>Terbayar</th>';
-        echo '<th>Belum Terbayar</th>';
-        echo '<th>Pencapaian (%)</th>';
-        echo '</tr>';
-        echo '</thead>';
-        echo '<tbody>';
-
-        if (!empty($data)) {
-            foreach ($data as $row) {
-                echo '<tr>';
-                echo '<td>' . htmlspecialchars($row['majors_short_name']) . '</td>';
-                echo '<td>' . htmlspecialchars($row['unit']) . '</td>';
-                echo '<td style="text-align: right;">' . number_format($row['tagihan_raw'], 0, ',', '.') . '</td>';
-                echo '<td style="text-align: right;">' . number_format($row['terbayar_raw'], 0, ',', '.') . '</td>';
-                echo '<td style="text-align: right;">' . number_format($row['belum_raw'], 0, ',', '.') . '</td>';
-                echo '<td style="text-align: right;">' . number_format($row['pencapaian_raw'], 1, ',', '.') . '%</td>';
-                echo '</tr>';
-            }
-        } else {
-            echo '<tr><td colspan="6" style="text-align: center;">Tidak ada data untuk ditampilkan</td></tr>';
-        }
-
-        echo '</tbody>';
-        echo '</table>';
-        exit;
     }
 
     public function realisasi_xls()
@@ -912,6 +780,79 @@ class Dashboard_set extends CI_Controller
         ];
     }
 
+    public function ajax_realisasi_akun()
+    {
+        $period_id   = sanitizeStrict($this->input->post('period_id'));
+        $start_month = sanitizeStrict($this->input->post('start_month'));
+        $end_month   = sanitizeStrict($this->input->post('end_month'));
+        $majors_id   = sanitizeStrict($this->input->post('majors_id'));
+
+        if (empty($majors_id)) {
+            $majors_id = $this->session->userdata('umajorsid');
+            if ($majors_id == 0 && $this->input->get('m')) {
+                $majors_id = $this->input->get('m');
+            }
+        }
+
+        $result = $this->Dashboard_model->get_realisasi_akun_dt($period_id, $start_month, $end_month, $majors_id);
+
+        header('Content-Type: application/json');
+        echo json_encode(['data' => $result]);
+        exit;
+    }
+
+    public function export_realisasi_excel()
+    {
+        $period_id   = $this->input->get('period_id');
+        $start_month = $this->input->get('start_month');
+        $end_month   = $this->input->get('end_month');
+        $majors_id   = $this->input->get('majors_id');
+
+        if (empty($majors_id)) {
+            $majors_id = $this->session->userdata('umajorsid');
+        }
+
+        $data = $this->Dashboard_model->get_realisasi_akun_dt($period_id, $start_month, $end_month, $majors_id);
+
+        $filename = "Realisasi_Akun_Pembayaran_" . date('Ymd_His') . ".xls";
+
+        header("Content-Type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=\"$filename\"");
+        header("Cache-Control: max-age=0");
+
+        echo '<table border="1">';
+        echo '<thead>';
+        echo '<tr style="background-color: #f4f6f9;">';
+        echo '<th>Unit</th>';
+        echo '<th>Akun Pembayaran</th>';
+        echo '<th>Tagihan</th>';
+        echo '<th>Terbayar</th>';
+        echo '<th>Belum Terbayar</th>';
+        echo '<th>Pencapaian (%)</th>';
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
+
+        if (!empty($data)) {
+            foreach ($data as $row) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($row['majors_short_name']) . '</td>';
+                echo '<td>' . htmlspecialchars($row['unit']) . '</td>';
+                echo '<td style="text-align: right;">' . number_format($row['tagihan_raw'], 0, ',', '.') . '</td>';
+                echo '<td style="text-align: right;">' . number_format($row['terbayar_raw'], 0, ',', '.') . '</td>';
+                echo '<td style="text-align: right;">' . number_format($row['belum_raw'], 0, ',', '.') . '</td>';
+                echo '<td style="text-align: right;">' . number_format($row['pencapaian_raw'], 1, ',', '.') . '%</td>';
+                echo '</tr>';
+            }
+        } else {
+            echo '<tr><td colspan="6" style="text-align: center;">Tidak ada data untuk ditampilkan</td></tr>';
+        }
+
+        echo '</tbody>';
+        echo '</table>';
+        exit;
+    }
+
     public function ajax_ikhtisar_keuangan()
     {
         $month = $this->input->post('month');
@@ -989,5 +930,61 @@ class Dashboard_set extends CI_Controller
             return rtrim(rtrim(number_format($amount / 1000, 2, ',', '.'), '0'), ',') . ' ' . $this->lang->line('singkatan_ribu');
         }
         return number_format($amount, 0, ',', '.');
+    }
+
+    private function get_arus_kas_data($where_majors_v_laporan_jurnal = "")
+    {
+        $months = [];
+        $month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+        $current_first = date('Y-m-01');
+
+        for ($i = 11; $i >= 0; $i--) {
+            $time = strtotime("$current_first -$i month");
+            $key = date('Y-m', $time);
+            $m = (int)date('n', $time);
+            $months[$key] = [
+                'label' => $month_names[$m],
+                'month' => $m,
+                'pemasukan' => 0,
+                'pengeluaran' => 0
+            ];
+        }
+
+        $start_date = date('Y-m-01', strtotime("$current_first -11 month"));
+        $end_date = date('Y-m-t');
+
+        $sql = "SELECT 
+                    DATE_FORMAT(tanggal, '%Y-%m') AS ym,
+                    SUM(penerimaan) AS pemasukan,
+                    SUM(pengeluaran) AS pengeluaran
+                FROM v_laporan_jurnal
+                WHERE tanggal >= '$start_date' AND tanggal <= '$end_date 23:59:59'
+                $where_majors_v_laporan_jurnal
+                GROUP BY DATE_FORMAT(tanggal, '%Y-%m')
+                ORDER BY ym ASC";
+
+        $query = $this->db->query($sql)->result_array();
+        foreach ($query as $row) {
+            if (isset($months[$row['ym']])) {
+                $months[$row['ym']]['pemasukan'] = (float)$row['pemasukan'];
+                $months[$row['ym']]['pengeluaran'] = (float)$row['pengeluaran'];
+            }
+        }
+
+        $all_months = array_values($months);
+        $total_count = count($all_months);
+
+        $result = [];
+        foreach ([3, 6, 9, 12] as $k) {
+            $slice = array_slice($all_months, max(0, $total_count - $k));
+            $result[$k] = [
+                'labels' => array_column($slice, 'label'),
+                'pemasukan' => array_column($slice, 'pemasukan'),
+                'pengeluaran' => array_column($slice, 'pengeluaran'),
+            ];
+        }
+
+        return $result;
     }
 }
