@@ -387,6 +387,81 @@ class Dashboard_model extends CI_Model
         ];
     }
 
+    /**
+     * Get 5 transaksi terbaru dari ltrx
+     * @param int|null $majors_id
+     * @param int $limit
+     * @return array
+     */
+    public function get_recent_transactions($majors_id = null, $limit = 5)
+    {
+        $this->db->select('l.ltrx_id, l.ltrx_date, l.ltrx_module, l.ltrx_action, l.ltrx_info, u.user_majors_id');
+        $this->db->from('ltrx l');
+        $this->db->join('users u', 'u.user_id = l.user_id', 'left');
+        $this->db->where_in('l.ltrx_module', ['Pembayaran', 'Penggajian', 'Kas Masuk', 'Kas Keluar']);
+
+        if (!empty($majors_id) && $majors_id != 0) {
+            $this->db->where('u.user_majors_id', (int)$majors_id);
+        }
+
+        $this->db->order_by('l.ltrx_id', 'DESC');
+        $this->db->limit((int)$limit);
+        $rows = $this->db->get()->result_array();
+
+        $result = [];
+        foreach ($rows as $r) {
+            $info = $r['ltrx_info'];
+            $desc = $info;
+            $nominal = 0;
+
+            if (strpos($info, 'Title:') !== false) {
+                $parts = explode('Title:', $info, 2);
+                $desc_part = trim($parts[1]);
+
+                if (strpos($desc_part, 'nominal') !== false) {
+                    $n_parts = explode('nominal', $desc_part, 2);
+                    $desc = trim(rtrim(trim($n_parts[0]), '-'));
+                    $nominal = (float) preg_replace('/[^0-9]/', '', $n_parts[1]);
+                } else {
+                    $desc = $desc_part;
+                }
+            } else if (strpos($info, 'nominal') !== false) {
+                $n_parts = explode('nominal', $info, 2);
+                $desc = trim(rtrim(trim($n_parts[0]), '-'));
+                $nominal = (float) preg_replace('/[^0-9]/', '', $n_parts[1]);
+            }
+
+            if (empty($desc)) {
+                $desc = $r['ltrx_action'] . ' - ' . $r['ltrx_module'];
+            }
+
+            $status = 'Selesai';
+            $label = 'label-success';
+            $action_lower = strtolower($r['ltrx_action']);
+
+            if (strpos($action_lower, 'hapus') !== false || strpos($action_lower, 'batal') !== false) {
+                $status = 'Dibatalkan';
+                $label = 'label-danger';
+            } else if (strpos($action_lower, 'edit') !== false || strpos($action_lower, 'ubah') !== false) {
+                $status = 'Diubah';
+                $label = 'label-warning';
+            }
+
+            $result[] = [
+                'tgl'      => pretty_date($r['ltrx_date'], 'd M Y H:i', false),
+                'desc'     => html_escape($desc),
+                'kategori' => html_escape($r['ltrx_module']),
+                'nominal'  => $nominal > 0 ? 'Rp ' . number_format($nominal, 0, ',', '.') : '-',
+                'status'   => $status,
+                'label'    => $label
+            ];
+        }
+
+        return $result;
+    }
+
+
+
     private function get_month(String $date = null)
     {
         $month_name = pretty_date($date, 'F', false);

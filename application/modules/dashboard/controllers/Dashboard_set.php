@@ -416,13 +416,8 @@ class Dashboard_set extends CI_Controller
             $data['tagihan_bulan_ini'] = array_slice($all_tagihan, 0, 4);
             $data['has_more_tagihan']  = count($all_tagihan) > 4;
 
-            $data['dummy_transaksi'] = [
-                ['tgl' => '23 Mei 2025', 'desc' => 'Pembayaran SPP - Mei', 'kategori' => 'Pemasukan', 'nominal' => 'Rp 2.450.000', 'status' => 'Lunas', 'label' => 'label-success'],
-                ['tgl' => '23 Mei 2025', 'desc' => 'Pembelian ATK', 'kategori' => 'Pengeluaran', 'nominal' => 'Rp 850.000', 'status' => 'Selesai', 'label' => 'label-default'],
-                ['tgl' => '22 Mei 2025', 'desc' => 'Setoran Tabungan', 'kategori' => 'Pemasukan', 'nominal' => 'Rp 1.250.000', 'status' => 'Lunas', 'label' => 'label-success'],
-                ['tgl' => '21 Mei 2025', 'desc' => 'Pembayaran Kegiatan', 'kategori' => 'Pemasukan', 'nominal' => 'Rp 750.000', 'status' => 'Lunas', 'label' => 'label-success'],
-                ['tgl' => '21 Mei 2025', 'desc' => 'Pembelian Buku', 'kategori' => 'Pengeluaran', 'nominal' => 'Rp 450.000', 'status' => 'Selesai', 'label' => 'label-primary'],
-            ];
+            // transaksi terbaru dari ltrx
+            $data['recent_transactions'] = $this->Dashboard_model->get_recent_transactions($selected_majors, 5);
 
             $data['dummy_aktivitas'] = [
                 ['icon' => 'fa-users bg-green', 'title' => 'Presensi Siswa', 'desc' => '315 siswa hadir hari ini', 'time' => '07:30'],

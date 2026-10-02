@@ -50,7 +50,7 @@ $lang['dash_total_savings'] = 'Total Savings';
 $lang['dash_monthly_bills'] = 'Bills This Month';
 $lang['dash_view_all'] = 'View All';
 $lang['dash_modal_all_bills'] = 'All Bills This Month';
-$lang['dash_top_5_savings'] = 'Top 5 Student Savings';
+$lang['dash_top_5_savings'] = '5 Students with the Biggest Savings';
 $lang['dash_savings_details'] = 'Student Savings Details';
 $lang['dash_no'] = 'No';
 $lang['dash_student_name'] = 'Student Name';
@@ -64,6 +64,13 @@ $lang['dash_note'] = 'Note';
 $lang['dash_balance'] = 'Balance';
 $lang['dash_total'] = 'Total';
 $lang['dash_final_balance'] = 'Final Balance';
+
+$lang['dash_recent_transactions'] = 'Recent Transactions';
+$lang['dash_no_transactions'] = 'No recent transactions';
+$lang['dash_category'] = 'Category';
+$lang['dash_status'] = 'Status';
+$lang['dash_description'] = 'Description';
+$lang['dash_date'] = 'Date';
 
 // tab keuangan
 $lang['dash_tab_finance'] = 'Finance';

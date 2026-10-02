@@ -224,32 +224,43 @@
     <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title">Transaksi Terbaru</h3>
+                <h3 class="box-title"><?= $this->lang->line('dash_recent_transactions') ?: 'Transaksi Terbaru' ?></h3>
                 <div class="box-tools pull-right">
-                    <button class="btn btn-default btn-sm">Lihat Semua</button>
+                    <a href="<?= site_url('manage/logs/trx_keuangan') ?>" class="btn btn-default btn-sm"><?= $this->lang->line('dash_view_all') ?: 'Lihat Semua' ?></a>
                 </div>
             </div>
             <div class="box-body no-padding" style="min-height: 200px;">
                 <div class="table-responsive">
-                    <table class="table table-condensed no-margin">
+                    <table class="table table-condensed table-striped table-hover no-margin">
                         <thead>
                             <tr>
-                                <th>Tanggal</th>
-                                <th>Deskripsi</th>
-                                <th>Nominal</th>
-                                <th>Status</th>
+                                <th><?= $this->lang->line('dash_date') ?: 'Tanggal' ?></th>
+                                <th><?= $this->lang->line('dash_description') ?: 'Deskripsi' ?></th>
+                                <th><?= $this->lang->line('dash_category') ?: 'Kategori' ?></th>
+                                <th><?= $this->lang->line('dash_nominal') ?: 'Nominal' ?></th>
+                                <th><?= $this->lang->line('dash_status') ?: 'Status' ?></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (!empty($dummy_transaksi)): foreach ($dummy_transaksi as $tr): ?>
+                            <?php
+                            if (!empty($recent_transactions)):
+                                foreach ($recent_transactions as $tr):
+                            ?>
                                     <tr>
-                                        <td style="font-size:11px;"><?= $tr['tgl'] ?></td>
+                                        <td style="font-size:11px; white-space:nowrap;"><?= $tr['tgl'] ?></td>
                                         <td style="font-size:11px;"><?= $tr['desc'] ?></td>
-                                        <td style="font-size:11px;"><?= $tr['nominal'] ?></td>
+                                        <td style="font-size:11px;"><span style="font-size:10px;"><?= $tr['kategori'] ?></span></td>
+                                        <td style="font-size:11px; white-space:nowrap;"><?= $tr['nominal'] ?></td>
                                         <td><span class="label <?= $tr['label'] ?>" style="font-size:10px;"><?= $tr['status'] ?></span></td>
                                     </tr>
-                            <?php endforeach;
-                            endif; ?>
+                                <?php
+                                endforeach;
+                            else:
+                                ?>
+                                <tr>
+                                    <td colspan="5" class="text-center" style="font-size:11px; padding: 15px;"><?= $this->lang->line('dash_no_transactions') ?: 'Tidak ada transaksi terbaru' ?></td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
