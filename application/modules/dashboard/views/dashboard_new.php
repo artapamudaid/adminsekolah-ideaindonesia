@@ -36,13 +36,15 @@
                         <span class="text-muted"><?= $this->lang->line('dash_summary') ?> <?= (isset($nama_unit) ? $nama_unit : '') ?></span>
                     </div>
                     <div class="col-lg-3 col-md-4 col-sm-5 col-xs-12">
-                        <select name="majors_id" id="select_majors" class="form-control" onchange="if(this.value){ window.location.href='?m='+this.value; } else { window.location.href='<?= site_url('manage') ?>'; }">
+                        <select name="majors_id" id="select_majors" class="form-control" <?= ($umajorsid != 0) ? 'disabled' : '' ?> onchange="if(this.value){ window.location.href='?m='+this.value; } else { window.location.href='<?= site_url('manage') ?>'; }">
                             <option value=""><?= $this->lang->line('dash_all_units') ?></option>
                             <?php
                             if (!empty($filter_majors)):
                                 foreach ($filter_majors as $maj):
+                                    // if user is tied to a specific major, only select that major, otherwise use $_GET['m']
+                                    $isSelected = ($umajorsid != 0) ? ($umajorsid == $maj['majors_id']) : (isset($_GET['m']) && $_GET['m'] == $maj['majors_id']);
                             ?>
-                                    <option value="<?= $maj['majors_id'] ?>" <?= (isset($_GET['m']) && $_GET['m'] == $maj['majors_id']) ? 'selected' : '' ?>>
+                                    <option value="<?= $maj['majors_id'] ?>" <?= $isSelected ? 'selected' : '' ?>>
                                         <?= !empty($maj['majors_short_name']) ? $maj['majors_short_name'] . ' - ' . $maj['majors_name'] : $maj['majors_name'] ?>
                                     </option>
                             <?php
@@ -110,6 +112,14 @@
                     <div class="tab-content">
                         <div class="tab-pane active" id="finance-tab">
                             <?= $this->load->view('tabs/finance_tab'); ?>
+                        </div>
+
+                        <div class="tab-pane" id="student-tab">
+                            <?= $this->load->view('tabs/student_tab'); ?>
+                        </div>
+
+                        <div class="tab-pane" id="employee-tab">
+                            <?= $this->load->view('tabs/employee_tab'); ?>
                         </div>
 
                         <div class="tab-pane" id="academic-tab">
@@ -255,8 +265,8 @@
                     labels: ['Pemasukan', 'Pengeluaran'],
                     datasets: [{
                         data: [
-                            <?= !empty($dummy_ikhtisar_doughnut['pemasukan']['val']) ? $dummy_ikhtisar_doughnut['pemasukan']['val'] : 0 ?>,
-                            <?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['val']) ? $dummy_ikhtisar_doughnut['pengeluaran']['val'] : 0 ?>
+                            <?= !empty($ikhtisar_doughnut['pemasukan']['val']) ? $ikhtisar_doughnut['pemasukan']['val'] : 0 ?>,
+                            <?= !empty($ikhtisar_doughnut['pengeluaran']['val']) ? $ikhtisar_doughnut['pengeluaran']['val'] : 0 ?>
                         ],
                         backgroundColor: ['#28a745', '#dc3545'],
                         borderWidth: 2

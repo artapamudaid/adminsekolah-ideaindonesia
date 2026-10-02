@@ -314,7 +314,6 @@ class Dashboard_set extends CI_Controller
 
     public function index()
     {
-
         $id = $this->session->userdata('uid');
         $uRole = $this->session->userdata('uroleid');
         $umajorsid = $this->session->userdata('umajorsid');
@@ -326,60 +325,19 @@ class Dashboard_set extends CI_Controller
                 $selected_majors = (int)$get_majors;
             }
         }
-        /*
-        Array
-        (
-            [__ci_last_regenerate] => 1790915742
-            [logged] => 1
-            [uid] => 2
-            [uemail] => ts@indoweb.id
-            [ufullname] => Technical Support Indoweb.id
-            [uroleid] => 1
-            [umajorsid] => 0
-            [umajorsname] => 
-            [urolename] => ADMIN
-            [user_image] => 
-            [suspend_date] => 2027-07-16
-            [user_password_last_update] => 
-            [user_input_date] => 2024-07-17 06:43:46
-            [site_lang] => english
-        )
-        Array
-        (
-            [__ci_last_regenerate] => 1790916019
-            [logged] => 1
-            [uid] => 11
-            [uemail] => rashofamarwa2026@gmail.com
-            [ufullname] => Tri Mulyanti
-            [uroleid] => 9
-            [umajorsid] => 2
-            [umajorsname] => Raudlatul Athfal
-            [urolename] => MANAGER PENDIDIKAN
-            [user_image] => 
-            [suspend_date] => 2027-07-16
-            [user_password_last_update] => 2026-10-01 08:29:15
-            [user_input_date] => 2026-07-24 06:40:52
-        )
-        */
-        // pre($this->session->userdata());
-        // die;
 
         // NOTES: Custom condition by majors on specific logic
-        $widget_jumlah_siswa_title = $this->lang->line('dash_student_per_level');
         $where_majors_v_laporan_jurnal = "";
         $where_majors_student = "";
         $where_majors_employee = "";
         $where_majors_class = "";
         $where_majors_banking = "";
-        $whereMajors = "";
         if ($selected_majors != 0) {
-            $widget_jumlah_siswa_title = 'Jumlah Siswa Unit ' . $this->mapping_singkatan_unit($selected_majors);
             $where_majors_v_laporan_jurnal = "AND idMajors = '$selected_majors'";
             $where_majors_student = "AND majors_majors_id = '$selected_majors'";
             $where_majors_employee = "AND employee_majors_id = '$selected_majors'";
             $where_majors_class = "AND majors_majors_id = '$selected_majors'";
             $where_majors_banking = "AND s.majors_majors_id = '$selected_majors'";
-            $whereMajors = " AND majors_id = '$selected_majors'";
         }
 
         $hasDashboard = false;
@@ -407,6 +365,7 @@ class Dashboard_set extends CI_Controller
             }
 
             $data['selected_majors'] = $selected_majors;
+            $data['umajorsid'] = $umajorsid;
 
             // Top Metrics
             $data['top_metrics'] = [
@@ -425,7 +384,7 @@ class Dashboard_set extends CI_Controller
             $data['ikhtisar_period'] = $period;
             $data['ikhtisar_month']  = $ikhtisar_month;
             $data['ikhtisar_year']   = $ikhtisar_year;
-            $data['dummy_ikhtisar_doughnut'] = $this->get_ikhtisar_keuangan($ikhtisar_month, $ikhtisar_year, $where_majors_v_laporan_jurnal);
+            $data['ikhtisar_doughnut'] = $this->get_ikhtisar_keuangan($ikhtisar_month, $ikhtisar_year, $where_majors_v_laporan_jurnal);
 
             // arus kas
             $data['arus_kas'] = $this->get_arus_kas_data($where_majors_v_laporan_jurnal);
@@ -437,19 +396,17 @@ class Dashboard_set extends CI_Controller
 
             // chart spp
             $data['spp_chart'] = $this->Dashboard_model->get_spp_chart_data($selected_majors);
-            $data['dummy_spp_chart'] = $data['spp_chart'];
             $spp_data_count = count($data['spp_chart']['labels'] ?? []);
-            
+
             $data['spp_chart_col_class'] = ($spp_data_count > 6) ? 'col-lg-12 col-md-12 col-sm-12' : 'col-lg-4 col-md-12 col-sm-12';
             $data['other_widget_col_class'] = ($spp_data_count > 6) ? 'col-lg-6 col-md-6 col-sm-12' : 'col-lg-4 col-md-6 col-sm-12';
-            
+
             if ($selected_majors != 0) {
-                $majors_short = $this->mapping_singkatan_unit($selected_majors);
+                $majors_short = $this->mapping_singkatan_unit($selected_majors, true);
                 $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' ' . $majors_short : 'Grafik Pembayaran (SPP) ' . $majors_short;
             } else {
                 $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' Per Unit' : 'Grafik Pembayaran (SPP) Per Unit';
             }
-
 
             // transaksi terbaru dari ltrx
             $data['recent_transactions'] = $this->Dashboard_model->get_recent_transactions($selected_majors, 4);
@@ -483,6 +440,7 @@ class Dashboard_set extends CI_Controller
         } else {
             $data['title'] = 'Dashboard';
             $data['main'] = 'dashboard/dashboard_employees';
+            $data['umajorsid'] = $umajorsid;
         }
 
         $this->load->view('manage/layout', $data);
@@ -549,11 +507,11 @@ class Dashboard_set extends CI_Controller
         return $round;
     }
 
-    private function mapping_singkatan_unit(String $unit = null)
+    private function mapping_singkatan_unit($unit = null, $full = false)
     {
-        $majors = $this->db->query("SELECT majors_id, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
+        $majors = $this->db->query("SELECT majors_id, majors_short_name, majors_name FROM majors WHERE majors_status = 1")->result_array();
 
-        $mapping = array_column($majors, 'majors_short_name', 'majors_id');
+        $mapping = array_column($majors, $full ? 'majors_name' : 'majors_short_name', 'majors_id');
 
         return isset($mapping[$unit]) ? $mapping[$unit] : $unit;
     }

@@ -113,7 +113,7 @@
                             <canvas id="Chart_ikhtisarDoughnut"></canvas>
                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
                                 <span style="font-size: 10px; color: #888; display: block; line-height: 1;">Total</span>
-                                <strong id="ikhtisar_total_display" style="font-size: 13px; color: #333; line-height: 1.2; display: block; margin-top: 2px;"><?= !empty($dummy_ikhtisar_doughnut['total_display']) ? $dummy_ikhtisar_doughnut['total_display'] : '0' ?></strong>
+                                <strong id="ikhtisar_total_display" style="font-size: 13px; color: #333; line-height: 1.2; display: block; margin-top: 2px;"><?= !empty($ikhtisar_doughnut['total_display']) ? $ikhtisar_doughnut['total_display'] : '0' ?></strong>
                             </div>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                                 <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_income'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
-                                <span id="ikhtisar_pemasukan_text"><?= !empty($dummy_ikhtisar_doughnut['pemasukan']['text']) ? $dummy_ikhtisar_doughnut['pemasukan']['text'] : '0' ?></span> (<span id="ikhtisar_pemasukan_pct"><?= !empty($dummy_ikhtisar_doughnut['pemasukan']['pct']) ? $dummy_ikhtisar_doughnut['pemasukan']['pct'] : '0%' ?></span>)
+                                <span id="ikhtisar_pemasukan_text"><?= !empty($ikhtisar_doughnut['pemasukan']['text']) ? $ikhtisar_doughnut['pemasukan']['text'] : '0' ?></span> (<span id="ikhtisar_pemasukan_pct"><?= !empty($ikhtisar_doughnut['pemasukan']['pct']) ? $ikhtisar_doughnut['pemasukan']['pct'] : '0%' ?></span>)
                             </div>
                         </div>
                         <div style="margin-bottom: 12px;">
@@ -133,7 +133,7 @@
                                 <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_expense'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
-                                <span id="ikhtisar_pengeluaran_text"><?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['text']) ? $dummy_ikhtisar_doughnut['pengeluaran']['text'] : '0' ?></span> (<span id="ikhtisar_pengeluaran_pct"><?= !empty($dummy_ikhtisar_doughnut['pengeluaran']['pct']) ? $dummy_ikhtisar_doughnut['pengeluaran']['pct'] : '0%' ?></span>)
+                                <span id="ikhtisar_pengeluaran_text"><?= !empty($ikhtisar_doughnut['pengeluaran']['text']) ? $ikhtisar_doughnut['pengeluaran']['text'] : '0' ?></span> (<span id="ikhtisar_pengeluaran_pct"><?= !empty($ikhtisar_doughnut['pengeluaran']['pct']) ? $ikhtisar_doughnut['pengeluaran']['pct'] : '0%' ?></span>)
                             </div>
                         </div>
                         <div>
@@ -142,7 +142,7 @@
                                 <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_final_balance'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
-                                <span id="ikhtisar_saldo_text"><?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['text']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['text'] : '0' ?></span> (<span id="ikhtisar_saldo_pct"><?= !empty($dummy_ikhtisar_doughnut['saldo_akhir']['pct']) ? $dummy_ikhtisar_doughnut['saldo_akhir']['pct'] : '0%' ?></span>)
+                                <span id="ikhtisar_saldo_text"><?= !empty($ikhtisar_doughnut['saldo_akhir']['text']) ? $ikhtisar_doughnut['saldo_akhir']['text'] : '0' ?></span> (<span id="ikhtisar_saldo_pct"><?= !empty($ikhtisar_doughnut['saldo_akhir']['pct']) ? $ikhtisar_doughnut['saldo_akhir']['pct'] : '0%' ?></span>)
                             </div>
                         </div>
                     </div>
