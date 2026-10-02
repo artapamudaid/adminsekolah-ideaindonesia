@@ -390,7 +390,7 @@ class Dashboard_set extends CI_Controller
             $data['selected_majors'] = $selected_majors;
 
             // Top Metrics
-            $data['dummy_top_metrics'] = [
+            $data['top_metrics'] = [
                 $this->top_metrics_student($where_majors_student),
                 $this->top_metrics_teacher($where_majors_employee),
                 $this->top_metrics_class($where_majors_class),
@@ -417,7 +417,7 @@ class Dashboard_set extends CI_Controller
             $data['has_more_tagihan']  = count($all_tagihan) > 4;
 
             // transaksi terbaru dari ltrx
-            $data['recent_transactions'] = $this->Dashboard_model->get_recent_transactions($selected_majors, 5);
+            $data['recent_transactions'] = $this->Dashboard_model->get_recent_transactions($selected_majors, 4);
 
             $data['dummy_aktivitas'] = [
                 ['icon' => 'fa-users bg-green', 'title' => 'Presensi Siswa', 'desc' => '315 siswa hadir hari ini', 'time' => '07:30'],
@@ -667,7 +667,7 @@ class Dashboard_set extends CI_Controller
     {
         $period = $this->db->query("SELECT period_id FROM period WHERE period_status = 1")->row_array();
         $period_id = $period ? $period['period_id'] : 1;
-        $last_month_date = date('Y-m-d', strtotime('last day of previous month'));
+        $last_month_date = date('Y-m-d 23:59:59', strtotime('last day of previous month'));
 
         $where_student = $selected_majors != 0 ? "AND student.majors_majors_id = '{$selected_majors}'" : "";
 
@@ -682,7 +682,7 @@ class Dashboard_set extends CI_Controller
 
         $bulan_data = $this->db->query($sql_bulan)->row_array();
 
-        $where_bebas = $selected_majors != 0 ? "AND account.account_majors_id = '{$selected_majors}'" : "";
+        $where_bebas = $selected_majors != 0 ? "AND student.majors_majors_id = '{$selected_majors}'" : "";
 
         $sql_bebas = "SELECT 
             SUM(bebas.bebas_bill - bebas.bebas_diskon) as total_bill,
@@ -691,14 +691,12 @@ class Dashboard_set extends CI_Controller
              FROM bebas_pay bp 
              JOIN bebas b ON b.bebas_id = bp.bebas_bebas_id 
              JOIN payment p ON p.payment_id = b.payment_payment_id 
-             JOIN pos po ON po.pos_id = p.pos_pos_id
-             JOIN account a ON a.account_id = po.account_account_id
+             JOIN student s ON s.student_id = b.student_student_id
              WHERE p.period_period_id = '{$period_id}' AND bp.bebas_pay_input_date <= '{$last_month_date}'
-             " . ($selected_majors != 0 ? "AND a.account_majors_id = '{$selected_majors}'" : "") . ") as total_paid_last_month
+             " . ($selected_majors != 0 ? "AND s.majors_majors_id = '{$selected_majors}'" : "") . ") as total_paid_last_month
         FROM bebas
         JOIN payment ON payment.payment_id = bebas.payment_payment_id
-        JOIN pos ON pos.pos_id = payment.pos_pos_id
-        JOIN account ON account.account_id = pos.account_account_id
+        JOIN student ON student.student_id = bebas.student_student_id
         WHERE payment.period_period_id = '{$period_id}' {$where_bebas}";
 
         $bebas_data = $this->db->query($sql_bebas)->row_array();

@@ -65,8 +65,8 @@
 
         <div class="row">
             <?php
-            if (!empty($dummy_top_metrics)):
-                foreach ($dummy_top_metrics as $m):
+            if (!empty($top_metrics)):
+                foreach ($top_metrics as $m):
             ?>
                     <div class="col-lg-2 col-md-4 col-sm-6">
                         <div class="info-box" style="border-left: 4px solid <?= $m['color'] ?>;">
