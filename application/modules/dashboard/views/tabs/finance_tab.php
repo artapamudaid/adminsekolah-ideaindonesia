@@ -207,10 +207,10 @@
 <!-- 3 widget ketiga: 3 Kolom (Grafik Pembayaran SPP, Transaksi Terbaru, Tabungan Siswa) -->
 <div class="row">
     <!-- Kolom 1: Grafik Pembayaran (SPP) -->
-    <div class="col-lg-4 col-md-12 col-sm-12">
+    <div class="<?= $spp_chart_col_class ?? 'col-lg-4 col-md-12 col-sm-12' ?>">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title">Grafik Pembayaran (SPP)</h3>
+                <h3 class="box-title"><?= $spp_chart_title ?? 'Grafik Pembayaran (SPP)' ?></h3>
             </div>
             <div class="box-body" style="min-height: 200px;">
                 <div style="position: relative; height: 160px; width: 100%;">
@@ -221,7 +221,7 @@
     </div>
 
     <!-- Kolom 2: Transaksi Terbaru -->
-    <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="<?= $other_widget_col_class ?? 'col-lg-4 col-md-6 col-sm-12' ?>">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_recent_transactions') ?: 'Transaksi Terbaru' ?></h3>
@@ -269,7 +269,7 @@
     </div>
 
     <!-- Kolom 3: Top 5 Tabungan Siswa -->
-    <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="<?= $other_widget_col_class ?? 'col-lg-4 col-md-6 col-sm-12' ?>">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_top_5_savings') ?: '5 Siswa Tabungan Terbesar' ?></h3>

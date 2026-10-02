@@ -329,7 +329,7 @@ class Dashboard_set extends CI_Controller
         /*
         Array
         (
-            [__ci_last_regenerate] => 1790737293
+            [__ci_last_regenerate] => 1790915742
             [logged] => 1
             [uid] => 2
             [uemail] => ts@indoweb.id
@@ -342,8 +342,27 @@ class Dashboard_set extends CI_Controller
             [suspend_date] => 2027-07-16
             [user_password_last_update] => 
             [user_input_date] => 2024-07-17 06:43:46
+            [site_lang] => english
+        )
+        Array
+        (
+            [__ci_last_regenerate] => 1790916019
+            [logged] => 1
+            [uid] => 11
+            [uemail] => rashofamarwa2026@gmail.com
+            [ufullname] => Tri Mulyanti
+            [uroleid] => 9
+            [umajorsid] => 2
+            [umajorsname] => Raudlatul Athfal
+            [urolename] => MANAGER PENDIDIKAN
+            [user_image] => 
+            [suspend_date] => 2027-07-16
+            [user_password_last_update] => 2026-10-01 08:29:15
+            [user_input_date] => 2026-07-24 06:40:52
         )
         */
+        // pre($this->session->userdata());
+        // die;
 
         // NOTES: Custom condition by majors on specific logic
         $widget_jumlah_siswa_title = $this->lang->line('dash_student_per_level');
@@ -416,8 +435,28 @@ class Dashboard_set extends CI_Controller
             $data['tagihan_bulan_ini'] = array_slice($all_tagihan, 0, 4);
             $data['has_more_tagihan']  = count($all_tagihan) > 4;
 
+            // chart spp
+            $data['spp_chart'] = $this->Dashboard_model->get_spp_chart_data($selected_majors);
+            $data['dummy_spp_chart'] = $data['spp_chart'];
+            $spp_data_count = count($data['spp_chart']['labels'] ?? []);
+            
+            $data['spp_chart_col_class'] = ($spp_data_count > 6) ? 'col-lg-12 col-md-12 col-sm-12' : 'col-lg-4 col-md-12 col-sm-12';
+            $data['other_widget_col_class'] = ($spp_data_count > 6) ? 'col-lg-6 col-md-6 col-sm-12' : 'col-lg-4 col-md-6 col-sm-12';
+            
+            if ($selected_majors != 0) {
+                $majors_short = $this->mapping_singkatan_unit($selected_majors);
+                $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' ' . $majors_short : 'Grafik Pembayaran (SPP) ' . $majors_short;
+            } else {
+                $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' Per Unit' : 'Grafik Pembayaran (SPP) Per Unit';
+            }
+
+
             // transaksi terbaru dari ltrx
             $data['recent_transactions'] = $this->Dashboard_model->get_recent_transactions($selected_majors, 4);
+
+            // top 5 tabungan
+            $data['top_5_tabungan'] = $this->Dashboard_model->get_top_5_tabungan($selected_majors);
+            $data['show_unit_tabungan'] = (empty($selected_majors) || $selected_majors == 0);
 
             $data['dummy_aktivitas'] = [
                 ['icon' => 'fa-users bg-green', 'title' => 'Presensi Siswa', 'desc' => '315 siswa hadir hari ini', 'time' => '07:30'],
@@ -426,10 +465,6 @@ class Dashboard_set extends CI_Controller
                 ['icon' => 'fa-bullhorn bg-red', 'title' => 'Pengumuman Baru', 'desc' => 'Libur akhir semester', 'time' => '10:00'],
                 ['icon' => 'fa-file-text-o bg-blue', 'title' => 'Perizinan Siswa', 'desc' => '3 pengajuan izin', 'time' => '10:15'],
             ];
-
-            // top 5 tabungan
-            $data['top_5_tabungan'] = $this->Dashboard_model->get_top_5_tabungan($selected_majors);
-            $data['show_unit_tabungan'] = (empty($selected_majors) || $selected_majors == 0);
 
             $data['dummy_pengumuman'] = [
                 ['type' => 'Penting', 'label' => 'text-red', 'border' => 'border-color: red;', 'title' => 'Libur Akhir Semester', 'desc' => 'Kegiatan belajar mengajar diliburkan mulai tgl 1 - 7 Juni 2025.', 'date' => '23 Mei 2025', 'icon' => 'fa-bullhorn'],
@@ -441,13 +476,6 @@ class Dashboard_set extends CI_Controller
                 ['time' => '07:30 - 09:00', 'title' => 'Matematika - Kelas 7A', 'desc' => 'Ruang 1 | Bpk. Andi', 'color' => 'bg-blue'],
                 ['time' => '09:15 - 10:45', 'title' => 'IPA - Kelas 8B', 'desc' => 'Ruang 2 | Ibu Rina', 'color' => 'bg-yellow'],
                 ['time' => '11:00 - 12:30', 'title' => 'Bahasa Inggris - Kelas 9A', 'desc' => 'Ruang 3 | Bpk. Dedi', 'color' => 'bg-purple'],
-            ];
-
-            $data['dummy_spp_chart'] = [
-                'labels' => ['Kelas 7A', 'Kelas 7B', 'Kelas 8A', 'Kelas 8B', 'Kelas 9A', 'Kelas 9B'],
-                'lunas' => [28, 25, 30, 27, 32, 29],
-                'belum_lunas' => [4, 5, 2, 5, 1, 3],
-                'collection_rate' => [87.5, 83.3, 93.8, 84.4, 97.0, 90.6]
             ];
 
             $data['title'] = 'Dashboard';

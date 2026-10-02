@@ -472,11 +472,11 @@
             new Chart(ctxSpp.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: <?= !empty($dummy_spp_chart['labels']) ? json_encode($dummy_spp_chart['labels']) : json_encode(['Kelas 7A', 'Kelas 7B', 'Kelas 8A', 'Kelas 8B', 'Kelas 9A', 'Kelas 9B']) ?>,
+                    labels: <?= json_encode($spp_chart['labels'] ?? []) ?>,
                     datasets: [{
                             label: 'Collection Rate (%)',
                             type: 'line',
-                            data: <?= !empty($dummy_spp_chart['collection_rate']) ? json_encode($dummy_spp_chart['collection_rate']) : json_encode([87.5, 83.3, 93.8, 84.4, 97.0, 90.6]) ?>,
+                            data: <?= json_encode($spp_chart['collection_rate'] ?? []) ?>,
                             borderColor: '#007bff',
                             backgroundColor: 'transparent',
                             pointBackgroundColor: '#007bff',
@@ -486,16 +486,16 @@
                             borderWidth: 2
                         },
                         {
-                            label: 'Lunas',
+                            label: '<?= $this->lang->line('dash_lunas') ?: 'Lunas' ?>',
                             type: 'bar',
-                            data: <?= !empty($dummy_spp_chart['lunas']) ? json_encode($dummy_spp_chart['lunas']) : json_encode([28, 25, 30, 27, 32, 29]) ?>,
+                            data: <?= json_encode($spp_chart['lunas'] ?? []) ?>,
                             backgroundColor: '#28a745',
                             yAxisID: 'y-axis-count'
                         },
                         {
-                            label: 'Belum Lunas',
+                            label: '<?= $this->lang->line('dash_belum_lunas') ?: 'Belum Lunas' ?>',
                             type: 'bar',
-                            data: <?= !empty($dummy_spp_chart['belum_lunas']) ? json_encode($dummy_spp_chart['belum_lunas']) : json_encode([4, 5, 2, 5, 1, 3]) ?>,
+                            data: <?= json_encode($spp_chart['belum_lunas'] ?? []) ?>,
                             backgroundColor: '#dc3545',
                             yAxisID: 'y-axis-count'
                         }

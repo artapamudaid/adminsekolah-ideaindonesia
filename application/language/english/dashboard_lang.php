@@ -71,6 +71,9 @@ $lang['dash_category'] = 'Category';
 $lang['dash_status'] = 'Status';
 $lang['dash_description'] = 'Description';
 $lang['dash_date'] = 'Date';
+$lang['dash_spp_chart_title'] = 'SPP Payment Chart';
+$lang['dash_lunas'] = 'Paid';
+$lang['dash_belum_lunas'] = 'Unpaid';
 
 // tab keuangan
 $lang['dash_tab_finance'] = 'Finance';

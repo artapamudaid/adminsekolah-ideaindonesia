@@ -71,6 +71,9 @@ $lang['dash_category'] = 'Kategori';
 $lang['dash_status'] = 'Status';
 $lang['dash_description'] = 'Deskripsi';
 $lang['dash_date'] = 'Tanggal';
+$lang['dash_spp_chart_title'] = 'Grafik Pembayaran (SPP)';
+$lang['dash_lunas'] = 'Lunas';
+$lang['dash_belum_lunas'] = 'Belum Lunas';
 
 // tab keuangan
 $lang['dash_tab_finance'] = 'Keuangan';

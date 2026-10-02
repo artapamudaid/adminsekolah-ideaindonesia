@@ -205,6 +205,75 @@ class Dashboard_model extends CI_Model
         return $result;
     }
 
+    /**
+     * Get data for Grafik Pembayaran SPP (Total akumulasi SPP tiap Unit / Kelas)
+     */
+    public function get_spp_chart_data($majors_id = null)
+    {
+        $umajors = $this->session->userdata('umajorsid');
+        if ($umajors != 0) {
+            $majors_id = $umajors;
+        }
+
+        $is_filtered = (!empty($majors_id) && $majors_id != 0);
+
+        if ($is_filtered) {
+            $sql = "SELECT 
+                        c.class_name as label,
+                        SUM(CASE WHEN b.bulan_status = 1 THEN 1 ELSE 0 END) as lunas,
+                        SUM(CASE WHEN b.bulan_status = 0 THEN 1 ELSE 0 END) as belum_lunas
+                    FROM bulan b
+                    JOIN payment p ON p.payment_id = b.payment_payment_id
+                    JOIN student s ON s.student_id = b.student_student_id
+                    JOIN class c ON c.class_id = s.class_class_id
+                    JOIN period per ON per.period_id = p.period_period_id AND per.period_status = 1
+                    WHERE p.payment_type = 'BULAN' 
+                      AND s.majors_majors_id = " . (int)$majors_id . " 
+                      AND s.student_status = 1
+                    GROUP BY c.class_id, c.class_name
+                    ORDER BY c.class_name ASC";
+        } else {
+            $sql = "SELECT 
+                        m.majors_short_name as label,
+                        SUM(CASE WHEN b.bulan_status = 1 THEN 1 ELSE 0 END) as lunas,
+                        SUM(CASE WHEN b.bulan_status = 0 THEN 1 ELSE 0 END) as belum_lunas
+                    FROM bulan b
+                    JOIN payment p ON p.payment_id = b.payment_payment_id
+                    JOIN student s ON s.student_id = b.student_student_id
+                    JOIN majors m ON m.majors_id = s.majors_majors_id
+                    JOIN period per ON per.period_id = p.period_period_id AND per.period_status = 1
+                    WHERE p.payment_type = 'BULAN' 
+                      AND s.student_status = 1
+                    GROUP BY m.majors_id, m.majors_short_name
+                    ORDER BY m.majors_id ASC";
+        }
+
+        $query = $this->db->query($sql)->result_array();
+
+        $data = [
+            'labels' => [],
+            'lunas' => [],
+            'belum_lunas' => [],
+            'collection_rate' => []
+        ];
+
+        foreach ($query as $row) {
+            $label = $row['label'];
+            $lunas = (int)$row['lunas'];
+            $belum_lunas = (int)$row['belum_lunas'];
+            
+            $total = $lunas + $belum_lunas;
+            $rate = ($total > 0) ? round(($lunas / $total) * 100, 1) : 0;
+
+            $data['labels'][] = $label;
+            $data['lunas'][] = $lunas;
+            $data['belum_lunas'][] = $belum_lunas;
+            $data['collection_rate'][] = $rate;
+        }
+
+        return $data;
+    }
+
 
 
     /**
