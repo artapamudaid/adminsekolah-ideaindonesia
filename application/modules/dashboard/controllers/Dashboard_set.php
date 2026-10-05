@@ -104,64 +104,6 @@ class Dashboard_set extends CI_Controller
                 $this->top_metrics_tabungan($where_majors_banking)
             ];
 
-            // Ikhtisar Keuangan
-            $ikhtisar_month = date('n');
-            $ikhtisar_year  = date('Y');
-            $period = $this->db->query("SELECT period_start, period_end FROM period WHERE period_status = 1 LIMIT 1")->row_array();
-            $data['ikhtisar_period'] = $period;
-            $data['ikhtisar_month']  = $ikhtisar_month;
-            $data['ikhtisar_year']   = $ikhtisar_year;
-            $data['ikhtisar_doughnut'] = $this->get_ikhtisar_keuangan($ikhtisar_month, $ikhtisar_year, $where_majors_v_laporan_jurnal);
-
-            // arus kas
-            $data['arus_kas'] = $this->get_arus_kas_data($where_majors_v_laporan_jurnal);
-
-            // tagihan bulan ini
-            $all_tagihan = $this->Dashboard_model->get_tagihan_bulan_ini($selected_majors);
-            $data['tagihan_bulan_ini'] = array_slice($all_tagihan, 0, 4);
-            $data['has_more_tagihan']  = count($all_tagihan) > 4;
-
-            // chart spp
-            $data['spp_chart'] = $this->Dashboard_model->get_spp_chart_data($selected_majors);
-            $spp_data_count = count($data['spp_chart']['labels'] ?? []);
-
-            $data['spp_chart_col_class'] = ($spp_data_count > 6) ? 'col-lg-12 col-md-12 col-sm-12' : 'col-lg-4 col-md-12 col-sm-12';
-            $data['other_widget_col_class'] = ($spp_data_count > 6) ? 'col-lg-6 col-md-6 col-sm-12' : 'col-lg-4 col-md-6 col-sm-12';
-
-            if ($selected_majors != 0) {
-                $majors_short = $this->mapping_singkatan_unit($selected_majors, true);
-                $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' ' . $majors_short : 'Grafik Pembayaran (SPP) ' . $majors_short;
-            } else {
-                $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' Per Unit' : 'Grafik Pembayaran (SPP) Per Unit';
-            }
-
-            // transaksi terbaru dari ltrx
-            $data['recent_transactions'] = $this->Dashboard_model->get_recent_transactions($selected_majors, 5);
-
-            // top 5 tabungan
-            $data['top_5_tabungan'] = $this->Dashboard_model->get_top_5_tabungan($selected_majors);
-            $data['show_unit_tabungan'] = (empty($selected_majors) || $selected_majors == 0);
-
-            $data['dummy_aktivitas'] = [
-                ['icon' => 'fa-users bg-green', 'title' => 'Presensi Siswa', 'desc' => '315 siswa hadir hari ini', 'time' => '07:30'],
-                ['icon' => 'fa-book bg-blue', 'title' => 'Jurnal Mengajar', 'desc' => '14 guru mengisi jurnal', 'time' => '08:15'],
-                ['icon' => 'fa-money bg-yellow', 'title' => 'Pembayaran Diterima', 'desc' => '12 transaksi pembayaran', 'time' => '09:20'],
-                ['icon' => 'fa-bullhorn bg-red', 'title' => 'Pengumuman Baru', 'desc' => 'Libur akhir semester', 'time' => '10:00'],
-                ['icon' => 'fa-file-text-o bg-blue', 'title' => 'Perizinan Siswa', 'desc' => '3 pengajuan izin', 'time' => '10:15'],
-            ];
-
-            $data['dummy_pengumuman'] = [
-                ['type' => 'Penting', 'label' => 'text-red', 'border' => 'border-color: red;', 'title' => 'Libur Akhir Semester', 'desc' => 'Kegiatan belajar mengajar diliburkan mulai tgl 1 - 7 Juni 2025.', 'date' => '23 Mei 2025', 'icon' => 'fa-bullhorn'],
-                ['type' => 'Info', 'label' => 'text-blue', 'border' => 'border-color: blue;', 'title' => 'Pembayaran SPP Bulan Juni', 'desc' => 'Diharapkan seluruh wali siswa melakukan pembayaran sebelum tgl 10 Juni 2025.', 'date' => '22 Mei 2025', 'icon' => 'fa-info-circle'],
-            ];
-
-            $data['dummy_jadwal'] = [
-                ['time' => '07:00 - 07:30', 'title' => 'Upacara Bendera', 'desc' => 'Lapangan Sekolah', 'color' => 'bg-green'],
-                ['time' => '07:30 - 09:00', 'title' => 'Matematika - Kelas 7A', 'desc' => 'Ruang 1 | Bpk. Andi', 'color' => 'bg-blue'],
-                ['time' => '09:15 - 10:45', 'title' => 'IPA - Kelas 8B', 'desc' => 'Ruang 2 | Ibu Rina', 'color' => 'bg-yellow'],
-                ['time' => '11:00 - 12:30', 'title' => 'Bahasa Inggris - Kelas 9A', 'desc' => 'Ruang 3 | Bpk. Dedi', 'color' => 'bg-purple'],
-            ];
-
             $data['title'] = 'Dashboard';
             $data['main'] = 'dashboard/dashboard';
         } else {
@@ -171,6 +113,170 @@ class Dashboard_set extends CI_Controller
         }
 
         $this->load->view('manage/layout', $data);
+    }
+
+    private function _get_selected_majors()
+    {
+        $selected_majors = sanitizeStrict($this->input->get('m')) ?: 0;
+        $umajorsid = $this->session->userdata('umajorsid');
+        if ($umajorsid != 0) {
+            $selected_majors = $umajorsid;
+        }
+        return $selected_majors;
+    }
+
+    public function ajax_finance_ikhtisar()
+    {
+        session_write_close();
+        $selected_majors = $this->_get_selected_majors();
+        $where_majors_v_laporan_jurnal = $selected_majors != 0 ? "AND idMajors = '$selected_majors'" : "";
+        $ikhtisar_month = date('n');
+        $ikhtisar_year  = date('Y');
+        $data = $this->get_ikhtisar_keuangan($ikhtisar_month, $ikhtisar_year, $where_majors_v_laporan_jurnal);
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_finance_tagihan()
+    {
+        session_write_close();
+        $selected_majors = $this->_get_selected_majors();
+        $all_tagihan = $this->Dashboard_model->get_tagihan_bulan_ini($selected_majors);
+        $data['tagihan_bulan_ini'] = array_slice($all_tagihan, 0, 4);
+        $data['has_more_tagihan']  = count($all_tagihan) > 4;
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_finance_arus_kas()
+    {
+        session_write_close();
+        $selected_majors = $this->_get_selected_majors();
+        $where_majors_v_laporan_jurnal = $selected_majors != 0 ? "AND idMajors = '$selected_majors'" : "";
+        $data = $this->get_arus_kas_data($where_majors_v_laporan_jurnal);
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_finance_tab()
+    {
+        session_write_close();
+        $selected_majors = $this->_get_selected_majors();
+
+        $where_majors_v_laporan_jurnal = $selected_majors != 0 ? "AND idMajors = '$selected_majors'" : "";
+        $where_majors_banking = $selected_majors != 0 ? "AND s.majors_majors_id = '$selected_majors'" : "";
+
+        $data['selected_majors'] = $selected_majors;
+        $data['months_list'] = $this->db->query("SELECT month_id, month_name FROM month ORDER BY month_id ASC")->result_array();
+        $data['periods_list'] = $this->Period_model->get();
+
+        // Ikhtisar Keuangan
+        $ikhtisar_month = date('n');
+        $ikhtisar_year  = date('Y');
+        $period = $this->db->query("SELECT period_start, period_end FROM period WHERE period_status = 1 LIMIT 1")->row_array();
+        $data['ikhtisar_period'] = $period;
+        $data['ikhtisar_month']  = $ikhtisar_month;
+        $data['ikhtisar_year']   = $ikhtisar_year;
+        $data['ikhtisar_doughnut'] = $this->get_ikhtisar_keuangan($ikhtisar_month, $ikhtisar_year, $where_majors_v_laporan_jurnal);
+
+        // arus kas
+        $data['arus_kas'] = $this->get_arus_kas_data($where_majors_v_laporan_jurnal);
+
+        // tagihan bulan ini
+        $all_tagihan = $this->Dashboard_model->get_tagihan_bulan_ini($selected_majors);
+        $data['tagihan_bulan_ini'] = array_slice($all_tagihan, 0, 4);
+        $data['has_more_tagihan']  = count($all_tagihan) > 4;
+
+        // chart spp
+        $data['spp_chart'] = $this->Dashboard_model->get_spp_chart_data($selected_majors);
+        $spp_data_count = count($data['spp_chart']['labels'] ?? []);
+
+        $data['spp_chart_col_class'] = ($spp_data_count > 6) ? 'col-lg-12 col-md-12 col-sm-12' : 'col-lg-4 col-md-12 col-sm-12';
+        $data['other_widget_col_class'] = ($spp_data_count > 6) ? 'col-lg-6 col-md-6 col-sm-12' : 'col-lg-4 col-md-6 col-sm-12';
+
+        if ($selected_majors != 0) {
+            $majors_short = $this->mapping_singkatan_unit($selected_majors, true);
+            $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' ' . $majors_short : 'Grafik Pembayaran (SPP) ' . $majors_short;
+        } else {
+            $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' Per Unit' : 'Grafik Pembayaran (SPP) Per Unit';
+        }
+
+        // transaksi terbaru dari ltrx
+        $data['recent_transactions'] = $this->Dashboard_model->get_recent_transactions($selected_majors, 5);
+
+        // top 5 tabungan
+        $data['top_5_tabungan'] = $this->Dashboard_model->get_top_5_tabungan($selected_majors);
+        $data['show_unit_tabungan'] = (empty($selected_majors) || $selected_majors == 0);
+
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_finance_spp()
+    {
+        session_write_close();
+        $selected_majors = $this->_get_selected_majors();
+        $data['spp_chart'] = $this->Dashboard_model->get_spp_chart_data($selected_majors);
+        $spp_data_count = count($data['spp_chart']['labels'] ?? []);
+
+        $data['spp_chart_col_class'] = ($spp_data_count > 6) ? 'col-lg-12 col-md-12 col-sm-12' : 'col-lg-4 col-md-12 col-sm-12';
+        $data['other_widget_col_class'] = ($spp_data_count > 6) ? 'col-lg-6 col-md-6 col-sm-12' : 'col-lg-4 col-md-6 col-sm-12';
+
+        if ($selected_majors != 0) {
+            $majors_short = $this->mapping_singkatan_unit($selected_majors, true);
+            $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' ' . $majors_short : 'Grafik Pembayaran (SPP) ' . $majors_short;
+        } else {
+            $data['spp_chart_title'] = $this->lang->line('dash_spp_chart_title') ? $this->lang->line('dash_spp_chart_title') . ' Per Unit' : 'Grafik Pembayaran (SPP) Per Unit';
+        }
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_finance_recent_tr()
+    {
+        session_write_close();
+        $selected_majors = $this->_get_selected_majors();
+        $data = $this->Dashboard_model->get_recent_transactions($selected_majors, 5);
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_finance_top_tabungan()
+    {
+        session_write_close();
+        $selected_majors = $this->_get_selected_majors();
+        $data = $this->Dashboard_model->get_top_5_tabungan($selected_majors);
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_student_tab()
+    {
+        $data = [];
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_employee_tab()
+    {
+        $data = [];
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_academic_tab()
+    {
+        $data['dummy_aktivitas'] = [
+            ['icon' => 'fa-users bg-green', 'title' => 'Presensi Siswa', 'desc' => '315 siswa hadir hari ini', 'time' => '07:30'],
+            ['icon' => 'fa-book bg-blue', 'title' => 'Jurnal Mengajar', 'desc' => '14 guru mengisi jurnal', 'time' => '08:15'],
+            ['icon' => 'fa-money bg-yellow', 'title' => 'Pembayaran Diterima', 'desc' => '12 transaksi pembayaran', 'time' => '09:20'],
+            ['icon' => 'fa-bullhorn bg-red', 'title' => 'Pengumuman Baru', 'desc' => 'Libur akhir semester', 'time' => '10:00'],
+            ['icon' => 'fa-file-text-o bg-blue', 'title' => 'Perizinan Siswa', 'desc' => '3 pengajuan izin', 'time' => '10:15'],
+        ];
+
+        $data['dummy_pengumuman'] = [
+            ['type' => 'Penting', 'label' => 'text-red', 'border' => 'border-color: red;', 'title' => 'Libur Akhir Semester', 'desc' => 'Kegiatan belajar mengajar diliburkan mulai tgl 1 - 7 Juni 2025.', 'date' => '23 Mei 2025', 'icon' => 'fa-bullhorn'],
+            ['type' => 'Info', 'label' => 'text-blue', 'border' => 'border-color: blue;', 'title' => 'Pembayaran SPP Bulan Juni', 'desc' => 'Diharapkan seluruh wali siswa melakukan pembayaran sebelum tgl 10 Juni 2025.', 'date' => '22 Mei 2025', 'icon' => 'fa-info-circle'],
+        ];
+
+        $data['dummy_jadwal'] = [
+            ['time' => '07:00 - 07:30', 'title' => 'Upacara Bendera', 'desc' => 'Lapangan Sekolah', 'color' => 'bg-green'],
+            ['time' => '07:30 - 09:00', 'title' => 'Matematika - Kelas 7A', 'desc' => 'Ruang 1 | Bpk. Andi', 'color' => 'bg-blue'],
+            ['time' => '09:15 - 10:45', 'title' => 'IPA - Kelas 8B', 'desc' => 'Ruang 2 | Ibu Rina', 'color' => 'bg-yellow'],
+            ['time' => '11:00 - 12:30', 'title' => 'Bahasa Inggris - Kelas 9A', 'desc' => 'Ruang 3 | Bpk. Dedi', 'color' => 'bg-purple'],
+        ];
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
     public function get()

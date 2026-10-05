@@ -148,6 +148,9 @@
                     </div>
                 </div>
             </div>
+            <div class="overlay" id="overlay_ikhtisar">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
         </div>
     </div>
 
@@ -157,24 +160,16 @@
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_monthly_bills') ?: 'Tagihan Bulan Ini' ?></h3>
                 <div class="box-tools pull-right">
-                    <?php if (!empty($has_more_tagihan)): ?>
-                        <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#modal_tagihan_bulan_ini"><?= $this->lang->line('dash_view_all') ?: 'Lihat Semua' ?></button>
-                    <?php endif; ?>
+                    <div class="box-tools pull-right" id="tools_tagihan_bulan_ini">
+                        <!-- Loaded via JS -->
+                    </div>
                 </div>
             </div>
             <div class="box-body" style="min-height: 270px;" id="container_tagihan_bulan_ini">
-                <?php if (!empty($tagihan_bulan_ini)): foreach ($tagihan_bulan_ini as $tg): ?>
-                        <div class="progress-group" style="margin-bottom: 8px;">
-                            <span class="progress-text" style="font-size: 12px;"><?= html_escape($tg['name']) ?></span>
-                            <span class="progress-number pull-right" style="font-size: 12px;"><b><?= $tg['text'] ?></b> (<?= $tg['progress'] ?>%)</span>
-                            <div class="progress sm" style="margin-top: 3px; margin-bottom: 0; height: 8px;">
-                                <div class="progress-bar <?= $tg['bar'] ?>" style="width: <?= $tg['progress'] ?>%"></div>
-                            </div>
-                        </div>
-                    <?php endforeach;
-                else: ?>
-                    <p class="text-muted text-center" style="margin-top: 50px;">Tidak ada tagihan bulan ini</p>
-                <?php endif; ?>
+                <!-- Loaded via JS -->
+            </div>
+            <div class="overlay" id="overlay_tagihan">
+                <i class="fa fa-refresh fa-spin"></i>
             </div>
         </div>
     </div>
@@ -200,6 +195,9 @@
                     <canvas id="Chart_arusKas"></canvas>
                 </div>
             </div>
+            <div class="overlay" id="overlay_arus_kas">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
         </div>
     </div>
 </div>
@@ -207,21 +205,24 @@
 <!-- 3 widget ketiga: 3 Kolom (Grafik Pembayaran SPP, Transaksi Terbaru, Tabungan Siswa) -->
 <div class="row">
     <!-- Kolom 1: Grafik Pembayaran (SPP) -->
-    <div class="<?= $spp_chart_col_class ?? 'col-lg-4 col-md-12 col-sm-12' ?>">
+    <div class="col-lg-4 col-md-12 col-sm-12" id="box_spp_chart_wrapper">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title"><?= $spp_chart_title ?? 'Grafik Pembayaran (SPP)' ?></h3>
+                <h3 class="box-title" id="spp_chart_title_el">Grafik Pembayaran (SPP)</h3>
             </div>
             <div class="box-body" style="min-height: 270px;">
                 <div style="position: relative; height: 250px; width: 100%;">
                     <canvas id="Chart_pembayaranSPP"></canvas>
                 </div>
             </div>
+            <div class="overlay" id="overlay_spp">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
         </div>
     </div>
 
     <!-- Kolom 2: Transaksi Terbaru -->
-    <div class="<?= $other_widget_col_class ?? 'col-lg-4 col-md-6 col-sm-12' ?>">
+    <div class="col-lg-4 col-md-6 col-sm-12" id="box_recent_tr_wrapper">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_recent_transactions') ?: 'Transaksi Terbaru' ?></h3>
@@ -241,35 +242,20 @@
                                 <th><?= $this->lang->line('dash_status') ?: 'Status' ?></th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php
-                            if (!empty($recent_transactions)):
-                                foreach ($recent_transactions as $tr):
-                            ?>
-                                    <tr>
-                                        <td style="font-size:12px; white-space:nowrap;"><?= $tr['tgl'] ?></td>
-                                        <td style="font-size:12px;"><?= $tr['desc'] ?></td>
-                                        <td style="font-size:12px;"><span style="font-size:12px;"><?= $tr['kategori'] ?></span></td>
-                                        <td style="font-size:12px; white-space:nowrap;"><?= $tr['nominal'] ?></td>
-                                        <td><span class="label <?= $tr['label'] ?> label-xs"><?= $tr['status'] ?></span></td>
-                                    </tr>
-                                <?php
-                                endforeach;
-                            else:
-                                ?>
-                                <tr>
-                                    <td colspan="5" class="text-center" style="font-size:11px; padding: 15px;"><?= $this->lang->line('dash_no_transactions') ?: 'Tidak ada transaksi terbaru' ?></td>
-                                </tr>
-                            <?php endif; ?>
+                        <tbody id="tbody_recent_transactions">
+                            <!-- Loaded via JS -->
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div class="overlay" id="overlay_recent_tr">
+                <i class="fa fa-refresh fa-spin"></i>
             </div>
         </div>
     </div>
 
     <!-- Kolom 3: Top 5 Tabungan Siswa -->
-    <div class="<?= $other_widget_col_class ?? 'col-lg-4 col-md-6 col-sm-12' ?>">
+    <div class="col-lg-4 col-md-6 col-sm-12" id="box_top_5_tabungan_wrapper">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_top_5_savings') ?: '5 Siswa Tabungan Terbesar' ?></h3>
@@ -286,25 +272,14 @@
                                 <th class="text-right"><?= $this->lang->line('dash_nominal') ?: 'Saldo' ?></th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php if (!empty($top_5_tabungan)): $no = 1;
-                                foreach ($top_5_tabungan as $tb): ?>
-                                    <tr class="row-tabungan-siswa" data-student-id="<?= $tb['student_id'] ?>" style="cursor: pointer;" title="Klik untuk lihat detail transaksi">
-                                        <td class="text-center" style="font-size: 12px;"><?= $no++ ?></td>
-                                        <td style="font-size:12px; font-weight: 600;"><?= html_escape($tb['student_full_name']) ?></td>
-                                        <td class="text-center" style="font-size:12px;"><?= html_escape($tb['class_name'] ?: '-') ?></td>
-                                        <td class="text-center" style="font-size:12px;"><?= html_escape($tb['majors_short_name'] ?: '-') ?></td>
-                                        <td class="text-right" style="font-size:12px; font-weight: 600;">Rp <?= number_format($tb['total_saldo'], 0, ',', '.') ?></td>
-                                    </tr>
-                                <?php endforeach;
-                            else: ?>
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted"><?= $this->lang->line('dash_no_data'); ?></td>
-                                </tr>
-                            <?php endif; ?>
+                        <tbody id="tbody_top_5_tabungan">
+                            <!-- Loaded via JS -->
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div class="overlay" id="overlay_top_tabungan">
+                <i class="fa fa-refresh fa-spin"></i>
             </div>
         </div>
     </div>
@@ -394,3 +369,691 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        var selectedMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+
+        $('#select_majors').select2({
+            width: '100%',
+            theme: 'classic',
+        });
+
+        // 1. DataTables Realisasi Akun Pembayaran
+        if ($('#table_realisasi_akun').length) {
+            $('#filter_period_realisasi').select2({
+                width: '100%',
+                theme: 'classic'
+            });
+            $('#start_month').select2({
+                theme: 'classic',
+                width: '100%',
+            });
+            $('#end_month').select2({
+                theme: 'classic',
+                width: '100%'
+            });
+
+            var tableRealisasi = $('#table_realisasi_akun').DataTable({
+                "processing": true,
+                "serverSide": false,
+                "paging": false,
+                "ordering": false,
+                "info": false,
+                "searching": false,
+                "ajax": {
+                    "url": "<?= site_url('manage/dashboard/ajax_realisasi_akun') ?>",
+                    "type": "POST",
+                    "data": function(d) {
+                        d.period_id = $('#filter_period_realisasi').val();
+                        d.start_month = $('#start_month').val();
+                        d.end_month = $('#end_month').val();
+                        d.majors_id = selectedMajors;
+                    }
+                },
+                "columns": [{
+                        "data": "majors_short_name",
+                        "className": "text-center"
+                    },
+                    {
+                        "data": "unit"
+                    },
+                    {
+                        "data": "tagihan",
+                        "className": "text-right"
+                    },
+                    {
+                        "data": "terbayar",
+                        "className": "text-right"
+                    },
+                    {
+                        "data": "belum",
+                        "className": "text-right"
+                    },
+                    {
+                        "data": "pencapaian",
+                        "className": "text-center"
+                    }
+                ],
+                "createdRow": function(row, data, dataIndex) {
+                    if (dataIndex % 2 === 0) {
+                        $(row).css('background-color', '#a8e9f4');
+                        // $(row).addClass('bg-aqua-gradient');
+                        // $(row).addClass('bg-light-blue');
+                    }
+                },
+                "language": {
+                    "emptyTable": "<?= $this->lang->line('dash_no_data') ?>",
+                    "zeroRecords": "<?= $this->lang->line('dash_no_data') ?>"
+                },
+                "footerCallback": function(row, data, start, end, display) {
+                    var api = this.api();
+                    var sumCol = function(col) {
+                        return api.column(col).data().reduce(function(a, b) {
+                            var n = parseFloat(String(b).replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            return a + n;
+                        }, 0);
+                    };
+                    var tagihan = api.column(2).data().reduce(function(a, b) {
+                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                    }, 0);
+                    var terbayar = api.column(3).data().reduce(function(a, b) {
+                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                    }, 0);
+                    var belum = api.column(4).data().reduce(function(a, b) {
+                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                    }, 0);
+                    var pct = tagihan > 0 ? (terbayar / tagihan * 100).toFixed(1) : '0.0';
+
+                    var fmt = function(n) {
+                        return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    };
+                    $(api.column(2).footer()).html(fmt(tagihan));
+                    $(api.column(3).footer()).html(fmt(terbayar));
+                    $(api.column(4).footer()).html(fmt(belum));
+                    $(api.column(5).footer()).html('<span class="label ' + (pct >= 100 ? 'label-success' : pct >= 75 ? 'label-primary' : pct >= 50 ? 'label-warning' : 'label-danger') + '">' + pct.replace('.', ',') + '%</span>');
+                },
+                "bDestroy": true,
+                "responsive": true,
+                "autoWidth": false
+            });
+
+            $('#btn_filter_realisasi').on('click', function() {
+                tableRealisasi.ajax.reload();
+            });
+
+            $('#btn_export_realisasi').on('click', function(e) {
+                e.preventDefault();
+                var period_id = $('#filter_period_realisasi').val() || '';
+                var start_month = $('#start_month').val() || '';
+                var end_month = $('#end_month').val() || '';
+                var url = "<?= site_url('manage/dashboard/export_realisasi_excel') ?>?period_id=" + period_id + "&start_month=" + start_month + "&end_month=" + end_month;
+                window.open(url, '_blank');
+            });
+        }
+
+        // 2. Doughnut Chart: Ikhtisar Keuangan
+        var ctxDoughnut = document.getElementById("Chart_ikhtisarDoughnut");
+        var chartIkhtisarInstance = null;
+        if (ctxDoughnut) {
+            chartIkhtisarInstance = new Chart(ctxDoughnut.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pemasukan', 'Pengeluaran'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutoutPercentage: 61,
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var label = data.labels[tooltipItem.index] || '';
+                                var value = data.datasets[0].data[tooltipItem.index] || 0;
+                                return label + ': Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        $('#filter_bulan_ikhtisar').on('change', function() {
+            var selectedMonth = $(this).val();
+            var selectedYear = $(this).find(':selected').data('year');
+
+            $.ajax({
+                url: '<?= site_url('manage/dashboard/ajax_ikhtisar_keuangan') ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    month: selectedMonth,
+                    year: selectedYear,
+                    majors: selectedMajors
+                },
+                beforeSend: function() {
+                    $('#box_ikhtisar_keuangan').append('<div class="overlay"><i class="fa fa-refresh fa-spin"></i></div>');
+                },
+                success: function(res) {
+                    if (res) {
+                        $('#ikhtisar_total_display').text(res.total_display);
+                        $('#ikhtisar_pemasukan_text').text(res.pemasukan.text);
+                        $('#ikhtisar_pemasukan_pct').text(res.pemasukan.pct);
+                        $('#ikhtisar_pengeluaran_text').text(res.pengeluaran.text);
+                        $('#ikhtisar_pengeluaran_pct').text(res.pengeluaran.pct);
+                        $('#ikhtisar_saldo_text').text(res.saldo_akhir.text);
+                        $('#ikhtisar_saldo_pct').text(res.saldo_akhir.pct);
+
+                        if (chartIkhtisarInstance) {
+                            chartIkhtisarInstance.data.datasets[0].data = [
+                                res.pemasukan.val,
+                                res.pengeluaran.val
+                            ];
+                            chartIkhtisarInstance.update();
+                        }
+                    }
+                },
+                complete: function() {
+                    $('#box_ikhtisar_keuangan .overlay').remove();
+                }
+            });
+        });
+
+        // 3. Modal Tagihan Bulan Ini
+        $('#modal_tagihan_bulan_ini').on('show.bs.modal', function() {
+            var $loading = $('#modal_tagihan_loading');
+            var $content = $('#modal_tagihan_content');
+
+            $loading.show();
+            $content.hide().empty();
+
+            var currentMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_tagihan_bulan_ini") ?>',
+                type: 'POST',
+                data: {
+                    majors_id: currentMajors
+                },
+                dataType: 'json',
+                success: function(res) {
+                    $loading.hide();
+                    if (res && res.data && res.data.length > 0) {
+                        var html = '';
+                        $.each(res.data, function(i, item) {
+                            html += '<div class="progress-group" style="margin-bottom: 12px;">';
+                            html += '  <span class="progress-text" style="font-size: 12px; font-weight: bold;">' + item.name + '</span>';
+                            html += '  <span class="progress-number pull-right" style="font-size: 12px;"><b>' + item.text + '</b> (' + item.progress + '%)</span>';
+                            html += '  <div class="progress sm" style="margin-top: 5px; margin-bottom: 0; height: 10px;">';
+                            html += '    <div class="progress-bar ' + item.bar + '" style="width: ' + item.progress + '%"></div>';
+                            html += '  </div>';
+                            html += '</div>';
+                        });
+                        $content.html(html).show();
+                    } else {
+                        $content.html('<p class="text-muted text-center">Tidak ada data tagihan bulan ini.</p>').show();
+                    }
+                },
+                error: function() {
+                    $loading.hide();
+                    $content.html('<p class="text-danger text-center">Gagal mengambil data tagihan.</p>').show();
+                }
+            });
+        });
+
+        // 4. Line Chart: Arus Kas X Bulan Terakhir (dengan filter [3, 6, 9, 12])
+        window.dataArusKas = {};
+
+        var ctxArusKas = document.getElementById("Chart_arusKas");
+        var chartArusKasInstance = null;
+
+        if (ctxArusKas) {
+            chartArusKasInstance = new Chart(ctxArusKas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                            label: '<?= $this->lang->line('dash_income') ?>',
+                            data: [],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            pointBackgroundColor: '#28a745',
+                            pointRadius: 4,
+                            fill: true,
+                            borderWidth: 2
+                        },
+                        {
+                            label: '<?= $this->lang->line('dash_expense') ?>',
+                            data: [],
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            pointBackgroundColor: '#dc3545',
+                            pointRadius: 4,
+                            fill: true,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 10,
+                            fontSize: 10
+                        }
+                    },
+                    scales: {
+                        xAxes: [{
+                            gridLines: {
+                                display: false
+                            },
+                            ticks: {
+                                fontSize: 10
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                fontSize: 10,
+                                callback: function(value) {
+                                    if (value >= 1000000000000) {
+                                        return (value / 1000000000000).toLocaleString('id-ID') + ' <?= $this->lang->line('singkatan_triliun') ?>';
+                                    } else if (value >= 1000000000) {
+                                        return (value / 1000000000).toLocaleString('id-ID') + ' <?= $this->lang->line('singkatan_miliar') ?>';
+                                    } else if (value >= 1000000) {
+                                        return (value / 1000000).toLocaleString('id-ID') + ' <?= $this->lang->line('singkatan_juta') ?>';
+                                    } else if (value >= 1000) {
+                                        return (value / 1000).toLocaleString('id-ID') + ' <?= $this->lang->line('singkatan_ribu') ?>';
+                                    } else {
+                                        return value.toLocaleString('id-ID');
+                                    }
+                                }
+                            },
+                            scaleLabel: {
+                                display: false
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                                var value = tooltipItem.yLabel || 0;
+                                return label + ': Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        $('#filter_arus_kas_bulan').on('change', function() {
+            var selectedBulan = $(this).val();
+            var titleTemplate = $('#title_arus_kas').data('title-template') || 'Arus Kas %s Bulan Terakhir';
+            $('#title_arus_kas').text(titleTemplate.replace('%s', selectedBulan));
+
+            if (chartArusKasInstance && window.dataArusKas && window.dataArusKas[selectedBulan]) {
+                chartArusKasInstance.data.labels = window.dataArusKas[selectedBulan].labels;
+                chartArusKasInstance.data.datasets[0].data = window.dataArusKas[selectedBulan].pemasukan;
+                chartArusKasInstance.data.datasets[1].data = window.dataArusKas[selectedBulan].pengeluaran;
+                chartArusKasInstance.update();
+            }
+        });
+
+        // 5. Combo Bar & Line Chart: Grafik Pembayaran SPP
+        var ctxSpp = document.getElementById("Chart_pembayaranSPP");
+        var chartSppInstance = null;
+        if (ctxSpp) {
+            chartSppInstance = new Chart(ctxSpp.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                            label: 'Collection Rate (%)',
+                            type: 'line',
+                            data: [],
+                            borderColor: '#007bff',
+                            backgroundColor: 'transparent',
+                            pointBackgroundColor: '#007bff',
+                            pointRadius: 4,
+                            yAxisID: 'y-axis-rate',
+                            fill: false,
+                            borderWidth: 2
+                        },
+                        {
+                            label: '<?= $this->lang->line('dash_lunas') ?: 'Lunas' ?>',
+                            type: 'bar',
+                            data: [],
+                            backgroundColor: '#28a745',
+                            yAxisID: 'y-axis-count'
+                        },
+                        {
+                            label: '<?= $this->lang->line('dash_belum_lunas') ?: 'Belum Lunas' ?>',
+                            type: 'bar',
+                            data: [],
+                            backgroundColor: '#dc3545',
+                            yAxisID: 'y-axis-count'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 10,
+                            fontSize: 10
+                        }
+                    },
+                    scales: {
+                        xAxes: [{
+                            gridLines: {
+                                display: false
+                            },
+                            ticks: {
+                                fontSize: 10
+                            }
+                        }],
+                        yAxes: [{
+                                id: 'y-axis-count',
+                                type: 'linear',
+                                position: 'left',
+                                ticks: {
+                                    beginAtZero: true,
+                                    fontSize: 10
+                                },
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Siswa',
+                                    fontSize: 10
+                                }
+                            },
+                            {
+                                id: 'y-axis-rate',
+                                type: 'linear',
+                                position: 'right',
+                                ticks: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    fontSize: 10,
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                },
+                                gridLines: {
+                                    display: false
+                                },
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Rate (%)',
+                                    fontSize: 10
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+        }
+
+        // 7. Modal Detail Tabungan Siswa
+        var dtDetailTabungan = null;
+        $(document).on('click', '.row-tabungan-siswa', function() {
+            var studentId = $(this).data('student-id');
+            if (!studentId) return;
+
+            $('#modal_detail_tabungan').modal('show');
+            var $loading = $('#modal_tabungan_loading');
+            var $info = $('#modal_tabungan_info');
+            var $tableWrap = $('#modal_tabungan_table_wrap');
+
+            $loading.show();
+            $info.hide();
+            $tableWrap.hide();
+
+            if (dtDetailTabungan) {
+                dtDetailTabungan.destroy();
+                dtDetailTabungan = null;
+            }
+            $('#modal_tabungan_tbody').empty();
+
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_detail_tabungan_siswa") ?>',
+                type: 'POST',
+                data: {
+                    student_id: studentId
+                },
+                dataType: 'json',
+                success: function(res) {
+                    $loading.hide();
+                    if (res && res.student) {
+                        $('#info_nis').text(res.student.student_nis || '-');
+                        $('#info_nama').text(res.student.student_full_name || '-');
+                        $('#info_unit').text(res.student.majors_name || res.student.majors_short_name || '-');
+                        $('#info_kelas').text(res.student.class_name || '-');
+                        $info.show();
+
+                        $('#tfoot_setoran').text(res.total_setoran || 'Rp0');
+                        $('#tfoot_penarikan').text(res.total_penarikan || 'Rp0');
+                        $('#tfoot_saldo_akhir').text(res.saldo_akhir || 'Rp0');
+
+                        var rowsHtml = '';
+                        if (res.data && res.data.length > 0) {
+                            $.each(res.data, function(i, item) {
+                                rowsHtml += '<tr>';
+                                rowsHtml += '<td class="text-center">' + item.no + '</td>';
+                                rowsHtml += '<td>' + item.date + '</td>';
+                                rowsHtml += '<td class="text-right">' + item.debit + '</td>';
+                                rowsHtml += '<td class="text-right">' + item.kredit + '</td>';
+                                rowsHtml += '<td>' + (item.note || '-') + '</td>';
+                                rowsHtml += '<td class="text-right font-weight-bold">' + item.saldo + '</td>';
+                                rowsHtml += '</tr>';
+                            });
+                        }
+                        $('#modal_tabungan_tbody').html(rowsHtml);
+                        $tableWrap.show();
+
+                        dtDetailTabungan = $('#table_detail_tabungan').DataTable({
+                            paging: true,
+                            searching: true,
+                            ordering: false,
+                            info: true,
+                            autoWidth: false,
+                            pageLength: 10,
+                            lengthMenu: [
+                                [10, 25, 50, -1],
+                                [10, 25, 50, "Semua"]
+                            ]
+                        });
+                    } else {
+                        $('#modal_tabungan_tbody').html('<tr><td colspan="6" class="text-center text-muted">Data tidak ditemukan.</td></tr>');
+                        $tableWrap.show();
+                    }
+                },
+                error: function() {
+                    $loading.hide();
+                    alert('Gagal mengambil detail tabungan siswa.');
+                }
+            });
+        });
+
+        window.loadFinanceWidgets = function(m) {
+            var queryParam = m ? ('?m=' + m) : '';
+
+            // Tampilkan kembali semua overlay loader untuk memulai lazyload per widget
+            $('#overlay_ikhtisar, #overlay_tagihan, #overlay_arus_kas, #overlay_spp, #overlay_recent_tr, #overlay_top_tabungan').show();
+
+            // 1. Ikhtisar Keuangan
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_finance_ikhtisar") ?>' + queryParam,
+                type: 'GET',
+                dataType: 'json',
+                success: function(ikhtisar) {
+                    if (ikhtisar) {
+                        $('#ikhtisar_total_display').text(ikhtisar.total_display || '0');
+                        $('#ikhtisar_pemasukan_text').text(ikhtisar.pemasukan ? ikhtisar.pemasukan.text : '0');
+                        $('#ikhtisar_pemasukan_pct').text(ikhtisar.pemasukan ? ikhtisar.pemasukan.pct : '0%');
+                        $('#ikhtisar_pengeluaran_text').text(ikhtisar.pengeluaran ? ikhtisar.pengeluaran.text : '0');
+                        $('#ikhtisar_pengeluaran_pct').text(ikhtisar.pengeluaran ? ikhtisar.pengeluaran.pct : '0%');
+                        $('#ikhtisar_saldo_text').text(ikhtisar.saldo_akhir ? ikhtisar.saldo_akhir.text : '0');
+                        $('#ikhtisar_saldo_pct').text(ikhtisar.saldo_akhir ? ikhtisar.saldo_akhir.pct : '0%');
+
+                        if (chartIkhtisarInstance) {
+                            chartIkhtisarInstance.data.datasets[0].data = [
+                                ikhtisar.pemasukan ? ikhtisar.pemasukan.val : 0,
+                                ikhtisar.pengeluaran ? ikhtisar.pengeluaran.val : 0
+                            ];
+                            chartIkhtisarInstance.update();
+                        }
+                    }
+                },
+                complete: function() { $('#overlay_ikhtisar').fadeOut(); }
+            });
+
+            // 2. Tagihan Bulan Ini
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_finance_tagihan") ?>' + queryParam,
+                type: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    var tagihanHtml = '';
+                    if (res && res.tagihan_bulan_ini && res.tagihan_bulan_ini.length > 0) {
+                        $.each(res.tagihan_bulan_ini, function(i, tg) {
+                            tagihanHtml += '<div class="progress-group" style="margin-bottom: 8px;">' +
+                                '<span class="progress-text" style="font-size: 12px;">' + tg.name + '</span>' +
+                                '<span class="progress-number pull-right" style="font-size: 12px;"><b>' + tg.text + '</b> (' + tg.progress + '%)</span>' +
+                                '<div class="progress sm" style="margin-top: 3px; margin-bottom: 0; height: 8px;">' +
+                                '<div class="progress-bar ' + tg.bar + '" style="width: ' + tg.progress + '%"></div>' +
+                                '</div></div>';
+                        });
+                    } else {
+                        tagihanHtml = '<p class="text-muted text-center" style="margin-top: 50px;">Tidak ada tagihan bulan ini</p>';
+                    }
+                    $('#container_tagihan_bulan_ini').html(tagihanHtml);
+
+                    if (res && res.has_more_tagihan) {
+                        $('#tools_tagihan_bulan_ini').html('<button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#modal_tagihan_bulan_ini"><?= $this->lang->line("dash_view_all") ?: "Lihat Semua" ?></button>');
+                    } else {
+                        $('#tools_tagihan_bulan_ini').empty();
+                    }
+                },
+                complete: function() { $('#overlay_tagihan').fadeOut(); }
+            });
+
+            // 3. Arus Kas
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_finance_arus_kas") ?>' + queryParam,
+                type: 'GET',
+                dataType: 'json',
+                success: function(arusKas) {
+                    if (arusKas) {
+                        window.dataArusKas = arusKas;
+                        var selectedBulan = $('#filter_arus_kas_bulan').val() || 6;
+                        if (chartArusKasInstance && window.dataArusKas[selectedBulan]) {
+                            chartArusKasInstance.data.labels = window.dataArusKas[selectedBulan].labels;
+                            chartArusKasInstance.data.datasets[0].data = window.dataArusKas[selectedBulan].pemasukan;
+                            chartArusKasInstance.data.datasets[1].data = window.dataArusKas[selectedBulan].pengeluaran;
+                            chartArusKasInstance.update();
+                        }
+                    }
+                },
+                complete: function() { $('#overlay_arus_kas').fadeOut(); }
+            });
+            // 4. SPP Chart & Col layout
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_finance_spp") ?>' + queryParam,
+                type: 'GET',
+                dataType: 'json',
+                success: function(sppRes) {
+                    if (sppRes) {
+                        if (sppRes.spp_chart_col_class) {
+                            $('#box_spp_chart_wrapper').attr('class', sppRes.spp_chart_col_class);
+                        }
+                        if (sppRes.other_widget_col_class) {
+                            $('#box_recent_tr_wrapper').attr('class', sppRes.other_widget_col_class);
+                            $('#box_top_5_tabungan_wrapper').attr('class', sppRes.other_widget_col_class);
+                        }
+                        if (sppRes.spp_chart_title) {
+                            $('#spp_chart_title_el').text(sppRes.spp_chart_title);
+                        }
+                        if (sppRes.spp_chart && chartSppInstance) {
+                            chartSppInstance.data.labels = sppRes.spp_chart.labels || [];
+                            chartSppInstance.data.datasets[0].data = sppRes.spp_chart.collection_rate || [];
+                            chartSppInstance.data.datasets[1].data = sppRes.spp_chart.lunas || [];
+                            chartSppInstance.data.datasets[2].data = sppRes.spp_chart.belum_lunas || [];
+                            chartSppInstance.update();
+                        }
+                    }
+                },
+                complete: function() { $('#overlay_spp').fadeOut(); }
+            });
+
+            // 5. Transaksi Terbaru
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_finance_recent_tr") ?>' + queryParam,
+                type: 'GET',
+                dataType: 'json',
+                success: function(recentTr) {
+                    var trHtml = '';
+                    if (recentTr && recentTr.length > 0) {
+                        $.each(recentTr, function(i, tr) {
+                            trHtml += '<tr>' +
+                                '<td style="font-size:12px; white-space:nowrap;">' + tr.tgl + '</td>' +
+                                '<td style="font-size:12px;">' + tr.desc + '</td>' +
+                                '<td style="font-size:12px;">' + tr.kategori + '</td>' +
+                                '<td style="font-size:12px; white-space:nowrap;">' + tr.nominal + '</td>' +
+                                '<td><span class="label ' + tr.label + ' label-xs">' + tr.status + '</span></td>' +
+                                '</tr>';
+                        });
+                    } else {
+                        trHtml = '<tr><td colspan="5" class="text-center" style="font-size:11px; padding: 15px;">Tidak ada transaksi terbaru</td></tr>';
+                    }
+                    $('#tbody_recent_transactions').html(trHtml);
+                },
+                complete: function() { $('#overlay_recent_tr').fadeOut(); }
+            });
+
+            // 6. Top 5 Tabungan
+            $.ajax({
+                url: '<?= site_url("manage/dashboard/ajax_finance_top_tabungan") ?>' + queryParam,
+                type: 'GET',
+                dataType: 'json',
+                success: function(topTb) {
+                    var tbHtml = '';
+                    if (topTb && topTb.length > 0) {
+                        $.each(topTb, function(i, tb) {
+                            var formatSaldo = 'Rp ' + parseFloat(tb.total_saldo || 0).toLocaleString('id-ID');
+                            tbHtml += '<tr class="row-tabungan-siswa" data-student-id="' + tb.student_id + '" style="cursor: pointer;" title="Klik untuk lihat detail transaksi">' +
+                                '<td class="text-center" style="font-size: 12px;">' + (i + 1) + '</td>' +
+                                '<td style="font-size:12px; font-weight: 600;">' + (tb.student_full_name || '') + '</td>' +
+                                '<td class="text-center" style="font-size:12px;">' + (tb.class_name || '-') + '</td>' +
+                                '<td class="text-center" style="font-size:12px;">' + (tb.majors_short_name || '-') + '</td>' +
+                                '<td class="text-right" style="font-size:12px; font-weight: 600;">' + formatSaldo + '</td>' +
+                                '</tr>';
+                        });
+                    } else {
+                        tbHtml = '<tr><td colspan="5" class="text-center text-muted">Tidak ada data</td></tr>';
+                    }
+                    $('#tbody_top_5_tabungan').html(tbHtml);
+                },
+                complete: function() { $('#overlay_top_tabungan').fadeOut(); }
+            });
+        };
+
+        window.renderFinanceTab = function(data) {
+            // Backward compatibility
+            var m = '<?= isset($_GET["m"]) ? (int)$_GET["m"] : "" ?>';
+            window.loadFinanceWidgets(m);
+        };
+    });
+</script>
