@@ -106,13 +106,13 @@
                     </select>
                 </div>
             </div>
-            <div class="box-body" style="min-height: 200px;">
+            <div class="box-body" style="min-height: 270px;">
                 <div class="row" style="display: flex; align-items: center; margin: 0;">
                     <div class="col-xs-6" style="padding: 0; position: relative;">
                         <div style="position: relative; height: 160px; width: 100%;">
                             <canvas id="Chart_ikhtisarDoughnut"></canvas>
                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
-                                <span style="font-size: 10px; color: #888; display: block; line-height: 1;">Total</span>
+                                <span style="font-size: 10px; color: #2b2b2b; display: block; line-height: 1;">Total</span>
                                 <strong id="ikhtisar_total_display" style="font-size: 13px; color: #333; line-height: 1.2; display: block; margin-top: 2px;"><?= !empty($ikhtisar_doughnut['total_display']) ? $ikhtisar_doughnut['total_display'] : '0' ?></strong>
                             </div>
                         </div>
@@ -120,8 +120,8 @@
                     <div class="col-xs-6" style="padding-left: 10px; padding-right: 0;">
                         <div style="margin-bottom: 12px;">
                             <div style="display:flex; align-items:center; margin-bottom: 2px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#28a745; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
-                                <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_income'); ?></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color: #28a745; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
+                                <span style="font-size: 12px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_income'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
                                 <span id="ikhtisar_pemasukan_text"><?= !empty($ikhtisar_doughnut['pemasukan']['text']) ? $ikhtisar_doughnut['pemasukan']['text'] : '0' ?></span> (<span id="ikhtisar_pemasukan_pct"><?= !empty($ikhtisar_doughnut['pemasukan']['pct']) ? $ikhtisar_doughnut['pemasukan']['pct'] : '0%' ?></span>)
@@ -129,8 +129,8 @@
                         </div>
                         <div style="margin-bottom: 12px;">
                             <div style="display:flex; align-items:center; margin-bottom: 2px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#dc3545; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
-                                <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_expense'); ?></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color: #dc3545; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
+                                <span style="font-size: 12px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_expense'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
                                 <span id="ikhtisar_pengeluaran_text"><?= !empty($ikhtisar_doughnut['pengeluaran']['text']) ? $ikhtisar_doughnut['pengeluaran']['text'] : '0' ?></span> (<span id="ikhtisar_pengeluaran_pct"><?= !empty($ikhtisar_doughnut['pengeluaran']['pct']) ? $ikhtisar_doughnut['pengeluaran']['pct'] : '0%' ?></span>)
@@ -138,8 +138,8 @@
                         </div>
                         <div>
                             <div style="display:flex; align-items:center; margin-bottom: 2px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#007bff; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
-                                <span style="font-size: 11px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_final_balance'); ?></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color: #007bff; margin-right:6px; border-radius:2px; flex-shrink: 0;"></span>
+                                <span style="font-size: 12px; font-weight: 600; color: #444;"><?= $this->lang->line('dash_final_balance'); ?></span>
                             </div>
                             <div style="font-size: 11px; color: #555; padding-left: 16px;">
                                 <span id="ikhtisar_saldo_text"><?= !empty($ikhtisar_doughnut['saldo_akhir']['text']) ? $ikhtisar_doughnut['saldo_akhir']['text'] : '0' ?></span> (<span id="ikhtisar_saldo_pct"><?= !empty($ikhtisar_doughnut['saldo_akhir']['pct']) ? $ikhtisar_doughnut['saldo_akhir']['pct'] : '0%' ?></span>)
@@ -162,11 +162,11 @@
                     <?php endif; ?>
                 </div>
             </div>
-            <div class="box-body" style="min-height: 200px;" id="container_tagihan_bulan_ini">
+            <div class="box-body" style="min-height: 270px;" id="container_tagihan_bulan_ini">
                 <?php if (!empty($tagihan_bulan_ini)): foreach ($tagihan_bulan_ini as $tg): ?>
                         <div class="progress-group" style="margin-bottom: 8px;">
-                            <span class="progress-text" style="font-size: 11px;"><?= html_escape($tg['name']) ?></span>
-                            <span class="progress-number pull-right" style="font-size: 11px;"><b><?= $tg['text'] ?></b> (<?= $tg['progress'] ?>%)</span>
+                            <span class="progress-text" style="font-size: 12px;"><?= html_escape($tg['name']) ?></span>
+                            <span class="progress-number pull-right" style="font-size: 12px;"><b><?= $tg['text'] ?></b> (<?= $tg['progress'] ?>%)</span>
                             <div class="progress sm" style="margin-top: 3px; margin-bottom: 0; height: 8px;">
                                 <div class="progress-bar <?= $tg['bar'] ?>" style="width: <?= $tg['progress'] ?>%"></div>
                             </div>
@@ -187,7 +187,7 @@
                     <?= sprintf($this->lang->line('dash_cash_flow_title'), 6) ?>
                 </h3>
                 <div class="box-tools pull-right">
-                    <select id="filter_arus_kas_bulan" class="form-control input-sm" style="width:auto; display:inline-block; font-size:11px; height:28px; padding:2px 8px;">
+                    <select id="filter_arus_kas_bulan" class="form-control input-sm" style="width:auto; display:inline-block; font-size:12px; height:28px; padding:2px 8px;">
                         <option value="3"><?= sprintf($this->lang->line('dash_x_months'), 3) ?></option>
                         <option value="6" selected><?= sprintf($this->lang->line('dash_x_months'), 6) ?></option>
                         <option value="9"><?= sprintf($this->lang->line('dash_x_months'), 9) ?></option>
@@ -195,8 +195,8 @@
                     </select>
                 </div>
             </div>
-            <div class="box-body" style="min-height: 200px;">
-                <div style="position: relative; height: 160px; width: 100%;">
+            <div class="box-body">
+                <div style="position: relative; height: 250px; width: 100%;">
                     <canvas id="Chart_arusKas"></canvas>
                 </div>
             </div>
@@ -212,8 +212,8 @@
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $spp_chart_title ?? 'Grafik Pembayaran (SPP)' ?></h3>
             </div>
-            <div class="box-body" style="min-height: 200px;">
-                <div style="position: relative; height: 160px; width: 100%;">
+            <div class="box-body" style="min-height: 270px;">
+                <div style="position: relative; height: 250px; width: 100%;">
                     <canvas id="Chart_pembayaranSPP"></canvas>
                 </div>
             </div>
@@ -229,7 +229,7 @@
                     <a href="<?= site_url('manage/logs/trx_keuangan') ?>" class="btn btn-default btn-sm"><?= $this->lang->line('dash_view_all') ?: 'Lihat Semua' ?></a>
                 </div>
             </div>
-            <div class="box-body no-padding" style="min-height: 200px;">
+            <div class="box-body no-padding" style="min-height: 270px;">
                 <div class="table-responsive">
                     <table class="table table-condensed table-striped table-hover no-margin">
                         <thead>
@@ -247,11 +247,11 @@
                                 foreach ($recent_transactions as $tr):
                             ?>
                                     <tr>
-                                        <td style="font-size:11px; white-space:nowrap;"><?= $tr['tgl'] ?></td>
-                                        <td style="font-size:11px;"><?= $tr['desc'] ?></td>
-                                        <td style="font-size:11px;"><span style="font-size:10px;"><?= $tr['kategori'] ?></span></td>
-                                        <td style="font-size:11px; white-space:nowrap;"><?= $tr['nominal'] ?></td>
-                                        <td><span class="label <?= $tr['label'] ?>" style="font-size:10px;"><?= $tr['status'] ?></span></td>
+                                        <td style="font-size:12px; white-space:nowrap;"><?= $tr['tgl'] ?></td>
+                                        <td style="font-size:12px;"><?= $tr['desc'] ?></td>
+                                        <td style="font-size:12px;"><span style="font-size:12px;"><?= $tr['kategori'] ?></span></td>
+                                        <td style="font-size:12px; white-space:nowrap;"><?= $tr['nominal'] ?></td>
+                                        <td><span class="label <?= $tr['label'] ?> label-xs"><?= $tr['status'] ?></span></td>
                                     </tr>
                                 <?php
                                 endforeach;
@@ -274,7 +274,7 @@
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_top_5_savings') ?: '5 Siswa Tabungan Terbesar' ?></h3>
             </div>
-            <div class="box-body no-padding" style="min-height: 200px;">
+            <div class="box-body no-padding" style="min-height: 270px;">
                 <div class="table-responsive">
                     <table class="table table-condensed table-striped table-hover no-margin">
                         <thead>
@@ -290,11 +290,11 @@
                             <?php if (!empty($top_5_tabungan)): $no = 1;
                                 foreach ($top_5_tabungan as $tb): ?>
                                     <tr class="row-tabungan-siswa" data-student-id="<?= $tb['student_id'] ?>" style="cursor: pointer;" title="Klik untuk lihat detail transaksi">
-                                        <td class="text-center" style="font-size: 11px;"><?= $no++ ?></td>
-                                        <td style="font-size:11px; font-weight: 600;"><?= html_escape($tb['student_full_name']) ?></td>
-                                        <td class="text-center" style="font-size:11px;"><?= html_escape($tb['class_name'] ?: '-') ?></td>
-                                        <td class="text-center" style="font-size:11px;"><?= html_escape($tb['majors_short_name'] ?: '-') ?></td>
-                                        <td class="text-right" style="font-size:11px; font-weight: 600;">Rp <?= number_format($tb['total_saldo'], 0, ',', '.') ?></td>
+                                        <td class="text-center" style="font-size: 12px;"><?= $no++ ?></td>
+                                        <td style="font-size:12px; font-weight: 600;"><?= html_escape($tb['student_full_name']) ?></td>
+                                        <td class="text-center" style="font-size:12px;"><?= html_escape($tb['class_name'] ?: '-') ?></td>
+                                        <td class="text-center" style="font-size:12px;"><?= html_escape($tb['majors_short_name'] ?: '-') ?></td>
+                                        <td class="text-right" style="font-size:12px; font-weight: 600;">Rp <?= number_format($tb['total_saldo'], 0, ',', '.') ?></td>
                                     </tr>
                                 <?php endforeach;
                             else: ?>
