@@ -28,6 +28,11 @@ $lang['dash_paid'] = 'Terbayar';
 $lang['dash_unpaid'] = 'Belum Terbayar';
 $lang['dash_achievement'] = 'Pencapaian';
 
+$lang['dash_student_per_unit'] = 'Jumlah Siswa Per Unit';
+$lang['dash_student_per_class'] = 'Jumlah Siswa Per Kelas';
+$lang['dash_male'] = 'Laki-laki';
+$lang['dash_female'] = 'Perempuan';
+
 // add 30092026
 $lang['dash_no_data'] = 'Tidak ada data untuk ditampilkan';
 $lang['dash_active'] = 'Aktif';
@@ -89,9 +94,19 @@ $lang['singkatan_triliun'] = 'T';
 
 // tab kesiswaan
 $lang['dash_tab_student'] = 'Kesiswaan';
+$lang['dash_student_status_recap'] = 'Rekap Mutasi & Status Siswa';
+$lang['dash_status_active'] = 'Aktif';
+$lang['dash_status_passed'] = 'Lulus/Alumni';
+$lang['dash_status_moved'] = 'Pindah/Mutasi';
+$lang['dash_status_inactive'] = 'Tidak Aktif';
 
 // tab kepegawaian
 $lang['dash_tab_employee'] = 'Kepegawaian';
 
 // tab akademik
 $lang['dash_tab_academic'] = 'Akademik';
+$lang['dash_attendance_permit'] = 'Izin';
+$lang['dash_attendance_sick'] = 'Sakit';
+$lang['dash_attendance_present'] = 'Hadir';
+$lang['dash_student_attendance'] = 'Kehadiran Siswa Hari Ini';
+$lang['dash_attendance_absent'] = 'Alpa';

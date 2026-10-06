@@ -691,6 +691,8 @@ class Presensi_harian_set extends CI_Controller
     {
         if ($_POST == TRUE) {
 
+            $periodID     = $_POST['period_id'];
+            $monthID      = $_POST['month_id'];
             $studentID    = $_POST['student_id'];
             $classID      = $_POST['class_id'];
             $areaID       = $_POST['area_id'];

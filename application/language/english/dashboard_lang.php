@@ -28,6 +28,11 @@ $lang['dash_paid'] = 'Paid';
 $lang['dash_unpaid'] = 'Unpaid';
 $lang['dash_achievement'] = 'Achievement';
 
+$lang['dash_student_per_unit'] = 'Students per Unit';
+$lang['dash_student_per_class'] = 'Students per Class';
+$lang['dash_male'] = 'Male';
+$lang['dash_female'] = 'Female';
+
 // add 30092026
 $lang['dash_no_data'] = 'No data available';
 $lang['dash_active'] = 'Active';
@@ -89,9 +94,19 @@ $lang['singkatan_triliun'] = 'T';
 
 // tab kesiswaan
 $lang['dash_tab_student'] = 'Student';
+$lang['dash_student_status_recap'] = 'Student Mutation & Status Recap';
+$lang['dash_status_active'] = 'Active';
+$lang['dash_status_passed'] = 'Graduated/Alumni';
+$lang['dash_status_moved'] = 'Transferred';
+$lang['dash_status_inactive'] = 'Inactive';
 
 // tab kepegawaian
 $lang['dash_tab_employee'] = 'Employee';
 
 // tab akademik
 $lang['dash_tab_academic'] = 'Academic';
+$lang['dash_attendance_sick'] = 'Sick';
+$lang['dash_attendance_present'] = 'Present';
+$lang['dash_student_attendance'] = 'Student Attendance Today';
+$lang['dash_attendance_permit'] = 'Permit';
+$lang['dash_attendance_absent'] = 'Absent';

@@ -248,24 +248,74 @@ class Dashboard_set extends CI_Controller
         $data = [];
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
+
     public function ajax_student_jumlah_siswa()
     {
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        
+        $labels = [];
+        $data_l = [];
+        $data_p = [];
+        $data_total = [];
+        
         if (empty($majors_id)) {
-            // Dummy for All Units
-            $data = [
-                'title' => 'Jumlah Siswa Per Unit',
-                'labels' => ['TK', 'SD', 'SMP', 'SMA'],
-                'data' => [120, 350, 420, 310]
-            ];
+            $title = $this->lang->line('dash_student_per_unit') ?: 'Jumlah Siswa Per Unit';
+            
+            $sql = "SELECT 
+                        m.majors_id, 
+                        m.majors_short_name, 
+                        SUM(CASE WHEN s.student_gender = 'L' THEN 1 ELSE 0 END) AS count_l, 
+                        SUM(CASE WHEN s.student_gender = 'P' THEN 1 ELSE 0 END) AS count_p, 
+                        COUNT(s.student_id) AS count_total 
+                    FROM majors m 
+                    LEFT JOIN student s ON s.majors_majors_id = m.majors_id AND s.student_status = '1' 
+                    WHERE m.majors_status = '1' 
+                    GROUP BY m.majors_id, m.majors_short_name 
+                    ORDER BY m.majors_id ASC";
+            $query = $this->db->query($sql)->result_array();
+            
+            foreach ($query as $row) {
+                $labels[] = $row['majors_short_name'];
+                $data_l[] = (int)$row['count_l'];
+                $data_p[] = (int)$row['count_p'];
+                $data_total[] = (int)$row['count_total'];
+            }
         } else {
-            // Dummy for Specific Unit -> Per Class
-            $data = [
-                'title' => 'Jumlah Siswa Per Kelas',
-                'labels' => ['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'],
-                'data' => [50, 45, 60, 55, 65, 75]
-            ];
+            $title = $this->lang->line('dash_student_per_class') ?: 'Jumlah Siswa Per Kelas';
+            $mid = (int)$majors_id;
+            
+            $sql = "SELECT 
+                        c.class_id, 
+                        c.class_name, 
+                        SUM(CASE WHEN s.student_gender = 'L' THEN 1 ELSE 0 END) AS count_l, 
+                        SUM(CASE WHEN s.student_gender = 'P' THEN 1 ELSE 0 END) AS count_p, 
+                        COUNT(s.student_id) AS count_total 
+                    FROM class c 
+                    LEFT JOIN student s ON s.class_class_id = c.class_id AND s.student_status = '1' 
+                    WHERE c.majors_majors_id = '$mid' 
+                    GROUP BY c.class_id, c.class_name 
+                    ORDER BY c.class_name ASC";
+            $query = $this->db->query($sql)->result_array();
+            
+            foreach ($query as $row) {
+                $labels[] = $row['class_name'];
+                $data_l[] = (int)$row['count_l'];
+                $data_p[] = (int)$row['count_p'];
+                $data_total[] = (int)$row['count_total'];
+            }
         }
+
+        $data = [
+            'title'      => $title,
+            'labels'     => $labels,
+            'data_l'     => $data_l,
+            'data_p'     => $data_p,
+            'data_total' => $data_total,
+            'lang_l'     => $this->lang->line('dash_male') ?: 'Laki-laki',
+            'lang_p'     => $this->lang->line('dash_female') ?: 'Perempuan',
+            'lang_total' => $this->lang->line('dash_total') ?: 'Jumlah'
+        ];
+
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
@@ -308,25 +358,87 @@ class Dashboard_set extends CI_Controller
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
-    public function ajax_student_gender()
+    public function ajax_student_status()
     {
-        // Dummy Gender
-        $data = [
-            'labels' => ['Laki-laki', 'Perempuan'],
-            'data' => [650, 550]
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+
+        $where = "";
+        if (!empty($majors_id)) {
+            $where = "WHERE s.majors_majors_id = " . (int)$majors_id;
+        }
+
+        $sql = "SELECT 
+                    s.student_status,
+                    COUNT(s.student_id) as total
+                FROM student s
+                {$where}
+                GROUP BY s.student_status";
+        
+        $query = $this->db->query($sql)->result_array();
+
+        $status_map = [
+            1 => ['label' => $this->lang->line('dash_status_active') ?: 'Aktif', 'color' => '#00a65a'],
+            2 => ['label' => $this->lang->line('dash_status_passed') ?: 'Lulus/Alumni', 'color' => '#3c8dbc'],
+            3 => ['label' => $this->lang->line('dash_status_moved') ?: 'Pindah/Mutasi', 'color' => '#f39c12'],
+            0 => ['label' => $this->lang->line('dash_status_inactive') ?: 'Tidak Aktif', 'color' => '#d2d6de'],
         ];
-        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+
+        $counts = [];
+        foreach ($query as $row) {
+            $counts[(int)$row['student_status']] = (int)$row['total'];
+        }
+
+        $labels = [];
+        $data = [];
+        $colors = [];
+
+        foreach ($status_map as $st => $info) {
+            $val = isset($counts[$st]) ? $counts[$st] : 0;
+            if ($val > 0) {
+                $labels[] = $info['label'];
+                $data[] = $val;
+                $colors[] = $info['color'];
+            }
+        }
+
+        $res = [
+            'labels' => $labels,
+            'data'   => $data,
+            'colors' => $colors
+        ];
+
+        $this->output->set_content_type('application/json')->set_output(json_encode($res));
     }
 
     public function ajax_student_kehadiran()
     {
-        // Dummy Kehadiran
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        $today = date('Y-m-d');
+
+        $where = "WHERE ps.date = '$today'";
+        if (!empty($majors_id)) {
+            $mid = (int)$majors_id;
+            $where .= " AND c.majors_majors_id = '$mid'";
+        }
+
+        $sql = "SELECT
+                    COALESCE(SUM(CASE WHEN ps.jenis_absen = 'DATANG' THEN 1 ELSE 0 END), 0) AS hadir,
+                    COALESCE(SUM(CASE WHEN ps.jenis_absen = 'IZIN' THEN 1 ELSE 0 END), 0) AS izin,
+                    COALESCE(SUM(CASE WHEN ps.jenis_absen = 'SAKIT' THEN 1 ELSE 0 END), 0) AS sakit,
+                    COALESCE(SUM(CASE WHEN ps.jenis_absen = 'ALPHA' THEN 1 ELSE 0 END), 0) AS alpa
+                FROM presensi_student ps
+                LEFT JOIN class c ON c.class_id = ps.id_class
+                {$where}";
+
+        $row = $this->db->query($sql)->row_array();
+
         $data = [
-            'hadir' => 1100,
-            'izin' => 25,
-            'sakit' => 15,
-            'alpa' => 10
+            'hadir' => (int)$row['hadir'],
+            'izin'  => (int)$row['izin'],
+            'sakit' => (int)$row['sakit'],
+            'alpa'  => (int)$row['alpa']
         ];
+
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
