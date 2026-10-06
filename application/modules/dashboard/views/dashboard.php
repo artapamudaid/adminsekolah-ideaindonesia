@@ -36,7 +36,7 @@
                         <span class="text-muted"><?= $this->lang->line('dash_summary') ?> <?= (isset($nama_unit) ? $nama_unit : '') ?></span>
                     </div>
                     <div class="col-lg-3 col-md-4 col-sm-5 col-xs-12">
-                        <select name="majors_id" id="select_majors" class="form-control" <?= ($umajorsid != 0) ? 'disabled' : '' ?> onchange="if(this.value){ window.location.href='?m='+this.value; } else { window.location.href='<?= site_url('manage') ?>'; }">
+                        <select name="majors_id" id="select_majors" class="form-control" <?= ($umajorsid != 0) ? 'disabled' : '' ?> onchange="if(this.value){ window.location.href='?m='+this.value + (window.location.hash || ''); } else { window.location.href='<?= site_url('manage') ?>' + (window.location.hash || ''); }">
                             <option value=""><?= $this->lang->line('dash_all_units') ?></option>
                             <?php
                             if (!empty($filter_majors)):
@@ -191,11 +191,24 @@
         $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
             var targetTab = $(e.target).attr('href');
             loadTabData(targetTab);
+            if (history.replaceState) {
+                history.replaceState(null, null, targetTab);
+            } else {
+                window.location.hash = targetTab;
+            }
         });
 
-        var initialTab = $('.nav-tabs li.active a').attr('href');
-        if (initialTab) {
-            loadTabData(initialTab);
+        var hash = window.location.hash;
+        var initialTab = hash ? hash : '.nav-tabs li.active a';
+        var $initialTabLink = $('a[href="' + hash + '"]');
+
+        if (hash && $initialTabLink.length) {
+            $initialTabLink.tab('show');
+        } else {
+            var activeTabHref = $('.nav-tabs li.active a').attr('href');
+            if (activeTabHref) {
+                loadTabData(activeTabHref);
+            }
         }
     });
 </script>

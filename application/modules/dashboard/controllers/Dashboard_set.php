@@ -248,6 +248,89 @@ class Dashboard_set extends CI_Controller
         $data = [];
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
+    public function ajax_student_jumlah_siswa()
+    {
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        if (empty($majors_id)) {
+            // Dummy for All Units
+            $data = [
+                'title' => 'Jumlah Siswa Per Unit',
+                'labels' => ['TK', 'SD', 'SMP', 'SMA'],
+                'data' => [120, 350, 420, 310]
+            ];
+        } else {
+            // Dummy for Specific Unit -> Per Class
+            $data = [
+                'title' => 'Jumlah Siswa Per Kelas',
+                'labels' => ['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6'],
+                'data' => [50, 45, 60, 55, 65, 75]
+            ];
+        }
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_employee_jumlah()
+    {
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        if (empty($majors_id)) {
+            $data = [
+                'title' => 'Jumlah Pegawai Per Unit',
+                'labels' => ['TK', 'SD', 'SMP', 'SMA'],
+                'data' => [15, 45, 55, 40]
+            ];
+        } else {
+            $data = [
+                'title' => 'Jumlah Pegawai Per Jabatan',
+                'labels' => ['Kepala Sekolah', 'Guru Kelas', 'Guru Mapel', 'Tata Usaha', 'Satpam'],
+                'data' => [1, 12, 20, 5, 2]
+            ];
+        }
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_employee_status()
+    {
+        $data = [
+            'labels' => ['Pegawai Tetap', 'Pegawai Tidak Tetap', 'Honorer'],
+            'data' => [75, 40, 20]
+        ];
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_employee_kehadiran()
+    {
+        $data = [
+            'hadir' => 125,
+            'izin' => 5,
+            'sakit' => 2,
+            'alpa' => 3
+        ];
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_student_gender()
+    {
+        // Dummy Gender
+        $data = [
+            'labels' => ['Laki-laki', 'Perempuan'],
+            'data' => [650, 550]
+        ];
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    public function ajax_student_kehadiran()
+    {
+        // Dummy Kehadiran
+        $data = [
+            'hadir' => 1100,
+            'izin' => 25,
+            'sakit' => 15,
+            'alpa' => 10
+        ];
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+
 
     public function ajax_employee_tab()
     {

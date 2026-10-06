@@ -379,7 +379,7 @@
             theme: 'classic',
         });
 
-        // 1. DataTables Realisasi Akun Pembayaran
+        // 1. DataTables Realisasi Akun Pembayaran (inisiasi form filter)
         if ($('#table_realisasi_akun').length) {
             $('#filter_period_realisasi').select2({
                 width: '100%',
@@ -394,92 +394,10 @@
                 width: '100%'
             });
 
-            var tableRealisasi = $('#table_realisasi_akun').DataTable({
-                "processing": true,
-                "serverSide": false,
-                "paging": false,
-                "ordering": false,
-                "info": false,
-                "searching": false,
-                "ajax": {
-                    "url": "<?= site_url('manage/dashboard/ajax_realisasi_akun') ?>",
-                    "type": "POST",
-                    "data": function(d) {
-                        d.period_id = $('#filter_period_realisasi').val();
-                        d.start_month = $('#start_month').val();
-                        d.end_month = $('#end_month').val();
-                        d.majors_id = selectedMajors;
-                    }
-                },
-                "columns": [{
-                        "data": "majors_short_name",
-                        "className": "text-center"
-                    },
-                    {
-                        "data": "unit"
-                    },
-                    {
-                        "data": "tagihan",
-                        "className": "text-right"
-                    },
-                    {
-                        "data": "terbayar",
-                        "className": "text-right"
-                    },
-                    {
-                        "data": "belum",
-                        "className": "text-right"
-                    },
-                    {
-                        "data": "pencapaian",
-                        "className": "text-center"
-                    }
-                ],
-                "createdRow": function(row, data, dataIndex) {
-                    if (dataIndex % 2 === 0) {
-                        $(row).css('background-color', '#a8e9f4');
-                        // $(row).addClass('bg-aqua-gradient');
-                        // $(row).addClass('bg-light-blue');
-                    }
-                },
-                "language": {
-                    "emptyTable": "<?= $this->lang->line('dash_no_data') ?>",
-                    "zeroRecords": "<?= $this->lang->line('dash_no_data') ?>"
-                },
-                "footerCallback": function(row, data, start, end, display) {
-                    var api = this.api();
-                    var sumCol = function(col) {
-                        return api.column(col).data().reduce(function(a, b) {
-                            var n = parseFloat(String(b).replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
-                            return a + n;
-                        }, 0);
-                    };
-                    var tagihan = api.column(2).data().reduce(function(a, b) {
-                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
-                    }, 0);
-                    var terbayar = api.column(3).data().reduce(function(a, b) {
-                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
-                    }, 0);
-                    var belum = api.column(4).data().reduce(function(a, b) {
-                        return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
-                    }, 0);
-                    var pct = tagihan > 0 ? (terbayar / tagihan * 100).toFixed(1) : '0.0';
-
-                    var fmt = function(n) {
-                        return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                    };
-                    $(api.column(2).footer()).html(fmt(tagihan));
-                    $(api.column(3).footer()).html(fmt(terbayar));
-                    $(api.column(4).footer()).html(fmt(belum));
-                    $(api.column(5).footer()).html('<span class="label ' + (pct >= 100 ? 'label-success' : pct >= 75 ? 'label-primary' : pct >= 50 ? 'label-warning' : 'label-danger') + '">' + pct.replace('.', ',') + '%</span>');
-                },
-                "bDestroy": true,
-                "responsive": true,
-                "autoWidth": false
-            });
-
             $('#btn_filter_realisasi').on('click', function() {
-                tableRealisasi.ajax.reload();
+                if ($.fn.DataTable.isDataTable('#table_realisasi_akun')) {
+                    $('#table_realisasi_akun').DataTable().ajax.reload();
+                }
             });
 
             $('#btn_export_realisasi').on('click', function(e) {
@@ -1048,6 +966,88 @@
                 },
                 complete: function() { $('#overlay_top_tabungan').fadeOut(); }
             });
+            // 7. DataTables Realisasi Akun Pembayaran (Lazyload)
+            if ($('#table_realisasi_akun').length) {
+                if ($.fn.DataTable.isDataTable('#table_realisasi_akun')) {
+                    $('#table_realisasi_akun').DataTable().ajax.reload();
+                } else {
+                    $('#table_realisasi_akun').DataTable({
+                        "processing": true,
+                        "serverSide": false,
+                        "paging": false,
+                        "ordering": false,
+                        "info": false,
+                        "searching": false,
+                        "ajax": {
+                            "url": "<?= site_url('manage/dashboard/ajax_realisasi_akun') ?>",
+                            "type": "POST",
+                            "data": function(d) {
+                                d.period_id = $('#filter_period_realisasi').val();
+                                d.start_month = $('#start_month').val();
+                                d.end_month = $('#end_month').val();
+                                d.majors_id = m || selectedMajors;
+                            }
+                        },
+                        "columns": [{
+                                "data": "majors_short_name",
+                                "className": "text-center"
+                            },
+                            {
+                                "data": "unit"
+                            },
+                            {
+                                "data": "tagihan",
+                                "className": "text-right"
+                            },
+                            {
+                                "data": "terbayar",
+                                "className": "text-right"
+                            },
+                            {
+                                "data": "belum",
+                                "className": "text-right"
+                            },
+                            {
+                                "data": "pencapaian",
+                                "className": "text-center"
+                            }
+                        ],
+                        "createdRow": function(row, data, dataIndex) {
+                            if (dataIndex % 2 === 0) {
+                                $(row).css('background-color', '#a8e9f4');
+                            }
+                        },
+                        "language": {
+                            "emptyTable": "<?= $this->lang->line('dash_no_data') ?>",
+                            "zeroRecords": "<?= $this->lang->line('dash_no_data') ?>"
+                        },
+                        "footerCallback": function(row, data, start, end, display) {
+                            var api = this.api();
+                            var tagihan = api.column(2).data().reduce(function(a, b) {
+                                return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                            }, 0);
+                            var terbayar = api.column(3).data().reduce(function(a, b) {
+                                return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                            }, 0);
+                            var belum = api.column(4).data().reduce(function(a, b) {
+                                return a + (parseFloat(String(b).replace(/[^0-9]/g, '')) || 0);
+                            }, 0);
+                            var pct = tagihan > 0 ? (terbayar / tagihan * 100).toFixed(1) : '0.0';
+
+                            var fmt = function(n) {
+                                return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            };
+                            $(api.column(2).footer()).html(fmt(tagihan));
+                            $(api.column(3).footer()).html(fmt(terbayar));
+                            $(api.column(4).footer()).html(fmt(belum));
+                            $(api.column(5).footer()).html('<span class="label ' + (pct >= 100 ? 'label-success' : pct >= 75 ? 'label-primary' : pct >= 50 ? 'label-warning' : 'label-danger') + '">' + pct.replace('.', ',') + '%</span>');
+                        },
+                        "bDestroy": true,
+                        "responsive": true,
+                        "autoWidth": false
+                    });
+                }
+            }
         };
 
         window.renderFinanceTab = function(data) {
