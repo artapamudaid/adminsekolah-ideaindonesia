@@ -108,6 +108,16 @@ $lang['dash_employee_status'] = 'Status Kepegawaian';
 $lang['dash_employee_permanent'] = 'Pegawai Tetap';
 $lang['dash_employee_non_permanent'] = 'Pegawai Tidak Tetap';
 
+$lang['dash_employee_attendance'] = 'Presensi Pegawai Hari Ini';
+$lang['dash_emp_datang'] = 'DATANG';
+$lang['dash_emp_ijin'] = 'IJIN';
+$lang['dash_emp_pulang'] = 'PULANG';
+$lang['dash_emp_nip'] = 'NIP';
+$lang['dash_emp_name'] = 'Nama';
+$lang['dash_emp_position'] = 'Jabatan';
+$lang['dash_emp_attendance_status'] = 'Status Kehadiran';
+$lang['dash_emp_time'] = 'Waktu';
+
 // tab akademik
 $lang['dash_tab_academic'] = 'Akademik';
 $lang['dash_attendance_permit'] = 'Izin';

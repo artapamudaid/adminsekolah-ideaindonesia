@@ -108,6 +108,16 @@ $lang['dash_employee_status'] = 'Employee Status';
 $lang['dash_employee_permanent'] = 'Permanent Employee';
 $lang['dash_employee_non_permanent'] = 'Non-Permanent Employee';
 
+$lang['dash_employee_attendance'] = 'Employee Attendance Today';
+$lang['dash_emp_datang'] = 'ARRIVED';
+$lang['dash_emp_ijin'] = 'PERMIT';
+$lang['dash_emp_pulang'] = 'RETURNED';
+$lang['dash_emp_nip'] = 'NIP';
+$lang['dash_emp_name'] = 'Name';
+$lang['dash_emp_position'] = 'Position';
+$lang['dash_emp_attendance_status'] = 'Attendance Status';
+$lang['dash_emp_time'] = 'Time';
+
 // tab akademik
 $lang['dash_tab_academic'] = 'Academic';
 $lang['dash_attendance_sick'] = 'Sick';

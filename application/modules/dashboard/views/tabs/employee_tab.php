@@ -38,41 +38,62 @@
         <div class="box box-success">
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_employee_attendance') ?: 'Presensi Pegawai Hari Ini' ?></h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" id="btn_reload_emp_kehadiran" title="Refresh Data">
+                        <i class="fa fa-refresh" id="icon_reload_emp_kehadiran"></i>
+                    </button>
+                </div>
             </div>
             <div class="box-body">
                 <div id="skeleton_employee_kehadiran" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
                     <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
                 </div>
                 <div id="container_employee_kehadiran" style="display: none;">
-                    <div class="row text-center">
-                        <div class="col-sm-3 col-xs-6">
+                    <!-- Metric Blocks: DATANG, IJIN, PULANG -->
+                    <div class="row text-center" style="margin-bottom: 15px;">
+                        <div class="col-sm-4 col-xs-6">
                             <div class="description-block border-right">
-                                <span class="description-percentage text-green"><i class="fa fa-check"></i></span>
-                                <h5 class="description-header" id="txt_emp_hadir">0</h5>
-                                <span class="description-text">Hadir</span>
+                                <span class="description-percentage text-green"><i class="fa fa-sign-in"></i></span>
+                                <h5 class="description-header" id="txt_emp_datang">0</h5>
+                                <span class="description-text"><?= $this->lang->line('dash_emp_datang') ?: 'DATANG' ?></span>
                             </div>
                         </div>
-                        <div class="col-sm-3 col-xs-6">
+                        <div class="col-sm-4 col-xs-6">
                             <div class="description-block border-right">
-                                <span class="description-percentage text-blue"><i class="fa fa-info"></i></span>
-                                <h5 class="description-header" id="txt_emp_izin">0</h5>
-                                <span class="description-text">Izin</span>
+                                <span class="description-percentage text-blue"><i class="fa fa-info-circle"></i></span>
+                                <h5 class="description-header" id="txt_emp_ijin">0</h5>
+                                <span class="description-text"><?= $this->lang->line('dash_emp_ijin') ?: 'IJIN' ?></span>
                             </div>
                         </div>
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-yellow"><i class="fa fa-medkit"></i></span>
-                                <h5 class="description-header" id="txt_emp_sakit">0</h5>
-                                <span class="description-text">Sakit</span>
-                            </div>
-                        </div>
-                        <div class="col-sm-3 col-xs-6">
+                        <div class="col-sm-4 col-xs-6">
                             <div class="description-block">
-                                <span class="description-percentage text-red"><i class="fa fa-times"></i></span>
-                                <h5 class="description-header" id="txt_emp_alpa">0</h5>
-                                <span class="description-text">Alpa / Belum Hadir</span>
+                                <span class="description-percentage text-orange"><i class="fa fa-sign-out"></i></span>
+                                <h5 class="description-header" id="txt_emp_pulang">0</h5>
+                                <span class="description-text"><?= $this->lang->line('dash_emp_pulang') ?: 'PULANG' ?></span>
                             </div>
                         </div>
+                    </div>
+                    <!-- Table Detail -->
+                    <div id="no_data_emp_kehadiran" class="text-center text-muted" style="display: none; padding: 20px;">
+                        <i class="fa fa-calendar-times-o fa-2x"></i>
+                        <p style="margin-top: 8px;"><?= $this->lang->line('dash_no_data') ?: 'Tidak ada data untuk ditampilkan' ?></p>
+                    </div>
+                    <div id="tbl_wrapper_emp_kehadiran" style="max-height: 209px; overflow-y: auto; overflow-x: auto;">
+                        <table class="table table-bordered table-striped table-condensed" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><?= $this->lang->line('dash_no') ?: 'No' ?></th>
+                                    <th><?= $this->lang->line('dash_emp_nip') ?: 'NIP' ?></th>
+                                    <th><?= $this->lang->line('dash_emp_name') ?: 'Nama' ?></th>
+                                    <th><?= $this->lang->line('dash_emp_position') ?: 'Jabatan' ?></th>
+                                    <th><?= $this->lang->line('dash_emp_attendance_status') ?: 'Status Kehadiran' ?></th>
+                                    <th><?= $this->lang->line('dash_emp_time') ?: 'Waktu' ?></th>
+                                    <th><?= $this->lang->line('dash_emp_note') ?: 'Catatan' ?></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_emp_kehadiran">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -83,14 +104,35 @@
 <script>
     window.renderEmployeeTab = function(data) {};
 
+    var empPollingInterval = null;
+
+    function startEmpKehadiranPolling() {
+        if (!empPollingInterval) {
+            empPollingInterval = setInterval(function() {
+                loadWidgetEmployeeKehadiran($('#select_majors').val(), true);
+            }, 30000);
+        }
+    }
+
+    function stopEmpKehadiranPolling() {
+        if (empPollingInterval) {
+            clearInterval(empPollingInterval);
+            empPollingInterval = null;
+        }
+    }
+
     $(document).ready(function() {
         var majorsId = $('#select_majors').val();
 
         $('a[data-toggle="tab"][href="#employee-tab"]').on('shown.bs.tab', function(e) {
             var $tabPane = $('#employee-tab');
-            if ($tabPane.data('widgets_loaded')) return;
-            $tabPane.data('widgets_loaded', true);
-            loadEmployeeWidgets(majorsId);
+            if (!$tabPane.data('widgets_loaded')) {
+                $tabPane.data('widgets_loaded', true);
+                loadEmployeeWidgets(majorsId);
+            }
+            startEmpKehadiranPolling();
+        }).on('hidden.bs.tab', function(e) {
+            stopEmpKehadiranPolling();
         });
 
         if ($('.nav-tabs li.active a').attr('href') === '#employee-tab') {
@@ -99,13 +141,23 @@
                 $tabPane.data('widgets_loaded', true);
                 loadEmployeeWidgets(majorsId);
             }
+            startEmpKehadiranPolling();
         }
+
+        $('#btn_reload_emp_kehadiran').on('click', function(e) {
+            e.preventDefault();
+            var $icon = $('#icon_reload_emp_kehadiran');
+            $icon.addClass('fa-spin');
+            loadWidgetEmployeeKehadiran($('#select_majors').val(), true, function() {
+                $icon.removeClass('fa-spin');
+            });
+        });
     });
 
     function loadEmployeeWidgets(majorsId) {
         loadWidgetEmployeeCount(majorsId);
         loadWidgetEmployeeStatus(majorsId);
-        loadWidgetEmployeeKehadiran(majorsId);
+        loadWidgetEmployeeKehadiran(majorsId, false);
     }
 
     var chartEmployeeCount = null;
@@ -153,8 +205,7 @@
                     type: 'bar',
                     data: {
                         labels: res.labels,
-                        datasets: [
-                            {
+                        datasets: [{
                                 type: 'line',
                                 label: res.lang_total || 'Jumlah',
                                 data: res.data_total || [],
@@ -263,9 +314,11 @@
         });
     }
 
-    function loadWidgetEmployeeKehadiran(majorsId) {
-        $('#skeleton_employee_kehadiran').show();
-        $('#container_employee_kehadiran').hide();
+    function loadWidgetEmployeeKehadiran(majorsId, isBackground, callback) {
+        if (!isBackground) {
+            $('#skeleton_employee_kehadiran').show();
+            $('#container_employee_kehadiran').hide();
+        }
 
         $.ajax({
             url: '<?= site_url('manage/dashboard/ajax_employee_kehadiran') ?>',
@@ -275,16 +328,59 @@
                 majors_id: majorsId
             },
             success: function(res) {
-                $('#skeleton_employee_kehadiran').hide();
-                $('#container_employee_kehadiran').show();
+                if (!isBackground) {
+                    $('#skeleton_employee_kehadiran').hide();
+                    $('#container_employee_kehadiran').show();
+                }
 
-                $('#txt_emp_hadir').text(res.hadir);
-                $('#txt_emp_izin').text(res.izin);
-                $('#txt_emp_sakit').text(res.sakit);
-                $('#txt_emp_alpa').text(res.alpa);
+                if (res.metrics) {
+                    $('#txt_emp_datang').text(res.metrics.datang || 0);
+                    $('#txt_emp_ijin').text(res.metrics.ijin || 0);
+                    $('#txt_emp_pulang').text(res.metrics.pulang || 0);
+                }
+
+                var $tbody = $('#tbody_emp_kehadiran');
+                $tbody.empty();
+
+                if (res.list && res.list.length > 0) {
+                    $('#no_data_emp_kehadiran').hide();
+                    $('#tbl_wrapper_emp_kehadiran').show();
+
+                    $.each(res.list, function(i, item) {
+                        var badgeClass = 'label-default';
+                        if (item.jenis_absen === 'DATANG') badgeClass = 'label-success';
+                        else if (item.jenis_absen === 'IJIN') badgeClass = 'label-info';
+                        else if (item.jenis_absen === 'PULANG') badgeClass = 'label-warning';
+
+                        var statusHadir = item.statushadir ? ' <small class="text-muted">(' + item.statushadir + ')</small>' : '';
+                        var position = item.position_name ? item.position_name : '-';
+                        var time = item.time ? item.time : '-';
+                        var note = item.note ? item.note : '-';
+                        var noteClass = note != '-' ? 'text-left' : 'text-center'
+
+                        var tr = '<tr>' +
+                            '<td class="text-center">' + (i + 1) + '</td>' +
+                            '<td>' + (item.employee_nip || '-') + '</td>' +
+                            '<td>' + item.employee_name + '</td>' +
+                            '<td>' + position + '</td>' +
+                            '<td class="text-left"><span class="label ' + badgeClass + '">' + item.jenis_absen + '</span>' + statusHadir + '</td>' +
+                            '<td class="text-center">' + time + '</td>' +
+                            '<td class="' + noteClass + '">' + note + '</td>' +
+                            '</tr>';
+                        $tbody.append(tr);
+                    });
+                } else {
+                    $('#tbl_wrapper_emp_kehadiran').hide();
+                    $('#no_data_emp_kehadiran').show();
+                }
+
+                if (typeof callback === 'function') callback();
             },
             error: function() {
-                $('#skeleton_employee_kehadiran').html('<p class="text-danger">Gagal memuat data</p>');
+                if (!isBackground) {
+                    $('#skeleton_employee_kehadiran').html('<p class="text-danger">Gagal memuat data</p>');
+                }
+                if (typeof callback === 'function') callback();
             }
         });
     }

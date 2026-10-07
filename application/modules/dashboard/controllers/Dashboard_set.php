@@ -442,12 +442,52 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_employee_kehadiran()
     {
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        $today = date('Y-m-d');
+
+        $where = "WHERE da.tanggal = " . $this->db->escape($today);
+        if (!empty($majors_id)) {
+            $where .= " AND e.employee_majors_id = " . (int)$majors_id;
+        }
+
+        $sql_metrics = "
+            SELECT 
+                COALESCE(SUM(CASE WHEN da.jenis_absen = 'DATANG' THEN 1 ELSE 0 END), 0) AS datang,
+                COALESCE(SUM(CASE WHEN da.jenis_absen = 'IJIN' THEN 1 ELSE 0 END), 0) AS ijin,
+                COALESCE(SUM(CASE WHEN da.jenis_absen = 'PULANG' THEN 1 ELSE 0 END), 0) AS pulang
+            FROM data_absensi da
+            JOIN employee e ON e.employee_id = da.id_pegawai
+            {$where}
+        ";
+        $metrics = $this->db->query($sql_metrics)->row_array();
+
+        $sql_list = "
+            SELECT 
+                da.id,
+                e.employee_nip,
+                e.employee_name,
+                p.position_name,
+                da.jenis_absen,
+                da.statushadir,
+                da.time,
+                da.catatan_absen
+            FROM data_absensi da
+            JOIN employee e ON e.employee_id = da.id_pegawai
+            LEFT JOIN position p ON p.position_id = e.employee_position_id
+            {$where}
+            ORDER BY da.id DESC
+        ";
+        $list = $this->db->query($sql_list)->result_array();
+
         $data = [
-            'hadir' => 125,
-            'izin' => 5,
-            'sakit' => 2,
-            'alpa' => 3
+            'metrics' => [
+                'datang' => (int)($metrics['datang'] ?? 0),
+                'ijin'   => (int)($metrics['ijin'] ?? 0),
+                'pulang' => (int)($metrics['pulang'] ?? 0)
+            ],
+            'list' => $list
         ];
+
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
