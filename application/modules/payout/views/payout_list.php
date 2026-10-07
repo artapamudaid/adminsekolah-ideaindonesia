@@ -2247,6 +2247,13 @@
 			},
 			success: function(msg) {
 				$("#div_noref").html(msg);
+
+				$('#no_ref').select2({
+					placeholder: '-- Pilih No. Referensi --',
+					allowClear: true,
+					width: '100%',
+					theme: 'classic',
+				});
 			},
 			error: function(msg) {
 				alert('msg');
@@ -2736,6 +2743,13 @@
 					handleAjaxError(jqXHR, textStatus)
 				},
 			});
+		});
+
+		$('#no_ref').select2({
+			placeholder: '-- Pilih No. Referensi --',
+			allowClear: true,
+			width: '100%',
+			theme: 'classic',
 		});
 	});
 </script>

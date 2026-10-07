@@ -102,6 +102,11 @@ $lang['dash_status_inactive'] = 'Inactive';
 
 // tab kepegawaian
 $lang['dash_tab_employee'] = 'Employee';
+$lang['dash_employee_per_unit'] = 'Employees per Unit';
+$lang['dash_employee_per_position'] = 'Employees per Position';
+$lang['dash_employee_status'] = 'Employee Status';
+$lang['dash_employee_permanent'] = 'Permanent Employee';
+$lang['dash_employee_non_permanent'] = 'Non-Permanent Employee';
 
 // tab akademik
 $lang['dash_tab_academic'] = 'Academic';

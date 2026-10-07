@@ -183,7 +183,9 @@
                         maintainAspectRatio: false,
                         plugins: {
                             labels: {
-                                render: 'value'
+                                render: function() {
+                                    return '';
+                                }
                             }
                         },
                         tooltips: {
@@ -252,7 +254,9 @@
                         maintainAspectRatio: false,
                         plugins: {
                             labels: {
-                                render: 'value'
+                                render: 'percentage',
+                                precision: 1,
+                                fontColor: '#fff'
                             }
                         }
                     }

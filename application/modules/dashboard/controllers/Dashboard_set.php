@@ -293,7 +293,7 @@ class Dashboard_set extends CI_Controller
                         SUM(CASE WHEN s.student_gender = 'P' THEN 1 ELSE 0 END) AS count_p, 
                         COUNT(s.student_id) AS count_total 
                     FROM class c 
-                    LEFT JOIN student s ON s.class_class_id = c.class_id AND s.student_status = '1' 
+                    LEFT JOIN student s ON s.class_class_id = c.class_id AND s.student_status = '1' AND s.majors_majors_id = c.majors_majors_id
                     WHERE c.majors_majors_id = '$mid' 
                     GROUP BY c.class_id, c.class_name 
                     ORDER BY c.class_name ASC";
@@ -324,29 +324,120 @@ class Dashboard_set extends CI_Controller
     public function ajax_employee_jumlah()
     {
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
+
+        $labels      = [];
+        $data_l      = [];
+        $data_p      = [];
+        $data_total  = [];
+
         if (empty($majors_id)) {
-            $data = [
-                'title' => 'Jumlah Pegawai Per Unit',
-                'labels' => ['TK', 'SD', 'SMP', 'SMA'],
-                'data' => [15, 45, 55, 40]
-            ];
+            $title = $this->lang->line('dash_employee_per_unit') ?: 'Jumlah Pegawai Per Unit';
+
+            $sql = "SELECT
+                        m.majors_id,
+                        m.majors_short_name,
+                        SUM(CASE WHEN e.employee_gender = 'L' THEN 1 ELSE 0 END) AS count_l,
+                        SUM(CASE WHEN e.employee_gender = 'P' THEN 1 ELSE 0 END) AS count_p,
+                        COUNT(e.employee_id) AS count_total
+                    FROM majors m
+                    LEFT JOIN employee e ON e.employee_majors_id = m.majors_id AND e.employee_status = 1
+                    WHERE m.majors_status = 1
+                    GROUP BY m.majors_id, m.majors_short_name
+                    ORDER BY m.majors_id ASC";
+
+            $query = $this->db->query($sql)->result_array();
+            foreach ($query as $row) {
+                $labels[]     = $row['majors_short_name'];
+                $data_l[]     = (int)$row['count_l'];
+                $data_p[]     = (int)$row['count_p'];
+                $data_total[] = (int)$row['count_total'];
+            }
         } else {
-            $data = [
-                'title' => 'Jumlah Pegawai Per Jabatan',
-                'labels' => ['Kepala Sekolah', 'Guru Kelas', 'Guru Mapel', 'Tata Usaha', 'Satpam'],
-                'data' => [1, 12, 20, 5, 2]
-            ];
+            $title = $this->lang->line('dash_employee_per_position') ?: 'Jumlah Pegawai Per Jabatan';
+            $mid   = (int)$majors_id;
+
+            $sql = "SELECT
+                        p.position_id,
+                        p.position_name,
+                        SUM(CASE WHEN e.employee_gender = 'L' THEN 1 ELSE 0 END) AS count_l,
+                        SUM(CASE WHEN e.employee_gender = 'P' THEN 1 ELSE 0 END) AS count_p,
+                        COUNT(e.employee_id) AS count_total
+                    FROM position p
+                    JOIN employee e ON e.employee_position_id = p.position_id AND e.employee_status = 1 AND e.employee_majors_id = '$mid'
+                    WHERE p.position_majors_id = '$mid'
+                    GROUP BY p.position_id, p.position_name
+                    ORDER BY count_total DESC, p.position_name ASC";
+
+            $query = $this->db->query($sql)->result_array();
+            foreach ($query as $row) {
+                $labels[]     = $row['position_name'];
+                $data_l[]     = (int)$row['count_l'];
+                $data_p[]     = (int)$row['count_p'];
+                $data_total[] = (int)$row['count_total'];
+            }
         }
+
+        $data = [
+            'title'      => $title,
+            'labels'     => $labels,
+            'data_l'     => $data_l,
+            'data_p'     => $data_p,
+            'data_total' => $data_total,
+            'lang_l'     => $this->lang->line('dash_male') ?: 'Laki-laki',
+            'lang_p'     => $this->lang->line('dash_female') ?: 'Perempuan',
+            'lang_total' => $this->lang->line('dash_total') ?: 'Jumlah',
+        ];
+
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
     public function ajax_employee_status()
     {
-        $data = [
-            'labels' => ['Pegawai Tetap', 'Pegawai Tidak Tetap', 'Honorer'],
-            'data' => [75, 40, 20]
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+
+        $where_majors = '';
+        if (!empty($majors_id)) {
+            $mid = (int)$majors_id;
+            $where_majors = "AND e.employee_majors_id = '$mid'";
+        }
+
+        $sql = "SELECT
+                    e.employee_category,
+                    COUNT(e.employee_id) AS total
+                FROM employee e
+                WHERE e.employee_status = 1
+                AND e.employee_category IN (1, 2)
+                {$where_majors}
+                GROUP BY e.employee_category";
+
+        $query  = $this->db->query($sql)->result_array();
+        $counts = [];
+        foreach ($query as $row) {
+            $counts[(int)$row['employee_category']] = (int)$row['total'];
+        }
+
+        $category_map = [
+            1 => ['label' => $this->lang->line('dash_employee_permanent') ?: 'Pegawai Tetap',     'color' => '#00a65a'],
+            2 => ['label' => $this->lang->line('dash_employee_non_permanent') ?: 'Pegawai Tidak Tetap', 'color' => '#ffec59'],
         ];
-        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+
+        $labels = [];
+        $data   = [];
+        $colors = [];
+        foreach ($category_map as $cat => $info) {
+            $val = isset($counts[$cat]) ? $counts[$cat] : 0;
+            if ($val > 0) {
+                $labels[] = $info['label'];
+                $data[]   = $val;
+                $colors[] = $info['color'];
+            }
+        }
+
+        $this->output->set_content_type('application/json')->set_output(json_encode([
+            'labels' => $labels,
+            'data'   => $data,
+            'colors' => $colors,
+        ]));
     }
 
     public function ajax_employee_kehadiran()
@@ -417,28 +508,49 @@ class Dashboard_set extends CI_Controller
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
         $today = date('Y-m-d');
 
-        $where = "WHERE ps.date = '$today'";
-        if (!empty($majors_id)) {
-            $mid = (int)$majors_id;
-            $where .= " AND c.majors_majors_id = '$mid'";
+        if ($this->db->table_exists('presensi_student')) {
+            $where = "WHERE ps.date = '$today'";
+            if (!empty($majors_id)) {
+                $mid = (int)$majors_id;
+                $where .= " AND c.majors_majors_id = '$mid'";
+            }
+
+            $sql = "SELECT
+                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'DATANG' THEN 1 ELSE 0 END), 0) AS hadir,
+                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'IZIN' THEN 1 ELSE 0 END), 0) AS izin,
+                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'SAKIT' THEN 1 ELSE 0 END), 0) AS sakit,
+                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'ALPHA' THEN 1 ELSE 0 END), 0) AS alpa
+                    FROM presensi_student ps
+                    LEFT JOIN class c ON c.class_id = ps.id_class
+                    {$where}";
+
+            $row = $this->db->query($sql)->row_array();
+        } else if ($this->db->table_exists('presensi_harian')) {
+            $where = "WHERE ph.presensi_harian_date = '$today'";
+            if (!empty($majors_id)) {
+                $mid = (int)$majors_id;
+                $where .= " AND c.majors_majors_id = '$mid'";
+            }
+
+            $sql = "SELECT
+                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'H' THEN 1 ELSE 0 END), 0) AS hadir,
+                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'I' THEN 1 ELSE 0 END), 0) AS izin,
+                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'S' THEN 1 ELSE 0 END), 0) AS sakit,
+                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'A' THEN 1 ELSE 0 END), 0) AS alpa
+                    FROM presensi_harian ph
+                    LEFT JOIN class c ON c.class_id = ph.presensi_harian_class_id
+                    {$where}";
+
+            $row = $this->db->query($sql)->row_array();
+        } else {
+            $row = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpa' => 0];
         }
 
-        $sql = "SELECT
-                    COALESCE(SUM(CASE WHEN ps.jenis_absen = 'DATANG' THEN 1 ELSE 0 END), 0) AS hadir,
-                    COALESCE(SUM(CASE WHEN ps.jenis_absen = 'IZIN' THEN 1 ELSE 0 END), 0) AS izin,
-                    COALESCE(SUM(CASE WHEN ps.jenis_absen = 'SAKIT' THEN 1 ELSE 0 END), 0) AS sakit,
-                    COALESCE(SUM(CASE WHEN ps.jenis_absen = 'ALPHA' THEN 1 ELSE 0 END), 0) AS alpa
-                FROM presensi_student ps
-                LEFT JOIN class c ON c.class_id = ps.id_class
-                {$where}";
-
-        $row = $this->db->query($sql)->row_array();
-
         $data = [
-            'hadir' => (int)$row['hadir'],
-            'izin'  => (int)$row['izin'],
-            'sakit' => (int)$row['sakit'],
-            'alpa'  => (int)$row['alpa']
+            'hadir' => (int)($row['hadir'] ?? 0),
+            'izin'  => (int)($row['izin'] ?? 0),
+            'sakit' => (int)($row['sakit'] ?? 0),
+            'alpa'  => (int)($row['alpa'] ?? 0)
         ];
 
         $this->output->set_content_type('application/json')->set_output(json_encode($data));

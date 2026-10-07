@@ -102,6 +102,11 @@ $lang['dash_status_inactive'] = 'Tidak Aktif';
 
 // tab kepegawaian
 $lang['dash_tab_employee'] = 'Kepegawaian';
+$lang['dash_employee_per_unit'] = 'Jumlah Pegawai Per Unit';
+$lang['dash_employee_per_position'] = 'Jumlah Pegawai Per Jabatan';
+$lang['dash_employee_status'] = 'Status Kepegawaian';
+$lang['dash_employee_permanent'] = 'Pegawai Tetap';
+$lang['dash_employee_non_permanent'] = 'Pegawai Tidak Tetap';
 
 // tab akademik
 $lang['dash_tab_academic'] = 'Akademik';

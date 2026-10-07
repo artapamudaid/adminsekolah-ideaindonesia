@@ -1,6 +1,6 @@
-<!-- Widget 1: Jumlah Pegawai -->
 <div class="row">
-    <div class="col-lg-8 col-md-12 col-sm-12">
+    <!-- Widget 1: Jumlah Pegawai -->
+    <div class="col-lg-8 col-md-12 col-sm-12" id="col_widget_employee_count">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title" id="title_employee_count"><?= $this->lang->line('dash_employee_count') ?: 'Jumlah Pegawai Per Unit' ?></h3>
@@ -32,11 +32,9 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Widget 3: Kehadiran Pegawai Hari Ini -->
-<div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12">
+    <!-- Widget 3: Kehadiran Pegawai Hari Ini -->
+    <div class="col-lg-12 col-md-12 col-sm-12" id="col_widget_employee_kehadiran">
         <div class="box box-success">
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_employee_attendance') ?: 'Presensi Pegawai Hari Ini' ?></h3>
@@ -115,6 +113,7 @@
     function loadWidgetEmployeeCount(majorsId) {
         $('#skeleton_employee_count').show();
         $('#container_employee_count').hide();
+        $('#no_data_employee_count').hide();
 
         $.ajax({
             url: '<?= site_url('manage/dashboard/ajax_employee_jumlah') ?>',
@@ -125,30 +124,80 @@
             },
             success: function(res) {
                 $('#skeleton_employee_count').hide();
-                $('#container_employee_count').show();
                 $('#title_employee_count').text(res.title);
 
                 var ctx = document.getElementById('chart_employee_count').getContext('2d');
                 if (chartEmployeeCount) {
                     chartEmployeeCount.destroy();
                 }
+
+                if (!res.labels || res.labels.length === 0) {
+                    if ($('#no_data_employee_count').length === 0) {
+                        $('<div id="no_data_employee_count" class="text-center text-muted" style="height: 300px; display: flex; align-items: center; justify-content: center;"><?= $this->lang->line('dash_no_data') ?: 'Tidak ada data untuk ditampilkan' ?></div>').insertBefore('#container_employee_count');
+                    }
+                    $('#no_data_employee_count').show();
+                    return;
+                }
+
+                if (res.labels.length > 5) {
+                    $('#col_widget_employee_count').removeClass('col-lg-8').addClass('col-lg-12');
+                    $('#col_widget_employee_kehadiran').removeClass('col-lg-12').addClass('col-lg-8');
+                } else {
+                    $('#col_widget_employee_count').removeClass('col-lg-12').addClass('col-lg-8');
+                    $('#col_widget_employee_kehadiran').removeClass('col-lg-8').addClass('col-lg-12');
+                }
+
+                $('#container_employee_count').show();
+
                 chartEmployeeCount = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: res.labels,
-                        datasets: [{
-                            label: 'Jumlah Pegawai',
-                            data: res.data,
-                            backgroundColor: '#00c0ef'
-                        }]
+                        datasets: [
+                            {
+                                type: 'line',
+                                label: res.lang_total || 'Jumlah',
+                                data: res.data_total || [],
+                                borderColor: '#00a65a',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#00a65a',
+                                fill: false
+                            },
+                            {
+                                type: 'bar',
+                                label: res.lang_l || 'Laki-laki',
+                                data: res.data_l || [],
+                                backgroundColor: '#3c8dbc'
+                            },
+                            {
+                                type: 'bar',
+                                label: res.lang_p || 'Perempuan',
+                                data: res.data_p || [],
+                                backgroundColor: '#f56954'
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        plugins: {
+                            labels: {
+                                render: function() {
+                                    return '';
+                                }
+                            }
+                        },
+                        tooltips: {
+                            mode: 'index',
+                            intersect: false
+                        },
                         scales: {
                             yAxes: [{
                                 ticks: {
-                                    beginAtZero: true
+                                    beginAtZero: true,
+                                    precision: 0
                                 }
                             }]
                         }
@@ -166,6 +215,7 @@
     function loadWidgetEmployeeStatus(majorsId) {
         $('#skeleton_employee_status').show();
         $('#container_employee_status').hide();
+        $('#no_data_employee_status').hide();
 
         $.ajax({
             url: '<?= site_url('manage/dashboard/ajax_employee_status') ?>',
@@ -176,19 +226,29 @@
             },
             success: function(res) {
                 $('#skeleton_employee_status').hide();
-                $('#container_employee_status').show();
 
                 var ctx = document.getElementById('chart_employee_status').getContext('2d');
                 if (chartEmployeeStatus) {
                     chartEmployeeStatus.destroy();
                 }
+
+                if (!res.labels || res.labels.length === 0) {
+                    if ($('#no_data_employee_status').length === 0) {
+                        $('<div id="no_data_employee_status" class="text-center text-muted" style="height: 300px; display: flex; align-items: center; justify-content: center;"><?= $this->lang->line('dash_no_data') ?: 'Tidak ada data untuk ditampilkan' ?></div>').insertBefore('#container_employee_status');
+                    }
+                    $('#no_data_employee_status').show();
+                    return;
+                }
+
+                $('#container_employee_status').show();
+
                 chartEmployeeStatus = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: res.labels,
                         datasets: [{
                             data: res.data,
-                            backgroundColor: ['#00a65a', '#f39c12', '#dd4b39']
+                            backgroundColor: res.colors || ['#00a65a', '#f39c12', '#dd4b39']
                         }]
                     },
                     options: {

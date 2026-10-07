@@ -222,7 +222,7 @@ class Auth_set extends CI_Controller
         $this->session->unset_userdata('user_image');
 
         $q = $this->input->get(NULL, TRUE);
-        if ($q['location'] != NULL) {
+        if ($q && isset($q['location']) && $q['location'] != NULL) {
             $location = $q['location'];
         } else {
             $location = NULL;
