@@ -253,6 +253,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_student_jumlah_siswa()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
 
         $labels = [];
@@ -321,8 +322,116 @@ class Dashboard_set extends CI_Controller
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
+    public function ajax_student_status()
+    {
+        session_write_close();
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+
+        $where = "";
+        if (!empty($majors_id)) {
+            $where = "WHERE s.majors_majors_id = " . (int)$majors_id;
+        }
+
+        $sql = "SELECT 
+                    s.student_status,
+                    COUNT(s.student_id) as total
+                FROM student s
+                {$where}
+                GROUP BY s.student_status";
+
+        $query = $this->db->query($sql)->result_array();
+
+        $status_map = [
+            1 => ['label' => $this->lang->line('dash_status_active') ?: 'Aktif', 'color' => '#00a65a'],
+            2 => ['label' => $this->lang->line('dash_status_passed') ?: 'Lulus/Alumni', 'color' => '#3c8dbc'],
+            3 => ['label' => $this->lang->line('dash_status_moved') ?: 'Pindah/Mutasi', 'color' => '#f39c12'],
+            0 => ['label' => $this->lang->line('dash_status_inactive') ?: 'Tidak Aktif', 'color' => '#d2d6de'],
+        ];
+
+        $counts = [];
+        foreach ($query as $row) {
+            $counts[(int)$row['student_status']] = (int)$row['total'];
+        }
+
+        $labels = [];
+        $data = [];
+        $colors = [];
+
+        foreach ($status_map as $st => $info) {
+            $val = isset($counts[$st]) ? $counts[$st] : 0;
+            if ($val > 0) {
+                $labels[] = $info['label'];
+                $data[] = $val;
+                $colors[] = $info['color'];
+            }
+        }
+
+        $res = [
+            'labels' => $labels,
+            'data'   => $data,
+            'colors' => $colors
+        ];
+
+        $this->output->set_content_type('application/json')->set_output(json_encode($res));
+    }
+
+    public function ajax_student_kehadiran()
+    {
+        session_write_close();
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        $today = date('Y-m-d');
+
+        if ($this->db->table_exists('presensi_student')) {
+            $where = "WHERE ps.date = '$today'";
+            if (!empty($majors_id)) {
+                $mid = (int)$majors_id;
+                $where .= " AND c.majors_majors_id = '$mid'";
+            }
+
+            $sql = "SELECT
+                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'DATANG' THEN 1 ELSE 0 END), 0) AS hadir,
+                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'IZIN' THEN 1 ELSE 0 END), 0) AS izin,
+                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'SAKIT' THEN 1 ELSE 0 END), 0) AS sakit,
+                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'ALPHA' THEN 1 ELSE 0 END), 0) AS alpa
+                    FROM presensi_student ps
+                    LEFT JOIN class c ON c.class_id = ps.id_class
+                    {$where}";
+
+            $row = $this->db->query($sql)->row_array();
+        } else if ($this->db->table_exists('presensi_harian')) {
+            $where = "WHERE ph.presensi_harian_date = '$today'";
+            if (!empty($majors_id)) {
+                $mid = (int)$majors_id;
+                $where .= " AND c.majors_majors_id = '$mid'";
+            }
+
+            $sql = "SELECT
+                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'H' THEN 1 ELSE 0 END), 0) AS hadir,
+                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'I' THEN 1 ELSE 0 END), 0) AS izin,
+                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'S' THEN 1 ELSE 0 END), 0) AS sakit,
+                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'A' THEN 1 ELSE 0 END), 0) AS alpa
+                    FROM presensi_harian ph
+                    LEFT JOIN class c ON c.class_id = ph.presensi_harian_class_id
+                    {$where}";
+
+            $row = $this->db->query($sql)->row_array();
+        } else {
+            $row = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpa' => 0];
+        }
+
+        $data = [
+            'hadir' => (int)($row['hadir'] ?? 0),
+            'izin'  => (int)($row['izin'] ?? 0),
+            'sakit' => (int)($row['sakit'] ?? 0),
+            'alpa'  => (int)($row['alpa'] ?? 0)
+        ];
+
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
     public function ajax_employee_jumlah()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
 
         $labels      = [];
@@ -393,6 +502,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_employee_status()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
 
         $where_majors = '';
@@ -442,6 +552,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_employee_kehadiran()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
         $today = date('Y-m-d');
 
@@ -490,113 +601,6 @@ class Dashboard_set extends CI_Controller
 
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
-
-    public function ajax_student_status()
-    {
-        $majors_id = sanitizeStrict($this->input->post('majors_id'));
-
-        $where = "";
-        if (!empty($majors_id)) {
-            $where = "WHERE s.majors_majors_id = " . (int)$majors_id;
-        }
-
-        $sql = "SELECT 
-                    s.student_status,
-                    COUNT(s.student_id) as total
-                FROM student s
-                {$where}
-                GROUP BY s.student_status";
-
-        $query = $this->db->query($sql)->result_array();
-
-        $status_map = [
-            1 => ['label' => $this->lang->line('dash_status_active') ?: 'Aktif', 'color' => '#00a65a'],
-            2 => ['label' => $this->lang->line('dash_status_passed') ?: 'Lulus/Alumni', 'color' => '#3c8dbc'],
-            3 => ['label' => $this->lang->line('dash_status_moved') ?: 'Pindah/Mutasi', 'color' => '#f39c12'],
-            0 => ['label' => $this->lang->line('dash_status_inactive') ?: 'Tidak Aktif', 'color' => '#d2d6de'],
-        ];
-
-        $counts = [];
-        foreach ($query as $row) {
-            $counts[(int)$row['student_status']] = (int)$row['total'];
-        }
-
-        $labels = [];
-        $data = [];
-        $colors = [];
-
-        foreach ($status_map as $st => $info) {
-            $val = isset($counts[$st]) ? $counts[$st] : 0;
-            if ($val > 0) {
-                $labels[] = $info['label'];
-                $data[] = $val;
-                $colors[] = $info['color'];
-            }
-        }
-
-        $res = [
-            'labels' => $labels,
-            'data'   => $data,
-            'colors' => $colors
-        ];
-
-        $this->output->set_content_type('application/json')->set_output(json_encode($res));
-    }
-
-    public function ajax_student_kehadiran()
-    {
-        $majors_id = sanitizeStrict($this->input->post('majors_id'));
-        $today = date('Y-m-d');
-
-        if ($this->db->table_exists('presensi_student')) {
-            $where = "WHERE ps.date = '$today'";
-            if (!empty($majors_id)) {
-                $mid = (int)$majors_id;
-                $where .= " AND c.majors_majors_id = '$mid'";
-            }
-
-            $sql = "SELECT
-                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'DATANG' THEN 1 ELSE 0 END), 0) AS hadir,
-                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'IZIN' THEN 1 ELSE 0 END), 0) AS izin,
-                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'SAKIT' THEN 1 ELSE 0 END), 0) AS sakit,
-                        COALESCE(SUM(CASE WHEN ps.jenis_absen = 'ALPHA' THEN 1 ELSE 0 END), 0) AS alpa
-                    FROM presensi_student ps
-                    LEFT JOIN class c ON c.class_id = ps.id_class
-                    {$where}";
-
-            $row = $this->db->query($sql)->row_array();
-        } else if ($this->db->table_exists('presensi_harian')) {
-            $where = "WHERE ph.presensi_harian_date = '$today'";
-            if (!empty($majors_id)) {
-                $mid = (int)$majors_id;
-                $where .= " AND c.majors_majors_id = '$mid'";
-            }
-
-            $sql = "SELECT
-                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'H' THEN 1 ELSE 0 END), 0) AS hadir,
-                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'I' THEN 1 ELSE 0 END), 0) AS izin,
-                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'S' THEN 1 ELSE 0 END), 0) AS sakit,
-                        COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'A' THEN 1 ELSE 0 END), 0) AS alpa
-                    FROM presensi_harian ph
-                    LEFT JOIN class c ON c.class_id = ph.presensi_harian_class_id
-                    {$where}";
-
-            $row = $this->db->query($sql)->row_array();
-        } else {
-            $row = ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpa' => 0];
-        }
-
-        $data = [
-            'hadir' => (int)($row['hadir'] ?? 0),
-            'izin'  => (int)($row['izin'] ?? 0),
-            'sakit' => (int)($row['sakit'] ?? 0),
-            'alpa'  => (int)($row['alpa'] ?? 0)
-        ];
-
-        $this->output->set_content_type('application/json')->set_output(json_encode($data));
-    }
-
-
 
     public function ajax_employee_tab()
     {
