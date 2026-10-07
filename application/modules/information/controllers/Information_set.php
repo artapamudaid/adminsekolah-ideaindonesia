@@ -75,7 +75,14 @@ class Information_set extends CI_Controller
 			$status = $this->Information_model->add($params);
 
 			if (!empty($_FILES['information_img']['name'])) {
-				$paramsupdate['information_img'] = $this->do_upload($name = 'information_img', $fileName = $params['information_title']);
+				$new_img = $this->do_upload($name = 'information_img', $fileName = $params['information_title']);
+				if ($this->input->post('information_id')) {
+					$old_info = $this->Information_model->get(array('id' => $this->input->post('information_id')));
+					if (!empty($old_info['information_img']) && $old_info['information_img'] != $new_img && file_exists(FCPATH . 'uploads/information/' . $old_info['information_img'])) {
+						@unlink(FCPATH . 'uploads/information/' . $old_info['information_img']);
+					}
+				}
+				$paramsupdate['information_img'] = $new_img;
 			}
 
 			$paramsupdate['information_id'] = $status;
@@ -86,14 +93,14 @@ class Information_set extends CI_Controller
 			$this->Logs_model->add(
 				array(
 					'log_date' => date('Y-m-d H:i:s'),
-					'user_id' => $this->session->userdata('user_id'),
-					'log_module' => 'Pengeluaran',
+					'user_id' => $this->session->userdata('uid'),
+					'log_module' => 'Informasi',
 					'log_action' => $data['operation'],
-					'log_info' => 'ID:null;Title:' . $params['information_desc']
+					'log_info' => 'ID:' . $status . ';Title:' . $params['information_title']
 				)
 			);
 
-			$this->session->set_flashdata('success', $data['operation'] . ' Pengeluaran berhasil');
+			$this->session->set_flashdata('success', $data['operation'] . ' Informasi berhasil');
 			redirect('manage/information');
 		} else {
 			if ($this->input->post('information_id')) {
@@ -118,6 +125,10 @@ class Information_set extends CI_Controller
 			redirect('manage');
 		}
 		if ($_POST) {
+			$item = $this->Information_model->get(array('id' => $id));
+			if (!empty($item['information_img']) && file_exists(FCPATH . 'uploads/information/' . $item['information_img'])) {
+				@unlink(FCPATH . 'uploads/information/' . $item['information_img']);
+			}
 			$this->Information_model->delete($id);
 			// activity log
 			$this->load->model('logs/Logs_model');
@@ -151,12 +162,12 @@ class Information_set extends CI_Controller
 		}
 
 		$config['allowed_types'] = 'gif|jpg|jpeg|png';
-		$config['max_size'] = '10240';
+		$config['max_size'] = '2048';
 		$config['file_name'] = base64_encode($fileName);
 		$this->upload->initialize($config);
 
 		if (!$this->upload->do_upload($name)) {
-			$this->session->set_flashdata('success', $this->upload->display_errors('', ''));
+			$this->session->set_flashdata('failed', $this->upload->display_errors('', ''));
 			redirect(uri_string());
 		}
 

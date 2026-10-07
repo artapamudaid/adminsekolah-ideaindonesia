@@ -107,6 +107,8 @@ class Dashboard_set extends CI_Controller
             $data['title'] = 'Dashboard';
             $data['main'] = 'dashboard/dashboard';
         } else {
+            $data['information'] = $this->Information_model->get(array('information_publish' => 1));
+
             $data['title'] = 'Dashboard';
             $data['main'] = 'dashboard/dashboard_employees';
             $data['umajorsid'] = $umajorsid;
@@ -252,15 +254,15 @@ class Dashboard_set extends CI_Controller
     public function ajax_student_jumlah_siswa()
     {
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
-        
+
         $labels = [];
         $data_l = [];
         $data_p = [];
         $data_total = [];
-        
+
         if (empty($majors_id)) {
             $title = $this->lang->line('dash_student_per_unit') ?: 'Jumlah Siswa Per Unit';
-            
+
             $sql = "SELECT 
                         m.majors_id, 
                         m.majors_short_name, 
@@ -273,7 +275,7 @@ class Dashboard_set extends CI_Controller
                     GROUP BY m.majors_id, m.majors_short_name 
                     ORDER BY m.majors_id ASC";
             $query = $this->db->query($sql)->result_array();
-            
+
             foreach ($query as $row) {
                 $labels[] = $row['majors_short_name'];
                 $data_l[] = (int)$row['count_l'];
@@ -283,7 +285,7 @@ class Dashboard_set extends CI_Controller
         } else {
             $title = $this->lang->line('dash_student_per_class') ?: 'Jumlah Siswa Per Kelas';
             $mid = (int)$majors_id;
-            
+
             $sql = "SELECT 
                         c.class_id, 
                         c.class_name, 
@@ -296,7 +298,7 @@ class Dashboard_set extends CI_Controller
                     GROUP BY c.class_id, c.class_name 
                     ORDER BY c.class_name ASC";
             $query = $this->db->query($sql)->result_array();
-            
+
             foreach ($query as $row) {
                 $labels[] = $row['class_name'];
                 $data_l[] = (int)$row['count_l'];
@@ -373,7 +375,7 @@ class Dashboard_set extends CI_Controller
                 FROM student s
                 {$where}
                 GROUP BY s.student_status";
-        
+
         $query = $this->db->query($sql)->result_array();
 
         $status_map = [
