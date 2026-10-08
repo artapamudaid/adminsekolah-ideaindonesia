@@ -1,23 +1,22 @@
-<!-- Row 1: 2 Kolom (Left: col-lg-7, Right: col-lg-5) -->
 <div class="row">
 
-    <!-- Kolom Kiri: col-lg-7 (Aktivitas Hari Ini & Informasi) -->
-    <div class="col-lg-7">
-        
-        <!-- Widget Aktivitas Hari Ini -->
+    <div class="col-lg-4 col-md-6 col-sm-12">
+
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title" id="title_aktivitas"><?= $this->lang->line('dash_today_activity') ?: 'Aktivitas Hari Ini' ?></h3>
             </div>
             <div class="box-body no-padding">
-                <div id="skeleton_aktivitas" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                <div id="skeleton_aktivitas" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
                     <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
                 </div>
-                <ul class="products-list product-list-in-box" id="container_aktivitas" style="display: none;">
-                    <!-- diisi oleh javascript -->
-                </ul>
+                <ul class="products-list product-list-in-box" id="container_aktivitas" style="display: none;"></ul>
             </div>
         </div>
+
+    </div>
+
+    <div class="col-lg-4 col-md-6 col-sm-12">
 
         <!-- Widget Informasi -->
         <div class="box box-primary">
@@ -25,19 +24,16 @@
                 <h3 class="box-title" id="title_informasi"><?= ($this->lang->line('dash_information_title') ?: 'Informasi') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
             </div>
             <div class="box-body no-padding">
-                <div id="skeleton_informasi" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                <div id="skeleton_informasi" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
                     <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
                 </div>
-                <ul class="products-list product-list-in-box" id="container_pengumuman" style="display: none;">
-                    <!-- diisi oleh javascript -->
-                </ul>
+                <ul class="products-list product-list-in-box" id="container_pengumuman" style="display: none;"></ul>
             </div>
         </div>
 
     </div>
 
-    <!-- Kolom Kanan: col-lg-5 (Jadwal Hari Ini - Timeline List) -->
-    <div class="col-lg-5">
+    <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title" id="title_jadwal"><?= ($this->lang->line('dash_today_schedule') ?: 'Jadwal Hari Ini') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
@@ -46,9 +42,7 @@
                 <div id="skeleton_jadwal" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
                     <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
                 </div>
-                <div id="container_jadwal" style="display: none; padding: 10px;">
-                    <!-- Timeline akan dirender oleh javascript -->
-                </div>
+                <div id="container_jadwal" style="display: none; padding: 10px;"></div>
             </div>
         </div>
     </div>
@@ -56,9 +50,7 @@
 </div>
 
 <script>
-    window.renderAcademicTab = function(data) {
-        // dummy for legacy call
-    };
+    window.renderAcademicTab = function(data) {};
 
     window.loadAcademicWidgets = function(majorsId) {
         if (!$('#container_aktivitas').data('loaded')) {
@@ -95,7 +87,9 @@
             url: '<?= site_url('manage/dashboard/ajax_academic_jadwal') ?>',
             type: 'POST',
             dataType: 'json',
-            data: { majors_id: majorsId },
+            data: {
+                majors_id: majorsId
+            },
             success: function(res) {
                 $('#skeleton_jadwal').hide();
 
@@ -138,7 +132,9 @@
             url: '<?= site_url('manage/dashboard/ajax_academic_informasi') ?>',
             type: 'POST',
             dataType: 'json',
-            data: { majors_id: majorsId },
+            data: {
+                majors_id: majorsId
+            },
             success: function(res) {
                 $('#skeleton_informasi').hide();
 
@@ -179,7 +175,9 @@
             url: '<?= site_url('manage/dashboard/ajax_academic_aktivitas') ?>',
             type: 'POST',
             dataType: 'json',
-            data: { majors_id: majorsId },
+            data: {
+                majors_id: majorsId
+            },
             success: function(res) {
                 $('#skeleton_aktivitas').hide();
 

@@ -247,6 +247,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_student_tab()
     {
+        session_write_close();
         $data = [];
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
@@ -604,12 +605,14 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_employee_tab()
     {
+        session_write_close();
         $data = [];
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
     public function ajax_academic_aktivitas()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
         if (empty($majors_id)) {
             $majors_id = $this->session->userdata('umajorsid');
@@ -770,6 +773,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_academic_informasi()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
         $title = $this->lang->line('dash_information_title') ?: 'Informasi';
 
@@ -833,12 +837,14 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_academic_tab()
     {
+        session_write_close();
         $data = [];
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
     public function ajax_academic_jadwal()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
         $title_prefix = $this->lang->line('dash_today_schedule') ?: 'Jadwal Hari Ini';
 
@@ -914,6 +920,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_academic_calendar()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->get_post('majors_id'));
         $start = sanitizeStrict($this->input->get_post('start'));
         $end = sanitizeStrict($this->input->get_post('end'));
@@ -1296,6 +1303,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_tagihan_bulan_ini()
     {
+        session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
 
         if (empty($majors_id)) {
@@ -1314,6 +1322,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_realisasi_akun()
     {
+        session_write_close();
         $period_id   = sanitizeStrict($this->input->post('period_id'));
         $start_month = sanitizeStrict($this->input->post('start_month'));
         $end_month   = sanitizeStrict($this->input->post('end_month'));
@@ -1335,6 +1344,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_detail_tabungan_siswa()
     {
+        session_write_close();
         $student_id = sanitizeStrict($this->input->post('student_id'));
         if (empty($student_id)) {
             echo json_encode(['data' => [], 'student' => null]);
@@ -1413,6 +1423,7 @@ class Dashboard_set extends CI_Controller
 
     public function ajax_ikhtisar_keuangan()
     {
+        session_write_close();
         $month = $this->input->post('month');
         $year = $this->input->post('year');
         $majors = $this->input->post('majors');
