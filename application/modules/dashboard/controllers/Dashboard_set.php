@@ -608,29 +608,430 @@ class Dashboard_set extends CI_Controller
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
+    public function ajax_academic_aktivitas()
+    {
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        if (empty($majors_id)) {
+            $majors_id = $this->session->userdata('umajorsid');
+            if ($majors_id == 0 && $this->input->get('m')) {
+                $majors_id = sanitizeStrict($this->input->get('m'));
+            }
+        }
+
+        $majors_name = '';
+        if (!empty($majors_id) && $majors_id != 0) {
+            $majors_row = $this->db->query("SELECT majors_name, majors_short_name FROM majors WHERE majors_id = ? AND majors_status = 1", [(int)$majors_id])->row_array();
+            if ($majors_row) {
+                $majors_name = $majors_row['majors_name'] ? $majors_row['majors_name'] : $majors_row['majors_short_name'];
+            }
+        }
+
+        $title = $this->lang->line('dash_today_activity') ?: 'Aktivitas Hari Ini';
+        if (!empty($majors_name)) {
+            $title .= ' - ' . $majors_name;
+        } else {
+            $title .= ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit');
+        }
+
+        $aktivitas = [];
+
+        // 1. Presensi Siswa
+        $where_student = "";
+        if (!empty($majors_id) && $majors_id != 0) {
+            $where_student = " AND s.majors_majors_id = " . (int)$majors_id;
+        }
+        $presensi_query = $this->db->query("
+            SELECT COUNT(DISTINCT ps.id_student) as total, MAX(ps.time) as last_time 
+            FROM presensi_student ps
+            JOIN student s ON s.student_id = ps.id_student
+            WHERE ps.date = CURRENT_DATE() AND ps.jenis_absen = 'DATANG' {$where_student}
+        ")->row_array();
+
+        $presensi_count = (int)($presensi_query['total'] ?? 0);
+        $presensi_time = !empty($presensi_query['last_time']) ? date('H:i', strtotime($presensi_query['last_time'])) : '-';
+
+        $aktivitas[] = [
+            'icon' => 'fa-users bg-green',
+            'title' => $this->lang->line('dash_act_presensi_siswa') ?: 'Presensi Siswa',
+            'desc' => sprintf($this->lang->line('dash_act_presensi_siswa_desc') ?: '%s siswa hadir hari ini', $presensi_count),
+            'time' => $presensi_time,
+            'count' => $presensi_count
+        ];
+
+        // 2. Jurnal Mengajar
+        $where_emp = "";
+        if (!empty($majors_id) && $majors_id != 0) {
+            $where_emp = " AND e.employee_majors_id = " . (int)$majors_id;
+        }
+        $jurnal_query = $this->db->query("
+            SELECT COUNT(DISTINCT t.teaching_employee_id) as total, MAX(TIME(t.teaching_date_create)) as last_time
+            FROM teaching t
+            JOIN employee e ON e.employee_id = t.teaching_employee_id
+            WHERE DATE(t.teaching_date_create) = CURRENT_DATE() {$where_emp}
+        ")->row_array();
+
+        $jurnal_count = (int)($jurnal_query['total'] ?? 0);
+        $jurnal_time = !empty($jurnal_query['last_time']) ? date('H:i', strtotime($jurnal_query['last_time'])) : '-';
+
+        $aktivitas[] = [
+            'icon' => 'fa-book bg-blue',
+            'title' => $this->lang->line('dash_act_jurnal_mengajar') ?: 'Jurnal Mengajar',
+            'desc' => sprintf($this->lang->line('dash_act_jurnal_mengajar_desc') ?: '%s guru mengisi jurnal', $jurnal_count),
+            'time' => $jurnal_time,
+            'count' => $jurnal_count
+        ];
+
+        // 3. Pembayaran Diterima
+        $bebas_pay_query = $this->db->query("
+            SELECT COUNT(bp.bebas_pay_id) as total, MAX(bp.bebas_pay_last_update) as last_time
+            FROM bebas_pay bp
+            JOIN bebas b ON b.bebas_id = bp.bebas_bebas_id
+            JOIN student s ON s.student_id = b.student_student_id
+            WHERE bp.bebas_pay_input_date = CURRENT_DATE() {$where_student}
+        ")->row_array();
+
+        $bulan_pay_query = $this->db->query("
+            SELECT COUNT(bl.bulan_id) as total, MAX(bl.bulan_last_update) as last_time
+            FROM bulan bl
+            JOIN student s ON s.student_id = bl.student_student_id
+            WHERE bl.bulan_date_pay = CURRENT_DATE() AND bl.bulan_status = 1 {$where_student}
+        ")->row_array();
+
+        $pembayaran_count = (int)($bebas_pay_query['total'] ?? 0) + (int)($bulan_pay_query['total'] ?? 0);
+        $max_time_pembayaran = max($bebas_pay_query['last_time'] ?? '', $bulan_pay_query['last_time'] ?? '');
+        $pembayaran_time = !empty($max_time_pembayaran) ? date('H:i', strtotime($max_time_pembayaran)) : '-';
+
+        $aktivitas[] = [
+            'icon' => 'fa-money bg-yellow',
+            'title' => $this->lang->line('dash_act_pembayaran_diterima') ?: 'Pembayaran Diterima',
+            'desc' => sprintf($this->lang->line('dash_act_pembayaran_received_desc') ?: '%s transaksi pembayaran', $pembayaran_count),
+            'time' => $pembayaran_time,
+            'count' => $pembayaran_count
+        ];
+
+
+        // 4. Informasi Baru
+        $info_query = $this->db->query("
+            SELECT information_title, information_input_date
+            FROM information
+            WHERE information_publish = 1 AND DATE(information_input_date) = CURRENT_DATE()
+            ORDER BY information_input_date DESC LIMIT 1
+        ")->row_array();
+
+        if (!$info_query) {
+            $info_query = $this->db->query("
+                SELECT information_title, information_input_date
+                FROM information
+                WHERE information_publish = 1
+                ORDER BY information_input_date DESC LIMIT 1
+            ")->row_array();
+        }
+
+        $info_title = $info_query['information_title'] ?? ($this->lang->line('dash_act_no_informasi') ?: 'Tidak ada informasi baru hari ini');
+        $info_time = !empty($info_query['information_input_date']) ? date('H:i', strtotime($info_query['information_input_date'])) : '-';
+        $info_count = $info_query ? 1 : 0;
+
+        $aktivitas[] = [
+            'icon' => 'fa-bullhorn bg-red',
+            'title' => $this->lang->line('dash_act_informasi_baru') ?: 'Informasi Baru',
+            'desc' => $info_title,
+            'time' => $info_time,
+            'count' => $info_count
+        ];
+
+        // 5. Perizinan Siswa
+        $where_izin = "";
+        if (!empty($majors_id) && $majors_id != 0) {
+            $where_izin = " AND (pi.pengajuan_izin_majors_id = " . (int)$majors_id . " OR s.majors_majors_id = " . (int)$majors_id . ")";
+        }
+        $izin_query = $this->db->query("
+            SELECT COUNT(pi.pengajuan_izin_id) as total, MAX(pi.pengajuan_izin_created_at) as last_time
+            FROM pengajuan_izin pi
+            JOIN student s ON s.student_id = pi.pengajuan_izin_student_id
+            WHERE (pi.pengajuan_izin_date = CURRENT_DATE() OR DATE(pi.pengajuan_izin_created_at) = CURRENT_DATE()) {$where_izin}
+        ")->row_array();
+
+        $izin_count = (int)($izin_query['total'] ?? 0);
+        $izin_time = !empty($izin_query['last_time']) ? date('H:i', strtotime($izin_query['last_time'])) : '-';
+
+        $aktivitas[] = [
+            'icon' => 'fa-file-text-o bg-blue',
+            'title' => $this->lang->line('dash_act_perizinan_siswa') ?: 'Perizinan Siswa',
+            'desc' => sprintf($this->lang->line('dash_act_perizinan_siswa_desc') ?: '%s pengajuan izin', $izin_count),
+            'time' => $izin_time,
+            'count' => $izin_count
+        ];
+
+        $this->output->set_content_type('application/json')->set_output(json_encode([
+            'title' => $title,
+            'data' => $aktivitas
+        ]));
+    }
+
+    public function ajax_academic_informasi()
+    {
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        $title = $this->lang->line('dash_information_title') ?: 'Informasi';
+
+        $where_unit = "";
+        if (!empty($majors_id) && $majors_id != 0) {
+            $majors = $this->db->query("SELECT majors_name, sekolah_id FROM majors WHERE majors_id = ?", array((int)$majors_id))->row_array();
+            $majors_name = !empty($majors['majors_name']) ? $majors['majors_name'] : '';
+            $sekolah_id = !empty($majors['sekolah_id']) ? $majors['sekolah_id'] : '';
+            $title .= $majors_name ? ' - ' . $majors_name : '';
+            if ($sekolah_id) {
+                $where_unit = " AND (sekolah_id = " . $this->db->escape($sekolah_id) . " OR sekolah_id IS NULL OR sekolah_id = '' OR sekolah_id = '0')";
+            }
+        } else {
+            $title .= ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit');
+        }
+
+        $query = $this->db->query("
+            SELECT information_id, information_title, information_desc, information_img, information_publish, information_input_date
+            FROM information
+            WHERE information_publish = 1 {$where_unit}
+            ORDER BY information_input_date DESC, information_id DESC
+            LIMIT 5
+        ")->result_array();
+
+        $data = [];
+        foreach ($query as $row) {
+            $title_text = $row['information_title'];
+            $desc_text = strip_tags($row['information_desc'] ?? '');
+            $date_text = !empty($row['information_input_date']) ? date('d M Y', strtotime($row['information_input_date'])) : '-';
+
+            $is_important = (mb_stripos($title_text, 'penting') !== false || mb_stripos($title_text, 'libur') !== false || mb_stripos($desc_text, 'penting') !== false);
+            if ($is_important) {
+                $type = $this->lang->line('dash_info_type_important') ?: 'Penting';
+                $label = 'text-red';
+                $border = 'border-color: red;';
+                $icon = 'fa-bullhorn';
+            } else {
+                $type = $this->lang->line('dash_info_type_info') ?: 'Info';
+                $label = 'text-blue';
+                $border = 'border-color: blue;';
+                $icon = 'fa-info-circle';
+            }
+
+            $data[] = [
+                'type' => $type,
+                'label' => $label,
+                'border' => $border,
+                'title' => $title_text,
+                'desc' => $desc_text,
+                'date' => $date_text,
+                'icon' => $icon
+            ];
+        }
+
+        $this->output->set_content_type('application/json')->set_output(json_encode([
+            'title' => $title,
+            'data' => $data
+        ]));
+    }
+
+
     public function ajax_academic_tab()
     {
-        $data['dummy_aktivitas'] = [
-            ['icon' => 'fa-users bg-green', 'title' => 'Presensi Siswa', 'desc' => '315 siswa hadir hari ini', 'time' => '07:30'],
-            ['icon' => 'fa-book bg-blue', 'title' => 'Jurnal Mengajar', 'desc' => '14 guru mengisi jurnal', 'time' => '08:15'],
-            ['icon' => 'fa-money bg-yellow', 'title' => 'Pembayaran Diterima', 'desc' => '12 transaksi pembayaran', 'time' => '09:20'],
-            ['icon' => 'fa-bullhorn bg-red', 'title' => 'Pengumuman Baru', 'desc' => 'Libur akhir semester', 'time' => '10:00'],
-            ['icon' => 'fa-file-text-o bg-blue', 'title' => 'Perizinan Siswa', 'desc' => '3 pengajuan izin', 'time' => '10:15'],
-        ];
-
-        $data['dummy_pengumuman'] = [
-            ['type' => 'Penting', 'label' => 'text-red', 'border' => 'border-color: red;', 'title' => 'Libur Akhir Semester', 'desc' => 'Kegiatan belajar mengajar diliburkan mulai tgl 1 - 7 Juni 2025.', 'date' => '23 Mei 2025', 'icon' => 'fa-bullhorn'],
-            ['type' => 'Info', 'label' => 'text-blue', 'border' => 'border-color: blue;', 'title' => 'Pembayaran SPP Bulan Juni', 'desc' => 'Diharapkan seluruh wali siswa melakukan pembayaran sebelum tgl 10 Juni 2025.', 'date' => '22 Mei 2025', 'icon' => 'fa-info-circle'],
-        ];
-
-        $data['dummy_jadwal'] = [
-            ['time' => '07:00 - 07:30', 'title' => 'Upacara Bendera', 'desc' => 'Lapangan Sekolah', 'color' => 'bg-green'],
-            ['time' => '07:30 - 09:00', 'title' => 'Matematika - Kelas 7A', 'desc' => 'Ruang 1 | Bpk. Andi', 'color' => 'bg-blue'],
-            ['time' => '09:15 - 10:45', 'title' => 'IPA - Kelas 8B', 'desc' => 'Ruang 2 | Ibu Rina', 'color' => 'bg-yellow'],
-            ['time' => '11:00 - 12:30', 'title' => 'Bahasa Inggris - Kelas 9A', 'desc' => 'Ruang 3 | Bpk. Dedi', 'color' => 'bg-purple'],
-        ];
+        $data = [];
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
+
+    public function ajax_academic_jadwal()
+    {
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        $title_prefix = $this->lang->line('dash_today_schedule') ?: 'Jadwal Hari Ini';
+
+        if (!empty($majors_id) && $majors_id != 0) {
+            $majors = $this->db->query("SELECT majors_name FROM majors WHERE majors_id = ?", array((int)$majors_id))->row_array();
+            $majors_name = !empty($majors['majors_name']) ? $majors['majors_name'] : '';
+            $title = $title_prefix . ($majors_name ? ' - ' . $majors_name : '');
+        } else {
+            $title = $title_prefix . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit');
+        }
+
+        $today_name = pretty_date(date('Y-m-d'), 'l', false);
+
+        $where_unit = "";
+        if (!empty($majors_id) && $majors_id != 0) {
+            $where_unit = " AND c.majors_majors_id = " . (int)$majors_id;
+        }
+
+        $query = $this->db->query("
+            SELECT s.*, l.lesson_name, c.class_name, jp.jam_pelajaran_start, jp.jam_pelajaran_end,
+                   e.employee_name, m.majors_name, m.majors_short_name
+            FROM schedule s
+            JOIN lesson l ON l.lesson_id = s.schedule_lesson_id
+            JOIN class c ON c.class_id = s.schedule_class_id
+            JOIN jam_pelajaran jp ON jp.jam_pelajaran_id = s.schedule_jampel
+            JOIN day d ON d.day_id = s.schedule_day
+            JOIN semester sem ON sem.semester_id = s.schedule_semester_id
+            JOIN period p ON p.period_id = sem.semester_period_id
+            LEFT JOIN employee e ON e.employee_id = l.lesson_teacher
+            LEFT JOIN majors m ON m.majors_id = c.majors_majors_id
+            WHERE d.day_name = " . $this->db->escape($today_name) . "
+              AND sem.semester_status = 1
+              AND p.period_status = 1
+              {$where_unit}
+            ORDER BY jp.jam_pelajaran_start ASC, c.class_name ASC
+            LIMIT 15
+        ")->result_array();
+
+        $colors = ['bg-green', 'bg-blue', 'bg-yellow', 'bg-purple', 'bg-red', 'bg-teal', 'bg-maroon'];
+        $data = [];
+
+        if (!empty($query)) {
+            foreach ($query as $i => $row) {
+                $start_time = !empty($row['jam_pelajaran_start']) ? date('H:i', strtotime($row['jam_pelajaran_start'])) : '';
+                $end_time = !empty($row['jam_pelajaran_end']) ? date('H:i', strtotime($row['jam_pelajaran_end'])) : '';
+                $time_str = ($start_time && $end_time) ? "{$start_time} - {$end_time}" : (!empty($row['schedule_time']) ? $row['schedule_time'] : '-');
+
+                $lesson_title = $row['lesson_name'];
+                if (empty($majors_id) || $majors_id == 0) {
+                    $prefix = !empty($row['majors_short_name']) ? '[' . $row['majors_short_name'] . '] ' : '';
+                    $item_title = $prefix . $lesson_title;
+                } else {
+                    $item_title = $lesson_title;
+                }
+
+                $desc = $row['class_name'] . (!empty($row['employee_name']) ? ' | ' . $row['employee_name'] : '');
+                $color = $colors[$i % count($colors)];
+
+                $data[] = [
+                    'time' => $time_str,
+                    'title' => $item_title,
+                    'desc' => $desc,
+                    'color' => $color
+                ];
+            }
+        }
+
+        $this->output->set_content_type('application/json')->set_output(json_encode([
+            'title' => $title,
+            'data' => $data
+        ]));
+    }
+
+    public function ajax_academic_calendar()
+    {
+        $majors_id = sanitizeStrict($this->input->get_post('majors_id'));
+        $start = sanitizeStrict($this->input->get_post('start'));
+        $end = sanitizeStrict($this->input->get_post('end'));
+
+        if (empty($start)) {
+            $start = date('Y-m-01');
+        }
+        if (empty($end)) {
+            $end = date('Y-m-t');
+        }
+
+        $events = [];
+
+        // 1. Libur / Holiday events
+        $holiday_query = $this->db->query("
+            SELECT * FROM holiday 
+            WHERE date >= ? AND date <= ?
+        ", array($start, $end))->result_array();
+
+        if (!empty($holiday_query)) {
+            foreach ($holiday_query as $h) {
+                $events[] = [
+                    'id' => 'hol_' . $h['id'],
+                    'title' => '[Libur] ' . strip_tags($h['info']),
+                    'start' => $h['date'],
+                    'end' => $h['date'],
+                    'allDay' => true,
+                    'backgroundColor' => '#dd4b39',
+                    'borderColor' => '#d73925',
+                    'textColor' => '#ffffff'
+                ];
+            }
+        }
+
+        // 2. Schedule events (map active weekly schedules to dates between start & end)
+        $where_unit = "";
+        if (!empty($majors_id) && $majors_id != 0) {
+            $where_unit = " AND c.majors_majors_id = " . (int)$majors_id;
+        }
+
+        $schedules = $this->db->query("
+            SELECT s.*, l.lesson_name, c.class_name, jp.jam_pelajaran_start, jp.jam_pelajaran_end,
+                   e.employee_name, m.majors_name, m.majors_short_name, d.day_name
+            FROM schedule s
+            JOIN lesson l ON l.lesson_id = s.schedule_lesson_id
+            JOIN class c ON c.class_id = s.schedule_class_id
+            JOIN jam_pelajaran jp ON jp.jam_pelajaran_id = s.schedule_jampel
+            JOIN day d ON d.day_id = s.schedule_day
+            JOIN semester sem ON sem.semester_id = s.schedule_semester_id
+            JOIN period p ON p.period_id = sem.semester_period_id
+            LEFT JOIN employee e ON e.employee_id = l.lesson_teacher
+            LEFT JOIN majors m ON m.majors_id = c.majors_majors_id
+            WHERE sem.semester_status = 1
+              AND p.period_status = 1
+              {$where_unit}
+        ")->result_array();
+
+        if (!empty($schedules)) {
+            $day_map = [
+                'senin' => 1,
+                'monday' => 1,
+                'selasa' => 2,
+                'tuesday' => 2,
+                'rabu' => 3,
+                'wednesday' => 3,
+                'kamis' => 4,
+                'thursday' => 4,
+                'jumat' => 5,
+                'friday' => 5,
+                'sabtu' => 6,
+                'saturday' => 6,
+                'minggu' => 7,
+                'sunday' => 7
+            ];
+
+            $colors = ['#3c8dbc', '#00a65a', '#f39c12', '#605ca8', '#00c0ef', '#39ccd7', '#d81b60'];
+
+            $start_time = strtotime($start);
+            $end_time = strtotime($end);
+
+            foreach ($schedules as $idx => $row) {
+                $day_key = strtolower(trim($row['day_name']));
+                $target_w = isset($day_map[$day_key]) ? $day_map[$day_key] : null;
+                if (!$target_w) {
+                    continue;
+                }
+
+                $prefix = (empty($majors_id) || $majors_id == 0) && !empty($row['majors_short_name']) ? '[' . $row['majors_short_name'] . '] ' : '';
+                $item_title = $prefix . $row['lesson_name'] . ' - Kelas ' . $row['class_name'];
+                $desc = !empty($row['employee_name']) ? 'Pengajar: ' . $row['employee_name'] : '';
+                $color = $colors[$idx % count($colors)];
+
+                for ($curr = $start_time; $curr <= $end_time; $curr = strtotime('+1 day', $curr)) {
+                    $w = (int)date('N', $curr);
+                    if ($w === $target_w) {
+                        $date_str = date('Y-m-d', $curr);
+                        $jp_start = !empty($row['jam_pelajaran_start']) ? $row['jam_pelajaran_start'] : '07:00:00';
+                        $jp_end = !empty($row['jam_pelajaran_end']) ? $row['jam_pelajaran_end'] : '08:00:00';
+
+                        $events[] = [
+                            'id' => 'sched_' . $row['schedule_id'] . '_' . $date_str,
+                            'title' => $item_title,
+                            'start' => $date_str . 'T' . $jp_start,
+                            'end' => $date_str . 'T' . $jp_end,
+                            'allDay' => false,
+                            'backgroundColor' => $color,
+                            'borderColor' => $color,
+                            'textColor' => '#ffffff',
+                            'description' => $desc
+                        ];
+                    }
+                }
+            }
+        }
+
+        $this->output->set_content_type('application/json')->set_output(json_encode($events));
+    }
+
 
     public function get()
     {

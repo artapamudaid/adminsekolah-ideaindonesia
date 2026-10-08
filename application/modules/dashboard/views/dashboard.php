@@ -156,6 +156,14 @@
                 return;
             }
 
+            if (tabId === '#academic-tab') {
+                $tabPane.data('loaded', true);
+                if (typeof window.loadAcademicWidgets === 'function') {
+                    window.loadAcademicWidgets(selectedMajors);
+                }
+                return;
+            }
+
             var endpoint = $tabPane.data('endpoint');
             if (!endpoint) return;
 

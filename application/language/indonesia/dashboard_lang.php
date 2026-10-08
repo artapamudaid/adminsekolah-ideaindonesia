@@ -43,6 +43,11 @@ $lang['dash_summary'] = 'Dashboard Ringkasan';
 $lang['dash_all_units'] = 'Semua Unit';
 $lang['dash_search_placeholder'] = 'Cari siswa, tagihan, transaksi...';
 $lang['dash_visit_website'] = 'Kunjungi Website';
+$lang['dash_information_title'] = 'Informasi';
+$lang['dash_no_information'] = 'Tidak ada informasi';
+$lang['dash_info_type_important'] = 'Penting';
+$lang['dash_info_type_info'] = 'Info';
+
 $lang['dash_total_students'] = 'Total Siswa';
 $lang['dash_total_teachers'] = 'Total Guru';
 $lang['dash_total_classes'] = 'Total Kelas';
@@ -125,3 +130,20 @@ $lang['dash_attendance_sick'] = 'Sakit';
 $lang['dash_attendance_present'] = 'Hadir';
 $lang['dash_student_attendance'] = 'Kehadiran Siswa Hari Ini';
 $lang['dash_attendance_absent'] = 'Alpa';
+$lang['dash_today_activity'] = 'Aktivitas Hari Ini';
+$lang['dash_no_activity'] = 'Tidak ada aktivitas';
+$lang['dash_act_presensi_siswa'] = 'Presensi Siswa';
+$lang['dash_act_presensi_siswa_desc'] = '%s siswa hadir hari ini';
+$lang['dash_act_jurnal_mengajar'] = 'Jurnal Mengajar';
+$lang['dash_act_jurnal_mengajar_desc'] = '%s guru mengisi jurnal';
+$lang['dash_act_pembayaran_diterima'] = 'Pembayaran Diterima';
+$lang['dash_act_pembayaran_received_desc'] = '%s transaksi pembayaran';
+$lang['dash_act_informasi_baru'] = 'Informasi Baru';
+$lang['dash_act_no_informasi'] = 'Tidak ada informasi baru hari ini';
+$lang['dash_act_perizinan_siswa'] = 'Perizinan Siswa';
+$lang['dash_act_perizinan_siswa_desc'] = '%s pengajuan izin';
+$lang['dash_today_schedule'] = 'Jadwal Hari Ini';
+$lang['dash_no_schedule'] = 'Tidak ada jadwal hari ini';
+
+$lang['dash_academic_calendar'] = 'Kalender Akademik';
+

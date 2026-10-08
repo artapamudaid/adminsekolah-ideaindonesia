@@ -43,6 +43,11 @@ $lang['dash_summary'] = 'Dashboard Summary';
 $lang['dash_all_units'] = 'All Units';
 $lang['dash_search_placeholder'] = 'Search students, bills, transactions...';
 $lang['dash_visit_website'] = 'Visit Website';
+$lang['dash_information_title'] = 'Information';
+$lang['dash_no_information'] = 'No information available';
+$lang['dash_info_type_important'] = 'Important';
+$lang['dash_info_type_info'] = 'Info';
+
 $lang['dash_total_students'] = 'Total Students';
 $lang['dash_total_teachers'] = 'Total Teachers';
 $lang['dash_total_classes'] = 'Total Classes';
@@ -125,3 +130,20 @@ $lang['dash_attendance_present'] = 'Present';
 $lang['dash_student_attendance'] = 'Student Attendance Today';
 $lang['dash_attendance_permit'] = 'Permit';
 $lang['dash_attendance_absent'] = 'Absent';
+$lang['dash_today_activity'] = "Today's Activity";
+$lang['dash_no_activity'] = 'No activity';
+$lang['dash_act_presensi_siswa'] = 'Student Attendance';
+$lang['dash_act_presensi_siswa_desc'] = '%s students attended today';
+$lang['dash_act_jurnal_mengajar'] = 'Teaching Journal';
+$lang['dash_act_jurnal_mengajar_desc'] = '%s teachers filled journals';
+$lang['dash_act_pembayaran_diterima'] = 'Payment Received';
+$lang['dash_act_pembayaran_received_desc'] = '%s payment transactions';
+$lang['dash_act_informasi_baru'] = 'New Information';
+$lang['dash_act_no_informasi'] = 'No new information today';
+$lang['dash_act_perizinan_siswa'] = 'Student Permission';
+$lang['dash_act_perizinan_siswa_desc'] = '%s permission requests';
+$lang['dash_today_schedule'] = "Today's Schedule";
+$lang['dash_no_schedule'] = 'No schedule today';
+
+$lang['dash_academic_calendar'] = 'Academic Calendar';
+

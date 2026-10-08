@@ -416,7 +416,7 @@ $totalNotif = count($notifTrx);
     <script src="<?php echo media_url() ?>js/bootstrap.min.js"></script>
     <script src="<?php echo media_url() ?>js/moment.min.js"></script>
 
-    <script src="<?php echo media_url() ?>js/fullcalendar.min.js"></script>
+    <!-- <script src="<?php echo media_url() ?>js/fullcalendar.min.js"></script> -->
 
 
     <!-- daterangepicker -->
