@@ -220,6 +220,9 @@ class Auth_set extends CI_Controller
         $this->session->unset_userdata('umajorsname');
         $this->session->unset_userdata('urolename');
         $this->session->unset_userdata('user_image');
+        $this->session->unset_userdata('suspend_date');
+        $this->session->unset_userdata('user_password_last_update');
+        $this->session->unset_userdata('user_input_date');
 
         $q = $this->input->get(NULL, TRUE);
         if ($q && isset($q['location']) && $q['location'] != NULL) {

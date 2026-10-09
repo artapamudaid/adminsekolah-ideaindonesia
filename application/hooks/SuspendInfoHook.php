@@ -92,6 +92,12 @@ class SuspendInfoHook
         }
         $whatsappUrl = 'https://wa.me/' . $whatsapp_cs . '?text=' . urlencode($wa_message);
 
+        $CI->db->select('p.package_id, s.setting_name, s.setting_value, p.package_name');
+        $CI->db->join('package p', 's.setting_value = p.package_id', 'left');
+        $CI->db->where('s.setting_name', 'setting_package');
+        $package = $CI->db->get('setting s')->row();
+        $package_name = $package ? $package->package_name : 'Paket Tidak Ditemukan';
+
         $CI->suspend_info = [
             'show'          => $show_info,
             'location'      => $location,
@@ -111,7 +117,8 @@ class SuspendInfoHook
                     'title_text'   => $title_text,
                     'message'      => $message,
                     'school_name'  => $school_name,
-                    'whatsappUrl'  => $whatsappUrl
+                    'whatsappUrl'  => $whatsappUrl,
+                    'package_name' => $package_name
                 ], true)
                 : ""
         ];

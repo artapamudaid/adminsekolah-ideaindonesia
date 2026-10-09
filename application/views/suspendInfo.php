@@ -15,6 +15,10 @@ if ($setting_date_value) {
         <ul class="dropdown-menu" style="">
             <li class="header">
                 <div>
+                    <i class="fa fa-bookmark-o"></i>
+                    <strong>Jenis Paket:</strong> <?= $package_name; ?>
+                </div>
+                <div>
                     <i class="fa fa-calendar"></i>
                     <strong>Mulai langganan:</strong> <?= $start_date_fmt; ?>
                 </div>
