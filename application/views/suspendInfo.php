@@ -45,7 +45,8 @@ if ($setting_date_value) {
 <script>
     $(function() {
         $('#extend-subscription').on('click', function() {
-            toastNotifikasi('info', 'Fitur perpanjangan langganan akan segera hadir. Silakan hubungi admin untuk informasi lebih lanjut.', 'Informasi');
+            var whatsappUrl = '<?= $whatsappUrl ?>';
+            window.open(whatsappUrl, '_blank');
         });
 
         $('#make-deposit').on('click', function() {

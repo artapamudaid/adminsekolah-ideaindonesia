@@ -52,7 +52,7 @@ class SuspendInfoHook
 
         $show_info = $always_show || in_array((int)$days_left, [30, 21, 14, 7]) || ($days_left <= 3 && $days_left >= 0);
 
-        if ($diff < 0) {
+        if ($diff <= 0) {
             $CI->load->database();
 
             $CI->db->where('setting_name', 'setting_app_status');
@@ -80,6 +80,17 @@ class SuspendInfoHook
             $icon = 'fa-check';
         }
 
+        $whatsapp_cs = WHATSAPP_CS;
+        $setting_school = $CI->db->get_where('setting', ['setting_name' => 'setting_school'])->row();
+        $school_name = $setting_school ? $setting_school->setting_value : 'Aplikasi Sekolah';
+        $formatted_date = pretty_date($suspend_date, 'd F Y', false);
+
+        if ($days_left <= 0) {
+            $wa_message = "*Halo Admin,*\n\n" . "Masa berlangganan aplikasi *Admin Sekolah {$school_name}* " . "saya telah berakhir pada *{$formatted_date}*.\n\n" . "Saya ingin memperpanjang langganan aplikasi " . "*Admin Sekolah {$school_name}*.\n\n" . "Mohon informasi lebih lanjut.";
+        } else {
+            $wa_message = "*Halo Admin,*\n\n" . "Masa berlangganan aplikasi *Admin Sekolah {$school_name}* " . "saya akan segera berakhir pada *{$formatted_date}*.\n\n" . "Saya ingin memperpanjang langganan aplikasi " . "*Admin Sekolah {$school_name}*.\n\n" . "Mohon informasi lebih lanjut.";
+        }
+        $whatsappUrl = 'https://wa.me/' . $whatsapp_cs . '?text=' . urlencode($wa_message);
 
         $CI->suspend_info = [
             'show'          => $show_info,
@@ -98,7 +109,9 @@ class SuspendInfoHook
                     'alert_class'  => $alert_class,
                     'icon'         => $icon,
                     'title_text'   => $title_text,
-                    'message'      => $message
+                    'message'      => $message,
+                    'school_name'  => $school_name,
+                    'whatsappUrl'  => $whatsappUrl
                 ], true)
                 : ""
         ];

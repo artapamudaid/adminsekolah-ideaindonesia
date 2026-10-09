@@ -45,6 +45,7 @@
 						<div style="font-size: 16px; color: #444;">
 							Terima kasih 😊
 						</div>
+						<button class="btn btn-primary" style="margin-top: 20px;" onclick="window.open('<?= $whatsappUrl ?>', '_blank')">Perpanjang Langganan</button>
 					</div>
 				</div>
 			</div>
