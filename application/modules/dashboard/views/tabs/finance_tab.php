@@ -230,7 +230,7 @@
                     <a href="<?= site_url('manage/logs/trx_keuangan') ?>" class="btn btn-default btn-sm"><?= $this->lang->line('dash_view_all') ?: 'Lihat Semua' ?></a>
                 </div>
             </div>
-            <div class="box-body no-padding" style="min-height: 270px;">
+            <div class="box-body no-padding" style="min-height: 270px; max-height: 270px; overflow-y: auto;">
                 <div class="table-responsive">
                     <table class="table table-condensed table-striped table-hover no-margin">
                         <thead>
@@ -260,7 +260,7 @@
             <div class="box-header with-border">
                 <h3 class="box-title"><?= $this->lang->line('dash_top_5_savings') ?: '5 Siswa Tabungan Terbesar' ?></h3>
             </div>
-            <div class="box-body no-padding" style="min-height: 270px;">
+            <div class="box-body no-padding" style="min-height: 270px; overflow-y: auto;">
                 <div class="table-responsive">
                     <table class="table table-condensed table-striped table-hover no-margin">
                         <thead>
@@ -835,7 +835,9 @@
                         }
                     }
                 },
-                complete: function() { $('#overlay_ikhtisar').fadeOut(); }
+                complete: function() {
+                    $('#overlay_ikhtisar').fadeOut();
+                }
             });
 
             // 2. Tagihan Bulan Ini
@@ -865,7 +867,9 @@
                         $('#tools_tagihan_bulan_ini').empty();
                     }
                 },
-                complete: function() { $('#overlay_tagihan').fadeOut(); }
+                complete: function() {
+                    $('#overlay_tagihan').fadeOut();
+                }
             });
 
             // 3. Arus Kas
@@ -885,7 +889,9 @@
                         }
                     }
                 },
-                complete: function() { $('#overlay_arus_kas').fadeOut(); }
+                complete: function() {
+                    $('#overlay_arus_kas').fadeOut();
+                }
             });
             // 4. SPP Chart & Col layout
             $.ajax({
@@ -913,7 +919,9 @@
                         }
                     }
                 },
-                complete: function() { $('#overlay_spp').fadeOut(); }
+                complete: function() {
+                    $('#overlay_spp').fadeOut();
+                }
             });
 
             // 5. Transaksi Terbaru
@@ -938,7 +946,9 @@
                     }
                     $('#tbody_recent_transactions').html(trHtml);
                 },
-                complete: function() { $('#overlay_recent_tr').fadeOut(); }
+                complete: function() {
+                    $('#overlay_recent_tr').fadeOut();
+                }
             });
 
             // 6. Top 5 Tabungan
@@ -964,7 +974,9 @@
                     }
                     $('#tbody_top_5_tabungan').html(tbHtml);
                 },
-                complete: function() { $('#overlay_top_tabungan').fadeOut(); }
+                complete: function() {
+                    $('#overlay_top_tabungan').fadeOut();
+                }
             });
             // 7. DataTables Realisasi Akun Pembayaran (Lazyload)
             if ($('#table_realisasi_akun').length) {

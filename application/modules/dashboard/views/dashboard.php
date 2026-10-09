@@ -207,11 +207,14 @@
         });
 
         var hash = window.location.hash;
-        var initialTab = hash ? hash : '.nav-tabs li.active a';
         var $initialTabLink = $('a[href="' + hash + '"]');
 
         if (hash && $initialTabLink.length) {
+            var isAlreadyActive = $initialTabLink.parent().hasClass('active');
             $initialTabLink.tab('show');
+            if (isAlreadyActive) {
+                loadTabData(hash);
+            }
         } else {
             var activeTabHref = $('.nav-tabs li.active a').attr('href');
             if (activeTabHref) {
