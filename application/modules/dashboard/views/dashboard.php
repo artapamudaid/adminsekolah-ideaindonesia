@@ -31,7 +31,7 @@
         <div class="box">
             <div class="box-body">
                 <div class="row display-xs">
-                    <div class="col-lg-4 col-md-12 col-sm-7 col-xs-12">
+                    <div class="col-lg-4 col-md-8 col-sm-7 col-xs-12">
                         <h4 class="box-title"><?= $this->lang->line('dash_greeting') ?>, <?= $role_name; ?>!</h4>
                         <span class="text-muted"><?= $this->lang->line('dash_summary') ?> <?= (isset($nama_unit) ? $nama_unit : '') ?></span>
                     </div>
@@ -53,11 +53,18 @@
                             ?>
                         </select>
                     </div>
-                    <div class="col-lg-3 col-md-4 col-sm-7 col-xs-12">
-                        <input type="text" class="form-control" placeholder="<?= $this->lang->line('dash_search_placeholder') ?>">
+                    <div class="col-lg-3 col-md-8 col-sm-7 col-xs-12">
+                        <div class="input-group">
+                            <input type="text" id="dash_search_input" class="form-control" placeholder="<?= $this->lang->line('dash_search_placeholder') ?>">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" id="dash_search_btn" type="button">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
                     </div>
                     <div class="col-lg-2 col-md-4 col-sm-5 col-xs-12">
-                        <a href="" class="btn btn-default btn-block">
+                        <a href="<?= $setting_website; ?>" class="btn btn-default btn-block">
                             <?= $this->lang->line('dash_visit_website') ?> <i class="fa fa-external-link"></i>
                         </a>
                     </div>
@@ -221,5 +228,22 @@
                 loadTabData(activeTabHref);
             }
         }
+
+        function doDashSearch() {
+            var keyword = $('#dash_search_input').val().trim();
+            if (keyword !== '') {
+                window.location.href = '<?= site_url('manage/pencarian') ?>?q=' + encodeURIComponent(keyword);
+            }
+        }
+
+        $('#dash_search_btn').on('click', function() {
+            doDashSearch();
+        });
+
+        $('#dash_search_input').on('keypress', function(e) {
+            if (e.which === 13) {
+                doDashSearch();
+            }
+        });
     });
 </script>

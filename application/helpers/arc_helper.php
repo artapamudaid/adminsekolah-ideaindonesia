@@ -54,6 +54,10 @@ if (!function_exists('pretty_date')) {
 
     function pretty_date($date = '', $format = '', $timezone = TRUE)
     {
+        if (empty($date)) {
+            return '-';
+        }
+
         $date_str = strtotime($date);
 
         if (empty($format)) {

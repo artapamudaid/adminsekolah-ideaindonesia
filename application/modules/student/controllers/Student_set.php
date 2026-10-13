@@ -352,6 +352,8 @@ class Student_set extends CI_Controller
     $dataPeriod = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
     $periodID = $dataPeriod['period_id'];
 
+    $siswa = $data['student'];
+
     $data['konseling']      = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'PELANGGARAN', 'order_by' => 'konseling_id'));
     $data['prestasi_siswa'] = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'PRESTASI', 'order_by' => 'konseling_id'));
     $data['konsultasi']     = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'KONSULTASI', 'order_by' => 'konseling_id'));

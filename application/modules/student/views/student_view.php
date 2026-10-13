@@ -21,8 +21,8 @@
 						<div class="nav-tabs-custom">
 							<!-- TAB UTAMA -->
 							<ul class="nav nav-tabs">
-								<li class="<?php echo $f['m'] == 0 ? 'active' : '' ?> tab-utama"> <a href="#detailSiswa" data-toggle="tab">Info Siswa</a></li>
-								<li class="<?php echo $f['m'] == 1 ? 'active' : '' ?> tab-utama"><a href="#konseling" data-toggle="tab">Konseling</a></li>
+								<li class="<?php echo @$f['m'] == 0 ? 'active' : '' ?> tab-utama"> <a href="#detailSiswa" data-toggle="tab">Info Siswa</a></li>
+								<li class="<?php echo @$f['m'] == 1 ? 'active' : '' ?> tab-utama"><a href="#konseling" data-toggle="tab">Konseling</a></li>
 							</ul>
 
 							<div class="tab-content">

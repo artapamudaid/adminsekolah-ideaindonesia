@@ -41,7 +41,7 @@ $lang['dash_FLM'] = 'from last month';
 $lang['dash_greeting'] = 'Welcome';
 $lang['dash_summary'] = 'Dashboard Summary';
 $lang['dash_all_units'] = 'All Units';
-$lang['dash_search_placeholder'] = 'Search students, bills, transactions...';
+$lang['dash_search_placeholder'] = 'Keyword: [Name] [NIS] [NIP]';
 $lang['dash_visit_website'] = 'Visit Website';
 $lang['dash_information_title'] = 'Information';
 $lang['dash_no_information'] = 'No information available';
@@ -146,4 +146,3 @@ $lang['dash_today_schedule'] = "Today's Schedule";
 $lang['dash_no_schedule'] = 'No schedule today';
 
 $lang['dash_academic_calendar'] = 'Academic Calendar';
-

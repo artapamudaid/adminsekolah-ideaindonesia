@@ -41,7 +41,7 @@ $lang['dash_FLM'] = 'dari bulan lalu';
 $lang['dash_greeting'] = 'Selamat Datang';
 $lang['dash_summary'] = 'Dashboard Ringkasan';
 $lang['dash_all_units'] = 'Semua Unit';
-$lang['dash_search_placeholder'] = 'Cari siswa, tagihan, transaksi...';
+$lang['dash_search_placeholder'] = 'Kata kunci: [Nama] [NIS] [NIP]';
 $lang['dash_visit_website'] = 'Kunjungi Website';
 $lang['dash_information_title'] = 'Informasi';
 $lang['dash_no_information'] = 'Tidak ada informasi';
@@ -146,4 +146,3 @@ $lang['dash_today_schedule'] = 'Jadwal Hari Ini';
 $lang['dash_no_schedule'] = 'Tidak ada jadwal hari ini';
 
 $lang['dash_academic_calendar'] = 'Kalender Akademik';
-

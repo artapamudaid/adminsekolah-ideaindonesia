@@ -84,6 +84,9 @@ class Dashboard_set extends CI_Controller
         $data['months_list'] = $this->db->query("SELECT month_id, month_name FROM month ORDER BY month_id ASC")->result_array();
         $data['periods_list'] = $this->Period_model->get();
 
+        $setting_website = $this->Setting_model->get(array('name' => 'setting_website'));
+        $data['setting_website'] = $setting_website['setting_value'] ? $setting_website['setting_value'] : 'javascript:void(0);';
+
         if ($hasDashboard) {
             foreach ($filter_majors as $row) {
                 if ($row['majors_id'] == $selected_majors) {
