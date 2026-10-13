@@ -38,7 +38,7 @@
             <div class="box-header with-border">
                 <h3 class="box-title" id="title_jadwal"><?= ($this->lang->line('dash_today_schedule') ?: 'Jadwal Hari Ini') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
             </div>
-            <div class="box-body no-padding" style="padding: 10px;">
+            <div class="box-body no-padding" style="padding: 10px; max-height: 250px; overflow-y: auto;">
                 <div id="skeleton_jadwal" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
                     <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
                 </div>
