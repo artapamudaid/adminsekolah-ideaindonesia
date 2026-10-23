@@ -17,7 +17,7 @@
     </div>
 
     <div class="col-lg-6 col-md-12 col-sm-12">
-        <div class="box box-primary">
+        <div class="box box-primary" style="height: 300px;">
             <div class="box-header with-border">
                 <h3 class="box-title" id="title_jadwal"><?= ($this->lang->line('dash_today_schedule') ?: 'Jadwal Hari Ini') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
             </div>
@@ -25,7 +25,7 @@
                 <div id="skeleton_jadwal" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
                     <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
                 </div>
-                <div id="container_jadwal" style="display: none; padding: 10px;"></div>
+                <div id="container_jadwal" style="display: none; padding: 10px; max-height: 250px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>

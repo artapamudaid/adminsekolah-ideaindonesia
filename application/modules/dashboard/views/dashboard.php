@@ -151,7 +151,7 @@ if ($showTableSubsHistory) {
         <div class="row">
 
             <div class="col-lg-5">
-                <div class="box box-primary">
+                <div class="box box-primary" <?= $styleBoxSubscriptionHistory; ?>>
                     <div class="box-header with-border">
                         <h3 class="box-title" id="title_informasi"><?= ($this->lang->line('dash_information_title') ?: 'Informasi') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
                     </div>

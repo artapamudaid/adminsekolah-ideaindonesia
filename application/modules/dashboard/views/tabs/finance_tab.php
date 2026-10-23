@@ -110,6 +110,9 @@
                 <div class="row" style="display: flex; align-items: center; margin: 0;">
                     <div class="col-xs-6" style="padding: 0; position: relative;">
                         <div style="position: relative; height: 160px; width: 100%;">
+                            <div id="ikhtisar_doughnut_tooltip"
+                                style="display: none; position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(33, 37, 41, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; white-space: nowrap; pointer-events: none; ">
+                            </div>
                             <canvas id="Chart_ikhtisarDoughnut"></canvas>
                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
                                 <span style="font-size: 10px; color: #2b2b2b; display: block; line-height: 1;">Total</span>
@@ -413,6 +416,7 @@
         // 2. Doughnut Chart: Ikhtisar Keuangan
         var ctxDoughnut = document.getElementById("Chart_ikhtisarDoughnut");
         var chartIkhtisarInstance = null;
+
         if (ctxDoughnut) {
             chartIkhtisarInstance = new Chart(ctxDoughnut.getContext('2d'), {
                 type: 'doughnut',
@@ -420,24 +424,57 @@
                     labels: ['Pemasukan', 'Pengeluaran'],
                     datasets: [{
                         data: [0, 0],
-                        backgroundColor: ['#28a745', '#dc3545'],
+                        backgroundColor: ['#28A745', '#DD4B39'],
                         borderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutoutPercentage: 61,
+                    cutoutPercentage: 50,
                     legend: {
                         display: false
                     },
+                    plugins: {
+                        labels: {
+                            render: 'percentage',
+                            precision: 1,
+                            fontColor: '#fff',
+                            fontSize: 11,
+                            fontStyle: 'bold'
+                        }
+                    },
                     tooltips: {
-                        callbacks: {
-                            label: function(tooltipItem, data) {
-                                var label = data.labels[tooltipItem.index] || '';
-                                var value = data.datasets[0].data[tooltipItem.index] || 0;
-                                return label + ': Rp ' + value.toLocaleString('id-ID');
+                        enabled: false,
+
+                        custom: function(tooltipModel) {
+                            var tooltipEl = document.getElementById(
+                                'ikhtisar_doughnut_tooltip'
+                            );
+
+                            if (!tooltipEl) return;
+
+                            if (tooltipModel.opacity === 0) {
+                                tooltipEl.style.display = 'none';
+                                return;
                             }
+
+                            if (!tooltipModel.dataPoints ||
+                                tooltipModel.dataPoints.length === 0) {
+                                tooltipEl.style.display = 'none';
+                                return;
+                            }
+
+                            var index = tooltipModel.dataPoints[0].index;
+                            var chart = chartIkhtisarInstance;
+
+                            var label = chart.data.labels[index] || '';
+                            var value = chart.data.datasets[0].data[index] || 0;
+
+                            tooltipEl.textContent = label + ': Rp ' +
+                                Number(value).toLocaleString('id-ID');
+
+                            tooltipEl.style.display = 'block';
                         }
                     }
                 }

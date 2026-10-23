@@ -37,43 +37,20 @@
     <div id="col_widget_kehadiran" class="col-lg-12 col-md-12 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title"><?= $this->lang->line('dash_student_attendance') ?: 'Kehadiran Siswa Hari Ini' ?></h3>
+                <h3 class="box-title" id="title_student_kehadiran"><?= $this->lang->line('dash_student_attendance') ?: 'Kehadiran Siswa Hari Ini' ?></h3>
+
+                <div class="box-tools pull-right">
+                    <select id="filter_kelas_kehadiran_hari_ini" class="form-control input-sm s2" style="width:auto; display:none; font-size:12px; height:28px; padding:2px 8px;">
+                        <option value="all"><?= $this->lang->line('dash_all_classes') ?: 'Semua Kelas' ?></option>
+                    </select>
+                </div>
             </div>
             <div class="box-body">
-                <div id="skeleton_student_kehadiran" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
+                <div id="skeleton_student_kehadiran" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
                     <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
                 </div>
-                <div id="container_student_kehadiran" style="display: none;">
-                    <div class="row text-center">
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-green"><i class="fa fa-check"></i></span>
-                                <h5 class="description-header" id="txt_hadir">0</h5>
-                                <span class="description-text"><?= $this->lang->line('dash_attendance_present') ?: 'Hadir' ?></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-blue"><i class="fa fa-info"></i></span>
-                                <h5 class="description-header" id="txt_izin">0</h5>
-                                <span class="description-text"><?= $this->lang->line('dash_attendance_permit') ?: 'Izin' ?></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-yellow"><i class="fa fa-medkit"></i></span>
-                                <h5 class="description-header" id="txt_sakit">0</h5>
-                                <span class="description-text"><?= $this->lang->line('dash_attendance_sick') ?: 'Sakit' ?></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="description-block">
-                                <span class="description-percentage text-red"><i class="fa fa-times"></i></span>
-                                <h5 class="description-header" id="txt_alpa">0</h5>
-                                <span class="description-text"><?= $this->lang->line('dash_attendance_absent') ?: 'Alpa' ?></span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="chart-container" style="position: relative; height:300px; width:100%; display: none;" id="container_student_kehadiran">
+                    <canvas id="chart_student_kehadiran"></canvas>
                 </div>
             </div>
         </div>
@@ -85,6 +62,11 @@
 
     $(document).ready(function() {
         var majorsId = $('#select_majors').val();
+
+        $('#filter_kelas_kehadiran_hari_ini').on('change', function() {
+            var selectedClass = $(this).val();
+            loadWidgetStudentKehadiran($('#select_majors').val(), selectedClass);
+        });
 
         $('a[data-toggle="tab"][href="#student-tab"]').on('shown.bs.tab', function(e) {
             var $tabPane = $('#student-tab');
@@ -105,6 +87,7 @@
     function loadStudentWidgets(majorsId) {
         loadWidgetJumlahSiswa(majorsId);
         loadWidgetStudentStatus(majorsId);
+        initFilterKelasKehadiran(majorsId);
         loadWidgetStudentKehadiran(majorsId);
     }
 
@@ -268,25 +251,125 @@
         });
     }
 
-    function loadWidgetStudentKehadiran(majorsId) {
+    function initFilterKelasKehadiran(majorsId) {
+        var $select = $('#filter_kelas_kehadiran_hari_ini');
+        if (!majorsId) {
+            $select.hide();
+            return;
+        }
+
+        $.ajax({
+            url: '<?= site_url('manage/dashboard/ajax_student_classes') ?>',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                majors_id: majorsId
+            },
+            success: function(classes) {
+                $select.empty();
+                $select.append('<option value="all"><?= $this->lang->line('dash_all_classes') ?: 'Semua Kelas' ?></option>');
+                if (classes && classes.length > 0) {
+                    $.each(classes, function(i, cls) {
+                        $select.append('<option value="' + cls.class_id + '">' + cls.class_name + '</option>');
+                    });
+                    $select.show();
+                } else {
+                    $select.hide();
+                }
+            },
+            error: function() {
+                $select.hide();
+            }
+        });
+    }
+
+    var chartStudentKehadiran = null;
+
+    function loadWidgetStudentKehadiran(majorsId, classId) {
         $('#skeleton_student_kehadiran').show();
         $('#container_student_kehadiran').hide();
+        $('#no_data_student_kehadiran').hide();
 
         $.ajax({
             url: '<?= site_url('manage/dashboard/ajax_student_kehadiran') ?>',
             type: 'POST',
             dataType: 'json',
             data: {
-                majors_id: majorsId
+                majors_id: majorsId,
+                class_id: classId || 'all'
             },
             success: function(res) {
                 $('#skeleton_student_kehadiran').hide();
+
+                if (res.title) {
+                    $('#title_student_kehadiran').text(res.title);
+                }
+
+                var total = 0;
+                if (res.data && res.data.length > 0) {
+                    for (var i = 0; i < res.data.length; i++) {
+                        total += res.data[i];
+                    }
+                }
+
+                if (!res.data || res.data.length === 0 || total === 0) {
+                    if ($('#no_data_student_kehadiran').length === 0) {
+                        $('<div id="no_data_student_kehadiran" class="text-center text-muted" style="height: 300px; display: flex; align-items: center; justify-content: center;"><?= $this->lang->line('dash_no_data') ?: 'Tidak ada data untuk ditampilkan' ?></div>').insertBefore('#container_student_kehadiran');
+                    }
+                    $('#no_data_student_kehadiran').show();
+                    if (chartStudentKehadiran) {
+                        chartStudentKehadiran.destroy();
+                        chartStudentKehadiran = null;
+                    }
+                    return;
+                }
+
                 $('#container_student_kehadiran').show();
 
-                $('#txt_hadir').text(res.hadir);
-                $('#txt_izin').text(res.izin);
-                $('#txt_sakit').text(res.sakit);
-                $('#txt_alpa').text(res.alpa);
+                var ctx = document.getElementById('chart_student_kehadiran').getContext('2d');
+                if (chartStudentKehadiran) {
+                    chartStudentKehadiran.destroy();
+                }
+
+                chartStudentKehadiran = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: res.labels,
+                        datasets: [{
+                            data: res.data,
+                            backgroundColor: res.colors || ['#00a65a', '#3c8dbc', '#f39c12', '#f56954']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            display: false
+                        },
+                        plugins: {
+                            labels: {
+                                render: function() {
+                                    return '';
+                                }
+                            }
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    return ' ' + data.labels[tooltipItem.index] + ': ' + tooltipItem.yLabel;
+                                }
+                            }
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    precision: 0
+                                }
+                            }]
+                        }
+                    }
+                });
             },
             error: function() {
                 $('#skeleton_student_kehadiran').html('<p class="text-danger">Gagal memuat data</p>');

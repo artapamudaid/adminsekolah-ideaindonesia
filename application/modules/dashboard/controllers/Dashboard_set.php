@@ -434,17 +434,56 @@ class Dashboard_set extends CI_Controller
         $this->output->set_content_type('application/json')->set_output(json_encode($res));
     }
 
+    public function ajax_student_classes()
+    {
+        session_write_close();
+        $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        $classes = [];
+        if (!empty($majors_id)) {
+            $mid = (int)$majors_id;
+            $classes = $this->db->query("SELECT class_id, class_name FROM class WHERE majors_majors_id = '$mid' ORDER BY class_name ASC")->result_array();
+        }
+        $this->output->set_content_type('application/json')->set_output(json_encode($classes));
+    }
+
     public function ajax_student_kehadiran()
     {
         session_write_close();
         $majors_id = sanitizeStrict($this->input->post('majors_id'));
+        $class_id  = sanitizeStrict($this->input->post('class_id'));
         $today = date('Y-m-d');
+
+        $base_title = $this->lang->line('dash_student_attendance') ?: 'Kehadiran Siswa Hari Ini';
+        $unit_label = $this->lang->line('dash_all_units') ?: 'Semua Unit';
+        $class_label = $this->lang->line('dash_all_classes') ?: 'Semua Kelas';
+
+        if (!empty($majors_id)) {
+            $mid = (int)$majors_id;
+            $majors_row = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$mid'")->row_array();
+            if ($majors_row && !empty($majors_row['majors_short_name'])) {
+                $unit_label = $majors_row['majors_short_name'];
+            }
+        }
+
+        if (!empty($class_id) && $class_id !== 'all') {
+            $cid = (int)$class_id;
+            $class_row = $this->db->query("SELECT class_name FROM class WHERE class_id = '$cid'")->row_array();
+            if ($class_row && !empty($class_row['class_name'])) {
+                $class_label = $class_row['class_name'];
+            }
+        }
+
+        $title = "$base_title - $unit_label - $class_label";
 
         if ($this->db->table_exists('presensi_student')) {
             $where = "WHERE ps.date = '$today'";
             if (!empty($majors_id)) {
                 $mid = (int)$majors_id;
                 $where .= " AND c.majors_majors_id = '$mid'";
+            }
+            if (!empty($class_id) && $class_id !== 'all') {
+                $cid = (int)$class_id;
+                $where .= " AND ps.id_class = '$cid'";
             }
 
             $sql = "SELECT
@@ -463,6 +502,10 @@ class Dashboard_set extends CI_Controller
                 $mid = (int)$majors_id;
                 $where .= " AND c.majors_majors_id = '$mid'";
             }
+            if (!empty($class_id) && $class_id !== 'all') {
+                $cid = (int)$class_id;
+                $where .= " AND ph.presensi_harian_class_id = '$cid'";
+            }
 
             $sql = "SELECT
                         COALESCE(SUM(CASE WHEN ph.presensi_harian_status = 'H' THEN 1 ELSE 0 END), 0) AS hadir,
@@ -479,10 +522,20 @@ class Dashboard_set extends CI_Controller
         }
 
         $data = [
-            'hadir' => (int)($row['hadir'] ?? 0),
-            'izin'  => (int)($row['izin'] ?? 0),
-            'sakit' => (int)($row['sakit'] ?? 0),
-            'alpa'  => (int)($row['alpa'] ?? 0)
+            'title' => $title,
+            'labels' => [
+                $this->lang->line('dash_attendance_present') ?: 'Hadir',
+                $this->lang->line('dash_attendance_permit') ?: 'Izin',
+                $this->lang->line('dash_attendance_sick') ?: 'Sakit',
+                $this->lang->line('dash_attendance_absent') ?: 'Alpha'
+            ],
+            'data' => [
+                (int)($row['hadir'] ?? 0),
+                (int)($row['izin'] ?? 0),
+                (int)($row['sakit'] ?? 0),
+                (int)($row['alpa'] ?? 0)
+            ],
+            'colors' => ['#00a65a', '#3c8dbc', '#f39c12', '#f56954']
         ];
 
         $this->output->set_content_type('application/json')->set_output(json_encode($data));
