@@ -107,6 +107,43 @@ class Dashboard_set extends CI_Controller
                 $this->top_metrics_tabungan($where_majors_banking)
             ];
 
+            $setting_package = $this->db->query("SELECT s.setting_value, p.package_name FROM setting s LEFT JOIN package p ON s.setting_value = p.package_id WHERE s.setting_name = 'setting_package'")->row_array();
+            $setting_date = $this->Setting_model->get(array('name' => 'setting_date'));
+            $setting_end = $this->Setting_model->get(array('name' => 'setting_end'));
+
+            $packageName = !empty($setting_package['package_name']) ? $setting_package['package_name'] : '-';
+            $startDate = !empty($setting_date['setting_value']) ? $setting_date['setting_value'] : date('Y-m-d');
+            $endDate = !empty($setting_end['setting_value']) ? $setting_end['setting_value'] : date('Y-m-d', strtotime('+1 year'));
+
+            $tsStart = strtotime($startDate);
+            $tsEnd = strtotime($endDate);
+            $monthsDiff = round(($tsEnd - $tsStart) / (30 * 24 * 60 * 60));
+            if ($monthsDiff >= 12) {
+                $years = round($monthsDiff / 12);
+                $durationStr = $years . ' ' . ($this->lang->line('dash_year') ?: 'Tahun');
+            } else {
+                $durationStr = max(1, $monthsDiff) . ' ' . ($this->lang->line('dash_month') ?: 'Bulan');
+            }
+
+            $today = time();
+            $daysLeft = ceil(($tsEnd - $today) / (24 * 60 * 60));
+            $nearestBillDate = !empty($setting_end['setting_value']) ? pretty_date($setting_end['setting_value'], 'd M Y', false) : '-';
+
+            $data['packageName'] = $packageName;
+            $data['durationStr'] = $durationStr;
+            $data['nearestBillDate'] = $nearestBillDate;
+            $data['daysLeft'] = $daysLeft;
+            $sch_name_wa = $school_name['setting_value'];
+
+            $whatsapp_cs = WHATSAPP_CS;
+            $formatted_date = pretty_date($setting_end['setting_value'], 'd F Y', false);
+            $wa_message = "*Halo Admin,*\n\n" . "Masa berlangganan aplikasi *Admin Sekolah {$sch_name_wa}* " . "saya akan segera berakhir pada *{$formatted_date}*.\n\n" . "Saya ingin memperpanjang langganan aplikasi " . "*Admin Sekolah {$sch_name_wa}*.\n\n" . "Mohon informasi lebih lanjut.";
+
+            $whatsappUrl = 'https://wa.me/' . $whatsapp_cs . '?text=' . urlencode($wa_message);
+            $data['whatsappUrl'] = $whatsappUrl;
+
+            $data['showTableSubsHistory'] = true;
+
             $data['title'] = 'Dashboard';
             $data['main'] = 'dashboard/dashboard';
         } else {
@@ -119,6 +156,24 @@ class Dashboard_set extends CI_Controller
 
         $this->load->view('manage/layout', $data);
     }
+    private function _get_subscription_duration($start, $end, $duration = null)
+    {
+        if (!empty($duration)) {
+            return $duration;
+        }
+        if (empty($start) || empty($end)) {
+            return '12 ' . ($this->lang->line('dash_month') ?: 'Bulan');
+        }
+        $tsStart = strtotime($start);
+        $tsEnd = strtotime($end);
+        $monthsDiff = round(($tsEnd - $tsStart) / (30 * 24 * 60 * 60));
+        if ($monthsDiff >= 12) {
+            $years = round($monthsDiff / 12);
+            return $years . ' ' . ($this->lang->line('dash_year') ?: 'Tahun');
+        }
+        return max(1, $monthsDiff) . ' ' . ($this->lang->line('dash_month') ?: 'Bulan');
+    }
+
 
     private function _get_selected_majors()
     {
@@ -798,7 +853,7 @@ class Dashboard_set extends CI_Controller
             FROM information
             WHERE information_publish = 1 {$where_unit}
             ORDER BY information_input_date DESC, information_id DESC
-            LIMIT 5
+            LIMIT 9
         ")->result_array();
 
         $data = [];
@@ -806,6 +861,13 @@ class Dashboard_set extends CI_Controller
             $title_text = $row['information_title'];
             $desc_text = strip_tags($row['information_desc'] ?? '');
             $date_text = !empty($row['information_input_date']) ? date('d M Y', strtotime($row['information_input_date'])) : '-';
+
+            $img_path = !empty($row['information_img']) ? FCPATH . 'uploads/information/' . $row['information_img'] : '';
+            if (!empty($row['information_img']) && file_exists($img_path)) {
+                $img_url = base_url('uploads/information/' . $row['information_img']);
+            } else {
+                $img_url = media_url('img/missing.png');
+            }
 
             $is_important = (mb_stripos($title_text, 'penting') !== false || mb_stripos($title_text, 'libur') !== false || mb_stripos($desc_text, 'penting') !== false);
             if ($is_important) {
@@ -827,7 +889,8 @@ class Dashboard_set extends CI_Controller
                 'title' => $title_text,
                 'desc' => $desc_text,
                 'date' => $date_text,
-                'icon' => $icon
+                'icon' => $icon,
+                'img' => $img_url
             ];
         }
 

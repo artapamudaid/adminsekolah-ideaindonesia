@@ -1,3 +1,12 @@
+<?php
+$styleBoxSubscriptionHistory = '';
+if ($showTableSubsHistory) {
+    $styleBoxSubscriptionHistory = 'style="';
+    $styleBoxSubscriptionHistory .= 'height: 565px;';
+    $styleBoxSubscriptionHistory .= '"';
+}
+?>
+
 <style>
     .info-box-icon {
         margin-left: 0;
@@ -100,6 +109,7 @@
 
         <div class="row">
             <div class="col-xs-12">
+
                 <div class="nav-tabs-custom">
                     <ul class="nav nav-tabs">
                         <li class="active">
@@ -134,7 +144,112 @@
                         </div>
                     </div>
                 </div>
+
             </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-5">
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title" id="title_informasi"><?= ($this->lang->line('dash_information_title') ?: 'Informasi') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
+                    </div>
+
+                    <div class="box-body" style="max-height: 519px; overflow-y: auto !important;">
+                        <div id="skeleton_informasi" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
+                        </div>
+                        <ul class="products-list product-list-in-box" id="container_pengumuman" style="display: none;"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="box box-primary" <?= $styleBoxSubscriptionHistory; ?>>
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><?= $this->lang->line('dash_subscription_history') ?: 'Riwayat Langganan'; ?></h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="small-box bg-primary">
+                            <div class="inner">
+                                <h3><?= html_escape($packageName) . ' - ' . html_escape($durationStr); ?></h3>
+                                <p><?= $this->lang->line('dash_nearest_bill') ?: 'Tagihan Terdekat' ?>: <?= html_escape($nearestBillDate); ?> (<?= (int)$daysLeft; ?> <?= $this->lang->line('dash_days_left') ?: 'hari tersisa' ?>)</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                            <div class="small-box-footer" style="padding: 5px 10px; background: rgba(0,0,0,0.1); text-align: right;">
+                                <a href="<?= $whatsappUrl ?>" target="_blank" class="btn btn-default btn-xs" style="color: #333; font-weight: bold;"><?= $this->lang->line('dash_extend') ?: 'Perpanjang' ?></a>
+                            </div>
+                        </div>
+
+                        <?php if ($showTableSubsHistory): ?>
+                            <!-- Riwayat Langganan -->
+                            <div class="nav-tabs-custom">
+                                <ul class="nav nav-tabs" id="subscription_tabs">
+                                    <li class="active"><a href="#sub_tab_all" data-status="all" data-toggle="tab"><?= $this->lang->line('dash_all') ?: 'Semua' ?></a></li>
+                                    <li><a href="#sub_tab_pending" data-status="pending" data-toggle="tab"><?= $this->lang->line('dash_pending') ?: 'Pending' ?></a></li>
+                                    <li><a href="#sub_tab_lunas" data-status="lunas" data-toggle="tab"><?= $this->lang->line('dash_paid_status') ?: 'Lunas' ?></a></li>
+                                    <li><a href="#sub_tab_batal" data-status="batal" data-toggle="tab"><?= $this->lang->line('dash_cancelled') ?: 'Batal' ?></a></li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="subscription_tab_content">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-condensed" id="subscription_history_table">
+                                                <thead>
+                                                    <tr>
+                                                        <th><?= $this->lang->line('dash_invoice') ?: 'Faktur' ?></th>
+                                                        <th><?= $this->lang->line('dash_status') ?: 'Status' ?></th>
+                                                        <th><?= $this->lang->line('dash_date') ?: 'Tanggal' ?></th>
+                                                        <th><?= $this->lang->line('dash_description') ?: 'Deskripsi' ?></th>
+                                                        <th><?= $this->lang->line('dash_total') ?: 'Total' ?></th>
+                                                        <th><?= $this->lang->line('dash_payment_link') ?: 'Link Bayar' ?></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php
+                                                    $dummy_history = [
+                                                        ['invoice' => 'INV-2026-003', 'status' => 'pending', 'date' => '24 Agu 2026 09:00', 'desc' => 'Admin Sekolah - RENEWAL - ATAS - 12 Bulan', 'total' => 'Rp 6.000.000', 'link' => 'https://ipaymu.com/pay/123'],
+                                                        ['invoice' => 'INV-2025-002', 'status' => 'lunas', 'date' => '1 Okt 2025 10:50', 'desc' => 'Admin Sekolah - RENEWAL - ATAS - 12 Bulan', 'total' => 'Rp 6.000.000', 'link' => 'https://ipaymu.com/pay/122'],
+                                                        ['invoice' => 'INV-2024-001', 'status' => 'batal', 'date' => '15 Agu 2024 14:20', 'desc' => 'Admin Sekolah - NEW - MENENGAH - 12 Bulan', 'total' => 'Rp 4.500.000', 'link' => '#']
+                                                    ];
+                                                    foreach ($dummy_history as $h):
+                                                        $badge_class = 'default';
+                                                        if ($h['status'] == 'lunas') $badge_class = 'success';
+                                                        elseif ($h['status'] == 'pending') $badge_class = 'warning';
+                                                        elseif ($h['status'] == 'batal') $badge_class = 'danger';
+                                                    ?>
+                                                        <tr data-status="<?= html_escape($h['status']) ?>">
+                                                            <td><strong><?= html_escape($h['invoice']) ?></strong></td>
+                                                            <td><span class="label label-<?= $badge_class ?>"><?= ucfirst(html_escape($h['status'])) ?></span></td>
+                                                            <td><?= html_escape($h['date']) ?></td>
+                                                            <td><?= html_escape($h['desc']) ?></td>
+                                                            <td><?= html_escape($h['total']) ?></td>
+                                                            <td style="white-space: nowrap;">
+                                                                <?php if ($h['status'] == 'pending'): ?>
+                                                                    <a href="<?= html_escape($h['link']) ?>" target="_blank" class="btn btn-xs btn-success" style="margin-bottom:2px;"><i class="fa fa-external-link"></i> <?= $this->lang->line('dash_open_link') ?: 'Buka Link' ?></a>
+                                                                    <button type="button" class="btn btn-xs btn-danger" onclick="alert('Batalkan transaksi?')"><i class="fa fa-times"></i> <?= $this->lang->line('dash_cancel') ?: 'Batalkan' ?></button>
+                                                                <?php elseif ($h['status'] == 'lunas'): ?>
+                                                                    <a href="<?= html_escape($h['link']) ?>" target="_blank" class="btn btn-xs btn-default"><i class="fa fa-print"></i> Kwitansi</a>
+                                                                <?php else: ?>
+                                                                    <span class="text-muted">-</span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </section>
@@ -143,6 +258,8 @@
 <script>
     $(document).ready(function() {
         var selectedMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+        var majorsId = $('#select_majors').val();
+
 
         $('#select_majors').select2({
             width: '100%',
@@ -203,18 +320,21 @@
             });
         }
 
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+        $('.content-wrapper .nav-tabs:not(#subscription_tabs) a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
             var targetTab = $(e.target).attr('href');
-            loadTabData(targetTab);
-            if (history.replaceState) {
-                history.replaceState(null, null, targetTab);
-            } else {
-                window.location.hash = targetTab;
+            if (targetTab && targetTab.indexOf('#') === 0) {
+                loadTabData(targetTab);
+                if (history.replaceState) {
+                    history.replaceState(null, null, targetTab);
+                } else {
+                    window.location.hash = targetTab;
+                }
             }
         });
 
         var hash = window.location.hash;
-        var $initialTabLink = $('a[href="' + hash + '"]');
+        var validMainTabs = ['#finance-tab', '#student-tab', '#employee-tab', '#academic-tab'];
+        var $initialTabLink = (validMainTabs.indexOf(hash) !== -1) ? $('.content-wrapper .nav-tabs:not(#subscription_tabs) a[href="' + hash + '"]') : [];
 
         if (hash && $initialTabLink.length) {
             var isAlreadyActive = $initialTabLink.parent().hasClass('active');
@@ -223,7 +343,7 @@
                 loadTabData(hash);
             }
         } else {
-            var activeTabHref = $('.nav-tabs li.active a').attr('href');
+            var activeTabHref = $('.content-wrapper .nav-tabs:not(#subscription_tabs) li.active a').attr('href');
             if (activeTabHref) {
                 loadTabData(activeTabHref);
             }
@@ -245,5 +365,80 @@
                 doDashSearch();
             }
         });
+
+        loadWidgetInformasi(majorsId);
+
+        function loadWidgetInformasi(majorsId) {
+            $('#skeleton_informasi').show();
+            $('#container_pengumuman').hide();
+
+            $.ajax({
+                url: '<?= site_url('manage/dashboard/ajax_academic_informasi') ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    majors_id: majorsId
+                },
+                success: function(res) {
+                    $('#skeleton_informasi').hide();
+
+                    if (res.title) {
+                        $('#title_informasi').text(res.title);
+                    }
+
+                    var pengumumanHtml = '';
+                    if (res.data && res.data.length > 0) {
+                        $.each(res.data, function(i, pg) {
+                            var thumbHtml = '';
+                            if (pg.img) {
+                                thumbHtml = '<div class="product-img" style="float:left; margin-right:10px;"><img src="' + pg.img + '" alt="Thumbnail" class="img-thumbnail" style="width:50px; height:50px; object-fit:cover;"></div>';
+                            }
+                            var infoStyle = pg.img ? 'margin-left:60px;' : 'margin-left:0;';
+
+                            pengumumanHtml += '<li class="item" style="padding: 10px 10px; border-left: 3px solid; ' + pg.border + '">' +
+                                thumbHtml +
+                                '<div class="product-info" style="' + infoStyle + '">' +
+                                '<a href="javascript:void(0);" class="product-title" style="font-size:12px;">' +
+                                '<i class="fa ' + pg.icon + ' ' + pg.label + '"></i> ' + pg.title +
+                                '<span class="label label-default pull-right" style="font-size:9px;">' + pg.type + '</span>' +
+                                '</a>' +
+                                '<span class="product-description" style="white-space:normal; font-size:11px; margin:3px 0;">' + pg.desc + '</span>' +
+                                '<span class="product-description text-muted" style="font-size:10px;"><i class="fa fa-calendar"></i> ' + pg.date + '</span>' +
+                                '</div></li>';
+                        });
+                    } else {
+                        pengumumanHtml = '<li class="item text-center text-muted" style="padding:15px;"><?= $this->lang->line('dash_no_information') ?: 'Tidak ada informasi' ?></li>';
+                    }
+
+                    $('#container_pengumuman').html(pengumumanHtml).show();
+                },
+                error: function() {
+                    $('#skeleton_informasi').html('<p class="text-danger text-center" style="padding:15px;">Gagal memuat data</p>');
+                }
+            });
+        }
+
     });
 </script>
+
+<?php if ($showTableSubsHistory): ?>
+    <script>
+        $(document).ready(function() {
+
+            // Subscription history client-side filtering
+            $('#subscription_tabs a').on('shown.bs.tab', function(e) {
+                var status = $(this).data('status');
+                var $rows = $('#subscription_history_table tbody tr');
+                if (status === 'all') {
+                    $rows.show();
+                } else {
+                    $rows.hide();
+                    $rows.filter(function() {
+                        return $(this).data('status') === status;
+                    }).show();
+                }
+            });
+
+        });
+    </script>
+<?php endif; ?>

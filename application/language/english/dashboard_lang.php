@@ -146,3 +146,18 @@ $lang['dash_today_schedule'] = "Today's Schedule";
 $lang['dash_no_schedule'] = 'No schedule today';
 
 $lang['dash_academic_calendar'] = 'Academic Calendar';
+$lang['dash_subscription_history'] = 'Subscription History';
+$lang['dash_active_subscription'] = 'Active Subscription';
+$lang['dash_nearest_bill'] = 'Nearest Bill';
+$lang['dash_days_left'] = 'days left';
+$lang['dash_extend'] = 'Extend';
+$lang['dash_all'] = 'All';
+$lang['dash_pending'] = 'Pending';
+$lang['dash_paid_status'] = 'Paid';
+$lang['dash_cancelled'] = 'Cancelled';
+$lang['dash_invoice'] = 'Invoice';
+$lang['dash_payment_link'] = 'Payment Link';
+$lang['dash_open_link'] = 'Open Link';
+$lang['dash_cancel'] = 'Cancel';
+$lang['dash_no_subscription_history'] = 'No subscription history available';
+

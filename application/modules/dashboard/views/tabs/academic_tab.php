@@ -1,6 +1,6 @@
 <div class="row">
 
-    <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="col-lg-6 col-md-6 col-sm-12">
 
         <div class="box box-primary">
             <div class="box-header with-border">
@@ -16,24 +16,7 @@
 
     </div>
 
-    <div class="col-lg-4 col-md-6 col-sm-12">
-
-        <!-- Widget Informasi -->
-        <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title" id="title_informasi"><?= ($this->lang->line('dash_information_title') ?: 'Informasi') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
-            </div>
-            <div class="box-body no-padding">
-                <div id="skeleton_informasi" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
-                </div>
-                <ul class="products-list product-list-in-box" id="container_pengumuman" style="display: none;"></ul>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="col-lg-4 col-md-12 col-sm-12">
+    <div class="col-lg-6 col-md-12 col-sm-12">
         <div class="box box-primary">
             <div class="box-header with-border">
                 <h3 class="box-title" id="title_jadwal"><?= ($this->lang->line('dash_today_schedule') ?: 'Jadwal Hari Ini') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
@@ -57,10 +40,7 @@
             $('#container_aktivitas').data('loaded', true);
             loadWidgetAktivitas(majorsId);
         }
-        if (!$('#container_pengumuman').data('loaded')) {
-            $('#container_pengumuman').data('loaded', true);
-            loadWidgetInformasi(majorsId);
-        }
+
         if (!$('#container_jadwal').data('loaded')) {
             $('#container_jadwal').data('loaded', true);
             loadWidgetJadwal(majorsId);
@@ -120,49 +100,6 @@
             },
             error: function() {
                 $('#skeleton_jadwal').html('<p class="text-danger text-center" style="padding:15px;">Gagal memuat data</p>');
-            }
-        });
-    }
-
-    function loadWidgetInformasi(majorsId) {
-        $('#skeleton_informasi').show();
-        $('#container_pengumuman').hide();
-
-        $.ajax({
-            url: '<?= site_url('manage/dashboard/ajax_academic_informasi') ?>',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                majors_id: majorsId
-            },
-            success: function(res) {
-                $('#skeleton_informasi').hide();
-
-                if (res.title) {
-                    $('#title_informasi').text(res.title);
-                }
-
-                var pengumumanHtml = '';
-                if (res.data && res.data.length > 0) {
-                    $.each(res.data, function(i, pg) {
-                        pengumumanHtml += '<li class="item" style="padding: 10px 10px; border-left: 3px solid; ' + pg.border + '">' +
-                            '<div class="product-info" style="margin-left: 0;">' +
-                            '<a href="javascript:void(0);" class="product-title" style="font-size:12px;">' +
-                            '<i class="fa ' + pg.icon + ' ' + pg.label + '"></i> ' + pg.title +
-                            '<span class="label label-default pull-right" style="font-size:9px;">' + pg.type + '</span>' +
-                            '</a>' +
-                            '<span class="product-description" style="white-space:normal; font-size:11px; margin:3px 0;">' + pg.desc + '</span>' +
-                            '<span class="product-description text-muted" style="font-size:10px;"><i class="fa fa-calendar"></i> ' + pg.date + '</span>' +
-                            '</div></li>';
-                    });
-                } else {
-                    pengumumanHtml = '<li class="item text-center text-muted" style="padding:15px;"><?= $this->lang->line('dash_no_information') ?: 'Tidak ada informasi' ?></li>';
-                }
-
-                $('#container_pengumuman').html(pengumumanHtml).show();
-            },
-            error: function() {
-                $('#skeleton_informasi').html('<p class="text-danger text-center" style="padding:15px;">Gagal memuat data</p>');
             }
         });
     }

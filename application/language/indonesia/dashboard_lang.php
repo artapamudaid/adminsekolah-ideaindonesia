@@ -146,3 +146,18 @@ $lang['dash_today_schedule'] = 'Jadwal Hari Ini';
 $lang['dash_no_schedule'] = 'Tidak ada jadwal hari ini';
 
 $lang['dash_academic_calendar'] = 'Kalender Akademik';
+$lang['dash_subscription_history'] = 'Riwayat Langganan';
+$lang['dash_active_subscription'] = 'Langganan Aktif';
+$lang['dash_nearest_bill'] = 'Tagihan Terdekat';
+$lang['dash_days_left'] = 'hari tersisa';
+$lang['dash_extend'] = 'Perpanjang';
+$lang['dash_all'] = 'Semua';
+$lang['dash_pending'] = 'Pending';
+$lang['dash_paid_status'] = 'Lunas';
+$lang['dash_cancelled'] = 'Batal';
+$lang['dash_invoice'] = 'Faktur';
+$lang['dash_payment_link'] = 'Link Bayar';
+$lang['dash_open_link'] = 'Buka Link';
+$lang['dash_cancel'] = 'Batalkan';
+$lang['dash_no_subscription_history'] = 'Tidak ada riwayat langganan';
+
