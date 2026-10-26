@@ -12,11 +12,15 @@ class Dompdflib extends Dompdf
         parent::__construct();
         $options = new Options();
         $options->set('isRemoteEnabled', TRUE);
+        // $options->set('isFontSubsettingEnabled', TRUE);
         $this->dompdf = new Dompdf($options);
     }
 
     public function generate($html, $filename = '', $paper = '', $orientation = '', $stream = TRUE)
     {
+        // ini_set('memory_limit', '1024M');
+        // set_time_limit(300);
+
         try {
             $this->dompdf->loadHtml($html);
             $this->dompdf->setPaper($paper, $orientation);
