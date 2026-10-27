@@ -19,6 +19,8 @@ define('MAIL_PASSWORD', 'mbucbqiqbsqorfbz');
 define('MAIL_FROM_ADDRESS', 'esekolah@gmail.com');
 define('MAIL_FROM_NAME', 'Kiki dari Adminsekolah.net');
 
+define('WHATSAPP_CS', '6281233640003');
+
 define('CRON_KEY', 'xT9RqL2NvZ7pYgKcWM3E');
 define('DEVELOPER_EMAIL', 'ar.pamuda@gmail.com');
 

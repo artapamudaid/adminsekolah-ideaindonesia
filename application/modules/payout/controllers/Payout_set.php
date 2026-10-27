@@ -212,15 +212,20 @@ class Payout_set extends CI_Controller
     $params = array();
     $pay = array();
 
+    $idPeriodBayar = 0;
+    $nisStudent = '';
+
     // Tahun Ajaran
     if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
       $params['period_id'] = $f['n'];
       $pay['period_id'] = $f['n'];
+      $idPeriodBayar = $f['n'];
     }
 
     // Siswa
     if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
       $params['student_nis'] = $f['r'];
+      $nisStudent = $f['r'];
       $siswa = $this->Student_model->get(array('student_nis' => $f['r']));
     }
 
@@ -229,9 +234,27 @@ class Payout_set extends CI_Controller
     $data['period'] = $this->Period_model->get($params);
     $data['siswa']  = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
     $data['bulan']  = $this->Bulan_model->get($pay);
-    $data['bebas']  = $this->Bebas_model->get_bebas_with_last_payment($pay);
+    // $data['bebas']  = $this->Bebas_model->get_bebas_with_last_payment($pay);
+    $data['bebas']  = $this->Bebas_model->get($pay);
     $data['majors'] = $this->Student_model->get_majors();
     $data['unit']   = $this->Student_model->get_majors(array('status' => 1));
+
+    $dataBayar = $this->db->query(
+      "SELECT vlj.jenisBayar, vlj.keterangan, vlj.tanggal, vlj.penerimaan, vlj.namaKas, vlj.jenisTransaksi 
+        FROM v_laporan_jurnal vlj 
+        WHERE vlj.idPeriod = $idPeriodBayar AND vlj.nis = '$nisStudent' and vlj.jenisTransaksi = 'Bebas'"
+    )->result_array();
+
+    $listBayarBebas = [];
+    foreach ($dataBayar as $item) {
+      $kategori = $item['jenisBayar'];
+      if (!isset($groupedData[$kategori])) {
+        $groupedData[$kategori] = [];
+      }
+      $listBayarBebas[$kategori][] = $item;
+    }
+
+    $data['rincian_bebas'] = $listBayarBebas;
 
     $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
     $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
@@ -356,7 +379,7 @@ class Payout_set extends CI_Controller
     $this->barcode2($bcode['kas_noref'], '');
 
     $data['huruf'] = number_to_words($data['sumpaket'] + $data['summonth'] + $data['sumbeb']);
-    $file_pdf = 'Cetak_Struk_' . $siswa['student_full_name'] . '_' . base64_decode($f['d']);
+    $file_pdf = 'Cetak_Struk_' . $siswa['student_full_name'] . '_' . date('Y-m-d');
 
     $paper = 'A4';
 

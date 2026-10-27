@@ -27,13 +27,26 @@
 <body>
 
 	<!-- Home -->
-	<section class="content-section">
-		<div class="container text-center">
-			<div class="row">
-				<div class="col-md-12">
-					<h1 style="text-align: center;">
-					Mohon Maaf untuk Sementara Aplikasi <?= $school['setting_value'] ?> Tidak Bisa Digunakan. Segera penuhi kewajiban adminstrasi dengan pihak indoweb.id untuk pengaktifan aplikasi kembali. Terimakasih.&#128522;
-        			</h1>
+	<section class="content-section d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-md-8 col-md-offset-2">
+					<div class="card text-center" style="border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 12px; padding: 40px 20px; background: #fff;">
+						<div style="font-size: 64px; color: #f0ad4e; margin-bottom: 20px;">
+							<i class="fa fa-exclamation-circle"></i>
+						</div>
+						<h2 style="font-weight: 700; color: #333; margin-bottom: 15px;">Mohon Maaf</h2>
+						<p style="font-size: 18px; color: #555; line-height: 1.6; margin-bottom: 15px;">
+							Untuk sementara aplikasi <strong><?= $school['setting_value'] ?></strong> tidak dapat digunakan.
+						</p>
+						<p style="font-size: 15px; color: #777; line-height: 1.6; margin-bottom: 25px;">
+							Segera penuhi kewajiban administrasi dengan pihak <strong>indoweb.id</strong> untuk pengaktifan aplikasi kembali.
+						</p>
+						<div style="font-size: 16px; color: #444;">
+							Terima kasih 😊
+						</div>
+						<button class="btn btn-primary" style="margin-top: 20px;" onclick="window.open('<?= $whatsappUrl ?>', '_blank')">Perpanjang Langganan</button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -43,4 +56,3 @@
 </body>
 
 </html>
-

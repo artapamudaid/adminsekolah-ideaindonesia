@@ -42,7 +42,7 @@ if (isset($presensi_data_libur)) {
 					<div class="box-body">
     						<?php echo validation_errors(); ?>
     						<?php if (isset($presensi_data_libur)) { ?>
-    							<input type="hidden" name="id_area" value="<?php echo $presensi_data_libur['id']; ?>">
+    							<input type="hidden" name="id" value="<?php echo $presensi_data_libur['id']; ?>">
     						<?php } ?>
     						
     						<div class="form-group">
@@ -51,7 +51,7 @@ if (isset($presensi_data_libur)) {
     						</div> 
     						<div class="form-group">
     							<label>Keterangan</label>
-								<textarea name="remark" class="form-control" placeholder="Keterangan" readonly=""><?=$inputRemarkValue?></textarea>
+								<textarea name="keterangan" class="form-control" placeholder="Keterangan" readonly=""><?=$inputRemarkValue?></textarea>
     						</div>
 							<div class="form-group">
     							<label>Created By </label>

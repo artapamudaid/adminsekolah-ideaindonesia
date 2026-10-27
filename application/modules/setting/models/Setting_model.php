@@ -214,13 +214,13 @@ class Setting_model extends CI_Model
 
         if (isset($param['setting_package'])) {
             $this->db->set('setting_value', $param['setting_package']);
-            $this->db->where('setting_id', 100);
+            $this->db->where('setting_name', 'setting_package');
             $this->db->update('setting');
         }
 
         if (isset($param['setting_date'])) {
             $this->db->set('setting_value', $param['setting_date']);
-            $this->db->where('setting_id', 101);
+            $this->db->where('setting_name', 'setting_date');
             $this->db->update('setting');
         }
 

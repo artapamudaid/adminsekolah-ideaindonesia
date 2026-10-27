@@ -234,6 +234,76 @@ class Report_set extends CI_Controller
 		$this->dompdflib->generate($html, $file_pdf, $paper, $orientation);
 	}
 
+	public function dev_report_period_print()
+	{
+		ini_set('memory_limit', '1024M');
+		set_time_limit(300);
+
+		$this->load->library('dompdflib');
+
+		$ds         = $this->uri->segment('4');
+		$de         = $this->uri->segment('5');
+		$id_periode = $this->uri->segment('6');
+		$id_majors  = $this->uri->segment('7');
+		$id_kelas   = $this->uri->segment('8');
+
+		if ($id_kelas != '0' && $id_kelas != 'all' && !empty($id_kelas)) {
+			$dataClass  = $this->db->query("SELECT * FROM class WHERE class_id = ?", array($id_kelas))->row_array();
+			$kelas_name = !empty($dataClass['class_name']) ? $dataClass['class_name'] : 'Semua Kelas';
+		} else {
+			$dataClass  = array('class_name' => 'Semua Kelas');
+			$kelas_name = 'Semua Kelas';
+		}
+
+		$dataPeriod       = $this->db->query("SELECT * FROM period WHERE period_id = ?", array($id_periode))->row_array();
+		$dataPayment      = $this->db->query("SELECT * FROM `payment` JOIN period ON payment.period_period_id = period.period_id JOIN pos ON payment.pos_pos_id = pos.pos_id JOIN account ON account.account_id = pos.account_account_id WHERE payment.period_period_id = ? AND account.account_majors_id = ? ORDER BY payment.payment_type DESC", array($id_periode, $id_majors))->result_array();
+
+		$bulPayment       = $this->Report_model->get_period_bulan($id_periode, $id_kelas, $ds, $de);
+		$bebPayment       = $this->Report_model->get_period_bebas($id_periode, $id_kelas, $ds, $de);
+
+		$bulPayData = array();
+		foreach ($bulPayment as $row) {
+			$bulPayData[$row['payment_id']][] = $row;
+		}
+
+		$bebPayData = array();
+		foreach ($bebPayment as $row) {
+			$bebPayData[$row['payment_id']][] = $row;
+		}
+
+		$data['ds']         = $ds;
+		$data['de']         = $de;
+		$data['id_periode'] = $id_periode;
+		$data['id_majors']  = $id_majors;
+		$data['id_kelas']   = $id_kelas;
+		$data['kelas_name'] = $kelas_name;
+
+		$data['dataClass']   = $dataClass;
+		$data['dataPeriod']  = $dataPeriod;
+		$data['dataPayment'] = $dataPayment;
+		$data['bulPayData']  = $bulPayData;
+		$data['bebPayData']  = $bebPayData;
+		$data['bulPayment']  = $bulPayment;
+		$data['bebPayment']  = $bebPayment;
+
+		$data['setting_nip_bendahara']  = $this->Setting_model->get(array('id' => 15));
+		$data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+		$data['setting_city']           = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+		$data['setting_district']       = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+		$data['setting_school']         = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+		$data['setting_address']        = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+		$data['setting_phone']          = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+		$data['setting_logo']           = $this->Setting_model->get(array('id' => 6));
+
+		$period_str = (!empty($dataPeriod['period_start']) ? $dataPeriod['period_start'] . '/' . $dataPeriod['period_end'] : '');
+		$file_pdf   = 'Laporan_Pembayaran_Kelas_' . str_replace(' ', '_', $kelas_name) . '_TA_' . str_replace('/', '-', $period_str) . '_' . date('d-m-Y', strtotime($ds)) . '_sd_' . date('d-m-Y', strtotime($de));
+
+		$paper       = 'A4';
+		$orientation = 'portrait';
+		$html        = $this->load->view('report/cetak_report_period', $data, true);
+		$this->dompdflib->generate($html, $file_pdf, $paper, $orientation);
+	}
+
 	public function report_tagihan()
 	{
 		$params = array();

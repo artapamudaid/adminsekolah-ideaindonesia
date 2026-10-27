@@ -369,6 +369,10 @@
 
 			reqKode.done(function(msg) {
 				$("#div_kode").html(msg);
+				$('#kredit_account_id').select2({
+					width: '100%',
+					theme: 'classic'
+				});
 			});
 
 			reqUnit.done(function(msg) {

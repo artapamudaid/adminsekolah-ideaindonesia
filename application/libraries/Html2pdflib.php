@@ -9,9 +9,12 @@ class Html2pdflib
 
     public function generate($html, $filename = 'file_name', $download = TRUE, $paper = 'A4', $orientation = 'P')
     {
+        ob_start();
         try {
-            $pdf = new Html2Pdf($orientation, $paper, 'en', true, 'UTF-8', array(15, 15, 15, 15), false);
+            $pdf = new Html2Pdf($orientation, $paper, 'en', true, 'UTF-8', array(15, 15, 5, 5), false);
+            $pdf->pdf->SetTitle($filename);
             $pdf->writeHTML($html);
+            ob_end_clean();
             $pdf->output($filename . '.pdf', $download ? 'D' : 'I');
         } catch (Html2PdfException $e) {
             $pdf->clean();

@@ -352,6 +352,8 @@ class Student_set extends CI_Controller
     $dataPeriod = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
     $periodID = $dataPeriod['period_id'];
 
+    $siswa = $data['student'];
+
     $data['konseling']      = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'PELANGGARAN', 'order_by' => 'konseling_id'));
     $data['prestasi_siswa'] = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'PRESTASI', 'order_by' => 'konseling_id'));
     $data['konsultasi']     = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'KONSULTASI', 'order_by' => 'konseling_id'));
@@ -1249,21 +1251,28 @@ class Student_set extends CI_Controller
       }
     }
 
+    // Freez header row F3
+    $sheet->freezePane('F3');
+
     /*
     |--------------------------------------------------------------------------
     | CONTOH DATA (ROW 3)
     |--------------------------------------------------------------------------
     */
-    $sheet->setCellValue('A3', '1111');          // NIS SANTRI (TEXT)
-    $sheet->setCellValue('B3', '1234567890');    // NISN SANTRI (TEXT)
-    $sheet->setCellValue('C3', 'Ahmad Fauzi');   // NAMA (TEXT)
+    $randomNIS = date('Ymd') . rand(00, 99);
+    $randomNISN = date('Ymd') . rand(00, 99);
+    $randomBirthDate = date('Y-m-d', strtotime('-10 years')); // Contoh tanggal lahir 10 tahun yang lalu
+
+    $sheet->setCellValue('A3', $randomNIS);      // NIS SANTRI (TEXT)
+    $sheet->setCellValue('B3', $randomNISN);     // NISN SANTRI (TEXT)
+    $sheet->setCellValue('C3', 'DITA LENI RIZKIA');   // NAMA (TEXT)
     $sheet->setCellValue('D3', 1);               // ID KELAS (INTEGER)
     $sheet->setCellValue('E3', 1);               // ID UNIT (INTEGER)
     $sheet->setCellValue('F3', "08123456789");   // NO WA Ortu
-    $sheet->setCellValue('G3', "L");             // JENIS KELAMIN
+    $sheet->setCellValue('G3', "P");             // JENIS KELAMIN
     $sheet->setCellValue('H3', 'Bandung');       // TEMPAT LAHIR
-    $sheet->setCellValue('I3', '2010-05-12');    // TANGGAL LAHIR (yyyy-mm-dd)
-    $sheet->setCellValue('J3', 'Bermain Bola');  // HOBI 
+    $sheet->setCellValue('I3', $randomBirthDate); // TANGGAL LAHIR (yyyy-mm-dd)
+    $sheet->setCellValue('J3', 'Membaca');  // HOBI 
     $sheet->setCellValue('K3', '085123456789');  // NO. HP SISWA
     $sheet->setCellValue('L3', 'Jl. Jayabaya');  // ALAMAT
     $sheet->setCellValue('M3', 'Budi Santoso');  // NAMA AYAH
@@ -1292,6 +1301,14 @@ class Student_set extends CI_Controller
       ->getNumberFormat()
       ->setFormatCode('yyyy-mm-dd');
 
+    $columnsForVTopHCenter = ['A', 'B', 'D', 'E', 'G', 'I'];
+
+    foreach ($columnsForVTopHCenter as $column) {
+      $sheet->getStyle("{$column}3:{$column}{$maxRow}")
+        ->getAlignment()
+        ->setVertical(Alignment::VERTICAL_TOP)
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -1661,21 +1678,32 @@ class Student_set extends CI_Controller
 
   public function print_students()
   {
-    ob_start();
+    $this->load->library('html2pdflib');
 
     $params = array();
 
     $id_majors = $this->input->post('modal_majors');
     $id_kelas  = $this->input->post('modal_class');
 
-    $params['majors_id'] = $id_majors;
-    $params['class_id']  = $id_kelas;
+    $this->db->select('majors_short_name, majors_name');
+    $this->db->where('majors_id', $id_majors);
+    $majors_data = $this->db->get('majors')->row_array();
+    $data['majors'] = $majors_data;
+    $majors = $majors_data;
+
+    if ($id_kelas != 'all') {
+      $params['class_id']  = $id_kelas;
+      $this->db->select('class_name');
+      $this->db->where('class_id', $id_kelas);
+      $kelas_data = $this->db->get('class')->row_array();
+      $data['kelas'] = $kelas_data;
+      $kelas = $kelas_data;
+    } else {
+      $data['kelas']   = array('class_name' => 'Semua Kelas');
+      $kelas           = array('class_name' => 'Semua Kelas');
+    }
 
     $data['student'] = $this->Student_model->get($params);
-    $data['majors']  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$id_majors'")->row_array();
-    $data['kelas']   = $this->db->query("SELECT class_name FROM class WHERE class_id = '$id_kelas'")->row_array();
-    $majors          = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$id_majors'")->row_array();
-    $kelas           = $this->db->query("SELECT class_name FROM class WHERE class_id = '$id_kelas'")->row_array();
 
     $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
     $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
@@ -1685,16 +1713,15 @@ class Student_set extends CI_Controller
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
-    $filename = 'Data_Siswa_' . $majors . '_Kelas_' . $kelas . '.pdf';
-    $this->load->view('student/print_students', $data);
+    $filename = 'Data Siswa ' . $majors['majors_name'] . ' Kelas ' . $kelas['class_name'];
 
-    $html = ob_get_contents();
-    ob_end_clean();
+    $html = $this->load->view('student/print_students', $data, TRUE);
 
-    require_once('./assets/html2pdf/html2pdf.class.php');
-    $pdf = new HTML2PDF('l', 'A4', 'en');
-    $pdf->WriteHTML($html);
-    $pdf->Output($filename);
+    $paper = 'A4';
+    $orientation = 'l';
+    $download = FALSE;
+
+    $this->html2pdflib->generate($html, $filename, $download, $paper, $orientation);
   }
 
   public function excel_students()

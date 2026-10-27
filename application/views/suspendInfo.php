@@ -1,56 +1,60 @@
-<style>
-    #app-suspend-info {
-        position: fixed;
-        top: 50px;
-        width: 100%;
-        z-index: 99;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        animation: slideDown 0.3s ease-in-out;
-    }
-
-    #app-suspend-info .callout {
-        margin: 0;
-        border-radius: 0;
-        padding: 10px 30px 10px 10px;
-    }
-
-    @media (max-width: 767px) {
-        #app-suspend-info {
-            top: 100px;
-        }
-
-        .content-wrapper {
-            margin-top: 55px;
-        }
-
-        .sidebar-open #app-suspend-info {
-            margin-top: -60px;
-        }
-    }
-
-    @keyframes slideDown {
-        from {
-            transform: translateY(-100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-
-    .content-wrapper {
-        margin-top: 40px;
-    }
-</style>
-
-<div id="app-suspend-info">
-    <div class="callout <?= $bg_color; ?>">
-        <p>
-            <strong><?= $title_text; ?></strong>&nbsp;&nbsp;&nbsp;
-            Status berlangganan Aplikasi anda akan habis dalam <strong><?= $days_left; ?></strong> hari.
-            Segera lakukan pembayaran sebelum tanggal jatuh tempo pada <b><?= pretty_date($suspend_date, 'l, d F Y', false); ?></b>.
+<?php
+$setting_date = $this->db->get_where('setting', ['setting_name' => 'setting_date'])->row();
+$setting_date_value = $setting_date ? $setting_date->setting_value : null;
+$start_date_fmt = '';
+if ($setting_date_value) {
+    $start_date_fmt = pretty_date($setting_date_value, 'd F Y', false);
+}
+?>
+<?php if ($location === 'navbar'): ?>
+    <li id="app-suspend-info" class="dropdown tasks-menu">
+        <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-calendar"></i>
+            <span class="hidden-xs">Aktif hingga: <?= pretty_date($suspend_date, 'd F Y', false); ?></span>
+        </a>
+        <ul class="dropdown-menu" style="">
+            <li class="header">
+                <div>
+                    <i class="fa fa-bookmark-o"></i>
+                    <strong>Jenis Paket:</strong> <?= $package_name; ?>
+                </div>
+                <div>
+                    <i class="fa fa-calendar"></i>
+                    <strong>Mulai langganan:</strong> <?= $start_date_fmt; ?>
+                </div>
+                <div>
+                    <i class="fa fa-calendar"></i>
+                    <strong>Selesai langganan:</strong> <?= pretty_date($suspend_date, 'd F Y', false); ?>
+                </div>
+                <div>
+                    <i class="fa fa-clock-o"></i>
+                    <strong>Tersisa:</strong> <?= $days_left; ?> hari
+                </div>
+            </li>
+            <li class="footer" style="display: flex; flex-direction: row; gap: 5px; justify-content: center; border: none; padding: 5px 0;">
+                <button class="btn btn-default btn-sm" id="extend-subscription">Perpanjang</button>
+                <button class="btn btn-default btn-sm" id="make-deposit">Deposit</button>
+            </li>
+        </ul>
+    </li>
+<?php else: ?>
+    <div id="app-suspend-info" class="<?= $alert_class; ?>" style="margin-bottom: 15px;">
+        <h4><i class="icon fa <?= $icon; ?>"></i> <strong><?= $title_text; ?></strong></h4>
+        <p style="margin: 0; white-space: normal; word-wrap: break-word; word-break: break-word; overflow-wrap: anywhere;">
+            <?= $message; ?>
         </p>
     </div>
-</div>
+<?php endif; ?>
+
+<script>
+    $(function() {
+        $('#extend-subscription').on('click', function() {
+            var whatsappUrl = '<?= $whatsappUrl ?>';
+            window.open(whatsappUrl, '_blank');
+        });
+
+        $('#make-deposit').on('click', function() {
+            toastNotifikasi('info', 'Fitur deposit akan segera hadir. Silakan hubungi admin untuk informasi lebih lanjut.', 'Informasi');
+        });
+    });
+</script>

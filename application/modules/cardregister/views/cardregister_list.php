@@ -168,7 +168,7 @@
 				url: "<?php echo site_url('manage/cardregister/set_data') ?>",
 				dataType: "JSON",
 				data: payload,
-				success: function(data) {
+				success: function(response) {
 					toastNotifikasi(
 						(response.status == false ? "error" : "success"),
 						response.message,

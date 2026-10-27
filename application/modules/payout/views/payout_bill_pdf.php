@@ -2,7 +2,7 @@
 
 <head>
   <?php foreach ($siswa as $row): ?>
-    <title>Cetak Transaksi Pembayaran - <?php echo $row['student_full_name'] ?></title>
+    <title>Cetak Surat Tagihan - <?php echo $row['student_full_name'] ?></title>
   <?php endforeach ?>
   <style type="text/css">
     .upper {
@@ -59,19 +59,24 @@
       font-size: 14pt;
       text-align: center;
       font-weight: bold;
-      padding-bottom: -10px;
+      margin: 0 0 2px 0;
+      line-height: 1.05;
     }
 
     .tp {
       font-size: 12pt;
       text-align: center;
       font-weight: bold;
+      margin: 0 0 2px 0;
+      line-height: 1.05;
     }
 
     .unit-siswa {
       font-size: 10pt;
       text-align: center;
       font-weight: bold;
+      margin: 0;
+      line-height: 1.05;
     }
 
     hr {
@@ -92,6 +97,14 @@
       border-collapse: collapse;
       font-size: 9pt;
       width: 100%;
+    }
+
+    .table-bulanan td {
+      padding: 3px;
+    }
+
+    .table-bebas td {
+      padding: 3px;
     }
   </style>
 </head>
@@ -126,7 +139,8 @@
       <?php endforeach; ?>
     </p>
   <?php } ?>
-  <table style="font-size: 10pt;" width="100%" border="0">
+  <br>
+  <table class="table-siswa" style="font-size: 10pt;" width="100%" border="0">
     <tr>
       <td width="100">NIS</td>
       <td width="5">:</td>
@@ -148,14 +162,15 @@
         <td><?php echo $row['class_name'] ?></td>
       <?php endforeach; ?>
     </tr>
-  </table><br>
+  </table>
   <?php if ($f['n'] and $f['r'] != NULL) { ?>
 
-    <table width="100%" border="1" style="white-space: nowrap;">
+    <h4>Pembayaran Bulanan</h4>
+    <table width="100%" border="1" style="white-space: nowrap;" class="table-bulanan">
       <tr>
         <th style="height: 30px;">NO</th>
         <th>NAMA PEMBAYARAN</th>
-        <th>TANGGAL BAYAR</th>
+        <th>TANGGAL</th>
         <th>NOMINAL</th>
         <th>KETERANGAN</th>
         <th>DIBAYAR VIA</th>
@@ -165,38 +180,114 @@
       foreach ($bulan as $row) :
         $namePay = $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'];
         $mont = ($row['month_month_id'] <= 6) ? $row['period_start'] : $row['period_end'];
+
+        $align_center = ($row['bulan_status'] == 1) ? 'center' : 'center';
+
+        $style_tgl_bayar = '';
+        $tgl_bayar_fmt = '';
+        if ($row['bulan_status'] == 1) {
+          $style_tgl_bayar = 'text-align: right;';
+          $tgl_bayar_fmt = pretty_date($row['bulan_date_pay'], 'd F Y', false);
+        } else {
+          $style_tgl_bayar = 'text-align: center;';
+          $tgl_bayar_fmt = '-';
+        }
+
+        $style_nominal = 'text-align: right;';
+
+        $style_keterangan = '';
+        $keterangan_fmt = '';
+        if (isset($row['account_description']) && !empty($row['account_description'])) {
+          $style_keterangan = 'text-align: left;';
+          $keterangan_fmt = $row['account_description'];
+        } else {
+          $style_keterangan = 'text-align: center;';
+          $keterangan_fmt = '-';
+        }
+
       ?>
         <tr>
           <td style="text-align: center;"><?php echo $i ?></td>
           <td><?php echo $namePay . ' - (' . $row['month_name'] . ' ' . $mont . ')' ?></td>
-          <td style="text-align: <?php echo ($row['bulan_status'] == 1) ? 'center' : ''; ?>;"><?php echo ($row['bulan_status'] == 1) ? pretty_date($row['bulan_date_pay'], 'd F Y', false) : '-' ?></td>
-          <td><?php echo ($row['bulan_status'] == 0) ? 'Rp. ' . number_format($row['bulan_bill'], 0, ',', '.') : 'Rp. -' ?></td>
+          <td style="<?php echo $style_tgl_bayar ?>"><?php echo $tgl_bayar_fmt ?></td>
+          <td style="<?php echo $style_nominal ?>"><?php echo 'Rp. ' . number_format($row['bulan_bill'], 0, ',', '.')  ?></td>
           <td><?php echo ($row['bulan_status'] == 1) ? 'Lunas' : 'Belum Lunas' ?></td>
-          <td><?php echo (isset($row['account_description'])) ? $row['account_description'] : '-' ?></td>
+          <td style="<?php echo $style_keterangan ?>">
+            <?php echo $keterangan_fmt ?>
+          </td>
         </tr>
       <?php
         $i++;
       endforeach
       ?>
-      <?php
-      $j = $i;
-      foreach ($bebas as $row) :
-        $namePayFree = $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'];
-      ?>
-        <tr>
-          <td style="text-align: center;"><?php echo $j ?></td>
-          <td><?php echo $namePayFree ?></td>
-          <td style="text-align: <?php echo ($row['bebas_total_pay'] > 0) ? 'center' : '' ?>"><?php echo ($row['bebas_total_pay'] > 0) ? pretty_date($row['lastPaymentDate'], 'd F Y', false) : '-'  ?></td>
-          <td><?php echo ($row['bebas_bill'] - $row['bebas_total_pay'] != 0) ? 'Rp. ' . number_format($row['bebas_bill'] - $row['bebas_total_pay'], 0, ',', '.') : 'Rp. -' ?></td>
-          <td><?php echo ($row['bebas_bill'] == $row['bebas_total_pay']) ? 'Lunas' : 'Belum Lunas' ?></td>
-          <td>-</td>
-        </tr>
-      <?php
-        $j++;
-      endforeach
-      ?>
-
     </table>
+
+    <?php if (isset($bebas) && !empty($bebas)): ?>
+      <h4>Pembayaran Bebas</h4>
+      <table width="100%" border="1" style="white-space: nowrap;" class="table-bebas">
+        <tr>
+          <th style="height: 30px;">NO</th>
+          <th>NAMA PEMBAYARAN</th>
+          <th>TAGIHAN</th>
+          <th>DISKON</th>
+          <th>TOTAL TAGIHAN</th>
+          <th>DIBAYAR</th>
+          <th>SISA TAGIHAN</th>
+        </tr>
+        <?php
+        $j = 1;
+        foreach ($bebas as $row) :
+          $namePayFree = $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'];
+          $sisaTagihan = $row['bebas_bill'] - $row['bebas_diskon'] -  $row['bebas_total_pay'];
+        ?>
+          <tr>
+            <td style="text-align: center;"><?php echo $j ?></td>
+            <td><?php echo $namePayFree ?></td>
+            <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_bill'], 0, ',', '.') ?></td>
+            <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_diskon'], 0, ',', '.') ?></td>
+            <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_bill'] - $row['bebas_diskon'], 0, ',', '.') ?></td>
+            <td style="text-align: right;"> <?php echo 'Rp. ' . number_format($row['bebas_total_pay'], 0, ',', '.') ?></td>
+            <td style="text-align: right;"><?php echo 'Rp. ' . number_format($sisaTagihan, 0, ',', '.') ?></td>
+          </tr>
+          <?php if (isset($rincian_bebas[$row['pos_name']])) { ?>
+            <tr>
+              <td colspan="7"><b>Rincian</b></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td colspan="6">
+                <table>
+                  <thead>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Dibayar Via</th>
+                    <th>Nominal</th>
+                  </thead>
+                  <tbody>
+                    <?php
+                    $no = 1;
+                    foreach ($rincian_bebas[$row['pos_name']] as $item) {
+                      echo '<tr>';
+                      echo '<td>' . $no . '</td>';
+                      echo '<td>' . $item['tanggal'] . '</td>';
+                      echo '<td>' . $item['namaKas'] . '</td>';
+                      echo '<td>Rp ' . number_format($item['penerimaan'], 0, ",", ".") . '</td>';
+                      echo '</tr>';
+                      $no++;
+                    }
+                    ?>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          <?php } ?>
+        <?php
+          $j++;
+        endforeach
+        ?>
+
+      </table>
+    <?php endif; ?>
   <?php } else redirect('manage/payout?n=' . $f['n'] . '&r=' . $f['r'])  ?>
 
 
@@ -213,6 +304,7 @@
     </tr>
 
   </table>
+  <br><br>
   <br><br>
   <table width="100%" style="font-size: 10pt;">
     <tr>

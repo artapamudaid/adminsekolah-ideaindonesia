@@ -416,7 +416,7 @@ $totalNotif = count($notifTrx);
     <script src="<?php echo media_url() ?>js/bootstrap.min.js"></script>
     <script src="<?php echo media_url() ?>js/moment.min.js"></script>
 
-    <script src="<?php echo media_url() ?>js/fullcalendar.min.js"></script>
+    <!-- <script src="<?php echo media_url() ?>js/fullcalendar.min.js"></script> -->
 
 
     <!-- daterangepicker -->
@@ -648,18 +648,29 @@ $totalNotif = count($notifTrx);
     <script>
       $(function() {
         let suspend_show = <?= isset($this->suspend_info['show']) ? json_encode($this->suspend_info['show']) : false; ?>;
-        let suspend_date = <?= isset($this->suspend_info['suspend_date']) ? json_encode($this->suspend_info['suspend_date']) : null; ?>;
+        let suspend_location = <?= isset($this->suspend_info['location']) ? json_encode($this->suspend_info['location']) : '"content-wrapper"'; ?>;
         if (suspend_show) {
-          let suspendUI = <?= isset($this->suspend_info['ui']) ? json_encode($this->suspend_info['ui']) : ''; ?>;
-
-          $(".content-wrapper").prepend(suspendUI);
+          let suspendUI = <?= isset($this->suspend_info['ui']) ? json_encode($this->suspend_info['ui']) : '""'; ?>;
+          if (suspend_location === 'navbar') {
+            $(".navbar-custom-menu .navbar-nav").prepend(suspendUI);
+          } else {
+            if ($(".content-wrapper section.content").length) {
+              $(".content-wrapper section.content").first().prepend(suspendUI);
+            } else {
+              $(".content-wrapper").prepend(suspendUI);
+            }
+          }
         }
 
         // Password reminder
         let pwd_reminder_show = <?= isset($this->password_reminder_info['show']) ? json_encode($this->password_reminder_info['show']) : 'false'; ?>;
         if (pwd_reminder_show) {
           let pwdReminderUI = <?= isset($this->password_reminder_info['ui']) ? json_encode($this->password_reminder_info['ui']) : '""'; ?>;
-          $(".content-wrapper").prepend(pwdReminderUI);
+          if ($(".content-wrapper section.content").length) {
+            $(".content-wrapper section.content").first().prepend(pwdReminderUI);
+          } else {
+            $(".content-wrapper").prepend(pwdReminderUI);
+          }
         }
       });
     </script>

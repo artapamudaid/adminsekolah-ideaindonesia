@@ -126,8 +126,8 @@ class Setting_set extends CI_Controller
             $data['setting_facebook'] = $this->Setting_model->get(array('id' => 93));
             $data['setting_instagram'] = $this->Setting_model->get(array('id' => 94));
             $data['setting_youtube'] = $this->Setting_model->get(array('id' => 95));
-            $data['setting_package'] = $this->Setting_model->get(array('id' => 100)) ?? $this->Setting_model->get(array('id' => 97));
-            $data['setting_date'] = $this->Setting_model->get(array('id' => 101)) ?? $this->Setting_model->get(array('id' => 708));
+            $data['setting_package'] =  $this->Setting_model->get(array('name' => 'setting_package'));
+            $data['setting_date'] = $this->Setting_model->get(array('name' => 'setting_date'));
             $data['setting_duration'] = $this->Setting_model->get(array('id' => 102));
             $data['use_limit'] = $this->Setting_model->get(array('id' => 208));
             $data['limit_tabungan'] = $this->Setting_model->get(array('id' => 209));

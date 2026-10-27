@@ -54,6 +54,10 @@ if (!function_exists('pretty_date')) {
 
     function pretty_date($date = '', $format = '', $timezone = TRUE)
     {
+        if (empty($date)) {
+            return '-';
+        }
+
         $date_str = strtotime($date);
 
         if (empty($format)) {
@@ -202,47 +206,47 @@ if (!function_exists('sanitizeStrict')) {
 
         return trim($input);
     }
+}
 
-    function pre($data)
+function pre($data)
+{
+    echo '<pre>';
+    print_r($data);
+    echo '</pre>';
+}
+
+if (!function_exists('printQuery')) {
+    function printQuery()
     {
+        $CI = &get_instance();
         echo '<pre>';
-        print_r($data);
+        echo $CI->db->last_query();
         echo '</pre>';
+        die;
     }
+}
 
-    if (!function_exists('printQuery')) {
-        function printQuery()
-        {
-            $CI = &get_instance();
-            echo '<pre>';
-            echo $CI->db->last_query();
-            echo '</pre>';
-            die;
-        }
-    }
-
-    if (!function_exists('time_passed')) {
-        function time_passed($datetime, $penuh = false)
-        {
-            date_default_timezone_set('Asia/Jakarta');
-            $sekarang = new DateTime;
-            $yangLalu = new DateTime($datetime);
-            $diff = $sekarang->diff($yangLalu);
-            $weeks = floor($diff->d / 7);
-            $days = $diff->d % 7;
-            $string = array(
-                'y' => $diff->y > 0 ? $diff->y . ' tahun' : null,
-                'm' => $diff->m > 0 ? $diff->m . ' bulan' : null,
-                'w' => $weeks > 0 ? $weeks . ' minggu' : null,
-                'd' => $days > 0 ? $days . ' hari' : null,
-                'h' => $diff->h > 0 ? $diff->h . ' jam' : null,
-                'i' => $diff->i > 0 ? $diff->i . ' menit' : null,
-                's' => $diff->s > 0 ? $diff->s . ' detik' : null,
-            );
-            $string = array_filter($string);
-            if (!$penuh) $string = array_slice($string, 0, 1);
-            return $string ? implode(', ', $string) . ' yang lalu' : 'Baru saja';
-        }
+if (!function_exists('time_passed')) {
+    function time_passed($datetime, $penuh = false)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $sekarang = new DateTime;
+        $yangLalu = new DateTime($datetime);
+        $diff = $sekarang->diff($yangLalu);
+        $weeks = floor($diff->d / 7);
+        $days = $diff->d % 7;
+        $string = array(
+            'y' => $diff->y > 0 ? $diff->y . ' tahun' : null,
+            'm' => $diff->m > 0 ? $diff->m . ' bulan' : null,
+            'w' => $weeks > 0 ? $weeks . ' minggu' : null,
+            'd' => $days > 0 ? $days . ' hari' : null,
+            'h' => $diff->h > 0 ? $diff->h . ' jam' : null,
+            'i' => $diff->i > 0 ? $diff->i . ' menit' : null,
+            's' => $diff->s > 0 ? $diff->s . ' detik' : null,
+        );
+        $string = array_filter($string);
+        if (!$penuh) $string = array_slice($string, 0, 1);
+        return $string ? implode(', ', $string) . ' yang lalu' : 'Baru saja';
     }
 }
 

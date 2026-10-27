@@ -128,7 +128,7 @@ class Pelanggaran_set extends CI_Controller
             $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
 
             foreach ($sheet as $i => $row) {
-                if ($i < 2) continue; // skip header
+                if ($i < 3) continue; // skip header
 
                 $data = [
                     'pelanggaran' => $row['A'],
