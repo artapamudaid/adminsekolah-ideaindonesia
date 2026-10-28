@@ -124,7 +124,8 @@
             <div class="form-group">
               <label for="akun" class="col-sm-6 col-form-label">Akun</label>
               <div class="col-sm-12">
-                <select style="width: 100%;" name="akun_barang" class="akunBarang form-control">
+                <select style="width: 100%;" name="akun_barang" class="akunBarang form-control" required>
+
                 </select>
               </div>
             </div>
@@ -177,7 +178,7 @@
               <div class="form-group">
                 <label for="akun" class="col-sm-6 col-form-label">Akun</label>
                 <div class="col-sm-12">
-                  <select style="width: 100%;" name="akun_barang" class="akunBarang form-control">
+                  <select style="width: 100%;" name="akun_barang" class="akunBarang form-control" required>
 
                   </select>
                 </div>

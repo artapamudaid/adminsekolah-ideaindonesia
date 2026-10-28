@@ -9,6 +9,112 @@ class Kredit_model extends CI_Model
 		parent::__construct();
 	}
 
+	function count_trx($data = array())
+	{
+		$this->db->select('COUNT(kredit_id) AS totalBaris');
+		$this->db->select('SUM(kredit_value) AS totalPengeluaran');
+		$this->db->from('kredit');
+		$this->db->join('account', 'account.account_id = kredit.kredit_account_id');
+		$this->db->join('account AS acc', 'acc.account_id = kredit.kredit_kas_account_id');
+
+		if (isset($data['search'])) {
+			$search = $data['search'];
+			$this->db->group_start();
+
+			$this->db->like("kredit_date", $search);
+			$this->db->or_like("kredit_desc", $search);
+			$this->db->or_like("kredit_value", $search);
+			$this->db->or_like("kredit_kas_noref", $search);
+			$this->db->or_like("account.account_code", $search);
+			$this->db->or_like("account.account_description", $search);
+			$this->db->or_like("acc.account_code", $search);
+			$this->db->or_like("acc.account_description", $search);
+
+			$this->db->group_end();
+		}
+
+		if (isset($data['date_start']) and isset($data['date_end'])) {
+			$this->db->where('kredit_date >=', $data['date_start']);
+			$this->db->where('kredit_date <=', $data['date_end']);
+		}
+
+		if (isset($data['majors_id'])) {
+			if ($data['majors_id'] !== 'all') {
+				$this->db->group_start();
+				$this->db->where('account.account_majors_id', $data['majors_id']);
+				$this->db->or_where('acc.account_majors_id', $data['majors_id']);
+				$this->db->group_end();
+			}
+		}
+
+		// if (isset($data['kas_account_id'])) {
+		// 	$this->db->where_in('idKas', $data['kas_account_id']);
+		// }
+
+		$query = $this->db->get();
+
+		// Memeriksa apakah query berhasil dan mengembalikan hasilnya
+		if ($query->num_rows() > 0) {
+			return $query->row_array();  // Mengembalikan hasil dalam bentuk object
+		} else {
+			return null;  // Jika tidak ada hasil
+		}
+	}
+
+	function list_kredit($limit, $start, $search, $data = array())
+	{
+		$this->db->select("kredit_id, kredit_gaji_id, kredit_kas_noref, kredit_date, kredit_value, IF(kredit_tax_id != 0, tax_number, 0) AS kredit_tax, IF(kredit_item_id != 0, item_name, 'Tidak Ada') as kredit_item, kredit_desc, kredit_account_id, account.account_id, account.account_code, account.account_description, tax_id, item_id, kredit_input_date, kredit_last_update");
+		$this->db->select('acc.account_id AS accID, acc.account_code AS accCode, acc.account_description AS accDesc');
+		$this->db->from('kredit');
+		$this->db->join('account', 'account.account_id = kredit.kredit_account_id');
+		$this->db->join('account AS acc', 'acc.account_id =  kredit.kredit_kas_account_id');
+		$this->db->join('tax', 'tax.tax_id = kredit.kredit_tax_id', 'left');
+		$this->db->join('item', 'item.item_id = kredit.kredit_item_id', 'left');
+
+		if (isset($data['search'])) {
+			$search = $data['search'];
+			$this->db->group_start();
+
+			$this->db->like("kredit_date", $search);
+			$this->db->or_like("kredit_desc", $search);
+			$this->db->or_like("kredit_value", $search);
+			$this->db->or_like("kredit_kas_noref", $search);
+			$this->db->or_like("account.account_code", $search);
+			$this->db->or_like("account.account_description", $search);
+			$this->db->or_like("acc.account_code", $search);
+			$this->db->or_like("acc.account_description", $search);
+
+			$this->db->group_end();
+		}
+
+		if (isset($data['date_start']) and isset($data['date_end'])) {
+			$this->db->where('kredit_date >=', $data['date_start']);
+			$this->db->where('kredit_date <=', $data['date_end']);
+		}
+
+		if (isset($data['majors_id'])) {
+			if ($data['majors_id'] !== 'all') {
+				$this->db->group_start();
+				$this->db->where('account.account_majors_id', $data['majors_id']);
+				$this->db->or_where('acc.account_majors_id', $data['majors_id']);
+				$this->db->group_end();
+			}
+		}
+
+		if (isset($data['order_column']) and isset($data['order_dir'])) {
+			if (!empty($data['order_column']) and !empty($data['order_dir'])) {
+				$this->db->order_by($data['order_column'], $data['order_dir']);
+			}
+		} else {
+			$this->db->order_by('kredit_date', 'ASC');
+		}
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		return $query;
+	}
+
 	// Get kredit from database
 	function get($params = array())
 	{
@@ -440,12 +546,11 @@ class Kredit_model extends CI_Model
 
 		if (isset($params['kredit_desc'])) {
 			$this->db->like('kredit_desc', $params['kredit_desc']);
-		}	
+		}
 
-        if(isset($params['kas_account_id']))
-        {
-            $this->db->where_in('kredit.kredit_kas_account_id', $params['kas_account_id']);
-        }	
+		if (isset($params['kas_account_id'])) {
+			$this->db->where_in('kredit.kredit_kas_account_id', $params['kas_account_id']);
+		}
 
 		if (isset($params['kredit_input_date'])) {
 			$this->db->where('kredit_input_date', $params['kredit_input_date']);
@@ -490,8 +595,8 @@ class Kredit_model extends CI_Model
 			$this->db->order_by('kredit_id', 'desc');
 		}
 
-        $this->db->group_by('kredit_date');
-        $this->db->group_by('account.account_description');
+		$this->db->group_by('kredit_date');
+		$this->db->group_by('account.account_description');
 
 		$res = $this->db->get('kredit');
 		return $res->result_array();
@@ -675,11 +780,10 @@ class Kredit_model extends CI_Model
 			return $res->result_array();
 		}
 	}
-	
+
 	function get_last_kas($param = array())
 	{
-		if(isset($param['id']))
-		{
+		if (isset($param['id'])) {
 			$this->db->where('kredit_id', $param['id']);
 		}
 
@@ -694,64 +798,53 @@ class Kredit_model extends CI_Model
 		if (isset($param['kredit_desc'])) {
 			$this->db->like('kredit_desc', $param['kredit_desc']);
 		}
-		
-        if(isset($param['account_majors_id']))
-        {
-            $this->db->where('acc.account_majors_id', $param['account_majors_id']);             
-            $this->db->like('acc.account_description', 'Tunai');
-            $this->db->like('kas_noref', 'JK', 'after');
-        }
-            
-        if(isset($param['kas_noref']))
-		{          
-		    $this->db->like('acc.account_description', 'Tunai');
-		    $this->db->like('kas_noref', 'JK', 'after');
+
+		if (isset($param['account_majors_id'])) {
+			$this->db->where('acc.account_majors_id', $param['account_majors_id']);
+			$this->db->like('acc.account_description', 'Tunai');
+			$this->db->like('kas_noref', 'JK', 'after');
 		}
 
-		if(isset($param['kredit_input_date']))
-		{
+		if (isset($param['kas_noref'])) {
+			$this->db->like('acc.account_description', 'Tunai');
+			$this->db->like('kas_noref', 'JK', 'after');
+		}
+
+		if (isset($param['kredit_input_date'])) {
 			$this->db->where('kredit_input_date', $param['kredit_input_date']);
 		}
 
-		if(isset($param['kredit_last_update']))
-		{
+		if (isset($param['kredit_last_update'])) {
 			$this->db->where('kredit_last_update', $param['kredit_last_update']);
 		}
-		
+
 		// if(isset($param['date_start']) AND isset($param['date_end']))
 		// {
 		// 	$this->db->where('kredit_date >=', $param['date_start'] . ' 00:00:00');
 		// 	$this->db->where('kredit_date <=', $param['date_end'] . ' 23:59:59');
 		// }
-		
-		if(isset($param['date_start']))
-		{
+
+		if (isset($param['date_start'])) {
 			$this->db->where('kredit_date <', $param['date_start'] . ' 00:00:00');
 		}
-		
+
 		if (isset($param['period_id'])) {
-			
 		}
 
-		if(isset($param['limit']))
-		{
-			if(!isset($param['offset']))
-			{
+		if (isset($param['limit'])) {
+			if (!isset($param['offset'])) {
 				$param['offset'] = NULL;
 			}
 
 			$this->db->limit($param['limit'], $param['offset']);
 		}
-		if(isset($param['order_by']))
-		{
+		if (isset($param['order_by'])) {
 			$this->db->order_by($param['order_by'], 'desc');
-		}
-		else
-		{
+		} else {
 			$this->db->order_by('kredit_id', 'desc');
 		}
 
-        $this->db->where('majors_status', '1');
+		$this->db->where('majors_status', '1');
 
 		$this->db->select('SUM(kredit_value) AS kredit_value');
 
@@ -759,15 +852,15 @@ class Kredit_model extends CI_Model
 		$this->db->join('users', 'users.user_id = kredit.user_user_id');
 		$this->db->join('account', 'account.account_id = kredit.kredit_account_id');
 		$this->db->join('account AS acc', 'acc.account_id = kas.kas_account_id');
-        $this->db->join('majors', 'majors.majors_id = account.account_majors_id');
+		$this->db->join('majors', 'majors.majors_id = account.account_majors_id');
 
 		$res = $this->db->get('kredit');
 
-        /*
+		/*
 		if(isset($param['id']))
 		{
 		*/
-			return $res->result_array();
+		return $res->result_array();
 		/*
 		}
 		else
@@ -864,11 +957,10 @@ class Kredit_model extends CI_Model
 			return $res->result_array();
 		}
 	}
-	
+
 	function gaji_last_kas($param = array())
 	{
-		if(isset($param['id']))
-		{
+		if (isset($param['id'])) {
 			$this->db->where('kredit_id', $param['id']);
 		}
 
@@ -883,64 +975,53 @@ class Kredit_model extends CI_Model
 		if (isset($param['kredit_desc'])) {
 			$this->db->like('kredit_desc', $param['kredit_desc']);
 		}
-		
-        if(isset($param['account_majors_id']))
-        {
-            $this->db->where('acc.account_majors_id', $param['account_majors_id']);            
-            $this->db->like('acc.account_description', 'Tunai');
-            $this->db->like('kas_noref', 'GK', 'after');
-        }
-            
-        if(isset($param['kas_noref']))
-		{             
-		    $this->db->like('acc.account_description', 'Tunai');
-		    $this->db->like('kas_noref', 'GK', 'after');
+
+		if (isset($param['account_majors_id'])) {
+			$this->db->where('acc.account_majors_id', $param['account_majors_id']);
+			$this->db->like('acc.account_description', 'Tunai');
+			$this->db->like('kas_noref', 'GK', 'after');
 		}
 
-		if(isset($param['kredit_input_date']))
-		{
+		if (isset($param['kas_noref'])) {
+			$this->db->like('acc.account_description', 'Tunai');
+			$this->db->like('kas_noref', 'GK', 'after');
+		}
+
+		if (isset($param['kredit_input_date'])) {
 			$this->db->where('kredit_input_date', $param['kredit_input_date']);
 		}
 
-		if(isset($param['kredit_last_update']))
-		{
+		if (isset($param['kredit_last_update'])) {
 			$this->db->where('kredit_last_update', $param['kredit_last_update']);
 		}
-		
+
 		// if(isset($param['date_start']) AND isset($param['date_end']))
 		// {
 		// 	$this->db->where('kredit_date >=', $param['date_start'] . ' 00:00:00');
 		// 	$this->db->where('kredit_date <=', $param['date_end'] . ' 23:59:59');
 		// }
-		
-		if(isset($param['date_start']))
-		{
+
+		if (isset($param['date_start'])) {
 			$this->db->where('kredit_date <', $param['date_start'] . ' 00:00:00');
 		}
-		
+
 		if (isset($param['period_id'])) {
-			
 		}
 
-		if(isset($param['limit']))
-		{
-			if(!isset($param['offset']))
-			{
+		if (isset($param['limit'])) {
+			if (!isset($param['offset'])) {
 				$param['offset'] = NULL;
 			}
 
 			$this->db->limit($param['limit'], $param['offset']);
 		}
-		if(isset($param['order_by']))
-		{
+		if (isset($param['order_by'])) {
 			$this->db->order_by($param['order_by'], 'desc');
-		}
-		else
-		{
+		} else {
 			$this->db->order_by('kredit_id', 'desc');
 		}
 
-        $this->db->where('majors_status', '1');
+		$this->db->where('majors_status', '1');
 
 		$this->db->select('SUM(kredit_value) AS kredit_value');
 
@@ -948,16 +1029,16 @@ class Kredit_model extends CI_Model
 		$this->db->join('users', 'users.user_id = kredit.user_user_id');
 		$this->db->join('account', 'account.account_id = kredit.kredit_account_id');
 		$this->db->join('account AS acc', 'acc.account_id = kas.kas_account_id');
-        $this->db->join('majors', 'majors.majors_id = account.account_majors_id');
+		$this->db->join('majors', 'majors.majors_id = account.account_majors_id');
 
 		$res = $this->db->get('kredit');
-		
+
 		/*
 
 		if(isset($param['id']))
 		{
 		*/
-			return $res->result_array();
+		return $res->result_array();
 		/*
 		}
 		else
@@ -1507,6 +1588,40 @@ class Kredit_model extends CI_Model
 
 		$res = $this->db->get('kredit');
 		return $res->result_array();
+	}
+
+	function update_detail_jurnal_akun($idJurnal, $kodeAkun, $data = array())
+	{
+		$this->db->where('id_jurnal', $idJurnal);
+		$this->db->where('account_code', $kodeAkun);
+
+		if (isset($data['kode_baru'])) {
+			$this->db->set('account_code', $data['kode_baru']);
+		}
+
+		// Ini untuk KODE AKUN set DEBET karena transaksinya KAS KELUAR
+		if (isset($data['value_baru'])) {
+			$this->db->set('debet', $data['value_baru']);
+		}
+
+		$this->db->update('jurnal_umum_detail');
+
+		$status = $this->db->affected_rows();
+		return ($status == 0) ? FALSE : $idJurnal;
+	}
+
+	function update_detail_jurnal_kas($idJurnal, $kodeAkunKas, $total)
+	{
+		$this->db->where('id_jurnal', $idJurnal);
+		$this->db->where('account_code', $kodeAkunKas);
+
+		// Ini untuk KODE KAS set KREDIT karena transaksinya KAS KELUAR
+		$this->db->set('kredit', $total);
+
+		$this->db->update('jurnal_umum_detail');
+
+		$status = $this->db->affected_rows();
+		return ($status == 0) ? FALSE : $idJurnal;
 	}
 }
 

@@ -60,20 +60,54 @@ class Position_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $posCode     = $_POST['position_code'];
-      $posName     = $_POST['position_name'];
-      $posMajorsId = $_POST['position_majors_id'];
+      $positionCode = sanitizeStrict($_POST['position_code']);
+      $positionName = sanitizeStrict($_POST['position_name']);
+      $positionMajorId = sanitizeStrict($_POST['position_majors_id']);
 
-      $cpt = count($_POST['position_name']);
+      $cpt = count($positionName);
+      $added = 0;
+      $skipped = 0;
       for ($i = 0; $i < $cpt; $i++) {
-        $params['position_code']      = $posCode[$i];
-        $params['position_name']      = $posName[$i];
-        $params['position_majors_id'] = $posMajorsId;
+        if (empty($positionCode[$i]) || empty($positionName[$i])) {
+          $skipped++;
+          continue;
+        }
 
-        $this->Position_model->add($params);
+        $colWhere = [
+          'position_name' => $positionName[$i],
+          'position_majors_id' => $positionMajorId
+        ];
+        if ($this->General_model->checkDataExists("position", $colWhere)) {
+          $skipped++;
+          continue;
+        }
+        $params['position_code']      = $positionCode[$i];
+        $params['position_name']      = $positionName[$i];
+        $params['position_majors_id'] = $positionMajorId;
+
+        $insert = $this->Position_model->add($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+
+        $added++;
       }
+
+      if ($added > 1) {
+        $msg = "$added data berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 data berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped data dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
     }
-    $this->session->set_flashdata('success', ' Tambah Jabatan Pegawai Berhasil');
     redirect('manage/position');
   }
 
@@ -89,15 +123,32 @@ class Position_set extends CI_Controller
 
     if ($_POST and $this->form_validation->run() == TRUE) {
 
-      $positionCode = $this->input->post('position_code');
-
       if ($this->input->post('position_id')) {
-        $params['position_id'] = $this->input->post('position_id');
+        $id = sanitizeStrict($this->input->post('position_id'));
+        $params['position_id'] = $id;
       }
 
-      $params['position_code'] = $this->input->post('position_code');
-      $params['position_name'] = $this->input->post('position_name');
-      $params['position_majors_id'] = $this->input->post('position_majors_id');
+      $positionCode = sanitizeStrict($this->input->post('position_code'));
+      $positionName = sanitizeStrict($this->input->post('position_name'));
+      $positionMajorId = sanitizeStrict($this->input->post('position_majors_id'));
+
+      $colWhere = [
+        'position_name' => $positionName,
+        'position_majors_id' => $positionMajorId,
+      ];
+      if (!empty($id)) {
+        $colWhere['position_id !='] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("position", $colWhere)) {
+        $this->session->set_flashdata('failed', ' Data sudah ada');
+        $redirectUrl = (!empty($id)) ? "manage/position/edit/$id" : "manage/position";
+        redirect($redirectUrl);
+      }
+
+      $params['position_code'] = $positionCode;
+      $params['position_name'] = $positionName;
+      $params['position_majors_id'] = $positionMajorId;
 
       $status = $this->Position_model->add($params);
       $paramsupdate['position_id'] = $status;

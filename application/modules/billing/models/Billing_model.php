@@ -8,73 +8,319 @@ class Billing_model extends CI_Model
     {
         parent::__construct();
     }
-	
-	function get_student($params = array()) {
 
-        $this->db->select('
-			student.student_id,
-			student.student_nis,
-			student.student_nisn,
-			student.student_parent_phone,
-			student.student_full_name,
-			student.student_status,
-			class.class_id,
-			student.class_class_id,
-			class.class_name,
-			class.majors_majors_id,
-			student.majors_majors_id,
-			majors.majors_id,
-			majors.majors_short_name,
-			SUM(COALESCE(CASE WHEN bulan.bulan_status = 0 THEN bulan.bulan_bill ELSE 0 END, 0)) AS total_bulan_bill,
-			(COALESCE(bebas.bebas_bill, 0) - COALESCE(bebas.bebas_diskon, 0) - COALESCE(bebas.bebas_total_pay, 0)) AS bebas_sisa'
-		);
+    public function get_tagihan_siswa($params = array())
+    {
+        // Default values
+        $period_id    = isset($params['period_id']) ? $params['period_id'] : null;
+        $period_start = isset($params['period_start']) ? $params['period_start'] : null;
+        $month_start  = isset($params['month_start']) ? $params['month_start'] : 1;
+        $month_end    = isset($params['month_end']) ? $params['month_end'] : 12;
 
-		$this->db->from('student');
-		$this->db->join('class', 'class.class_id = student.class_class_id', 'left');
-		$this->db->join('majors', 'majors.majors_id = student.majors_majors_id', 'left');
-		$this->db->join('bulan', 'bulan.student_student_id = student.student_id', 'left');
-		$this->db->join('bebas', 'bebas.student_student_id = student.student_id', 'left');
-		$this->db->join('payment as paybul', 'paybul.payment_id = bulan.payment_payment_id', 'left');
-		$this->db->join('payment as paybeb', 'paybeb.payment_id = bebas.payment_payment_id', 'left');
+        // Kondisi dasar untuk subquery
+        $whereCondition = '';
 
-        if (isset($params['class_id'])) {
-            $this->db->where('class_class_id', $params['class_id']);
+        if ($period_id == 'all') {
+            // Semua periode
+            $whereCondition = "
+                (
+                    vts.idBulan = 0
+                    OR (
+                        vts.period_start = '$period_start'
+                        AND vts.idBulan BETWEEN $month_start AND $month_end
+                    )
+                    OR vts.period_start <> '$period_start'
+                )
+            ";
+        } else {
+            // Periode tertentu
+            $whereCondition = "
+                p.period_start <= '$period_start' AND
+                (
+                    vts.idBulan = 0
+                    OR (
+                        p.period_start = '$period_start'
+                        AND vts.idBulan BETWEEN $month_start AND $month_end
+                    )
+                    OR p.period_start < '$period_start'
+                )
+            ";
         }
+
+        // Subquery tagihan
+        $sub_tagihan = "
+            (
+                SELECT 
+                    vts.idStudent, 
+                    SUM(vts.total) AS totalTagihan
+                FROM v_tagihan_siswa vts
+                JOIN period p ON vts.idPeriod = p.period_id
+                WHERE $whereCondition
+                GROUP BY vts.idStudent
+            ) AS tagihan_siswa
+        ";
+
+        // Query utama
+        $this->db->select([
+            'std.student_id',
+            'std.student_nis',
+            'std.student_full_name',
+            'std.class_class_id',
+            'cls.class_name',
+            'std.majors_majors_id',
+            'mjr.majors_short_name',
+            'COALESCE(tagihan_siswa.totalTagihan, 0) AS total_tagihan'
+        ])
+            ->from('student std')
+            ->join('class cls', 'cls.class_id = std.class_class_id')
+            ->join('majors mjr', 'mjr.majors_id = std.majors_majors_id')
+            ->join($sub_tagihan, 'tagihan_siswa.idStudent = std.student_id', 'left');
+
+        // Filter berdasarkan class_id
+        if (!empty($params['class_id'])) {
+            $this->db->where_in('std.class_class_id', (array)$params['class_id']);
+        }
+
+        // Filter berdasarkan majors_id
+        if (!empty($params['majors_id'])) {
+            $this->db->where_in('std.majors_majors_id', (array)$params['majors_id']);
+        }
+
+        $this->db->where_in('std.student_status', [1]);
+
+        // Grouping
+        $this->db->group_by([
+            'std.student_id',
+            'std.student_nis',
+            'std.student_full_name',
+            'std.class_class_id',
+            'cls.class_name',
+            'std.majors_majors_id',
+            'mjr.majors_short_name'
+        ]);
+
+        $this->db->order_by("std.student_full_name ASC");
+
+        return $this->db->get()->result_array();
+    }
+
+    public function get_rincian_tagihan($params = array())
+    {
+        $student_id    = isset($params['student_id']) ? (int)$params['student_id'] : 0;
+        $period_id     = isset($params['period_id']) ? $params['period_id'] : null; // bisa 'all' atau id
+        $period_start  = isset($params['period_start']) ? $params['period_start'] : null; // misal 2025
+        $month_start   = isset($params['month_start']) ? (int)$params['month_start'] : 1;
+        $month_end     = isset($params['month_end']) ? (int)$params['month_end'] : 12;
+
+        // pastikan nilai valid
+        if ($month_start < 1) $month_start = 1;
+        if ($month_end > 12) $month_end = 12;
+        if ($month_end < $month_start) $month_end = $month_start;
+
+        // bangun kondisi WHERE sesuai logika:
+        // - jika period_id == 'all' -> ambil semua period_start,
+        //   tetapi BETWEEN hanya diterapkan pada baris dengan period_start = $period_start
+        // - jika period_id != 'all' -> ambil period_start <= $period_start,
+        //   dan BETWEEN hanya untuk period_start = $period_start
+        if ($period_id === 'all' || $period_id == 'all') {
+            $where = "
+                WHERE idStudent = {$student_id}
+                AND (
+                    idBulan = 0
+                    OR (
+                        p.period_start = " . $this->db->escape($period_start) . "
+                        AND idBulan BETWEEN {$month_start} AND {$month_end}
+                    )
+                    OR p.period_start <> " . $this->db->escape($period_start) . "
+                )
+            ";
+        } else {
+            // periode spesifik: batasi sampai period_start yang dipilih
+            $where = "
+                WHERE idStudent = {$student_id}
+                AND p.period_start <= " . $this->db->escape($period_start) . "
+                AND (
+                    idBulan = 0
+                    OR (
+                        p.period_start = " . $this->db->escape($period_start) . "
+                        AND idBulan BETWEEN {$month_start} AND {$month_end}
+                    )
+                    OR p.period_start < " . $this->db->escape($period_start) . "
+                )
+            ";
+        }
+
+        $sql = "
+            SELECT 
+                idStudent, 
+                p.period_start,
+                p.period_end,
+                idBulan,
+                keterangan,
+                total
+            FROM v_tagihan_siswa
+            JOIN period p ON v_tagihan_siswa.idPeriod = p.period_id
+            $where
+            ORDER BY p.period_start DESC, idBulan ASC
+        ";
+
+        // debug: jika mau cek query terakhir saat error, kamu bisa uncomment baris di bawah ini
+        // log_message('debug', 'SQL get_rincian_tagihan: ' . $sql);
+
+        $query = $this->db->query($sql);
+        return $query->result_array();
+    }
+
+    public function get_tagihan_siswa_dengan_rincian($params = [])
+    {
+        $period_id     = $params['period_id'] ?? null;
+        $period_start  = $params['period_start'] ?? null;
+        $month_start   = (int)($params['month_start'] ?? 1);
+        $month_end     = (int)($params['month_end'] ?? 12);
+
+        // =========================
+        // FILTER SISWA
+        // =========================
+        $whereStudent = [];
+        $whereStudent[] = "std.student_status = 1";
+
+        if (!empty($params['class_id'])) {
+            $classIds = array_map('intval', (array)$params['class_id']);
+            $whereStudent[] = "std.class_class_id IN (" . implode(',', $classIds) . ")";
+        }
+
+        if (!empty($params['majors_id'])) {
+            $majorsIds = array_map('intval', (array)$params['majors_id']);
+            $whereStudent[] = "std.majors_majors_id IN (" . implode(',', $majorsIds) . ")";
+        }
+
+        $whereStudentSql = implode(' AND ', $whereStudent);
+
+        // =========================
+        // FILTER PERIODE TAGIHAN
+        // =========================
+        if ($period_id === 'all') {
+            $wherePeriod = "
+            (
+                vts.idBulan = 0
+                OR (
+                    vts.period_start = " . $this->db->escape($period_start) . "
+                    AND vts.idBulan BETWEEN {$month_start} AND {$month_end}
+                )
+                OR vts.period_start <> " . $this->db->escape($period_start) . "
+            )
+        ";
+        } else {
+            $wherePeriod = "
+            vts.period_start <= " . $this->db->escape($period_start) . "
+            AND (
+                vts.idBulan = 0
+                OR (
+                    vts.period_start = " . $this->db->escape($period_start) . "
+                    AND vts.idBulan BETWEEN {$month_start} AND {$month_end}
+                )
+                OR vts.period_start < " . $this->db->escape($period_start) . "
+            )
+        ";
+        }
+
+        // =========================
+        // QUERY BESAR
+        // =========================
+        $sql = "
+            SELECT
+                std.student_id,
+                std.student_nis,
+                std.student_full_name,
+                cls.class_name,
+                mjr.majors_short_name,
+
+                vts.period_start,
+                vts.period_end,
+                vts.idBulan,
+                vts.keterangan,
+                vts.total
+            FROM student std
+            JOIN class cls ON cls.class_id = std.class_class_id
+            JOIN majors mjr ON mjr.majors_id = std.majors_majors_id
+            JOIN v_tagihan_siswa vts 
+                ON vts.idStudent = std.student_id
+                AND $wherePeriod
+            WHERE $whereStudentSql
+            ORDER BY
+                std.student_full_name ASC,
+                vts.period_start DESC,
+                vts.idBulan ASC
+        ";
+
+        return $this->db->query($sql)->result_array();
+    }
+
+
+
+    function getPosBayar($params = array())
+    {
+        $this->db->select('pos.pos_id, pos.pos_name');
+        $this->db->from('pos');
+        $this->db->join('account ac', 'ac.account_id = pos.account_account_id');
 
         if (isset($params['majors_id'])) {
-            $this->db->where('student.majors_majors_id', $params['majors_id']);
+            $this->db->where('ac.account_majors_id', $params['majors_id']);
         }
 
-        if (isset($params['period_id'])) {
-			$this->db->group_start();
-			$this->db->group_start();
-			if (isset($params['month_start']) and isset($params['month_end'])) {
-				$this->db->where('month_month_id >=', $params['month_start']);
-				$this->db->where('month_month_id <=', $params['month_end']);
-			}
-            $this->db->where('paybul.period_period_id', $params['period_id']);
-			$this->db->group_end();
-			$this->db->or_where('paybeb.period_period_id', $params['period_id']);
-			$this->db->group_end();
+        $query = $this->db->get();
+        $result = $query->result_array();
+
+        return $result;
+    }
+
+    function getKelas($params = array())
+    {
+        $this->db->select('class.class_id, class.class_name');
+        $this->db->from('class');
+
+        if (isset($params['majors_id'])) {
+            $this->db->where('class.majors_majors_id', $params['majors_id']);
         }
 
-		// Group by all non-aggregated columns
-		$this->db->group_by('student.student_id');
+        $this->db->order_by('class.class_name', 'asc');
 
-		if ($params['status'] == 'belum') {
-			$this->db->having('(total_bulan_bill + bebas_sisa)  >', 0);
-		} else if ($params['status'] == 'lunas') {
-			$this->db->having('(total_bulan_bill + bebas_sisa)  =', 0);
-		}
+        $query = $this->db->get();
+        $result = $query->result_array();
 
-		$this->db->order_by('majors.majors_id', 'ASC');
-		$this->db->order_by('class.class_name', 'ASC');
-		$this->db->order_by('student.student_nis', 'ASC');
+        return $result;
+    }
 
-		$query = $this->db->get();
-		
-		return $query->result_array();
+    function getTagihanPerKelas($params = array())
+    {
+        $query1 = $this->db->select('ps.pos_id, ps.pos_name, c.class_id, c.class_name, SUM(b.bulan_bill) AS totalTagihan', false)
+            ->from('bulan b')
+            ->join('student s', 's.student_id = b.student_student_id')
+            ->join('class c', 'c.class_id = s.class_class_id')
+            ->join('payment py', 'py.payment_id = b.payment_payment_id')
+            ->join('pos ps', 'ps.pos_id = py.pos_pos_id')
+            ->where('b.bulan_status', 0)
+            ->where('b.bulan_bill >', 0)
+            ->where('s.majors_majors_id', $params['majors_id'])
+            ->where('py.period_period_id', $params['period_id'])
+            ->group_by(['ps.pos_name', 'c.class_name'])
+            ->get_compiled_select();
 
+        $query2 = $this->db->select('ps.pos_id, ps.pos_name, c.class_id, c.class_name, SUM(bb.bebas_bill - bb.bebas_total_pay) AS totalTagihan', false)
+            ->from('bebas bb')
+            ->join('student s', 's.student_id = bb.student_student_id')
+            ->join('class c', 'c.class_id = s.class_class_id')
+            ->join('payment py', 'py.payment_id = bb.payment_payment_id')
+            ->join('pos ps', 'ps.pos_id = py.pos_pos_id')
+            ->where('s.majors_majors_id', $params['majors_id'])
+            ->where('py.period_period_id', $params['period_id'])
+            ->group_by(['ps.pos_name', 'c.class_name'])
+            ->get_compiled_select();
+
+        $finalQuery = $this->db->query($query1 . " UNION " . $query2);
+        $result = $finalQuery->result_array();
+
+        return $result;
     }
 
     function get_tagihan_bulan($params = array())
@@ -260,10 +506,10 @@ class Billing_model extends CI_Model
             $this->db->where('student.student_id', $param['student_id']);
         }
 
-        if (isset($param['period_id'])) {
+        if (isset($param['period_id']) && !empty($param['period_id'])) {
             $this->db->where_in('payment.period_period_id', $param['period_id']);
         } else {
-            $this->db->where_in('payment.period_period_id', '');
+            $this->db->where_in('payment.period_period_id', [0]);
         }
 
         if (isset($param['class_id'])) {
@@ -280,7 +526,7 @@ class Billing_model extends CI_Model
         }
 
         //$this->db->distinct();
-        $this->db->order_by('period.period_start', 'asc');
+        $this->db->order_by('period.period_start', 'desc');
 
         $this->db->order_by('bulan.payment_payment_id', 'asc');
 
@@ -327,8 +573,10 @@ class Billing_model extends CI_Model
             $this->db->where('student.student_id', $param['student_id']);
         }
 
-        if (isset($param['period_id'])) {
+        if (isset($param['period_id']) && !empty($param['period_id'])) {
             $this->db->where_in('payment.period_period_id', $param['period_id']);
+        } else {
+            $this->db->where_in('payment.period_period_id', [0]);
         }
 
         if (isset($param['class_id'])) {
@@ -340,7 +588,7 @@ class Billing_model extends CI_Model
         }
 
         //$this->db->distinct();
-        $this->db->order_by('period.period_start', 'asc');
+        $this->db->order_by('period.period_start', 'desc');
 
         $this->db->order_by('bebas.payment_payment_id', 'asc');
 
@@ -389,9 +637,9 @@ class Billing_model extends CI_Model
             $this->db->where_in('payment.period_period_id', '');
         }
 
-        if (isset($param['period_id'])) {
-            $this->db->where('payment.period_period_id', $param['period_id']);
-        }
+        // if (isset($param['period_id'])) {
+        //     $this->db->where('payment.period_period_id', $param['period_id']);
+        // }
 
         if (isset($param['class_id'])) {
             $this->db->where('student.class_class_id', $param['class_id']);

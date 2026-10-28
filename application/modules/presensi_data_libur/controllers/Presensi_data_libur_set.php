@@ -60,7 +60,8 @@ class Presensi_data_libur_set extends CI_Controller
 
     if ($_POST and $this->form_validation->run() == TRUE) {
 
-      if ($this->input->post('id')) {
+      $id = !empty($id) ? $id : $this->input->post('id');
+      if (!empty($id)) {
         $params['id'] = $id;
         $params['updated_date'] = date('Y-m-d H:i:s');
         $params['updated_by'] = $this->session->userdata('uid');
@@ -68,8 +69,26 @@ class Presensi_data_libur_set extends CI_Controller
         $params['created_date'] = date('Y-m-d H:i:s');
         $params['created_by'] = $this->session->userdata('uid');
       }
-      $params['hari'] = $this->input->post('hari');
-      $params['keterangan'] = $this->input->post('keterangan');
+
+      $hari = sanitizeStrict($this->input->post('hari'));
+      $keterangan = sanitizeStrict($this->input->post('keterangan'));
+
+      $colWhere = [
+        "hari" => $hari,
+        // "keterangan" => $keterangan,
+      ];
+      if (!empty($id)) {
+        $colWhere["id != "] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("data_hari_libur", $colWhere)) {
+        $this->session->set_flashdata('failed', ' Data sudah ada');
+        $redirectUrl = (!empty($id)) ? "manage/presensi_data_libur/edit/$id" : "manage/presensi_data_libur/add";
+        redirect($redirectUrl);
+      }
+
+      $params['hari'] = $hari;
+      $params['keterangan'] = $keterangan;
       $status = $this->presensi_data_libur_model->add($params);
 
       // activity log
@@ -80,7 +99,7 @@ class Presensi_data_libur_set extends CI_Controller
           'user_id' => $this->session->userdata('uid'),
           'log_module' => 'Data Libur Presensi',
           'log_action' => $data['operation'],
-          'log_info' => 'ID:' . $status . ';Name:' . $this->input->post('nama_area')
+          'log_info' => 'ID:' . $status . ';Name:' . $hari
         )
       );
 
@@ -95,6 +114,7 @@ class Presensi_data_libur_set extends CI_Controller
       if (!is_null($id)) {
         $object = $this->presensi_data_libur_model->get(array('id' => $id));
         if ($object == NULL) {
+          redirect('manage/presensi_data_libur');
         } else {
           $data['presensi_data_libur'] = $object;
         }

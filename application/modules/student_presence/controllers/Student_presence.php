@@ -26,6 +26,10 @@ class Student_presence extends CI_Controller
     $data['setting_address']            = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone']              = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
+    // NOTE: Check RFID Subscription
+    $data['is_rfid_subscription'] = table_exists_cached('cards');
+    $data['is_rfid_subscription_employee'] = table_exists_cached('employee_cards');
+
     $data['title'] = 'Presensi Harian Siswa';
     $data['main'] = 'student_presence/student_presence_add';
     // $this->load->view('frontend/new_student_presence', $data);
@@ -128,22 +132,6 @@ class Student_presence extends CI_Controller
                 'log_info' => 'ID:' . date('Ymdhis') . ';Name:' . $student->student_full_name
               )
             );
-
-             // Telegram Notification
-            $this->load->helper('notiftele');
-            
-            $payload_tele = [
-                'topik'  => 'presensi_siswa',
-                'pesan'  => $student['student_full_name'] . ' (' . $student['class_name'] . ') Hadir pada ' . date('H:i:s'),
-                'detail' => [
-                    'tanggal' => date('Y-m-d'),
-                    'nama'    => $student['student_full_name'],
-                    'nis'     => $student['student_nis'] ?? '',
-                    'kelas'   => $student['class_name'] ?? '',
-                    'unit'    => $student['majors_short_name'] ?? ''
-                ]
-            ];
-            create_log($payload_tele);
           } else {
             $data = array(
               'status' => 'error',

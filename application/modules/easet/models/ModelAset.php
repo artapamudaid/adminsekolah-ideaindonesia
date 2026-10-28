@@ -114,16 +114,6 @@ class ModelAset extends CI_Model
 		return $query->result_array();
 	}
 
-	public function detailAset($id_aset)
-	{
-		$this->db->select('a.kode_aset,a.qr_code,a.volume,b.nama_barang,b.tahun_perolehan');
-		$this->db->join('barang b', 'b.id_barang = a.id_barang');
-		$this->db->from('asets a');
-		$this->db->where('id_aset', $id_aset);
-		$query = $this->db->get();
-		return $query->row_array();
-	}
-
 	public function getFilterAsetWujud($id_kategori, $tahun_perolehan, $kondisi)
 	{
 		$this->db->select('*');

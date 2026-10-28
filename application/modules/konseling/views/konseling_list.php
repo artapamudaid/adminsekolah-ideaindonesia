@@ -71,7 +71,7 @@
 			</div>
 		</div>
 
-		<?php if ($f) { ?>
+		<?php if ($f && $f['r'] !== '') { ?>
 			<!-- Data Konseling Siswa -->
 			<div class="box box-primary">
 				<div class="box-header with-border">
@@ -160,16 +160,16 @@
 					<div class="nav-tabs-custom">
 						<!-- TAB UTAMA -->
 						<ul class="nav nav-tabs">
-							<li class="<?php echo $f['m'] == 0 ? 'active' : '' ?> tab-utama"> <a href="#pelanggaran" data-toggle="tab">Pelanggaran</a></li>
-							<li class="<?php echo $f['m'] == 1 ? 'active' : '' ?> tab-utama"><a href="#konsultasi" data-toggle="tab">Konsultasi</a></li>
-							<li class="<?php echo $f['m'] == 2 ? 'active' : '' ?> tab-utama"><a href="#prestasi" data-toggle="tab">Prestasi</a></li>
+							<li class="<?php echo @$f['m'] == 0 ? 'active' : '' ?> tab-utama"> <a href="#pelanggaran" data-toggle="tab">Pelanggaran</a></li>
+							<li class="<?php echo @$f['m'] == 1 ? 'active' : '' ?> tab-utama"><a href="#konsultasi" data-toggle="tab">Konsultasi</a></li>
+							<li class="<?php echo @$f['m'] == 2 ? 'active' : '' ?> tab-utama"><a href="#prestasi" data-toggle="tab">Prestasi</a></li>
 						</ul>
 
 						<!-- ISI DARI TIAP TAB UTAMA -->
 						<div class="tab-content">
 
 							<!-- ================= PELANGGARAN ================= -->
-							<div class="<?php echo $f['m'] == 0 ? 'active' : '' ?> tab-pane" id="pelanggaran">
+							<div class="<?php echo @$f['m'] == 0 ? 'active' : '' ?> tab-pane" id="pelanggaran">
 								<div class="d-flex justify-content-end mb-2" style="margin-bottom: 2px;">
 									<a href="<?php echo base_url() . 'manage/konseling/printBook/?n=' . $f['n'] . '&r=' . $f['r']; ?>" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-print"></i> Cetak Buku Pelanggaran</a>
 								</div>
@@ -259,7 +259,7 @@
 											</div>
 										</div>
 										<div class="tab-pane" id="daftarPelanggaran">
-											<table id="dtablePelanggaran" class="table table-bordered" style="white-space: nowrap;width:100%">
+											<table id="dtablePelanggaran" class="table table-bordered" style="width:100%">
 												<thead>
 													<tr class="info">
 														<th style="width: 5%;">No</th>
@@ -368,7 +368,7 @@
 							</div>
 
 							<!-- ================= KONSULTASI ================= -->
-							<div class="<?php echo $f['m'] == 1 ? 'active' : '' ?> tab-pane" id="konsultasi">
+							<div class="<?php echo @$f['m'] == 1 ? 'active' : '' ?> tab-pane" id="konsultasi">
 								<div class="d-flex justify-content-end mb-2" style="margin-bottom: 2px;">
 									<a href="<?php echo base_url() . 'manage/konseling/printBookKonsultasi/?n=' . $f['n'] . '&r=' . $f['r']; ?>" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-print"></i> Cetak Buku Konsultasi</a>
 								</div>
@@ -442,7 +442,7 @@
 											</div>
 										</div>
 										<div class="tab-pane" id="daftarKonsultasi">
-											<table id="dtableKonsultasi" class="table table-bordered" style="white-space: nowrap;">
+											<table id="dtableKonsultasi" class="table table-bordered" style="width:100%">
 												<thead>
 													<tr class="info">
 														<th>No.</th>
@@ -515,7 +515,7 @@
 							</div>
 
 							<!-- ================= PRESTASI ================= -->
-							<div class="<?php echo $f['m'] == 2 ? 'active' : '' ?> tab-pane" id="prestasi">
+							<div class="<?php echo @$f['m'] == 2 ? 'active' : '' ?> tab-pane" id="prestasi">
 								<div class="d-flex justify-content-end mb-2" style="margin-bottom: 2px;">
 									<a href="<?php echo base_url() . 'manage/konseling/printBookPrestasi/?n=' . $f['n'] . '&r=' . $f['r']; ?>" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-print"></i> Cetak Buku Prestasi</a>
 								</div>
@@ -604,7 +604,7 @@
 										</div>
 										<div class="tab-pane" id="daftarPrestasi">
 											<!-- Table Daftar Prestasi -->
-											<table id="dtablePrestasi" class="table table-bordered" style="white-space: nowrap;width:100%;">
+											<table id="dtablePrestasi" class="table table-bordered" style="width:100%;">
 												<thead>
 													<tr class="info">
 														<th style="width: 5%;">No.</th>
@@ -731,62 +731,26 @@
 				<button type="button" class="close" data-dismiss="modal">&times;</button>
 				<h4 class="modal-title">Cari Data Siswa</h4>
 			</div>
-			<div class="modal-body">
-				<?php $dataSiswa = $this->Student_model->get(array('status' => '1'));
 
-				echo '
-            <div class="box-body table-responsive">
-							<table id="dtable" class="table table-hover">
-							    <thead>
-								<tr>
-									<th>No</th>
-									<th>NIS</th>
-									<th>Nama</th>
-									<th>Unit Sekolah</th>
-									<th>Kelas</th>
-									<th>Aksi</th>
-								</tr>
-								</thead>
-								<tbody>';
-				if (!empty($dataSiswa)) {
-					$i = 1;
-					foreach ($dataSiswa as $row):
-						echo '<tr>
-												<td>' .
-							$i
-							. '</td>
-												<td>' .
-							$row['student_nis']
-							. '</td>
-												<td>' .
-							$row['student_full_name']
-							. '</td>
-												<td>' .
-							$row['majors_short_name']
-							. '</td>
-												<td>' .
-							$row['class_name']
-							. '</td>';
-						echo '<td align="center">';
-						echo '<button type="button" data-dismiss="modal" class="btn btn-primary btn-xs" onclick="ambil_data(';
-						echo "'" . $row['student_nis'] . "'";
-						echo ')">Pilih</button>';
-						echo '</td>';
-						echo '</tr>';
-						$i++;
-					endforeach;
-				} else {
-					echo '<tr id="row">
-											<td colspan="8" align="center">Data Kosong</td>
-										</tr>';
-				}
-				echo	'</tbody>
-								</table>
-							</div>
-      '; ?>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+			<div class="modal-body">
+				<div class="box-body table-responsive">
+					<table id="table-siswa" class="table table-hover" style="width: 100%;">
+						<thead>
+							<tr>
+								<th>NIS</th>
+								<th>Nama</th>
+								<th>Unit Sekolah</th>
+								<th>Kelas</th>
+								<th>Aksi</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
 				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
 			</div>
 		</div>
 	</div>
@@ -988,3 +952,17 @@
 		overflow: scroll;
 	}
 </style>
+
+<script>
+	$(function() {
+		$("#table-siswa").DataTable({
+			ordering: true,
+			processing: false,
+			serverSide: true,
+			ajax: {
+				url: "<?php echo base_url('manage/student/datatablesSiswa'); ?>",
+				type: 'POST',
+			},
+		});
+	});
+</script>

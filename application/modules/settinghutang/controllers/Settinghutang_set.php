@@ -12,7 +12,15 @@ class Settinghutang_set extends CI_Controller
     if ($this->session->userdata('logged') == NULL) {
       redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
     }
-    $this->load->model(array('settinghutang/Settinghutang_model', 'student/Student_model', 'employees/Employees_model', 'position/Position_model', 'period/Period_model', 'poshutang/Poshutang_model', 'hutang/Hutang_model', 'hutang/Hutang_pay_model', 'logs/Logs_model'));
+    $this->load->model(array(
+      'settinghutang/Settinghutang_model',
+      'student/Student_model',
+      'period/Period_model',
+      'poshutang/Poshutang_model',
+      'hutang/Hutang_model',
+      'hutang/Hutang_pay_model',
+      'logs/Logs_model'
+    ));
   }
 
   // settinghutang view in list
@@ -80,14 +88,33 @@ class Settinghutang_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('settinghutang_id')) {
-        $params['settinghutang_id'] = $this->input->post('settinghutang_id');
+        $id = sanitizeStrict($this->input->post('settinghutang_id'));
+        $params['settinghutang_id'] = $id;
       } else {
         $params['settinghutang_input_date'] = date('Y-m-d H:i:s');
       }
 
+      $periodId = sanitizeStrict($this->input->post('period_id'));
+      $posHutangId = sanitizeStrict($this->input->post('poshutang_id'));
+
+      $colWhere = [
+        "settinghutang_period_id" => $periodId,
+        "settinghutang_poshutang_id" => $posHutangId
+      ];
+
+      if (!empty($id)) {
+        $colWhere['settinghutang_id <> '] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("settinghutang", $colWhere)) {
+        $this->session->set_flashdata('failed', $data['operation'] . ' Hutang gagal, data sudah ada.');
+        $redirectUrl = !empty($id) ? 'manage/settinghutang/edit/' . $id : 'manage/settinghutang/add';
+        redirect($redirectUrl);
+      }
+
       $params['settinghutang_last_update'] = date('Y-m-d H:i:s');
-      $params['period_id'] = $this->input->post('period_id');
-      $params['poshutang_id'] = $this->input->post('poshutang_id');
+      $params['period_id'] = $periodId;
+      $params['poshutang_id'] = $posHutangId;
 
       $status = $this->Settinghutang_model->add($params);
       $paramsupdate['settinghutang_id'] = $status;
@@ -131,7 +158,7 @@ class Settinghutang_set extends CI_Controller
     }
   }
 
-  public function view_hutang($id = NULL, $employee_id = NULL, $hutang_id = NULL)
+  public function view_hutang($id = NULL, $hutang_id = NULL)
   {
 
     $pay_id = $this->uri->segment(4);
@@ -148,23 +175,17 @@ class Settinghutang_set extends CI_Controller
     $data['q'] = $q;
     $params = array();
 
-    // Kelas
-    if (isset($q['pr']) && !empty($q['pr']) && $q['pr'] != '') {
-      $params['position_id'] = $q['pr'];
-    }
-
     if (isset($q['k']) && !empty($q['k']) && $q['k'] != '') {
       $params['majors_id'] = $q['k'];
     }
 
     //$params['majors_id'] = $majors->account_majors_id;
     $params['settinghutang_id'] = $id;
-    $params['group'] = TRUE;
-    $data['employee_id'] = $employee_id;
+    $params['grup'] = TRUE;
 
-    $data['position'] = $this->Position_model->get($params);
     $data['majors'] = $this->Student_model->get_majors($params);
     $data['kreditur'] = $this->Hutang_model->get($params);
+
     $data['settinghutang'] = $this->Settinghutang_model->get(array('id' => $id));
     $data['title'] = 'Data Hutang';
     $data['main'] = 'settinghutang/settinghutang_view';
@@ -172,20 +193,26 @@ class Settinghutang_set extends CI_Controller
   }
 
   // Delete settinghutang
-  public function delete_settinghutang($id = NULL, $employee_id = NULL, $hutang_id = NULL)
+  public function delete_settinghutang($id = NULL, $hutang_id = NULL)
   {
 
     $hutang = $this->Hutang_pay_model->get(array(
-      'hutang_id' => $hutang_id,
-      'hutang_pay_status' => 1
+      'hutang_id' => $hutang_id
     ));
-
-    $noref = $this->db->query("SELECT hutang_noref FROM hutang WHERE hutang_id = $hutang_id")->row_array();
 
     if (count($hutang) > 0) {
       $this->session->set_flashdata('failed', 'Hutang tidak dapat dihapus');
       redirect('manage/settinghutang/view_hutang/' . $id);
     }
+
+    $dataHutang = $this->db->query(
+      "SELECT hutang_noref 
+        FROM hutang
+        WHERE hutang_id = $hutang_id"
+    )->row_array();
+
+    $norefHutang = $dataHutang['hutang_noref'];
+    $this->db->query("DELETE FROM jurnal_umum WHERE noref = '$norefHutang' ");
 
     $this->Hutang_model->delete_hutang(array(
       'settinghutang_id' => $id,
@@ -196,14 +223,13 @@ class Settinghutang_set extends CI_Controller
       'id' => $hutang_id
     ));
 
-    $this->db->query("DELETE FROM kas WHERE kas_noref = '" . $noref['hutang_noref'] . "'");
-
     $this->session->set_flashdata('success', 'Hapus Hutang berhasil');
     redirect('manage/settinghutang/view_hutang/' . $id);
   }
 
   public function add_settinghutang($id = NULL)
   {
+
     if ($id == NULL) {
       redirect('manage/settinghutang');
     }
@@ -212,79 +238,81 @@ class Settinghutang_set extends CI_Controller
 
       if (!$this->input->post('settinghutang_id')) {
 
-        if ($this->input->post('hutang_bill') == '0' && $this->input->post('cicil') == '0' && $this->input->post('hutang_pay_bill') == '0') {
+        if ($this->input->post('hutang_bill') == '0') {
           $this->session->set_flashdata('failed', ' Tidak boleh ada data yang 0 (nol)');
         } else {
 
-          $noref = $this->input->post('hutang_noref');
-
-          $date = $this->input->post('kas_date');
-          $bulan = $this->db->query("SELECT MONTH('$date') as n")->row_array();
-
-          if ($bulan['n'] == '1') {
-            $id_bulan = '7';
-          } else if ($bulan['n'] == '2') {
-            $id_bulan = '8';
-          } else if ($bulan['n'] == '3') {
-            $id_bulan = '9';
-          } else if ($bulan['n'] == '4') {
-            $id_bulan = '10';
-          } else if ($bulan['n'] == '5') {
-            $id_bulan = '11';
-          } else if ($bulan['n'] == '6') {
-            $id_bulan = '12';
-          } else if ($bulan['n'] == '7') {
-            $id_bulan = '1';
-          } else if ($bulan['n'] == '8') {
-            $id_bulan = '2';
-          } else if ($bulan['n'] == '9') {
-            $id_bulan = '3';
-          } else if ($bulan['n'] == '10') {
-            $id_bulan = '4';
-          } else if ($bulan['n'] == '11') {
-            $id_bulan = '5';
-          } else if ($bulan['n'] == '12') {
-            $id_bulan = '6';
-          }
+          $noref                    = sanitizeStrict($this->input->post('hutang_noref'));
+          $hutang_bill              = sanitizeStrict($this->input->post('hutang_bill'));
+          $hutang_settinghutang_id  = sanitizeStrict($this->input->post('hutang_settinghutang_id'));
+          $hutang_kreditur          = sanitizeStrict($this->input->post('hutang_kreditur'));
+          $hutang_date              = sanitizeStrict($this->input->post('hutang_date'));
+          $hutang_account_id        = sanitizeStrict($this->input->post('hutang_account_id'));
+          $poshutang_account_id     = sanitizeStrict($this->input->post('poshutang_account_id'));
+          $majors_id                = sanitizeStrict($this->input->post('majors_id'));
 
           $param['hutang_noref']            = $noref;
-          $param['hutang_bill']             = $this->input->post('hutang_bill');
+          $param['hutang_bill']             = $hutang_bill;
           $param['hutang_input_date']       = date('Y-m-d');
           $param['hutang_last_update']      = date('Y-m-d');
-          $param['hutang_settinghutang_id'] = $id;
-          $param['hutang_employee_id']      = $this->input->post('employee_id');
+          $param['hutang_settinghutang_id'] = $hutang_settinghutang_id;
+          $param['hutang_kreditur']         = $hutang_kreditur;
+          $param['hutang_date']             = $hutang_date;
+          $param['hutang_account_id']       = $hutang_account_id;
 
-          $paramskas['kas_majors_id']   = $this->input->post('kas_majors_id');
-          $paramskas['kas_noref']       = $noref;
-          $paramskas['kas_period']      = $this->input->post('kas_period');
-          $paramskas['kas_date']        = $this->input->post('kas_date');
-          $paramskas['kas_month_id']    = $id_bulan;
-          $paramskas['kas_account_id']  = $this->input->post('kas_account_id');
-          $paramskas['kas_note']        = $this->input->post('kas_note');
-          $paramskas['kas_debit']       = $this->input->post('hutang_bill');
-          $paramskas['kas_category']    = '1';
-          $paramskas['kas_user_id']     = $user_id = $this->session->userdata('uid');
-          $paramskas['kas_input_date']  = date('Y-m-d');
-          $paramskas['kas_last_update'] = date('Y-m-d');
+          $this->db->trans_begin();
 
           $this->Hutang_model->add($param);
-          $this->Hutang_model->save($paramskas);
 
-          $hutang = $this->db->query("SELECT hutang_id FROM hutang WHERE hutang_noref = '$noref'")->row_array();
+          $jurnal_umum = array(
+            'sekolah_id'         => $majors_id,
+            'noref'              => $noref,
+            'keterangan'         => 'Hutang kepada ' . $hutang_kreditur,
+            'tanggal'            => $hutang_date,
+            'pencatatan'         => 'auto',
+            'waktu_update'       => date('Y-m-d H:i:s'),
+            'keterangan_lainnya' => '-'
+          );
 
-          $cpt = $this->input->post('cicil');
-          for ($i = 1; $i <= $cpt; $i++) {
-            $params['hutang_pay_hutang_id'] = $hutang['hutang_id'];
-            $params['hutang_pay_noref']     = $noref;
-            $params['hutang_pay_order']     = $i;
-            $params['hutang_pay_bill']      = $this->input->post('hutang_pay_bill');
-            $params['hutang_input_date']    = date('Y-m-d');
-            $params['hutang_last_update']   = date('Y-m-d');
-            $params['user_user_id']         = $this->session->userdata('uid');
-            $this->Hutang_pay_model->add($params);
+          $this->db->insert('jurnal_umum', $jurnal_umum);
+
+          $jurum = $this->db->query("SELECT MAX(id) AS last_id FROM jurnal_umum")->row_array();
+          $lastJurum = $jurum['last_id'];
+
+          $kas = $this->db->query("SELECT account_code AS kas_akun
+                          FROM account
+                          WHERE account_id='$hutang_account_id'")->row_array();
+
+          $dataKas = array(
+            'id_jurnal'     => $lastJurum,
+            'account_code'  => $kas['kas_akun'],
+            'debet'         => $hutang_bill,
+            'kredit'        => 0,
+          );
+
+          $this->db->insert('jurnal_umum_detail', $dataKas);
+
+          $trx = $this->db->query("SELECT account_code AS kas_akun
+                                      FROM account
+                                      WHERE account_id='$poshutang_account_id'")->row_array();
+
+          $dataKasTrx = array(
+            'id_jurnal'     => $lastJurum,
+            'account_code'  => $trx['kas_akun'],
+            'debet'         => 0,
+            'kredit'        => $hutang_bill,
+          );
+
+          $this->db->insert('jurnal_umum_detail', $dataKasTrx);
+
+
+          if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $this->session->set_flashdata('failed', ' Setting Data Hutang gagal. Ulangi Lagi');
+          } else {
+            $this->db->trans_commit();
+            $this->session->set_flashdata('success', ' Setting Data Hutang berhasil');
           }
-
-          $this->session->set_flashdata('success', ' Setting Data Hutang berhasil');
         }
       }
       redirect('manage/settinghutang/view_hutang/' . $id);
@@ -294,23 +322,28 @@ class Settinghutang_set extends CI_Controller
       $tmp  = $this->Settinghutang_model->get_noref($like);
 
       $pay_id = $this->uri->segment(4);
-      $majors = $this->db->query("SELECT account_majors_id FROM settinghutang JOIN poshutang ON poshutang.poshutang_id = settinghutang.settinghutang_poshutang_id JOIN account ON account.account_id = poshutang.poshutang_account_id WHERE settinghutang.settinghutang_id = '$pay_id'")->row_array();
-      $majorsID = $majors['account_majors_id'];
+
       $data['noref'] = 'HT' . $tmp;
-      $data['dataKas'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_note IN (SELECT account_id FROM account WHERE account_category = '0' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_description LIKE '%Aktiva%' ORDER BY account_code ASC) ORDER BY account_code ASC")->result_array();
-      $data['dataKasActive'] = $this->db->query("SELECT account_id FROM account WHERE account_category = '2' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_description LIKE '%Tunai%'")->row_array();
-      $data['position'] = $this->Position_model->get();
       $data['settinghutang'] = $this->Settinghutang_model->get(array('id' => $id));
-      $data['title'] = 'Tambah Data Hutang';
+
+      $majors_id = $data['settinghutang']['majors_id'];
+
+      $data['account'] = $this->db->query("SELECT account_id, account_code, account_description
+                                          FROM account
+                                          WHERE account_code LIKE '1-1%'
+                                          AND account_category != '0'
+                                          AND account_majors_id = '$majors_id'")->result_array();
+
+      $data['title'] = 'Tambah Hutang';
       $data['main'] = 'settinghutang/settinghutang_add_hutang';
       $this->load->view('manage/layout', $data);
     }
   }
 
-  public function edit_settinghutang($id = NULL, $employee_id = NULL, $hutang_id = NULL)
+  public function edit_settinghutang($id = NULL, $hutang_id = NULL)
   {
 
-    if ($id == NULL and $employee_id == NULL or $hutang_id == NULL) {
+    if ($id == NULL or $hutang_id == NULL) {
       redirect('manage/settinghutang');
     }
 
@@ -335,7 +368,6 @@ class Settinghutang_set extends CI_Controller
         $param['hutang_input_date']       = date('Y-m-d');
         $param['hutang_last_update']      = date('Y-m-d');
         $param['hutang_settinghutang_id'] = $id;
-        $param['hutang_employee_id']      = $this->input->post('employee_id');
 
         $this->Hutang_model->add($param);
 
@@ -357,7 +389,7 @@ class Settinghutang_set extends CI_Controller
     } else {
 
       $data['settinghutang'] = $this->Settinghutang_model->get(array('id' => $id));
-      $data['hutang'] = $this->Hutang_model->get(array('settinghutang_id' => $id, 'hutang_employee_id' => $employee_id));
+      $data['hutang'] = $this->Hutang_model->get(array('settinghutang_id' => $id, 'grup' => TRUE));
       $data['title'] = 'Edit Data Hutang';
       $data['main'] = 'settinghutang/settinghutang_edit_hutang';
       $this->load->view('manage/layout', $data);
@@ -397,20 +429,5 @@ class Settinghutang_set extends CI_Controller
       $this->session->set_flashdata('delete', 'Delete');
       redirect('manage/settinghutang/edit/' . $id);
     }
-  }
-
-  function get_people()
-  {
-    $params = array();
-    $id_position = $this->input->post('id_position');
-    $params['employee_position_id'] = $id_position;
-    $employees  = $this->Employees_model->get($params);
-
-    echo '<select name="employee_id" class="form-control">
-			<option value="">-- Pilih Kreditur --</option>';
-    foreach ($employees as $row) {
-      echo '<option value="' . $row['employee_id'] . '">' . $row['employee_name'] . '</option>';
-    }
-    echo '</select>';
   }
 }

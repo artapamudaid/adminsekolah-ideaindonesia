@@ -101,10 +101,9 @@
 		<table style="width: 100%;">
 			<tr>
 				<td style="width: 40%;">
-					<span></span>
+					<span>Mengetahui, </span>
 					<br>
 					<span>Kepala Sekolah</span>
-					<br>
 					<br>
 					<br>
 					<br>
@@ -115,18 +114,16 @@
 				</td>
 				<td style="width: 30%;"></td>
 				<td style="width: 30%;">
-					<span><?= $setting_city['setting_value'] ?? '' ?>, <?= tgl_indo(date('Y-m-d')) ?></span>
+					<span>Tempat, <?= tgl_indo(date('Y-m-d')) ?></span>
 					<br>
-					<span>Mengetahui,</span>
-					<br>
-					<span>Waka Sarpras</span>
+					<span>Kepala Sekolah</span>
 					<br>
 					<br>
 					<br>
 					<br>
 					<br>
-					Sarino, M.M</br>
-					NIP. 35783412742
+					<?= $nama_bendahara['setting_value'] ?? '' ?></br>
+					NIP. <?= $nip_bendahara['setting_value'] ?? '' ?>
 				</td>
 			</tr>
 		</table>

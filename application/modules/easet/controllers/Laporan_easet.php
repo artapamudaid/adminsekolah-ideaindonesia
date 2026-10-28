@@ -117,43 +117,20 @@ class Laporan_easet extends CI_Controller
 
 		$kolom = 2;
 		$nomor = 1;
-
 		foreach ($aset as $item) {
+
 			$spreadsheet->setActiveSheetIndex(0)
-				->setCellValue("A{$kolom}", $nomor)
-				->setCellValue("B{$kolom}", $item->nama_barang)
-				->setCellValue("C{$kolom}", $item->volume)
-				->setCellValue("D{$kolom}", $item->satuan)
-				->setCellValue("E{$kolom}", $item->harga)
-				->setCellValue("F{$kolom}", ($item->volume * $item->harga));
+				->setCellValue('A' . $kolom, $nomor)
+				->setCellValue('B' . $kolom, $item->nama_barang)
+				->setCellValue('C' . $kolom, $item->volume)
+				->setCellValue('D' . $kolom, $item->satuan)
+				->setCellValue('E' . $kolom, $item->harga)
+				->setCellValue('F' . $kolom, ($item->volume * $item->harga));
 
 			$kolom++;
 			$nomor++;
 		}
 
-		// ===== Tambahan tanda tangan =====
-		$lastRow = $kolom + 2;
-
-		$setting_city	= $this->Setting_model->get(array('id' => SCHOOL_CITY));
-		$kota 		    = $setting_city['setting_value'];
-		$nama_kepsek 	= $this->Setting_model->get(array('id' => 12));
-		$nip_kepsek     = $this->Setting_model->get(array('id' => 11));
-
-		// Kolom kiri
-		$sheet = $spreadsheet->getActiveSheet();
-
-		$sheet->setCellValue("A" . ($lastRow + 1), 'Kepala Sekolah');
-		$sheet->setCellValue("A" . ($lastRow + 7), $nama_kepsek['setting_value'] ?? '');
-		$sheet->setCellValue("A" . ($lastRow + 8), 'NIP. ' . ($nip_kepsek['setting_value'] ?? ''));
-
-		// Kolom kanan
-		$sheet->setCellValue("E{$lastRow}", "{$kota}, " . tgl_indo(date('Y-m-d')));
-		$sheet->setCellValue("E" . ($lastRow + 1), 'Mengetahui,');
-		$sheet->setCellValue("E" . ($lastRow + 2), 'Waka Sarpras');
-		$sheet->setCellValue("E" . ($lastRow + 7), 'Sarino, M.M');
-		$sheet->setCellValue("E" . ($lastRow + 8), 'NIP. 35783412742');
-
-		// Export
 		$writer = new Xlsx($spreadsheet);
 
 		header('Content-Type: application/vnd.ms-excel');
@@ -162,7 +139,6 @@ class Laporan_easet extends CI_Controller
 
 		$writer->save('php://output');
 	}
-
 
 	public function penghapusan()
 	{
@@ -295,8 +271,7 @@ class Laporan_easet extends CI_Controller
 			'active_menu_lp' => 'menu-open',
 			'active_menu_lpr' => 'active',
 			'active_menu_qr' => 'active',
-			'lokasi' => $this->ml->getLokasi(),
-			'tahun_perolehan' => $this->ml->getTahunPerolehan()
+			'lokasi' => $this->ml->getLokasi()
 		);
 		// $this->load->view('layouts/header', $data);
 		// $this->load->view('laporan/v_qrcode', $data);
@@ -314,19 +289,12 @@ class Laporan_easet extends CI_Controller
 
 		$data['aset'] = $this->ml->getAsetQr($id_lokasi, $tahun_perolehan);
 		$data['lokasi'] = $this->ml->getLokasiId($id_lokasi);
-		$lokasi = $data['lokasi'];
-		$namaLokasi = $lokasi['nama_lokasi'];
 
 		if (count($data['aset']) > 0) {
-			$this->load->library('dompdflib');
-			$filename = 'QR Code Aset-' . $namaLokasi;
-			$paper = 'A4';
-			$orientation = "potrait";
-			$html = $this->load->view('easet/laporan/p_qrcode', $data, TRUE);
-			$this->dompdflib->download($html, $filename, $paper, $orientation);
+			$this->load->view('easet/laporan/p_qrcode', $data);
 		} else {
-			$this->session->set_flashdata('failed', 'Data Aset Tidak Ditemukan');
-			redirect('manage/easet/laporan/qrcodeAset');
+			$this->session->set_flashdata('gagal', 'Ditemukan');
+			redirect('laporan/aset');
 		}
 	}
 

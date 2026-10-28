@@ -46,19 +46,55 @@ class Jam_pelajaran_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $jam_pelajaranName = $_POST['jam_pelajaran_name'];
-      $jam_pelajaranStart = $_POST['jam_pelajaran_start'];
-      $jam_pelajaranEnd = $_POST['jam_pelajaran_end'];
-      $cpt = count($_POST['jam_pelajaran_name']);
+      $jam_pelajaranName = sanitizeStrict($_POST['jam_pelajaran_name']);
+      $jam_pelajaranStart = sanitizeStrict($_POST['jam_pelajaran_start']);
+      $jam_pelajaranEnd = sanitizeStrict($_POST['jam_pelajaran_end']);
+      $cpt = count($jam_pelajaranName);
+
+      $added = 0;
+      $skipped = 0;
       for ($i = 0; $i < $cpt; $i++) {
+        if (empty($jam_pelajaranName[$i])) {
+          $skipped++;
+          continue;
+        }
+
+        $colWhere = [
+          'jam_pelajaran_start' => $jam_pelajaranStart[$i],
+          'jam_pelajaran_end' => $jam_pelajaranEnd[$i],
+        ];
+        if ($this->General_model->checkDataExists('jam_pelajaran', $colWhere)) {
+          $skipped++;
+          continue;
+        }
+
         $params['jam_pelajaran_name'] = $jam_pelajaranName[$i];
         $params['jam_pelajaran_start'] = $jam_pelajaranStart[$i];
         $params['jam_pelajaran_end'] = $jam_pelajaranEnd[$i];
 
-        $this->Jam_pelajaran_model->add($params);
+        $insert = $this->Jam_pelajaran_model->add($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+
+        $added++;
       }
+
+      if ($added > 1) {
+        $msg = "$added data berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 data berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped data dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
     }
-    $this->session->set_flashdata('success', ' Tambah Jam Pelajaran Berhasil');
     redirect('manage/jam_pelajaran');
   }
 
@@ -69,12 +105,32 @@ class Jam_pelajaran_set extends CI_Controller
     if ($_POST) {
 
       if ($this->input->post('jam_pelajaran_id')) {
-        $params['jam_pelajaran_id'] = $this->input->post('jam_pelajaran_id');
+        $id = sanitizeStrict($this->input->post('jam_pelajaran_id'));
+        $params['jam_pelajaran_id'] = $id;
       }
 
-      $params['jam_pelajaran_name'] = $this->input->post('jam_pelajaran_name');
-      $params['jam_pelajaran_start'] = $this->input->post('jam_pelajaran_start');
-      $params['jam_pelajaran_end'] = $this->input->post('jam_pelajaran_end');
+      $jampelName = sanitizeStrict($this->input->post('jam_pelajaran_name'));
+      $jampelStart = sanitizeStrict($this->input->post('jam_pelajaran_start'));
+      $jampelEnd = sanitizeStrict($this->input->post('jam_pelajaran_end'));
+
+      $colWhere = [
+        'jam_pelajaran_start' => $jampelStart,
+        'jam_pelajaran_end' => $jampelEnd,
+      ];
+
+      if (!is_null($id)) {
+        $colWhere['jam_pelajaran_id !='] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("jam_pelajaran", $colWhere)) {
+        $this->session->set_flashdata('failed', 'Data Jam Pelajaran sudah ada sebelumnya dengan jam yang sama.');
+        $redirectUrl = is_null($id) ? 'manage/jam_pelajaran' : 'manage/jam_pelajaran/edit/' . $id;
+        redirect($redirectUrl);
+      }
+
+      $params['jam_pelajaran_name'] = $jampelName;
+      $params['jam_pelajaran_start'] = $jampelStart;
+      $params['jam_pelajaran_end'] = $jampelEnd;
       $status = $this->Jam_pelajaran_model->add($params);
 
 

@@ -57,8 +57,8 @@
 													<a href="<?php echo site_url('manage/presensi_data_libur/view/' . $row['id']) ?>" class="btn btn-xs btn-info" data-toggle="tooltip" title="Detail"><i class="fa fa-eye"></i></a>
 													<?php if ($this->session->userdata('uroleid') != USER) { ?>
 													<a href="<?php echo site_url('manage/presensi_data_libur/edit/' . $row['id']) ?>" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a>
-													<?php } ?>
 													<a href="#delModal<?php echo $row['id']; ?>" data-toggle="modal" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Hapus"><i class="fa fa-trash-o"></i></a>
+													<?php } ?>
 												</td>	
 											</tr>
 											<div class="modal modal-default fade" id="delModal<?php echo $row['id']; ?>">
@@ -70,11 +70,11 @@
 															<h3 class="modal-title"><span class="fa fa-warning"></span> Konfirmasi penghapusan</h3>
 														</div>
 														<div class="modal-body">
-															<p>Apakah anda yakin akan menghapus data ini?</p>
+															<p>Apakah anda yakin akan menghapus data libur hari <b><?php echo $row['hari']; ?></b>?</p>
 														</div>
 														<div class="modal-footer">
 															<?php echo form_open('manage/presensi_data_libur/delete/' . $row['id']); ?>
-															<input type="hidden" name="delName" value="<?php echo $row['nama_area']; ?>">
+															<input type="hidden" name="delName" value="<?php echo $row['hari']; ?>">
 															<button type="button" class="btn btn-default pull-left" data-dismiss="modal"><span class="fa fa-close"></span> Batal</button>
 															<button type="submit" class="btn btn-danger"><span class="fa fa-check"></span> Hapus</button>
 															<?php echo form_close(); ?>
@@ -90,7 +90,7 @@
 									} else {
 										?>
 										<tr id="row">
-											<td colspan="6" align="center">Data Kosong</td>
+											<td colspan="4" align="center">Data Kosong</td>
 										</tr>
 										<?php } ?>
 									</tbody>
@@ -107,8 +107,3 @@
 		</section>
 		<!-- /.content -->
 	</div>
-<script>
-function maps_area(id) {    
-  newWindow("<?php echo base_url()?>manage/presensi_data_libur/maps_area?id="+id+"", "popup","1800","1600","resizable=0,scrollbars=1,status=0,toolbar=0") 
-}
-</script>

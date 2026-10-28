@@ -84,7 +84,7 @@
             <div class="form-group row">
               <label for="akun" class="col-sm-2 col-form-label">Kas Pembelian</label>
               <div class="col-sm-6">
-                <select style="width: 100%;" name="akun_kas" class="akunKas form-control">
+                <select style="width: 100%;" name="akun_kas" class="akunKas form-control" required>
 
                 </select>
               </div>
@@ -157,8 +157,6 @@
               <div class="col-sm-6">
                 <select name="jenis_bantuan" class="form-control" required>
                   <option value="">- Pilih --</option>
-                  <option value="BPOPP">BPOPP</option>
-                  <option value="BOSP">BOSP</option>
                   <option value="Sekolah">Sekolah</option>
                   <option value="Yayasan">Yayasan</option>
                   <option value="Pemerintah">Pemerintah</option>
@@ -179,7 +177,7 @@
           </div>
           <!-- /.card-body -->
           <div class="card-footer">
-            <a href="<?= base_url('manage/easet/aset') ?>">
+            <a href="<?= base_url('aset_wujud') ?>">
               <button type="button" class="btn btn-danger">Kembali</button>
             </a>
             <button type="submit" class="btn btn-info">Simpan</button>

@@ -66,10 +66,6 @@ if (isset($semester)) {
 					<div class="box-body">
 						<button type="submit" class="btn btn-block btn-success">Simpan</button>
 						<a href="<?php echo site_url('manage/semester'); ?>" class="btn btn-block btn-info">Batal</a>
-						<?php if (isset($semester)) { ?>
-							<button type="button" onclick="getId(<?php echo $semester['semester_id'] ?>)" class="btn btn-danger btn-block" data-toggle="modal" data-target="#deleteStudent">Hapus
-							</button>
-						<?php } ?>
 					</div>
 					<!-- /.box-body -->
 				</div>
@@ -79,36 +75,3 @@ if (isset($semester)) {
 		<!-- /.row -->
 	</section>
 </div>
-
-
-<?php if (isset($semester)) { ?>
-	<div class="modal fade" id="deleteStudent">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-					<h4 class="modal-title">Konfirmasi Hapus</h4>
-				</div>
-				<form action="<?php echo site_url('manage/semester/delete') ?>" method="POST">
-					<div class="modal-body">
-						<p>Apakah anda akan menghapus data ini?</p>
-						<input type="hidden" name="semester_id" id="semesterId">
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-						<button type="submit" class="btn btn-danger">Hapus</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-<?php } ?>
-
-<script>
-
-	function getId(id) {
-		$('#semesterId').val(id)
-	}
-</script>

@@ -25,6 +25,7 @@
 								<tr>
 									<th>No</th>
 									<th>Keterangan</th>
+									<th>ID Jam Pelajaran</th>
 									<th>Jam Mulai</th>
 									<th>Jam Berakhir</th>
 									<th>Aksi</th>
@@ -39,8 +40,9 @@
 										<tr>
 											<td><?php echo $i; ?></td>
 											<td><?php echo $row['jam_pelajaran_name']; ?></td>
-											<td><?php echo $row['jam_pelajaran_start']; ?></td>
-											<td><?php echo $row['jam_pelajaran_end']; ?></td>
+											<td style="text-align: center;"><?php echo $row['jam_pelajaran_id']; ?></td>
+											<td style="text-align: center;"><?php echo $row['jam_pelajaran_start']; ?></td>
+											<td style="text-align: center;"><?php echo $row['jam_pelajaran_end']; ?></td>
 											<td>
 												<a href="<?php echo site_url('manage/jam_pelajaran/edit/' . $row['jam_pelajaran_id']) ?>" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a>
 

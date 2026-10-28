@@ -142,11 +142,6 @@ class Homestay_set extends CI_Controller
 		$config['upload_path'] = FCPATH . 'uploads/gallery/';
 		$config['allowed_types'] = 'gif|jpg|png|jpeg';
 		$config['max_size'] = 1024;
-		$config['encrypt_name'] = TRUE;
-		$config['file_ext_tolower'] = TRUE;
-		$config['remove_spaces'] = TRUE;
-		$config['detect_mime'] = TRUE;
-		$config['mod_mime_fix'] = TRUE;
 		$this->upload->initialize($config);
 
 		foreach ($_FILES['gallery_img']['name'] as $key => $value) {

@@ -1,648 +1,444 @@
+<?php
+$styleBoxSubscriptionHistory = '';
+if ($showTableSubsHistory) {
+    $styleBoxSubscriptionHistory = 'style="';
+    $styleBoxSubscriptionHistory .= 'height: 565px;';
+    $styleBoxSubscriptionHistory .= '"';
+}
+?>
+
+<style>
+    .info-box-icon {
+        margin-left: 0;
+    }
+
+    @media (max-width: 768px) {
+        .display-xs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
     <section class="content-header">
-        <h1>
-            Dashboard
-        </h1>
+        <h1><?= $this->lang->line('dash_title'); ?></h1>
         <ol class="breadcrumb">
-            <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Dashboard</li>
+            <li>
+                <a href="#">
+                    <i class="fa fa-dashboard"></i>
+                    <?= $this->lang->line('dash_home'); ?>
+                </a>
+            </li>
+            <li class="active"><?= $this->lang->line('dash_title'); ?></li>
         </ol>
     </section>
 
-    <!-- Main content -->
     <section class="content">
-        <div class="row">
-            <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box bg-aqua-gradient">
-                    <span class="info-box-icon"><i class="fa fa-calculator icon" aria-hidden="true"></i></span>
 
-                    <div class="info-box-content">
-                        <span class="info-box-text"><strong>Penerimaan KAS</strong></span>
-                        <span class="info-box-number" style="opacity: 0;">kosong</span>
-
-                        <span class="info-box-text dash-text">Hari ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_debit_today, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Bulan ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_debit_month, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Tahun ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_debit_period, 0, ',', '.') ?></span>
+        <div class="box">
+            <div class="box-body">
+                <div class="row display-xs">
+                    <div class="col-lg-4 col-md-8 col-sm-7 col-xs-12">
+                        <h4 class="box-title"><?= $this->lang->line('dash_greeting') ?>, <?= $role_name; ?>!</h4>
+                        <span class="text-muted"><?= $this->lang->line('dash_summary') ?> <?= (isset($nama_unit) ? $nama_unit : '') ?></span>
                     </div>
-                </div>
-                <!-- <div class="mini-box">
-          <a href="#">More Info  <i class="fa fa-chevron-circle-right" aria-hidden="true"></i></a>
-        </div> -->
-            </div>
-            <!-- /.col -->
-            <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box bg-red-gradient">
-                    <span class="info-box-icon"><i class="fa fa-money icon"></i></span>
-
-                    <div class="info-box-content">
-                        <span class="info-box-text"><strong>Pengeluaran KAS</strong></span>
-                        <span class="info-box-number" style="opacity: 0;">kosong</span>
-
-                        <span class="info-box-text dash-text">Hari ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_kredit_today, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Bulan ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_kredit_month, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Tahun ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_kredit_period, 0, ',', '.') ?></span>
+                    <div class="col-lg-3 col-md-4 col-sm-5 col-xs-12">
+                        <select name="majors_id" id="select_majors" class="form-control" <?= ($umajorsid != 0) ? 'disabled' : '' ?> onchange="if(this.value){ window.location.href='?m='+this.value + (window.location.hash || ''); } else { window.location.href='<?= site_url('manage') ?>' + (window.location.hash || ''); }">
+                            <option value=""><?= $this->lang->line('dash_all_units') ?></option>
+                            <?php
+                            if (!empty($filter_majors)):
+                                foreach ($filter_majors as $maj):
+                                    // if user is tied to a specific major, only select that major, otherwise use $_GET['m']
+                                    $isSelected = ($umajorsid != 0) ? ($umajorsid == $maj['majors_id']) : (isset($_GET['m']) && $_GET['m'] == $maj['majors_id']);
+                            ?>
+                                    <option value="<?= $maj['majors_id'] ?>" <?= $isSelected ? 'selected' : '' ?>>
+                                        <?= !empty($maj['majors_short_name']) ? $maj['majors_short_name'] . ' - ' . $maj['majors_name'] : $maj['majors_name'] ?>
+                                    </option>
+                            <?php
+                                endforeach;
+                            endif;
+                            ?>
+                        </select>
                     </div>
-                </div>
-            </div>
-            <!-- fix for small devices only -->
-            <div class="clearfix visible-sm-block"></div>
-            <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box bg-green-gradient">
-                    <span class="info-box-icon"><i class="fa fa-bank icon"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text"><strong>Pembayaran Siswa</strong></span>
-                        <span class="info-box-number" style="opacity: 0;">kosong</span>
-                        <span class="info-box-text dash-text">Hari ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_pay_today, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Bulan ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_pay_month, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Tahun ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_pay_period, 0, ',', '.') ?></span>
-                    </div>
-                </div>
-            </div>
-            <!-- /.col -->
-            <div class="col-md-3 col-sm-6 col-xs-12">
-                <div class="info-box bg-yellow-gradient">
-                    <span class="info-box-icon"><i class="fa fa-credit-card icon"></i></span>
-
-                    <div class="info-box-content">
-                        <span class="info-box-text"><strong>Tabungan Siswa</strong></span>
-                        <span class="info-box-number" style="opacity: 0;">kosong</span>
-                        <span class="info-box-text dash-text">Hari ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_banking_today, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Bulan ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_banking_month, 0, ',', '.') ?></span>
-                        <span class="info-box-text dash-text">Tahun ini</span>
-                        <span class="info-box-number"><?php echo 'Rp. ' . number_format($total_banking_period, 0, ',', '.') ?></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-12">
-                <div class="box box-success">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Realisasi Akun Pembayaran</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                        </div>
-                    </div>
-                    <!-- /.box-header -->
-                    <div class="box-body">
-
-                        <div class="row">
-                            <div class="col-md-3">
-                                <select class="form-control" id="period">
-                                    <?php foreach ($period as $p) { ?>
-                                        <option value="<?= $p['period_id'] ?>" <?= $p['period_id'] == $periodActive ? 'selected' : '' ?>><?= $p['period_start'] . '/' . $p['period_end'] ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-control" id="start">
-                                    <?php foreach ($month as $m) { ?>
-                                        <option value="<?= $m['month_id'] ?>" <?= $m['month_id'] == 1 ? 'selected' : '' ?>><?= $m['month_name'] ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-control" id="end">
-                                    <?php foreach ($month as $m) { ?>
-                                        <option value="<?= $m['month_id'] ?>" <?= $m['month_id'] == 12 ? 'selected' : '' ?>><?= $m['month_name'] ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-md btn-default" onclick="get_data()">Filter</button>
-                                <button class="btn btn-md btn-success" onclick="export_xls()">Export Xls</button>
-                            </div>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover table-border table-striped" id="data_tabel">
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- row -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="box box-success">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Jurnal Keuangan</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                        </div>
-                    </div>
-                    <!-- /.box-header -->
-                    <div class="box-body">
-
-                        <div class="table-responsive">
-                            <canvas id="Chart_jurnalKeuangan"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="box box-success">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Jumlah Status Guru & Pegawai</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                        </div>
-                    </div>
-                    <!-- /.box-header -->
-                    <div class="box-body">
-                        <div class="table-responsive">
-                            <canvas id="Chart_guru_pegawai"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <?php if ($package['setting_value'] == 3) { ?>
-
-                    <div class="box box-success">
-                        <div class="box-header with-border">
-                            <h3 class="box-title">Lima Presensi Terawal</h3>
-
-                            <div class="box-tools pull-right">
-                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                    <div class="col-lg-3 col-md-8 col-sm-7 col-xs-12">
+                        <div class="input-group">
+                            <input type="text" id="dash_search_input" class="form-control" placeholder="<?= $this->lang->line('dash_search_placeholder') ?>">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" id="dash_search_btn" type="button">
+                                    <i class="fa fa-search"></i>
                                 </button>
-                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div>
-                        <!-- /.box-header -->
-                        <div class="box-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-stripes">
-                                    <?php foreach ($rekap_presensi as $row) : ?>
-                                        <tr>
-                                            <td><?php echo $row['nama_pegawai']; ?></td>
-                                            <td><?php echo $row['tanggal']; ?></td>
-                                            <td><?php echo $row['time']; ?></td>
-                                            <td><?php echo $row['area_absen_nama']; ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </table>
-                            </div>
+                            </span>
                         </div>
                     </div>
-                <?php } else { ?>
-                    <div class="box box-success">
-                        <div class="box-header with-border">
-                            <h3 class="box-title">Informasi</h3>
-
-                            <div class="box-tools pull-right">
-                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                                </button>
-                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div>
-                        <!-- /.box-header -->
-                        <div class="box-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-stripes">
-                                    <?php foreach ($information as $info) : ?>
-                                        <tr>
-                                            <td><img src="<?php echo upload_url('information/' . $info['information_img']) ?>" width="50px"></td>
-                                            <td><?php echo $info['information_title'] ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </table>
-                            </div>
-                        </div>
+                    <div class="col-lg-2 col-md-4 col-sm-5 col-xs-12">
+                        <a href="<?= $setting_website; ?>" class="btn btn-default btn-block">
+                            <?= $this->lang->line('dash_visit_website') ?> <i class="fa fa-external-link"></i>
+                        </a>
                     </div>
-
-                <?php } ?>
-
+                </div>
             </div>
-            <!-- new card -->
-            <div class="col-md-6">
+        </div>
 
-                <div class="box box-success">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Jumlah Siswa Tiap Jenjang</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+        <div class="row">
+            <?php
+            if (!empty($top_metrics)):
+                foreach ($top_metrics as $m):
+            ?>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <div class="info-box" style="border-left: 4px solid <?= $m['color'] ?>;">
+                            <span class="info-box-icon" style="background:<?= $m['color'] ?>; font-size:22px; width:60px;">
+                                <i class="fa <?= $m['icon'] ?>" style="color:white;"></i>
+                            </span>
+                            <div class="info-box-content" style="padding: 8px 10px; margin-left:60px;">
+                                <span class="info-box-text" style="font-size:10px; font-weight:700; text-transform:uppercase;"><?= $m['title'] ?></span>
+                                <span class="info-box-number" style="font-size:16px; margin: 15px 0 0;"><?= $m['value'] ?></span>
+                                <div style="font-size:10px; color:#888;">
+                                    <?= $m['label'] ?> <br>
+                                    <span class="<?= $m['subcolor'] ?>"><?= $m['subtext'] ?></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <!-- /.box-header -->
-                    <div class="box-body">
-                        <div class="table-responsive">
-                            <canvas id="myChart"></canvas>
-                        </div>
-                    </div>
-                </div>
+            <?php
+                endforeach;
+            endif;
+            ?>
+        </div>
 
-                <div class="box box-success">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Kalender</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                        </div>
-                    </div>
-                    <div class="box-body">
-                        <div id="calendar"></div>
-                    </div>
-                </div>
+        <div class="row">
+            <div class="col-xs-12">
 
-                <div class="box box-success">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Lima Pembayaran Terakhir Santri</h3>
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#finance-tab" data-toggle="tab" aria-expanded="true"><?= $this->lang->line('dash_tab_finance') ?></a>
+                        </li>
+                        <li class="">
+                            <a href="#student-tab" data-toggle="tab" aria-expanded="false"><?= $this->lang->line('dash_tab_student') ?></a>
+                        </li>
+                        <li class="">
+                            <a href="#employee-tab" data-toggle="tab" aria-expanded="false"><?= $this->lang->line('dash_tab_employee') ?></a>
+                        </li>
+                        <li class="">
+                            <a href="#academic-tab" data-toggle="tab" aria-expanded="false"><?= $this->lang->line('dash_tab_academic') ?></a>
+                        </li>
+                    </ul>
 
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="finance-tab" data-endpoint="<?= site_url('manage/dashboard/ajax_finance_tab') ?>">
+                            <?php $this->load->view('tabs/finance_tab'); ?>
                         </div>
-                    </div>
-                    <!-- /.box-header -->
-                    <div class="box-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-stripes">
-                                <?php foreach ($lastPayments as $lastPayment) : ?>
-                                    <tr>
-                                        <td><?php echo 'Pembayaran ' . $lastPayment['student_full_name'] ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </table>
+
+                        <div class="tab-pane" id="student-tab" data-endpoint="<?= site_url('manage/dashboard/ajax_student_tab') ?>">
+                            <?php $this->load->view('tabs/student_tab'); ?>
+                        </div>
+
+                        <div class="tab-pane" id="employee-tab" data-endpoint="<?= site_url('manage/dashboard/ajax_employee_tab') ?>">
+                            <?php $this->load->view('tabs/employee_tab'); ?>
+                        </div>
+
+                        <div class="tab-pane" id="academic-tab" data-endpoint="<?= site_url('manage/dashboard/ajax_academic_tab') ?>">
+                            <?php $this->load->view('tabs/academic_tab'); ?>
                         </div>
                     </div>
                 </div>
 
             </div>
         </div>
+
+        <div class="row">
+
+            <div class="col-lg-5">
+                <div class="box box-primary" <?= $styleBoxSubscriptionHistory; ?>>
+                    <div class="box-header with-border">
+                        <h3 class="box-title" id="title_informasi"><?= ($this->lang->line('dash_information_title') ?: 'Informasi') . ' - ' . ($this->lang->line('dash_all_units') ?: 'Semua Unit') ?></h3>
+                    </div>
+
+                    <div class="box-body" style="max-height: 519px; overflow-y: auto !important;">
+                        <div id="skeleton_informasi" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
+                        </div>
+                        <ul class="products-list product-list-in-box" id="container_pengumuman" style="display: none;"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="box box-primary" <?= $styleBoxSubscriptionHistory; ?>>
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><?= $this->lang->line('dash_subscription_history') ?: 'Riwayat Langganan'; ?></h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="small-box bg-primary">
+                            <div class="inner">
+                                <h3><?= html_escape($packageName) . ' - ' . html_escape($durationStr); ?></h3>
+                                <p><?= $this->lang->line('dash_nearest_bill') ?: 'Tagihan Terdekat' ?>: <?= html_escape($nearestBillDate); ?> (<?= (int)$daysLeft; ?> <?= $this->lang->line('dash_days_left') ?: 'hari tersisa' ?>)</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                            <div class="small-box-footer" style="padding: 5px 10px; background: rgba(0,0,0,0.1); text-align: right;">
+                                <a href="<?= $whatsappUrl ?>" target="_blank" class="btn btn-default btn-xs" style="color: #333; font-weight: bold;"><?= $this->lang->line('dash_extend') ?: 'Perpanjang' ?></a>
+                            </div>
+                        </div>
+
+                        <?php if ($showTableSubsHistory): ?>
+                            <!-- Riwayat Langganan -->
+                            <div class="nav-tabs-custom">
+                                <ul class="nav nav-tabs" id="subscription_tabs">
+                                    <li class="active"><a href="#sub_tab_all" data-status="all" data-toggle="tab"><?= $this->lang->line('dash_all') ?: 'Semua' ?></a></li>
+                                    <li><a href="#sub_tab_pending" data-status="pending" data-toggle="tab"><?= $this->lang->line('dash_pending') ?: 'Pending' ?></a></li>
+                                    <li><a href="#sub_tab_lunas" data-status="lunas" data-toggle="tab"><?= $this->lang->line('dash_paid_status') ?: 'Lunas' ?></a></li>
+                                    <li><a href="#sub_tab_batal" data-status="batal" data-toggle="tab"><?= $this->lang->line('dash_cancelled') ?: 'Batal' ?></a></li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="subscription_tab_content">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-condensed" id="subscription_history_table">
+                                                <thead>
+                                                    <tr>
+                                                        <th><?= $this->lang->line('dash_invoice') ?: 'Faktur' ?></th>
+                                                        <th><?= $this->lang->line('dash_status') ?: 'Status' ?></th>
+                                                        <th><?= $this->lang->line('dash_date') ?: 'Tanggal' ?></th>
+                                                        <th><?= $this->lang->line('dash_description') ?: 'Deskripsi' ?></th>
+                                                        <th><?= $this->lang->line('dash_total') ?: 'Total' ?></th>
+                                                        <th><?= $this->lang->line('dash_payment_link') ?: 'Link Bayar' ?></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php
+                                                    $dummy_history = [
+                                                        ['invoice' => 'INV-2026-003', 'status' => 'pending', 'date' => '24 Agu 2026 09:00', 'desc' => 'Admin Sekolah - RENEWAL - ATAS - 12 Bulan', 'total' => 'Rp 6.000.000', 'link' => 'https://ipaymu.com/pay/123'],
+                                                        ['invoice' => 'INV-2025-002', 'status' => 'lunas', 'date' => '1 Okt 2025 10:50', 'desc' => 'Admin Sekolah - RENEWAL - ATAS - 12 Bulan', 'total' => 'Rp 6.000.000', 'link' => 'https://ipaymu.com/pay/122'],
+                                                        ['invoice' => 'INV-2024-001', 'status' => 'batal', 'date' => '15 Agu 2024 14:20', 'desc' => 'Admin Sekolah - NEW - MENENGAH - 12 Bulan', 'total' => 'Rp 4.500.000', 'link' => '#']
+                                                    ];
+                                                    foreach ($dummy_history as $h):
+                                                        $badge_class = 'default';
+                                                        if ($h['status'] == 'lunas') $badge_class = 'success';
+                                                        elseif ($h['status'] == 'pending') $badge_class = 'warning';
+                                                        elseif ($h['status'] == 'batal') $badge_class = 'danger';
+                                                    ?>
+                                                        <tr data-status="<?= html_escape($h['status']) ?>">
+                                                            <td><strong><?= html_escape($h['invoice']) ?></strong></td>
+                                                            <td><span class="label label-<?= $badge_class ?>"><?= ucfirst(html_escape($h['status'])) ?></span></td>
+                                                            <td><?= html_escape($h['date']) ?></td>
+                                                            <td><?= html_escape($h['desc']) ?></td>
+                                                            <td><?= html_escape($h['total']) ?></td>
+                                                            <td style="white-space: nowrap;">
+                                                                <?php if ($h['status'] == 'pending'): ?>
+                                                                    <a href="<?= html_escape($h['link']) ?>" target="_blank" class="btn btn-xs btn-success" style="margin-bottom:2px;"><i class="fa fa-external-link"></i> <?= $this->lang->line('dash_open_link') ?: 'Buka Link' ?></a>
+                                                                    <button type="button" class="btn btn-xs btn-danger" onclick="alert('Batalkan transaksi?')"><i class="fa fa-times"></i> <?= $this->lang->line('dash_cancel') ?: 'Batalkan' ?></button>
+                                                                <?php elseif ($h['status'] == 'lunas'): ?>
+                                                                    <a href="<?= html_escape($h['link']) ?>" target="_blank" class="btn btn-xs btn-default"><i class="fa fa-print"></i> Kwitansi</a>
+                                                                <?php else: ?>
+                                                                    <span class="text-muted">-</span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </section>
-    <!-- /.content -->
 </div>
-
-<div class="modal fade in" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <?php echo form_open(current_url()); ?>
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="addModalLabel">Tambah Agenda</h4>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" name="add" value="1">
-                <label>Tanggal*</label>
-                <p id="labelDate"></p>
-                <input type="hidden" name="date" class="form-control" id="inputDate">
-                <label>Keterangan*</label>
-                <textarea name="info" id="inputDesc" class="form-control"></textarea><br />
-            </div>
-            <div class="modal-footer">
-                <button type="submit" id="btnSimpan" class="btn btn-success">Simpan</button>
-            </div>
-        </div>
-        <?php echo form_close(); ?>
-    </div>
-</div>
-
-<div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="delModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <?php echo form_open(current_url()); ?>
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="delModalLabel">Hapus Hari Libur</h4>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" name="del" value="1">
-                <input type="hidden" name="id" id="idDel">
-                <label>Tahun</label>
-                <p id="showYear"></p>
-                <label>Tanggal</label>
-                <p id="showDate"></p>
-                <label>Keterangan*</label>
-                <p id="showDesc"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-danger">Hapus</button>
-            </div>
-        </div>
-        <?php echo form_close(); ?>
-    </div>
-</div>
-
-<script type="text/javascript">
-    $('#calendar').fullCalendar({
-        header: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'prevYear,nextYear',
-        },
-
-        events: "<?php echo site_url('manage/dashboard/get'); ?>",
-
-        dayClick: function(date, jsEvent, view) {
-
-            var tanggal = date.getDate();
-            var bulan = date.getMonth() + 1;
-            var tahun = date.getFullYear();
-            var fullDate = tahun + '-' + bulan + '-' + tanggal;
-
-            $('#addModal').modal('toggle');
-            $('#addModal').modal('show');
-
-            $("#inputDate").val(fullDate);
-            $("#labelDate").text(fullDate);
-            $("#inputYear").val(date.getFullYear());
-            $("#labelYear").text(date.getFullYear());
-        },
-
-        eventClick: function(calEvent, jsEvent, view) {
-            $("#delModal").modal('toggle');
-            $("#delModal").modal('show');
-            $("#idDel").val(calEvent.id);
-            $("#showYear").text(calEvent.year);
-
-            var tgl = calEvent.start.getDate();
-            var bln = calEvent.start.getMonth() + 1;
-            var thn = calEvent.start.getFullYear();
-
-            $("#showDate").text(tgl + '-' + bln + '-' + thn);
-            $("#showDesc").text(calEvent.title);
-        }
-
-
-    });
-
-    $("#inputDesc").on('change keyup focus input propertychange', function() {
-        var desc = $("#inputDesc").val();
-        if (desc.trim().length > 0) {
-            $("#btnSimpan").removeClass('disabled');
-        } else {
-            $("#btnSimpan").addClass('disabled');
-        }
-    })
-
-    $("#closeModal").click(function() {
-        $("#inputDesc").val('');
-        $("#btnSimpan").addClass('disabled');
-    });
-
-    // Pie Chart JUMLAH STATUS GURU DAN PEGAWAI
-    var ctx = document.getElementById("Chart_guru_pegawai").getContext("2d");
-    var piechart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ["Total Guru dan Pegawai", "Total Guru Tetap", "Total Guru Tidak Tetap"],
-            datasets: [{
-                label: "",
-                data: [<?= $total_all ?>, <?= $total_tetap ?>, <?= $total_non_tetap ?>],
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)'
-                ],
-                hoverOffset: 1
-            }]
-        },
-        options: {
-            plugins: {
-                labels: {
-                    fontSize: 20,
-                    fontColor: 'black',
-                    render: 'value'
-                }
-            }
-        }
-    });
-</script>
 
 <script>
-    // FORMAT LABEL ANGKA
-    function number_format(number, decimals, dec_point, thousands_sep) {
+    $(document).ready(function() {
+        var selectedMajors = '<?= isset($selected_majors) ? $selected_majors : '' ?>';
+        var majorsId = $('#select_majors').val();
 
-        number = (number + '').replace(',', '').replace(' ', '');
-        var n = !isFinite(+number) ? 0 : +number,
-            prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
-            sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
-            dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
-            s = '',
-            toFixedFix = function(n, prec) {
-                var k = Math.pow(10, prec);
-                return '' + Math.round(n * k) / k;
-            };
 
-        s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
-        if (s[0].length > 3) {
-            s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
-        }
-        if ((s[1] || '').length < prec) {
-            s[1] = s[1] || '';
-            s[1] += new Array(prec - s[1].length + 1).join('0');
-        }
-        return s.join(dec);
-    }
+        $('#select_majors').select2({
+            width: '100%',
+            theme: 'classic',
+        });
 
-    // Bar Chart JURNAL KEUANGAN
-    // var ctx = document.getElementById("Chart_jurnalKeuangan").getContext('2d');
-    // var myChart = new Chart(ctx, {
-    //     type: 'bar',
-    //     data: {
-    //         labels: ["Penerimaan", "Pengeluaran", "Saldo"],
-    //         datasets: [{
-    //                 label: "bulan ini",
-    //                 data: [<?php echo $total_debit_month ?>, <?php echo $total_kredit_month ?>, <?php echo ($total_debit_month - $total_kredit_month) ?>],
-    //                 backgroundColor: "rgba(123, 103, 238)",
-    //                 borderWidth: 1
-    //             },
-    //             {
-    //                 label: "thn ajaran ini",
-    //                 data: [<?php echo $total_debit_period ?>, <?php echo $total_kredit_period ?>, <?php echo ($total_debit_period - $total_kredit_period) ?>],
-    //                 backgroundColor: "rgba(60, 179, 113)",
-    //                 borderWidth: 1
-    //             }
-    //         ]
-    //     },
-    //     options: {
-    //         responsive: true,
-    //         plugins: {
-    //             labels: {
-    //                 render: 'value'
-    //             }
-    //         },
-    //         tooltips: {
-    //             callbacks: {
-    //                 label: function(tooltipItem, data) {
-    //                     return tooltipItem.yLabel.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-    //                 }
-    //             }
-    //         },
-    //         scales: {
-    //             yAxes: [{
-    //                 ticks: {
-    //                     beginAtZero: true,
-    //                     callback: function(value, index, values) {
-    //                         return new Intl.NumberFormat('id-ID').format(value);
-    //                     }
-    //                 }
-    //             }]
-    //         }
-    //     }
-    // });
+        function loadTabData(tabId) {
+            var $tabPane = $(tabId);
+            if (!$tabPane.length) return;
 
-    var ctx = document.getElementById("Chart_jurnalKeuangan").getContext('2d');
+            if ($tabPane.data('loaded') === true) return;
 
-    var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ["Penerimaan", "Pengeluaran", "Saldo"],
-            datasets: [{
-                    label: "bulan ini",
-                    data: [
-                        <?php echo $total_debit_month ?>,
-                        <?php echo $total_kredit_month ?>,
-                        <?php echo ($total_debit_month - $total_kredit_month) ?>
-                    ],
-                    backgroundColor: "rgba(123, 103, 238)",
-                    borderWidth: 1
+            if (tabId === '#finance-tab') {
+                $tabPane.data('loaded', true);
+                if (typeof window.loadFinanceWidgets === 'function') {
+                    window.loadFinanceWidgets(selectedMajors);
+                }
+                return;
+            }
+
+            if (tabId === '#academic-tab') {
+                $tabPane.data('loaded', true);
+                if (typeof window.loadAcademicWidgets === 'function') {
+                    window.loadAcademicWidgets(selectedMajors);
+                }
+                return;
+            }
+
+            var endpoint = $tabPane.data('endpoint');
+            if (!endpoint) return;
+
+            var $overlay = $('<div class="tab-loading-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.7);z-index:99;display:flex;align-items:center;justify-content:center;min-height:150px;"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i></div>');
+            $tabPane.css('position', 'relative').append($overlay);
+
+            $.ajax({
+                url: endpoint,
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    m: selectedMajors
                 },
-                {
-                    label: "thn ajaran ini",
-                    data: [
-                        <?php echo $total_debit_period ?>,
-                        <?php echo $total_kredit_period ?>,
-                        <?php echo ($total_debit_period - $total_kredit_period) ?>
-                    ],
-                    backgroundColor: "rgba(60, 179, 113)",
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                labels: {
-                    render: 'value'
-                }
-            },
-            tooltips: {
-                callbacks: {
-                    label: function(tooltipItem, data) {
-                        return new Intl.NumberFormat('id-ID').format(tooltipItem.yLabel);
+                success: function(data) {
+                    $overlay.remove();
+                    $tabPane.data('loaded', true);
+
+                    if (tabId === '#academic-tab' && typeof window.renderAcademicTab === 'function') {
+                        window.renderAcademicTab(data);
+                    } else if (tabId === '#student-tab' && typeof window.renderStudentTab === 'function') {
+                        window.renderStudentTab(data);
+                    } else if (tabId === '#employee-tab' && typeof window.renderEmployeeTab === 'function') {
+                        window.renderEmployeeTab(data);
                     }
+                },
+                error: function() {
+                    $overlay.remove();
+                    alert('Gagal memuat data tab. Silakan coba lagi.');
                 }
-            },
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true,
-                        callback: function(value, index, values) {
-                            return new Intl.NumberFormat('id-ID').format(value);
-                        }
-                    }
-                }]
-            }
+            });
         }
-    });
 
-
-    // Bar Chart LAPORAN KAS TIAP UNIT
-
-
-    // Bar Chart JUMLAH SISWA TIAP JENJANG
-    var ctx = document.getElementById("myChart").getContext('2d');
-    var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: [<?php foreach ($majors as $major) {
-                            echo '"' . $major['majors_short_name'] . '", ';
-                        } ?>],
-            datasets: [{
-                label: "Total Siswa",
-                data: [<?php foreach ($numStudents as $num) {
-                            echo $num['numbers'] . ', ';
-                        } ?>],
-                backgroundColor: "rgba(60, 179, 113)",
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                labels: {
-                    render: 'value'
+        $('.content-wrapper .nav-tabs:not(#subscription_tabs) a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+            var targetTab = $(e.target).attr('href');
+            if (targetTab && targetTab.indexOf('#') === 0) {
+                loadTabData(targetTab);
+                if (history.replaceState) {
+                    history.replaceState(null, null, targetTab);
+                } else {
+                    window.location.hash = targetTab;
                 }
-            }
-        }
-    });
-</script>
-
-<script>
-    get_data();
-
-    function get_data() {
-        var period = $("#period").val();
-        var start = $("#start").val();
-        var end = $("#end").val();
-
-        $.ajax({
-            type: "GET",
-            url: "<?= base_url() . "manage/dashboard/realisasi" ?>",
-            data: {
-                period: period,
-                start: start,
-                end: end,
-            },
-
-            success: function(data) {
-                $("#data_tabel").html(data);
             }
         });
-    }
-</script>
 
-<script>
-    function export_xls() {
+        var hash = window.location.hash;
+        var validMainTabs = ['#finance-tab', '#student-tab', '#employee-tab', '#academic-tab'];
+        var $initialTabLink = (validMainTabs.indexOf(hash) !== -1) ? $('.content-wrapper .nav-tabs:not(#subscription_tabs) a[href="' + hash + '"]') : [];
 
-        var newTab = window.open('', '_blank');
-
-        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-            alert("Popup Diblok");
+        if (hash && $initialTabLink.length) {
+            var isAlreadyActive = $initialTabLink.parent().hasClass('active');
+            $initialTabLink.tab('show');
+            if (isAlreadyActive) {
+                loadTabData(hash);
+            }
         } else {
-
-            let start = $('#start').val();
-            let end = $('#end').val();
-            let period = $('#period').val();
-
-            newTab.location.href = "<?php echo base_url() . 'manage/dashboard/realisasi_xls' ?>?start=" + start + "&end=" + end + "&period=" + period;
+            var activeTabHref = $('.content-wrapper .nav-tabs:not(#subscription_tabs) li.active a').attr('href');
+            if (activeTabHref) {
+                loadTabData(activeTabHref);
+            }
         }
-    }
-</script>
-<style>
-    /* Baris Ganjil */
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: #ccf0d5;
-        /* Ganti dengan warna yang diinginkan */
-    }
 
-    /* Baris Genap */
-    .table-striped tbody tr:nth-of-type(even) {
-        background-color: #ffffff;
-        /* Ganti dengan warna yang diinginkan */
-    }
-</style>
+        function doDashSearch() {
+            var keyword = $('#dash_search_input').val().trim();
+            if (keyword !== '') {
+                window.location.href = '<?= site_url('manage/pencarian') ?>?q=' + encodeURIComponent(keyword);
+            }
+        }
+
+        $('#dash_search_btn').on('click', function() {
+            doDashSearch();
+        });
+
+        $('#dash_search_input').on('keypress', function(e) {
+            if (e.which === 13) {
+                doDashSearch();
+            }
+        });
+
+        loadWidgetInformasi(majorsId);
+
+        function loadWidgetInformasi(majorsId) {
+            $('#skeleton_informasi').show();
+            $('#container_pengumuman').hide();
+
+            $.ajax({
+                url: '<?= site_url('manage/dashboard/ajax_academic_informasi') ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    majors_id: majorsId
+                },
+                success: function(res) {
+                    $('#skeleton_informasi').hide();
+
+                    if (res.title) {
+                        $('#title_informasi').text(res.title);
+                    }
+
+                    var pengumumanHtml = '';
+                    if (res.data && res.data.length > 0) {
+                        $.each(res.data, function(i, pg) {
+                            var thumbHtml = '';
+                            if (pg.img) {
+                                thumbHtml = '<div class="product-img" style="float:left; margin-right:10px;"><img src="' + pg.img + '" alt="Thumbnail" class="img-thumbnail" style="width:50px; height:50px; object-fit:cover;"></div>';
+                            }
+                            var infoStyle = pg.img ? 'margin-left:60px;' : 'margin-left:0;';
+
+                            pengumumanHtml += '<li class="item" style="padding: 10px 10px; border-left: 3px solid; ' + pg.border + '">' +
+                                thumbHtml +
+                                '<div class="product-info" style="' + infoStyle + '">' +
+                                '<a href="javascript:void(0);" class="product-title" style="font-size:12px;">' +
+                                '<i class="fa ' + pg.icon + ' ' + pg.label + '"></i> ' + pg.title +
+                                '<span class="label label-default pull-right" style="font-size:9px;">' + pg.type + '</span>' +
+                                '</a>' +
+                                '<span class="product-description" style="white-space:normal; font-size:11px; margin:3px 0;">' + pg.desc + '</span>' +
+                                '<span class="product-description text-muted" style="font-size:10px;"><i class="fa fa-calendar"></i> ' + pg.date + '</span>' +
+                                '</div></li>';
+                        });
+                    } else {
+                        pengumumanHtml = '<li class="item text-center text-muted" style="padding:15px;"><?= $this->lang->line('dash_no_information') ?: 'Tidak ada informasi' ?></li>';
+                    }
+
+                    $('#container_pengumuman').html(pengumumanHtml).show();
+                },
+                error: function() {
+                    $('#skeleton_informasi').html('<p class="text-danger text-center" style="padding:15px;">Gagal memuat data</p>');
+                }
+            });
+        }
+
+    });
+</script>
+
+<?php if ($showTableSubsHistory): ?>
+    <script>
+        $(document).ready(function() {
+
+            // Subscription history client-side filtering
+            $('#subscription_tabs a').on('shown.bs.tab', function(e) {
+                var status = $(this).data('status');
+                var $rows = $('#subscription_history_table tbody tr');
+                if (status === 'all') {
+                    $rows.show();
+                } else {
+                    $rows.hide();
+                    $rows.filter(function() {
+                        return $(this).data('status') === status;
+                    }).show();
+                }
+            });
+
+        });
+    </script>
+<?php endif; ?>

@@ -1,9 +1,11 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Cron extends CI_Controller {
+class Cron extends CI_Controller
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
         $this->load->database();
         $this->load->helper('date');
@@ -14,7 +16,8 @@ class Cron extends CI_Controller {
         $this->load->model(array('setting/Setting_model'));
     }
 
-    public function index() {
+    public function index()
+    {
         $key = $this->input->get('key');
         if (empty($key) || $key !== CRON_KEY) {
             show_error('Unauthorized access', 403);
@@ -23,8 +26,9 @@ class Cron extends CI_Controller {
         exit;
     }
 
-    public function email_register(){
-        
+    public function email_register()
+    {
+
         $key = $this->input->get('key');
         if (empty($key) || $key !== CRON_KEY) {
             show_error('Unauthorized access', 403);
@@ -38,7 +42,7 @@ class Cron extends CI_Controller {
 
         foreach ($recepients as $recipient) {
             $email = $recipient->recipient_email;
-            
+
 
             $email_sent = $this->send_email($email, "Registrasi");
 
@@ -68,8 +72,9 @@ class Cron extends CI_Controller {
         }
     }
 
-    public function wa_register(){
-        
+    public function wa_register()
+    {
+
         $key = $this->input->get('key');
         if (empty($key) || $key !== CRON_KEY) {
             show_error('Unauthorized access', 403);
@@ -81,7 +86,7 @@ class Cron extends CI_Controller {
         $secret_key                 = $wa_key['setting_value'];
         $sender             = $setting_whatsapp['setting_value'];
 
-        $this->db->where_in('status', ['pending', 'failed']);
+        $this->db->where('status', 'pending');
         $this->db->limit(10); // Limit to 10 numbers at a time
         $this->db->order_by('created_at', 'ASC'); // Order by created
         $recepients = $this->db->get('scheduled_wa')->result();
@@ -89,7 +94,7 @@ class Cron extends CI_Controller {
         foreach ($recepients as $recipient) {
             $receiver = $recipient->receiver;
             $msg = $recipient->msg;
-            
+
 
             $wa_sent = send_whatsapp($receiver, $msg, $secret_key, $sender);
 
@@ -97,29 +102,23 @@ class Cron extends CI_Controller {
 
             $status = 'pending';
 
-            if ($response['code'] === 200) {
+            if ($response['status'] === true) {
                 $status = 'sent';
-
-                // send_whatsapp('+6281233640003', $msg, $secret_key, $sender);
-
-                
             } else {
                 $status = 'failed';
             }
 
-            log_message('debug', 'status : ' . $status . ', msg : ' . json_encode($response));
-
             $this->db->where('id', $recipient->id)->update('scheduled_wa', [
-                    'status' => $status,
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]);
+                'status' => $status,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
         }
 
         $email = DEVELOPER_EMAIL;
 
         $this->db->where('date', date('Y-m-d'));
         $failed_count = $this->db->count_all_results('wanotif_reports');
-        if($failed_count >= 5){
+        if ($failed_count >= 5) {
             $this->send_email($email, "Warning Notif WA");
         }
     }
@@ -195,68 +194,66 @@ class Cron extends CI_Controller {
 
         foreach ($query as $row) {
             log_message('info', "Processing follow-up {$n} for email: {$row->email}");
-            
-                log_message('info', "Today is a workday, proceeding with follow-up {$n} for email: {$row->email}");
-               try {
-                    $resEmail = $this->send_email($row->email, "Follow Up {$label}");
-                    log_message('info', "Email sent for follow-up {$n} to: {$row->email}");
 
-                    $message = json_decode($resEmail, true);
-                    if ($message['status'] !== 'success') {
-                        throw new Exception($message['message']);
-                    }
+            log_message('info', "Today is a workday, proceeding with follow-up {$n} for email: {$row->email}");
+            try {
+                $resEmail = $this->send_email($row->email, "Follow Up {$label}");
+                log_message('info', "Email sent for follow-up {$n} to: {$row->email}");
 
-                    // Update status berhasil
-                    $this->db->where('id', $row->id)->update('email_marketing', [
-                        $sent_col => $today,
-                        $status_col => '1',
-                        'updated_at' => $now,
-                    ]);
-                    log_message('info', "Follow-up {$n} for email: {$row->email} completed successfully.");
-
-                    // Catat ke log (berhasil)
-                    $this->db->insert('email_marketing_log', [
-                        'email_marketing_id' => $row->id,
-                        'follow_up_number' => $n,
-                        'email' => $row->email,
-                        'sent_at' => date('Y-m-d H:i:s'),
-                        'status' => 'success',
-                        'message' => null,
-                    ]);
-                    log_message('info', "Follow-up {$n} for email: {$row->email} completed successfully.");
-
-                } catch (Exception $e) {
-                    // Catat ke log (gagal)
-                    $this->db->insert('email_marketing_log', [
-                        'email_marketing_id' => $row->id,
-                        'follow_up_number' => $n,
-                        'email' => $row->email,
-                        'sent_at' => date('Y-m-d H:i:s'),
-                        'status' => 'fail',
-                        'message' => $e->getMessage(),
-                    ]);
-                    log_message('error', "Follow-up {$n} for email: {$row->email} failed with error: " . $e->getMessage());
-
-                    // Reset ke status_? = 0 agar bisa dicoba ulang nanti
-                    $this->db->where('id', $row->id)->update('email_marketing', [
-                        $status_col => '0',
-                        'updated_at' => $now,
-                    ]);
-                    log_message('info', "Follow-up {$n} for email: {$row->email} reset to status 0 due to error.");
+                $message = json_decode($resEmail, true);
+                if ($message['status'] !== 'success') {
+                    throw new Exception($message['message']);
                 }
 
-            
+                // Update status berhasil
+                $this->db->where('id', $row->id)->update('email_marketing', [
+                    $sent_col => $today,
+                    $status_col => '1',
+                    'updated_at' => $now,
+                ]);
+                log_message('info', "Follow-up {$n} for email: {$row->email} completed successfully.");
+
+                // Catat ke log (berhasil)
+                $this->db->insert('email_marketing_log', [
+                    'email_marketing_id' => $row->id,
+                    'follow_up_number' => $n,
+                    'email' => $row->email,
+                    'sent_at' => date('Y-m-d H:i:s'),
+                    'status' => 'success',
+                    'message' => null,
+                ]);
+                log_message('info', "Follow-up {$n} for email: {$row->email} completed successfully.");
+            } catch (Exception $e) {
+                // Catat ke log (gagal)
+                $this->db->insert('email_marketing_log', [
+                    'email_marketing_id' => $row->id,
+                    'follow_up_number' => $n,
+                    'email' => $row->email,
+                    'sent_at' => date('Y-m-d H:i:s'),
+                    'status' => 'fail',
+                    'message' => $e->getMessage(),
+                ]);
+                log_message('error', "Follow-up {$n} for email: {$row->email} failed with error: " . $e->getMessage());
+
+                // Reset ke status_? = 0 agar bisa dicoba ulang nanti
+                $this->db->where('id', $row->id)->update('email_marketing', [
+                    $status_col => '0',
+                    'updated_at' => $now,
+                ]);
+                log_message('info', "Follow-up {$n} for email: {$row->email} reset to status 0 due to error.");
+            }
         }
     }
 
 
-    private function send_email($email, $title) {
+    private function send_email($email, $title)
+    {
         $this->load->helper('email');
 
         log_message('info', "Preparing to send email to: {$email} with title: {$title}");
 
         $to = $email;
-        
+
         $app_url = 'https://demo.adminsekolah.net';
         $tutorial_url = 'https://tutorial.adminsekolah.net';
 
@@ -276,7 +273,7 @@ class Cron extends CI_Controller {
             ->get()
             ->row();
 
-        if($title == 'Registrasi') {
+        if ($title == 'Registrasi') {
             $customer = $this->db
                 ->select('registrasi.*')
                 ->from('scheduled_emails')
@@ -289,27 +286,38 @@ class Cron extends CI_Controller {
                 ->row();
         }
 
-        if($title == 'Registrasi') {
-            $subject = 'Registrasi Admin Sekolah '. $customer->registrasi_school;
-        } else if($title == 'Follow Up 1') {
+        if ($title == 'Registrasi') {
+            $subject = 'Registrasi Admin Sekolah ' . $customer->registrasi_school;
+        } else if ($title == 'Follow Up 1') {
             $subject = 'Pengenalan Adminsekolah kepada ' . $customer->registrasi_school;
-        } else if($title == 'Follow Up 2') {
+        } else if ($title == 'Follow Up 2') {
             $subject = 'Proposal Software Adminsekolah untuk ' . $customer->registrasi_school;
-        } else if($title == 'Follow Up 3') {
+        } else if ($title == 'Follow Up 3') {
             $subject = 'Undangan Meeting Implementasi Software Manajemen Sekolah AdminSekolah di ' . $customer->registrasi_school;
-        } else if($title == 'Warning Notif WA') {
+        } else if ($title == 'Warning Notif WA') {
             $subject = 'Peringatan Notif WA Demo Telah Gagal Mengirim Pesan 5 Kali atau Lebih';
         }
 
-        
-        $body = email_template($title, array('name' => $customer->registrasi_name, 'school' => $customer->registrasi_school,
-            'app_url' => $app_url, 'tutorial_url' => $tutorial_url));
 
-        if($title=='Registrasi'){
-            $body = email_template($title, array('name' => $customer->registrasi_name, 'school' => $customer->registrasi_school,
-            'app_url' => $app_url, 'tutorial_url' => $tutorial_url, 'username' => $customer->registrasi_email, 'password' => $customer->registrasi_password,
-        'ios_link' => $ios_link, 'play_store_link' => $play_store_link));
-        } else if ($title == 'Warning Notif WA'){
+        $body = email_template($title, array(
+            'name' => $customer->registrasi_name,
+            'school' => $customer->registrasi_school,
+            'app_url' => $app_url,
+            'tutorial_url' => $tutorial_url
+        ));
+
+        if ($title == 'Registrasi') {
+            $body = email_template($title, array(
+                'name' => $customer->registrasi_name,
+                'school' => $customer->registrasi_school,
+                'app_url' => $app_url,
+                'tutorial_url' => $tutorial_url,
+                'username' => $customer->registrasi_email,
+                'password' => $customer->registrasi_password,
+                'ios_link' => $ios_link,
+                'play_store_link' => $play_store_link
+            ));
+        } else if ($title == 'Warning Notif WA') {
             $wa_key                 = $this->Setting_model->get(array('name' => 'setting_wa_key'));
             $setting_whatsapp       = $this->Setting_model->get(array('id' => 92));
             $set_key                = $wa_key['setting_value'];
@@ -321,12 +329,12 @@ class Cron extends CI_Controller {
 
         $attachments = [];
 
-        if($title=='Follow Up 2'){
+        if ($title == 'Follow Up 2') {
             $attachments = [
                 FCPATH . 'media/docs/Proposal-Adminsekolah.pdf'
             ];
-        } else if($title=='Registrasi'){
-                $attachments = [
+        } else if ($title == 'Registrasi') {
+            $attachments = [
                 FCPATH . 'media/docs/Brosur-Adminsekolah.jpeg',
                 FCPATH . 'media/docs/Presentasi-Produk-Adminsekolah.pdf'
             ];
@@ -338,5 +346,33 @@ class Cron extends CI_Controller {
         } else {
             return json_encode(array('status' => 'error', 'message' => 'Failed to send email.'));
         }
+    }
+
+    /**
+     * Membersihkan file cache yang sudah kedaluwarsa (lebih dari 1 hari)
+     * Cara menjalankannya di terminal: php index.php cron clean_expired_cache
+     */
+    public function clean_expired_cache()
+    {
+        $cache_path = APPPATH . 'cache/';
+        $files = scandir($cache_path);
+
+        $deleted = 0;
+        foreach ($files as $file) {
+            // Abaikan file sistem dan index
+            if ($file === '.' || $file === '..' || $file === 'index.html' || $file === '.htaccess') {
+                continue;
+            }
+
+            $file_path = $cache_path . $file;
+
+            // Hapus cache yang usianya lebih dari 24 jam (86400 detik)
+            if (is_file($file_path) && (time() - filemtime($file_path)) > CACHE_TTL) {
+                unlink($file_path);
+                $deleted++;
+            }
+        }
+
+        echo "Cache cleanup selesai. Berhasil menghapus {$deleted} file cache lama.\n";
     }
 }

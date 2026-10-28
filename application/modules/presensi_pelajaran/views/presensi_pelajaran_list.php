@@ -1,4 +1,3 @@
-
 <div class="content-wrapper">
 	<!-- Content Header (Page header) -->
 	<section class="content-header">
@@ -16,267 +15,271 @@
 			<div class="col-md-12">
 				<div class="box box-success">
 					<div class="box-header">
-					    <h3><?php echo 'Presensi Pelajaran Bulan ' . $bulan['month_name'] . ' ' . $period['period_start'] . '/' . $period['period_end'] . ' Tanggal ' . pretty_date(date('Y-m-d'), 'l, d F Y' ,false); ?></h3>
+						<h3><?php echo 'Presensi Pelajaran Bulan ' . $bulan['month_name'] . ' ' . $period['period_start'] . '/' . $period['period_end'] . ' Tanggal ' . pretty_date(date('Y-m-d'), 'l, d F Y', false); ?></h3>
 						<?php echo form_open(current_url(), array('method' => 'get')) ?>
 						<input type="hidden" class="form-control" name="p" id="period_id" value="<?php echo $period['period_id'] ?>" readonly="">
 						<input type="hidden" class="form-control" name="m" id="month_id" value="<?php echo $bulan['month_id'] ?>" readonly="">
 						<input type="hidden" class="form-control" name="d" id="today" value="<?php echo date('Y-m-d') ?>">
 						<div class="row">
-							<div class="col-md-2">  
+							<div class="col-md-2">
 								<div class="form-group">
 									<label>Unit Sekolah</label>
-									<select class="form-control" name="k" id="majors_id" onchange="get_kelas()"  required="">
+									<select class="form-control" name="k" id="majors_id" onchange="get_kelas()" required="">
 										<option value="">-- Pilih Unit --</option>
 										<?php foreach ($majors as $row): ?>
-											<option <?php echo (isset($q['k']) AND $q['k'] == $row['majors_id']) ? 'selected' : '' ?> value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
+											<option <?php echo (isset($q['k']) and $q['k'] == $row['majors_id']) ? 'selected' : '' ?> value="<?php echo $row['majors_id'] ?>"><?php echo $row['majors_short_name'] ?></option>
 										<?php endforeach; ?>
 									</select>
 								</div>
 							</div>
 							<div id="td_kelas">
-							<div class="col-md-2">  
-								<div class="form-group">
-									<label>Kelas</label>
-									<select class="form-control" name="c" id="class_id" required="">
-										<option value="">-- Pilih Kelas --</option>
-										<?php if(isset($q['k'])){?>
-										<?php foreach ($class as $row): ?>
-											<option <?php echo (isset($q['c']) AND $q['c'] == $row['class_id']) ? 'selected' : '' ?> value="<?php echo $row['class_id'] ?>"><?php echo $row['class_name'] ?></option>
-										<?php endforeach; ?>
-										<?php } ?>
-									</select>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label>Kelas</label>
+										<select class="form-control" name="c" id="class_id" required="">
+											<option value="">-- Pilih Kelas --</option>
+											<?php if (isset($q['k'])) { ?>
+												<?php foreach ($class as $row): ?>
+													<option <?php echo (isset($q['c']) and $q['c'] == $row['class_id']) ? 'selected' : '' ?> value="<?php echo $row['class_id'] ?>"><?php echo $row['class_name'] ?></option>
+												<?php endforeach; ?>
+											<?php } ?>
+										</select>
+									</div>
 								</div>
-							</div>
 							</div>
 							<div id="td_pelajaran">
-							<div class="col-md-2">  
-								<div class="form-group">
-									<label>Mata Pelajaran</label>
-									<select class="form-control" name="l" id="lesson_id" required="">
-										<option value="">-- Pilih Mata Pelajaran --</option>
-										<?php if(isset($q['l'])){?>
-										<?php foreach ($lesson as $row): ?>
-											<option <?php echo (isset($q['c']) AND $q['l'] == $row['lesson_id']) ? 'selected' : '' ?> value="<?php echo $row['lesson_id'] ?>"><?php echo $row['lesson_code'] . ' - ' . $row['lesson_name'] ?></option>
-										<?php endforeach; ?>
-										<?php } ?>
-									</select>
+								<div class="col-md-2">
+									<div class="form-group">
+										<label>Mata Pelajaran</label>
+										<select class="form-control" name="l" id="lesson_id" required="">
+											<option value="">-- Pilih Mata Pelajaran --</option>
+											<?php if (isset($q['l'])) { ?>
+												<?php foreach ($lesson as $row): ?>
+													<option <?php echo (isset($q['c']) and $q['l'] == $row['schedule_id']) ? 'selected' : '' ?> value="<?php echo $row['schedule_id'] ?>"><?php echo $row['lesson_code'] . ' - ' . $row['lesson_name'] . ' (' . $row['jam_pelajaran_start'] . '-' . $row['jam_pelajaran_end'] . ')' ?></option>
+												<?php endforeach; ?>
+											<?php } ?>
+										</select>
+									</div>
 								</div>
 							</div>
-							</div>
 							<div class="col-md-4">
-							<div style="margin-top:25px;">
-							<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Cari</button>
-						    </div>
-					        </div>
-					</div>
-					</form>
+								<div style="margin-top:25px;">
+									<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Cari</button>
+								</div>
+							</div>
+						</div>
+						</form>
 					</div>
 				</div>
-				
+
 				<?php if ($q) { ?>
-				
-				<?php if ($check == 0) { ?>
-				
-        				<?php if (!empty($student)) { ?>
-        				<div class="box box-success">
-        					<div class="box-body table-responsive">
-							<?php echo form_open('manage/presensi_pelajaran/add_glob', array('method'=>'post')); ?>
-        					    <?php $pelajaran = $this->Lesson_model->get(array('id' => $q['l'])) ?>
-        					    <table class="table">
-        					        <tr>
-        					            <td width="15%">Mata Pelajaran</td>
-        					            <td width="5%">:</td>
-        					            <td><?php echo $pelajaran['lesson_name'] ?></td>
-        					        </tr>
-        					        <tr>
-        					            <td>Guru/Pengajar</td>
-        					            <td>:</td>
-        					            <td><?php echo $pelajaran['employee_name'] ?></td>
-        					        </tr>
-        					        <tr>
-        					            <td>Materi Pelajaran</td>
-        					            <td>:</td>
-										<td><input class="form-control" name="materi" id="materi" type="text" placeholder="Contoh : Bab V Materi Kalkulus "></td>
-        					        </tr>
-        					    </table>
-            					<input type="hidden" name="period_id" value="<?php echo $q['p'] ?>"></td>
-            					<input type="hidden" name="month_id" value="<?php echo $q['m'] ?>"></td>
-            					<input type="hidden" name="presensi_date" value="<?php echo date('Y-m-d'); ?>"></td>
-            					<input type="hidden" name="majors_id" value="<?php echo $q['k'] ?>"></td>
-            					<input type="hidden" name="class_id" value="<?php echo $q['c'] ?>"></td>
-            					<input type="hidden" name="lesson_id" value="<?php echo $q['l'] ?>"></td>
-            					<input type="hidden" name="employee_id" value="<?php echo $pelajaran['lesson_teacher'] ?>"></td>
-            					<table class="table table-responsive table-bordered" style="white-space: nowrap;">
-            						    <thead>
-            							<tr>
-            								<th width='5' rowspan='2'><center>No.</center></th> 
-            								<th rowspan='2'><center>NIS</center></th> 
-            								<th rowspan='2'><center>Nama</center></th>
-            								<th colspan='4'><center>Status</center></th>
-            							</tr>
-            							<tr>
-            							    <th>Hadir <input name="selectAll" id="selectallhadir" type="radio" value="Y"></th>
-            							    <th>Sakit <input name="selectAll" id="selectallsakit" type="radio" value="Y"></th>
-            							    <th>Izin <input name="selectAll" id="selectallizin" type="radio" value="Y"></th>
-            							    <th>Alpha <input name="selectAll" id="selectallalpha" type="radio" value="Y"></th>
-            							</tr>
-            							</thead>
-            							<tbody>
-            							<?php 
-            							    $no = 1;
-            							    foreach ($student as $row) :
-            						    ?>
-            								<tr>
-            									<td><?php echo $no++ ?><input type="hidden" name="student_id[]" value="<?php echo $row['student_id']?>"></td>
-            									<td><?php echo $row['student_nis']?></td> 
-            									<td><?php echo $row['student_full_name']?></td>
-            									<td>
-            										<input type="radio" name="presensi_pelajaran_status<?php echo $row['student_id']?>[]" class="hadir" value="H" required>
-            									</td>
-            									<td>
-            										<input type="radio" name="presensi_pelajaran_status<?php echo $row['student_id']?>[]" class="sakit" value="S" required>
-            									</td>
-            									<td>
-            										<input type="radio" name="presensi_pelajaran_status<?php echo $row['student_id']?>[]" class="izin" value="I" required>
-            									</td>
-            									<td>
-            										<input type="radio" name="presensi_pelajaran_status<?php echo $row['student_id']?>[]" class="alpha" value="A" required></td>
-            								</tr>
-            							<?php endforeach ?>
-                                        </tbody>
-            						</table>
-            						<div class="pull-right">
-            						    <button type="submit" class="btn btn-success">Simpan</button>
-            						</div>
-            					<?php echo form_close(); ?>
-        					</div>
-        					<!-- /.box-body -->
-        				</div>
-        				<?php 
-        				    
-        				}
-    				
-    				} else { ?>
-				
-				<div class="box box-success">
-					<div class="box-body table-responsive">
-					    <center>
-					        <h3>Presensi Semua Siswa Sudah Didata</h3>
-					    </center>
-				    </div>
-				</div>
-				
+
+					<?php if ($check == 0) { ?>
+
+						<?php if (!empty($student)) { ?>
+							<div class="box box-success">
+								<div class="box-body table-responsive">
+									<?php echo form_open('manage/presensi_pelajaran/add_glob', array('method' => 'post')); ?>
+									<?php $pelajaran = $this->Lesson_model->get(array('id' => $id_mapel)) ?>
+									<table class="table">
+										<tr>
+											<td width="15%">Mata Pelajaran</td>
+											<td width="5%">:</td>
+											<td><?php echo $pelajaran['lesson_name'] ?></td>
+										</tr>
+										<tr>
+											<td>Guru/Pengajar</td>
+											<td>:</td>
+											<td><?php echo $pelajaran['employee_name'] ?></td>
+										</tr>
+										<tr>
+											<td>Materi Pelajaran</td>
+											<td>:</td>
+											<td><input class="form-control" name="materi" id="materi" type="text" placeholder="Contoh : Bab V Materi Kalkulus "></td>
+										</tr>
+									</table>
+									<input type="hidden" name="period_id" value="<?php echo $q['p'] ?>"></td>
+									<input type="hidden" name="month_id" value="<?php echo $q['m'] ?>"></td>
+									<input type="hidden" name="presensi_date" value="<?php echo date('Y-m-d'); ?>"></td>
+									<input type="hidden" name="majors_id" value="<?php echo $q['k'] ?>"></td>
+									<input type="hidden" name="class_id" value="<?php echo $q['c'] ?>"></td>
+									<input type="hidden" name="schedule_id" value="<?php echo $q['l'] ?>"></td>
+									<input type="hidden" name="lesson_id" value="<?php echo $id_mapel ?>"></td>
+									<input type="hidden" name="employee_id" value="<?php echo $pelajaran['employee_id'] ?>"></td>
+									<table class="table table-responsive table-bordered" style="white-space: nowrap;">
+										<thead>
+											<tr>
+												<th width='5' rowspan='2'>
+													<center>No.</center>
+												</th>
+												<th rowspan='2'>
+													<center>NIS</center>
+												</th>
+												<th rowspan='2'>
+													<center>Nama</center>
+												</th>
+												<th colspan='4'>
+													<center>Status</center>
+												</th>
+											</tr>
+											<tr>
+												<th>Hadir <input name="selectAll" id="selectallhadir" type="radio" value="Y"></th>
+												<th>Sakit <input name="selectAll" id="selectallsakit" type="radio" value="Y"></th>
+												<th>Izin <input name="selectAll" id="selectallizin" type="radio" value="Y"></th>
+												<th>Alpha <input name="selectAll" id="selectallalpha" type="radio" value="Y"></th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php
+											$no = 1;
+											foreach ($student as $row) :
+											?>
+												<tr>
+													<td><?php echo $no++ ?><input type="hidden" name="student_id[]" value="<?php echo $row['student_id'] ?>"></td>
+													<td><?php echo $row['student_nis'] ?></td>
+													<td><?php echo $row['student_full_name'] ?></td>
+													<td>
+														<input type="radio" name="presensi_pelajaran_status<?php echo $row['student_id'] ?>[]" class="hadir" value="H" required>
+													</td>
+													<td>
+														<input type="radio" name="presensi_pelajaran_status<?php echo $row['student_id'] ?>[]" class="sakit" value="S" required>
+													</td>
+													<td>
+														<input type="radio" name="presensi_pelajaran_status<?php echo $row['student_id'] ?>[]" class="izin" value="I" required>
+													</td>
+													<td>
+														<input type="radio" name="presensi_pelajaran_status<?php echo $row['student_id'] ?>[]" class="alpha" value="A" required>
+													</td>
+												</tr>
+											<?php endforeach ?>
+										</tbody>
+									</table>
+									<div class="pull-right">
+										<button type="submit" class="btn btn-success">Simpan</button>
+									</div>
+									<?php echo form_close(); ?>
+								</div>
+								<!-- /.box-body -->
+							</div>
+						<?php
+
+						}
+					} else { ?>
+
+						<div class="box box-success">
+							<div class="box-body table-responsive">
+								<center>
+									<h3>Presensi Semua Siswa Sudah Didata</h3>
+								</center>
+							</div>
+						</div>
+
 				<?php
-				    }
+					}
 				}
 				?>
-				
-				
-				
-				
+
+
+
+
 			</div>
 		</div>
 	</section>
 	<!-- /.content -->
 </div>
 <script>
-    function get_kelas(){
-        var id_majors    = $("#majors_id").val();
-        //alert(id_jurusan+id_kelas);
-        $.ajax({ 
-            url: '<?php echo base_url();?>manage/presensi_pelajaran/class_searching',
-            type: 'POST', 
-            data: {
-                    'id_majors': id_majors,
-            },    
-            success: function(msg) {
-                    $("#td_kelas").html(msg);
-            },
-			error: function(msg){
-					alert('msg');
+	function get_kelas() {
+		var id_majors = $("#majors_id").val();
+		//alert(id_jurusan+id_kelas);
+		$.ajax({
+			url: '<?php echo base_url(); ?>manage/presensi_pelajaran/class_searching',
+			type: 'POST',
+			data: {
+				'id_majors': id_majors,
+			},
+			success: function(msg) {
+				$("#td_kelas").html(msg);
+			},
+			error: function(msg) {
+				alert('msg');
 			}
-            
-        });
-    }
+
+		});
+	}
 </script>
 <script>
-    function get_pelajaran(){
-        var class_id    = $("#class_id").val();
-        //alert(id_jurusan+id_kelas);
-        $.ajax({ 
-            url: '<?php echo base_url();?>manage/presensi_pelajaran/lesson_searching',
-            type: 'POST', 
-            data: {
-                    'class_id': class_id,
-            },    
-            success: function(msg) {
-                    $("#td_pelajaran").html(msg);
-            },
-			error: function(msg){
-					alert('msg');
+	function get_pelajaran() {
+		var class_id = $("#class_id").val();
+		//alert(id_jurusan+id_kelas);
+		$.ajax({
+			url: '<?php echo base_url(); ?>manage/presensi_pelajaran/lesson_input_jurnal',
+			type: 'POST',
+			data: {
+				'class_id': class_id,
+			},
+			success: function(msg) {
+				$("#td_pelajaran").html(msg);
+			},
+			error: function(msg) {
+				alert('msg');
 			}
-            
-        });
-    }
+
+		});
+	}
 </script>
 <script>
 	$(document).ready(function() {
-            $("#selectallhadir").click(function() {
-                if ($(this).is(':checked'))
-                    $(".hadir").prop("checked", true);
-                else
-                    $(".hadir").prop("checked", false);
-            });
-            $("#selectallsakit").click(function() {
-                if ($(this).is(':checked'))
-                    $(".sakit").prop("checked", true);
-                else
-                    $(".sakit").prop("checked", false);
-            });
-            $("#selectallizin").click(function() {
-                if ($(this).is(':checked'))
-                    $(".izin").prop("checked", true);
-                else
-                    $(".izin").prop("checked", false);
-            });
-            $("#selectallalpha").click(function() {
-                if ($(this).is(':checked'))
-                    $(".alpha").prop("checked", true);
-                else
-                    $(".alpha").prop("checked", false);
-            });
-        });
+		$("#selectallhadir").click(function() {
+			if ($(this).is(':checked'))
+				$(".hadir").prop("checked", true);
+			else
+				$(".hadir").prop("checked", false);
+		});
+		$("#selectallsakit").click(function() {
+			if ($(this).is(':checked'))
+				$(".sakit").prop("checked", true);
+			else
+				$(".sakit").prop("checked", false);
+		});
+		$("#selectallizin").click(function() {
+			if ($(this).is(':checked'))
+				$(".izin").prop("checked", true);
+			else
+				$(".izin").prop("checked", false);
+		});
+		$("#selectallalpha").click(function() {
+			if ($(this).is(':checked'))
+				$(".alpha").prop("checked", true);
+			else
+				$(".alpha").prop("checked", false);
+		});
+	});
 </script>
-		
+
 <script>
+	function get_form() {
+		var student_id = $('#msg:checked');
+		if (student_id.length > 0) {
+			var student_id_value = [];
+			$(student_id).each(function() {
+				student_id_value.push($(this).val());
+			});
 
-  function get_form(){
-    var student_id = $('#msg:checked');
-    if(student_id.length > 0)
-    {
-        var student_id_value = [];
-        $(student_id).each(function(){
-            student_id_value.push($(this).val());
-        });
-
-        $.ajax({
-            url: '<?php echo base_url();?>manage/billing/get_form/',
-            method:"POST",
-            data: {
-                    student_id : student_id_value,
-            },
-            success: function(msg){
-                    $("#fbatch").html(msg);
-            },
-    		error: function(msg){
-    				alert('msg');
-    		}
-        });
-    }
-    else
-    {
-        alert("Belum ada Siswa yang dipilih");
-    }
-  }
-  
+			$.ajax({
+				url: '<?php echo base_url(); ?>manage/billing/get_form/',
+				method: "POST",
+				data: {
+					student_id: student_id_value,
+				},
+				success: function(msg) {
+					$("#fbatch").html(msg);
+				},
+				error: function(msg) {
+					alert('msg');
+				}
+			});
+		} else {
+			alert("Belum ada Siswa yang dipilih");
+		}
+	}
 </script>

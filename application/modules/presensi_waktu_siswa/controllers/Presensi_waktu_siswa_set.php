@@ -35,7 +35,7 @@ class Presensi_waktu_siswa_set extends CI_Controller
     $config['base_url'] = site_url('manage/presensi_waktu_siswa');
     $config['suffix'] = '?' . http_build_query($_GET, '', "&");
 
-    $data['title'] = 'Data Jam Masuk & Pulang';
+    $data['title'] = 'Data Jam Masuk & Pulang Siswa';
     $data['main'] = 'presensi_waktu_siswa/presensi_waktu_siswa_list';
     $this->load->view('manage/layout', $data);
   }
@@ -56,7 +56,7 @@ class Presensi_waktu_siswa_set extends CI_Controller
 
     $this->db->select('*');
     $data['day'] = $this->db->get('day')->result_array();
-    $data['majors'] = $this->db->get('majors')->result_array();
+    $data['majors'] = $this->Student_model->get_majors();
 
     if ($_POST) {
 

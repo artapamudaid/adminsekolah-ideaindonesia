@@ -1,0 +1,2133 @@
+<?php
+
+if (!defined('BASEPATH'))
+  exit('No direct script access allowed');
+
+class Payout_set extends CI_Controller
+{
+
+  public function __construct()
+  {
+    parent::__construct(TRUE);
+    if ($this->session->userdata('logged') == NULL) {
+      redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
+    }
+    $this->load->model(array('payout/Payout_model', 'batchpayment/Batchpayment_model', 'payment/Payment_model', 'student/Student_model', 'period/Period_model', 'pos/Pos_model', 'bulan/Bulan_model', 'bebas/Bebas_model', 'bebas/Bebas_pay_model', 'setting/Setting_model', 'letter/Letter_model', 'logs/Logs_model', 'ltrx/Log_trx_model', 'billing/Billing_model'));
+
+    $this->load->helper(array('send_helper'));
+  }
+
+  // payment view in list
+  public function index($offset = NULL, $id = NULL)
+  {
+    error_reporting(0);
+    // Apply Filter
+    // Get $_GET variable
+    $f = $this->input->get(NULL, TRUE);
+
+    $data['f'] = $f;
+
+    $majorsID = '';
+    $noref = '';
+    $siswa['student_nis'] = '';
+    $siswa['student_id'] = '';
+    $siswa['majors_id'] = '';
+    $siswa['majors_short_name'] = '';
+    $params = array();
+    $param = array();
+    $pay = array();
+    $cashback = array();
+    $logs = array();
+
+    // Tahun Ajaran
+    if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
+      $params['period_id'] = $f['n'];
+      $pay['period_id'] = $f['n'];
+      //$cashback['period_id'] = $f['n'];
+      $logs['period_id'] = $f['n'];
+      $tahun = $f['n'];
+      $nis = $f['r'];
+    }
+
+    // Siswa
+    if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
+      $params['student_nis'] = $f['r'];
+      $param['student_nis'] = $f['r'];
+      $nis = $f['r'];
+      $cashback['student_nis'] = $f['r'];
+      $logs['student_nis'] = $f['r'];
+      $siswa = $this->Student_model->get(array('student_nis' => $f['r']));
+    }
+
+    // tanggal
+    if (isset($f['d']) && !empty($f['d']) && $f['d'] != '') {
+      $param['date'] = $f['d'];
+      $date = $f['d'];
+    }
+
+    if (isset($f['n']) && !empty($f['n']) && $f['n'] != '' && isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
+      $data['dataMonth']  = $this->db->query("SELECT * FROM month")->result();
+      $data['pembayaran'] = $this->Bulan_model->get_pembayaran($tahun, $nis);
+      $data['pembayaran_batch'] = $this->Bulan_model->get_batch_pembayaran($tahun, $nis);
+    }
+
+    $like = 'SP' . str_replace(" ", "", $siswa['majors_short_name']) . $siswa['student_nis'];
+
+    $tmp    = $this->Payout_model->get_noref($like, $siswa['majors_id']);
+
+    $logs['payment_noref'] = 'SP' . str_replace(" ", "", $siswa['majors_short_name']) . $siswa['student_nis'] . $tmp;
+    $cashback['noref'] = 'SP' . str_replace(" ", "", $siswa['majors_short_name']) . $siswa['student_nis'] . $tmp;
+
+    $params['group']                    = TRUE;
+    $pay['paymentt']                    = TRUE;
+    $param['status']                    = 1;
+    $cashback['status']                 = 1;
+    $pay['student_id']                  = $siswa['student_id'];
+    $cashback['student_id']             = $siswa['student_id'];
+    $logs['student_id']                 = $siswa['student_id'];
+    $cashback['date']                   = date('Y-m-d');
+    $cashback['last_update']            = date('Y-m-d');
+
+    $paramsPage = $params;
+    $data['periodActive']   = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
+    $data['period']         = $this->Period_model->get($params);
+    $data['siswa']          = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
+    // $data['bulan']          = $this->Bulan_model->get(array('student_id' => $siswa['student_id']));
+    $data['bebasPay']       = $this->Bebas_model->get($pay);
+    // $data['free']           = $this->Bebas_pay_model->get($params);
+    // $data['bill']           = $this->Bulan_model->get_total($params);
+    // $data['month']          = $this->Bulan_model->get_total($cashback);
+    $data['log']            = $this->Log_trx_model->get_history($logs);
+    $data['trx']            = $this->Log_trx_model->get_trx($logs);
+
+    $data['noref']          = 'SP' . str_replace(" ", "", $siswa['majors_short_name']) . $siswa['student_nis'] . $tmp;
+
+    //Transaksi Yang belum disimpan / untuk migrasi
+    $data['pending']        = $this->Payout_model->list_transaksi_tertunda($siswa['student_nis'], $data['noref']);
+
+    //Total Pembayaran Bulan  
+    $totalBayarBulan = $this->Bulan_model->get_total_bulan($cashback);
+    $data['cash'] = $totalBayarBulan;
+
+    //Total Pembayaran Bebas  
+    $totalBayarBebas = $this->Bebas_pay_model->get_total($cashback);
+    $data['cashb'] = $totalBayarBebas;
+
+    // $data['total'] = 0;
+    // foreach ($data['bill'] as $key) {
+    //   $data['total'] += $key['total'];
+    // }
+
+    // $data['pay'] = 0;
+    // foreach ($data['in'] as $row) {
+    //   $data['pay'] += $row['total'];
+    // }
+
+    // $data['pay_bill'] = 0;
+    // foreach ($data['dom'] as $row) {
+    //   $data['pay_bill'] += $row['bebas_pay_bill'];
+    // }
+
+
+
+    $majorsID        = $siswa['majors_id'];
+    $noref           = 'SP' . str_replace(" ", "", $siswa['majors_short_name']) . $siswa['student_nis'] . $tmp;
+
+
+    $akunBulan       = $this->db->query("SELECT bulan_account_id FROM bulan WHERE bulan_status = '1' AND bulan_noref = '$noref'")->row_array();
+    $akunBebas       = $this->db->query("SELECT bebas_pay_account_id FROM bebas_pay WHERE bebas_pay_noref = '$noref'")->row_array();
+
+    // $data['dataKas'] = $this->db->query("SELECT account_code, account_id, account_description FROM account WHERE account_category = '2' AND account_majors_id = '$majorsID' AND account_code LIKE '1%' AND account_description LIKE '%kas%' AND account_note IN (SELECT account_id FROM account WHERE account_majors_id = '$majorsID'
+    // AND account_code LIKE '1%' ORDER BY account_code ASC)")->result_array();
+
+    $data['dataKas'] = $this->db->query(
+      "SELECT coa_code AS account_code, coa_id AS account_id, coa_name AS account_description 
+       FROM coa 
+       WHERE coa_category = 'DETAIL' AND coa_majors = '$majorsID' AND coa_code LIKE '1%' AND coa_name LIKE '%kas%'"
+    )->result_array();
+
+    if (isset($akunBulan['bulan_account_id']) and empty($akunBebas['bebas_pay_account_id'])) {
+      $data['dataKasActive'] = $akunBulan['bulan_account_id'];
+    } else if (empty($akunBulan['bulan_account_id']) and isset($akunBebas['bebas_pay_account_id'])) {
+      $data['dataKasActive'] = $akunBebas['bebas_pay_account_id'];
+    } else if (isset($akunBulan['bulan_account_id']) and isset($akunBebas['bebas_pay_account_id'])) {
+      $data['dataKasActive'] = $akunBulan['bulan_account_id'];
+    } else {
+      $kasActive = $this->db->query("SELECT coa_code AS account_code, coa_id AS account_id, coa_name AS account_description 
+       FROM coa 
+       WHERE coa_category = 'DETAIL' AND coa_majors = '$majorsID' AND coa_code LIKE '1%' AND coa_name LIKE '%kas%'")->row_array();
+      $data['dataKasActive'] = $kasActive['account_id'];
+    }
+
+    $sett = $this->db->query("SELECT setting_value as paket FROM setting WHERE setting_name = 'setting_package'")->row_array();
+
+    $data['paket']  = $sett['paket'];
+
+    $config['base_url'] = site_url('manage/payment/index');
+    $config['suffix'] = '?' . http_build_query($_GET, '', "&");
+    $config['total_rows'] = count($this->Bulan_model->get($paramsPage));
+    $data['majors'] = $this->Student_model->get_majors();
+
+    $data['title']  = 'Pembayaran Siswa';
+    $data['main']   = 'payout/payout_list';
+    $this->load->view('manage/layout', $data);
+  }
+
+  function get_noref()
+  {
+    $nis = $this->input->post('nis');
+
+    $student = $this->Student_model->get(array('student_nis' => $nis));
+    $majors = $this->Student_model->get_majors(array('id' => $student['majors_id']));
+
+    $like  = 'SP' . $majors['majors_short_name'] . $nis;
+    $tmp    = $this->Payout_model->get_noref($like, $student['majors_id']);
+    $data  = 'SP' . $majors['majors_short_name'] . $nis . $tmp;
+
+    echo json_encode($data);
+  }
+
+  public function cari_noref()
+  {
+
+    $nis                  = $this->input->post('nis');
+    $student              = $this->Student_model->get(array('student_nis' => $nis));
+    $params['student_id'] = $student['student_id'];
+    $params['date']       = $this->input->post('trxDate');
+
+    $noref = $this->Payout_model->cari_noref($params);
+
+    echo '<label>No. Referensi</label>
+    			<select required="" name="f" id="no_ref" class="form-control"  onchange="copy_data()">
+    			   <option value="">-- Pilih No. Referensi --</option>';
+    foreach ($noref as $row) {
+      echo '<option value="' . $row['kas_noref'] . '">';
+      echo $row['kas_noref'];
+      echo '</option>';
+    }
+    echo '</select>';
+  }
+
+  function printBill()
+  {
+    $this->load->helper(array('dompdf'));
+    $f = $this->input->get(NULL, TRUE);
+
+    $data['f'] = $f;
+
+    $siswa['student_id'] = '';
+    $params = array();
+    $pay = array();
+
+    // Tahun Ajaran
+    if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
+      $params['period_id'] = $f['n'];
+      $pay['period_id'] = $f['n'];
+    }
+
+    // Siswa
+    if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
+      $params['student_nis'] = $f['r'];
+      $siswa = $this->Student_model->get(array('student_nis' => $f['r']));
+    }
+
+    $pay['student_id'] = $siswa['student_id'];
+
+    $data['period'] = $this->Period_model->get($params);
+    $data['siswa']  = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
+    $data['bulan']  = $this->Bulan_model->get($pay);
+    $data['bebas']  = $this->Bebas_model->get_bebas_with_last_payment($pay);
+    $data['majors'] = $this->Student_model->get_majors();
+    $data['unit']   = $this->Student_model->get_majors(array('status' => 1));
+
+    $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
+    $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+    $data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+    $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+    $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+    $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+    $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+
+    $html = $this->load->view('payout/payout_bill_pdf', $data, true);
+    $data = pdf_create($html, $siswa['student_full_name'], TRUE, 'A4', TRUE);
+  }
+
+  function cetakBukti()
+  {
+    $this->load->library('dompdflib');
+    $this->load->helper(array('tanggal'));
+    $this->load->helper(array('terbilang'));
+    $this->load->model('student/Student_model');
+    $this->load->model('setting/Setting_model');
+    $f = $this->input->get(NULL, TRUE);
+
+    $data['f'] = $f;
+
+    $siswa['student_id'] = '';
+    $params = array();
+    $param = array();
+    $kas = array();
+    $pay = array();
+    $cashback = array();
+
+    // Tahun Ajaran
+    if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
+      $params['period_id'] = $f['n'];
+      $pay['period_id'] = $f['n'];
+      //$cashback['period_id'] = $f['n'];
+    }
+
+    // Siswa
+    if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
+      $params['student_nis'] = $f['r'];
+      $param['student_nis'] = $f['r'];
+      $siswa = $this->Student_model->get(array('student_nis' => $f['r']));
+    }
+    /*
+    // tanggal
+    if (isset($f['d']) && !empty($f['d']) && $f['d'] != '') {
+      $param['date'] = $f['d'];
+      $cashback['date'] = $f['d'];
+    }
+    */
+    if (isset($f['f']) && !empty($f['f']) && $f['f'] != '') {
+      $kas['date'] = $f['d'];
+      $kas['noref'] = $f['f'];
+      $param['noref'] = $f['f'];
+      $cashback['noref'] = $f['f'];
+    }
+
+    $params['group']        =   TRUE;
+    $pay['paymentt']        =   TRUE;
+    $param['status']        =   1;
+    $param['student_id']    =   $siswa['student_id'];
+    $cashback['status']     =   1;
+    $pay['student_id']      =   $siswa['student_id'];
+    $cashback['student_id'] =   $siswa['student_id'];
+
+    $data['majors']  = $this->Student_model->get_majors();
+    $data['unit']    = $this->Student_model->get_unit(array('status' => 1));
+
+    $data['period']  = $this->Period_model->get($params);
+    $data['siswa']   = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
+    $data['student'] = $this->Bulan_model->get($pay);
+
+    $param['is_batch'] = '0';
+
+    $data['bulan']   = $this->Bulan_model->get($param);
+
+    $param['is_batch'] = '1';
+
+    $data['paket']   = $this->Bulan_model->get_paket($param);
+
+    $data['bebas']   = $this->Bebas_model->get($pay);
+    $data['free']    = $this->Bebas_pay_model->get($param);
+
+    $cashback['is_batch'] = '0';
+
+    $data['s_bl']    = $this->Bulan_model->get_total($cashback);
+    $data['s_bb']    = $this->Bebas_pay_model->get($cashback);
+    $data['bcode']   = $this->Payout_model->get_bcode($kas);
+    $bcode           = $this->Payout_model->get_bcode($kas);
+
+    //total
+    $data['sumpaket'] = 0;
+    foreach ($data['paket'] as $row) {
+      $data['sumpaket'] += $row['total'];
+    }
+
+    $data['summonth'] = 0;
+    foreach ($data['s_bl'] as $row) {
+      $data['summonth'] += $row['total'];
+    }
+
+    $data['sumbeb'] = 0;
+    foreach ($data['s_bb'] as $row) {
+      $data['sumbeb'] += $row['bebas_pay_bill'];
+    }
+    // endtotal
+    $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
+    $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+    $data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+    $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+    $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+    $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+    $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+    $data['setting_email'] = $this->Setting_model->get(array('id' => 90));
+    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
+    $data['setting_website']        = $this->Setting_model->get(array('id' => 91));
+
+    $tanggal = date_create($f['d']);
+    $dformat = date_format($tanggal, 'dmYHis');
+
+    $this->barcode2($bcode['kas_noref'], '');
+
+    $data['huruf'] = number_to_words($data['sumpaket'] + $data['summonth'] + $data['sumbeb']);
+    $file_pdf = 'Cetak_Struk_' . $siswa['student_full_name'] . '_' . base64_decode($f['d']);
+
+    $paper = 'A4';
+
+    $orientation = "potrait";
+    $html = $this->load->view('payout/payout_cetak_pdf', $data, true);
+    $this->dompdflib->generate($html, $file_pdf, $paper, $orientation);
+  }
+
+  function cetakThermal()
+  {
+    $this->load->library('dompdflib');
+    $this->load->helper(array('tanggal'));
+    $this->load->helper(array('terbilang'));
+    $this->load->model('student/Student_model');
+    $this->load->model('setting/Setting_model');
+    $f = $this->input->get(NULL, TRUE);
+
+    $data['f'] = $f;
+
+    $siswa['student_id'] = '';
+    $params = array();
+    $param = array();
+    $kas = array();
+    $pay = array();
+    $cashback = array();
+
+    // Tahun Ajaran
+    if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
+      $params['period_id'] = $f['n'];
+      $pay['period_id'] = $f['n'];
+    }
+
+    // Siswa
+    if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
+      $params['student_nis'] = $f['r'];
+      $param['student_nis'] = $f['r'];
+      $siswa = $this->Student_model->get(array('student_nis' => $f['r']));
+    }
+
+    if (isset($f['f']) && !empty($f['f']) && $f['f'] != '') {
+      $kas['date'] = $f['d'];
+      $kas['noref'] = $f['f'];
+      $param['noref'] = $f['f'];
+      $cashback['noref'] = $f['f'];
+    }
+
+    $params['group']        =   TRUE;
+    $pay['paymentt']        =   TRUE;
+    $param['status']        =   1;
+    $param['student_id']    =   $siswa['student_id'];
+    $cashback['status']     =   1;
+    $pay['student_id']      =   $siswa['student_id'];
+    $cashback['student_id'] =   $siswa['student_id'];
+
+    $data['majors']  = $this->Student_model->get_majors();
+    $data['unit']    = $this->Student_model->get_unit(array('status' => 1));
+
+    $data['period']  = $this->Period_model->get($params);
+    $data['siswa']   = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
+    $data['student'] = $this->Bulan_model->get($pay);
+
+    $param['is_batch'] = '0';
+
+    $data['bulan']   = $this->Bulan_model->get($param);
+
+    $param['is_batch'] = '1';
+
+    $data['paket']   = $this->Bulan_model->get_paket($param);
+
+    $data['bebas']   = $this->Bebas_model->get($pay);
+    $data['free']    = $this->Bebas_pay_model->get($param);
+
+    $cashback['is_batch'] = '0';
+
+    $data['s_bl']    = $this->Bulan_model->get_total($cashback);
+    $data['s_bb']    = $this->Bebas_pay_model->get($cashback);
+    $data['bcode']   = $this->Payout_model->get_bcode($kas);
+    $bcode           = $this->Payout_model->get_bcode($kas);
+
+    $data['sumpaket'] = 0;
+    foreach ($data['paket'] as $row) {
+      $data['sumpaket'] += $row['total'];
+    }
+    //total
+    $data['summonth'] = 0;
+    foreach ($data['s_bl'] as $row) {
+      $data['summonth'] += $row['total'];
+    }
+
+    $data['sumbeb'] = 0;
+    foreach ($data['s_bb'] as $row) {
+      $data['sumbeb'] += $row['bebas_pay_bill'];
+    }
+    // endtotal
+    $data['setting_nip_bendahara']  = $this->Setting_model->get(array('id' => 15));
+    $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+    $data['setting_city']           = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+    $data['setting_district']       = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+    $data['setting_school']         = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+    $data['setting_address']        = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+    $data['setting_phone']          = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+
+    $tanggal = date_create($f['d']);
+    $dformat = date_format($tanggal, 'dmYHis');
+
+    $this->barcode2($bcode['kas_noref'], '');
+
+    $data['huruf'] = number_to_words($data['sumpaket'] + $data['summonth'] + $data['sumbeb']);
+    $file_pdf = 'Cetak_Struk_' . $siswa['student_full_name'] . '_' . base64_decode($f['d']);
+
+    $paper = array(0, 0, 215, 841);
+
+    $orientation = "potrait";
+    $html = $this->load->view('payout/payout_thermal_pdf', $data, true);
+    $this->dompdflib->generate($html, $file_pdf, $paper, $orientation);
+  }
+
+  private function barcode2($sparepart_code, $barcode_type = 39, $scale = 6, $fontsize = 1, $thickness = 30, $dpi = 72)
+  {
+
+    $this->load->library('upload');
+    $config['upload_path'] = FCPATH . 'media/barcode_transaction/';
+
+    /* create directory if not exist */
+    if (!is_dir($config['upload_path'])) {
+      mkdir($config['upload_path'], 0777, TRUE);
+    }
+    $this->upload->initialize($config);
+
+    // CREATE BARCODE GENERATOR
+    // Including all required classes
+    require_once(APPPATH . 'libraries/barcodegen/BCGFontFile.php');
+    require_once(APPPATH . 'libraries/barcodegen/BCGColor.php');
+    require_once(APPPATH . 'libraries/barcodegen/BCGDrawing.php');
+
+    // Including the barcode technology
+    // Ini bisa diganti-ganti mau yang 39, ato 128, dll, liat di folder barcodegen
+    require_once(APPPATH . 'libraries/barcodegen/BCGcode39.barcode.php');
+
+    // Loading Font
+    // kalo mau ganti font, jangan lupa tambahin dulu ke folder font, baru loadnya di sini
+    $font = new BCGFontFile(APPPATH . 'libraries/font/Arial.ttf', $fontsize);
+
+    // Text apa yang mau dijadiin barcode, biasanya kode produk
+    $text = str_replace("/", "", $sparepart_code);
+
+    // The arguments are R, G, B for color.
+    $color_black = new BCGColor(0, 0, 0);
+    $color_white = new BCGColor(255, 255, 255);
+
+    $drawException = null;
+    try {
+      $code = new BCGcode39(); // kalo pake yg code39, klo yg lain mesti disesuaikan
+      $code->setScale($scale); // Resolution
+      $code->setThickness($thickness); // Thickness
+      $code->setForegroundColor($color_black); // Color of bars
+      $code->setBackgroundColor($color_white); // Color of spaces
+      $code->setFont($font); // Font (or 0)
+      $code->parse($text); // Text
+    } catch (Exception $exception) {
+      $drawException = $exception;
+    }
+
+    /* Here is the list of the arguments
+    1 - Filename (empty : display on screen)
+    2 - Background color */
+    $drawing = new BCGDrawing('', $color_white);
+    if ($drawException) {
+      $drawing->drawException($drawException);
+    } else {
+      $drawing->setDPI($dpi);
+      $drawing->setBarcode($code);
+      $drawing->draw();
+    }
+    // ini cuma labeling dari sisi aplikasi saya, penamaan file menjadi png barcode.
+    $filename_img_barcode = $text . '_' . $barcode_type . '.png';
+    // folder untuk menyimpan barcode
+    $drawing->setFilename(FCPATH . 'media/barcode_transaction/' . $text . '.png');
+    // proses penyimpanan barcode hasil generate
+    $drawing->finish(BCGDrawing::IMG_FORMAT_PNG);
+
+    return $filename_img_barcode;
+  }
+
+  // View data detail
+  public function view_bulan($id = NULL)
+  {
+
+    // Apply Filter
+    // Get $_GET variable
+    $q = $this->input->get(NULL, TRUE);
+
+    $data['q'] = $q;
+    $params = array();
+
+    // Programs
+    if (isset($q['pr']) && !empty($q['pr']) && $q['pr'] != '') {
+      $params['class_id'] = $q['pr'];
+    }
+
+    $data['class'] = $this->Student_model->get_class($params);
+    $data['student'] = $this->Student_model->get($params);
+    $data['payment'] = $this->Payment_model->get(array('id' => $id));
+    $data['bulan'] = $this->Bulan_model->get(array('id' => $id));
+    $data['title'] = 'Tarif Pembayaran';
+    $data['main'] = 'payment/payment_view_bulan';
+    $this->load->view('manage/layout', $data);
+  }
+
+  // View data detail
+  public function view_bebas($id = NULL)
+  {
+
+    $data['payment'] = $this->Payment_model->get(array('id' => $id));
+    $data['bebas'] = $this->Bebas_model->get(array('id' => $id));
+    $data['title'] = 'Tarif Pembayaran';
+    $data['main'] = 'payment/payment_view_bebas';
+    $this->load->view('manage/layout', $data);
+  }
+
+
+  public function payout_bulan($id = NULL, $student_id = NULL)
+  {
+
+    if ($id == NULL and $student_id == NULL or $student_id == NULL) {
+      redirect('manage/payout');
+    }
+
+    $data['class'] = $this->Student_model->get_class();
+    $data['payment'] = $this->Payment_model->get(array('id' => $id));
+    $data['bulan'] = $this->Bulan_model->get(array('payment_id' => $id, 'student_id' => $student_id));
+    $data['in'] = $this->Bulan_model->get_total(array('status' => 1, 'payment_id' => $id, 'student_id' => $student_id));
+    $data['student'] = $this->Student_model->get(array('id' => $student_id));
+
+    $data['total'] = 0;
+    foreach ($data['bulan'] as $key) {
+      $data['total'] += $key['bulan_bill'];
+    }
+
+    $data['pay'] = 0;
+    foreach ($data['in'] as $row) {
+      $data['pay'] += $row['bulan_bill'];
+    }
+
+    $data['ngapp'] = 'ng-app="App"';
+    $data['title'] = 'Pembayaran Siswa';
+    $data['main'] = 'payout/payout_add_bulan';
+    $this->load->view('manage/layout', $data);
+  }
+
+  public function payout_paket($id = NULL, $student_id = NULL)
+  {
+    $data['list']   = $this->Batchpayment_model->get_item(array('batch_id' => $id));
+
+    $items       = array();
+
+    foreach ($data['list'] as $val) {
+      $items[] = $val['payment_id'];
+    }
+
+    $payments = implode(',', $items);
+
+    $data['bill']   = $this->db->query("SELECT DISTINCT student_student_id, payment_payment_id, bulan_bill
+    FROM bulan WHERE student_student_id = '$student_id' AND payment_payment_id IN ($payments)")->result_array();
+
+    $data['title']  = 'Item Pembayaran Paket';
+    $this->load->view('payout/payout_paket', $data);
+  }
+
+  public function payout_bebas($id = NULL, $student_id = NULL, $bebas_id = NULL, $pay_id = NULL)
+  {
+
+    if ($_POST == TRUE) {
+
+      $lastletter = $this->Letter_model->get(array('limit' => 1));
+      $student = $this->Bebas_model->get(array('id' => $this->input->post('bebas_id')));
+
+      if ($lastletter['letter_year'] < date('Y') or count($lastletter) == 0) {
+        $this->Letter_model->add(array('letter_number' => '00001', 'letter_month' => date('m'), 'letter_year' => date('Y')));
+        $nomor = sprintf('%05d', '00001');
+        $nofull = date('Y') . date('m') . $nomor;
+      } else {
+        $nomor = sprintf('%05d', $lastletter['letter_number'] + 00001);
+        $this->Letter_model->add(array('letter_number' => $nomor, 'letter_month' => date('m'), 'letter_year' => date('Y')));
+        $nofull = date('Y') . date('m') . $nomor;
+      }
+
+      if ($this->input->post('bebas_id')) {
+        $param['bebas_id'] = $this->input->post('bebas_id');
+      }
+
+      $param['bebas_pay_number']      = $nofull;
+      $param['bebas_pay_account_id']  = $this->input->post('kas_account');
+      $param['bebas_pay_noref']       = $this->input->post('kas_noref');
+      $param['bebas_pay_bill']        = $this->input->post('bebas_pay_bill');
+      $param['increase_budget']       = $this->input->post('bebas_pay_bill');
+      $param['bebas_pay_desc']        = $this->input->post('bebas_pay_desc');
+      $param['user_user_id']          = $this->session->userdata('uid');
+      $param['bebas_pay_input_date']  = $this->input->post('bebas_pay_date');
+      $param['bebas_pay_last_update'] = date('Y-m-d H:i:s');
+
+      $data['bill'] = $this->Bebas_pay_model->get(array('bebas_id' => $this->input->post('bebas_id')));
+      $data['bebas'] = $this->Bebas_model->get(array('payment_id' => $this->input->post('payment_payment_id'), 'student_nis' => $this->input->post('student_nis')));
+
+      $data['total'] = 0;
+      foreach ($data['bebas'] as $key) {
+        $data['total'] += $key['bebas_bill'];
+      }
+
+      $data['total_pay'] = 0;
+      foreach ($data['bill'] as $row) {
+        $data['total_pay'] += $row['bebas_pay_bill'];
+      }
+
+      $sisa = $data['total'] - $data['total_pay'];
+
+      if ($this->input->post('bebas_pay_bill') > $sisa or $this->input->post('bebas_pay_bill') == 0) {
+        $this->session->set_flashdata('failed', ' Pembayaran yang anda masukkan melebihi total tagihan!!!');
+        redirect('manage/payout?n=' . $student['period_period_id'] . '&r=' . $student['student_nis']);
+      } else {
+
+        $idd = $this->Bebas_pay_model->add($param);
+
+        $this->Bebas_model->add(array('increase_budget' => $this->input->post('bebas_pay_bill'), 'bebas_id' =>  $this->input->post('bebas_id'), 'bebas_last_update' => date('Y-m-d H:i:s')));
+
+        $this->db->where('bebas_id', $this->input->post('bebas_id'));
+        $this->db->select('account_code');
+        $this->db->join('payment', 'payment.payment_id = bebas.payment_payment_id');
+        $this->db->join('pos', 'pos.pos_id = payment.pos_pos_id');
+        $this->db->join('account', 'account.account_id = pos.account_account_id');
+        $data_jurnal = $this->db->get('bebas')->row_array();
+
+        $bebas_jurnal = array(
+          'bebas_jurnal_bebas_id'     => $idd,
+          'bebas_jurnal_noref'        => $this->input->post('kas_noref'),
+          'bebas_jurnal_account_code' => $data_jurnal['account_code'],
+          'bebas_jurnal_nominal'      => $this->input->post('bebas_pay_bill'),
+        );
+
+        $this->db->insert('bebas_jurnal', $bebas_jurnal);
+
+        $log = array(
+          'bulan_bulan_id' => NULL,
+          'bebas_pay_bebas_pay_id' => $idd,
+          'student_student_id' => $this->input->post('student_student_id'),
+          'log_trx_input_date' =>  $this->input->post('bebas_pay_date'),
+          'log_trx_last_update' => date('Y-m-d H:i:s'),
+        );
+        $this->Log_trx_model->add($log);
+
+        $this->Logs_model->add_trx(
+          array(
+            'ltrx_date' => date('Y-m-d H:i:s'),
+            'user_id' => $this->session->userdata('uid'),
+            'ltrx_module' => 'Pembayaran',
+            'ltrx_action' => 'Bayar Bebas',
+            'ltrx_info' => 'NIS:' . $student['student_nis'] . ';Title: ' . $this->input->post('bebas_pay_desc') . ' - ' . $student['pos_name'] . ' ' . $student['period_start'] . '/' . $student['period_end'] . ' nominal ' . $this->input->post('bebas_pay_bill'),
+            'ltrx_browser' => $this->agent->browser(),
+            'ltrx_version' => $this->agent->version(),
+            'ltrx_os'      => $this->agent->platform(),
+            'ltrx_ip'      => $this->input->ip_address()
+          )
+        );
+      }
+
+      $this->session->set_flashdata('success', ' Pembayaran Berhasil Ditambahkan');
+      redirect('manage/payout?n=' . $student['period_period_id'] . '&r=' . $student['student_nis']);
+    } else {
+
+      $data['class'] = $this->Student_model->get_class();
+      $data['payment'] = $this->Payment_model->get(array('id' => $id));
+      $data['bebas'] = $this->Bebas_model->get(array('payment_id' => $id, 'student_id' => $student_id));
+      $data['student'] = $this->Student_model->get(array('id' => $student_id));
+      $data['bill'] = $this->Bebas_pay_model->get(array('bebas_id' => $bebas_id, 'student_id' => $student_id, 'payment_id' => $id));
+
+      $data['total'] = 0;
+      foreach ($data['bebas'] as $key) {
+        $data['total'] += $key['bebas_bill'];
+      }
+
+      $data['total_pay'] = 0;
+      foreach ($data['bill'] as $row) {
+        $data['total_pay'] += $row['bebas_pay_bill'];
+      }
+
+      $data['title'] = 'Tagihan Siswa';
+      // $data['main'] = 'payout/payout_add_bebas';
+      $this->load->view('payout/payout_add_bebas', $data);
+    }
+  }
+
+  public function payout_bebas_batch($id = NULL, $student_id = NULL, $bebas_id = NULL, $pay_id = NULL)
+  {
+
+    if ($_POST == TRUE) {
+
+      $bebas_pay_account_id  = $_POST['kas_account'];
+      $bebas_pay_noref       = $_POST['kas_noref'];
+      $bebas_id              = $_POST['bebas_id'];
+      $bebas_pay_bill        = $_POST['bebas_pay_bill'];
+      $increase_budget       = $_POST['bebas_pay_bill'];
+      $bebas_pay_desc        = $_POST['bebas_pay_desc'];
+      $bebas_pay_date        = $_POST['bebas_pay_date'];
+      $user_id          = $this->session->userdata('uid');
+
+      $bebas_id       = $_POST['bebas_id'];
+      $payment_id     = $_POST['payment_payment_id'];
+      $student_nis    = $_POST['student_nis'];
+      $student_id     = $_POST['student_student_id'];
+
+      $cpt = count($bebas_id);
+
+      for ($i = 0; $i < $cpt; $i++) {
+
+        $lastletter   = $this->Letter_model->get(array('limit' => 1));
+        $student      = $this->Bebas_model->get(array('id' => $bebas_id[$i]));
+
+        if ($lastletter['letter_year'] < date('Y') or count($lastletter) == 0) {
+          $this->Letter_model->add(array('letter_number' => '00001', 'letter_month' => date('m'), 'letter_year' => date('Y')));
+          $nomor = sprintf('%05d', '00001');
+          $nofull = date('Y') . date('m') . $nomor;
+        } else {
+          $nomor = sprintf('%05d', $lastletter['letter_number'] + 00001);
+          $this->Letter_model->add(array('letter_number' => $nomor, 'letter_month' => date('m'), 'letter_year' => date('Y')));
+          $nofull = date('Y') . date('m') . $nomor;
+        }
+
+        if ($this->input->post('bebas_id')) {
+          $param['bebas_id'] = $bebas_id[$i];
+        }
+
+        $param['bebas_pay_number']      = $nofull;
+        $param['bebas_pay_account_id']  = $bebas_pay_account_id;
+        $param['bebas_pay_noref']       = $bebas_pay_noref;
+        $param['bebas_pay_bill']        = $bebas_pay_bill[$i];
+        $param['increase_budget']       = $bebas_pay_bill[$i];
+        $param['bebas_pay_desc']        = $bebas_pay_desc[$i];
+        $param['user_user_id']          = $user_id;
+        $param['bebas_pay_input_date']  = $bebas_pay_date;
+        $param['bebas_pay_last_update'] = $bebas_pay_date;
+
+        $data['bill'] = $this->Bebas_pay_model->get(array('bebas_id' => $bebas_id[$i]));
+        $data['bebas'] = $this->Bebas_model->get(array(
+          'payment_id' => $payment_id[$i],
+          'student_nis' => $student_nis
+        ));
+
+        $data['total'] = 0;
+        foreach ($data['bebas'] as $key) {
+          $data['total'] += $key['bebas_bill'];
+        }
+
+        $data['total_pay'] = 0;
+        foreach ($data['bill'] as $row) {
+          $data['total_pay'] += $row['bebas_pay_bill'];
+        }
+
+        $sisa = $data['total'] - $data['total_pay'];
+
+        if ($bebas_pay_bill[$i] > $sisa or $bebas_pay_bill[$i] == 0) {
+          $this->session->set_flashdata('failed', ' Pembayaran yang anda masukkan melebihi total tagihan!!!');
+          redirect('manage/payout?n=' . $student['period_period_id'] . '&r=' . $student['student_nis']);
+        } else {
+
+          $idd = $this->Bebas_pay_model->add($param);
+
+          $this->Bebas_model->add(array(
+            'increase_budget' => $bebas_pay_bill[$i],
+            'bebas_id' =>  $bebas_id[$i],
+            'bebas_last_update' => date('Y-m-d H:i:s')
+          ));
+
+          $this->db->where('bebas_id', $bebas_id[$i]);
+          $this->db->select('account_code');
+          $this->db->join('payment', 'payment.payment_id = bebas.payment_payment_id');
+          $this->db->join('pos', 'pos.pos_id = payment.pos_pos_id');
+          $this->db->join('account', 'account.account_id = pos.account_account_id');
+          $data_jurnal = $this->db->get('bebas')->row_array();
+
+          $bebas_jurnal = array(
+            'bebas_jurnal_bebas_id'     => $idd,
+            'bebas_jurnal_noref'        => $bebas_pay_noref,
+            'bebas_jurnal_account_code' => $data_jurnal['account_code'],
+            'bebas_jurnal_nominal'      => $bebas_pay_bill[$i],
+          );
+
+          $this->db->insert('bebas_jurnal', $bebas_jurnal);
+
+          $log = array(
+            'bulan_bulan_id'          => NULL,
+            'bebas_pay_bebas_pay_id'  => $idd,
+            'student_student_id'      => $student_id,
+            'log_trx_input_date'      => $bebas_pay_date,
+            'log_trx_last_update'     => date('Y-m-d H:i:s'),
+          );
+          $this->Log_trx_model->add($log);
+        }
+      }
+
+      $this->session->set_flashdata('success', ' Pembayaran Berhasil Ditambahkan');
+      redirect('manage/payout?n=' . $student['period_period_id'] . '&r=' . $student['student_nis']);
+    } else {
+
+      $data['class'] = $this->Student_model->get_class();
+      $data['payment'] = $this->Payment_model->get(array('id' => $id));
+      $data['bebas'] = $this->Bebas_model->get(array('payment_id' => $id, 'student_id' => $student_id));
+      $data['student'] = $this->Student_model->get(array('id' => $student_id));
+      $data['bill'] = $this->Bebas_pay_model->get(array('bebas_id' => $bebas_id, 'student_id' => $student_id, 'payment_id' => $id));
+
+      $data['total'] = 0;
+      foreach ($data['bebas'] as $key) {
+        $data['total'] += $key['bebas_bill'];
+      }
+
+      $data['total_pay'] = 0;
+      foreach ($data['bill'] as $row) {
+        $data['total_pay'] += $row['bebas_pay_bill'];
+      }
+
+      $data['title'] = 'Tagihan Siswa';
+      // $data['main'] = 'payout/payout_add_bebas';
+      $this->load->view('payout/payout_add_bebas', $data);
+    }
+  }
+
+  /** Untuk tes notif saja */
+
+  // function pesan()
+  // {
+  //   $nis        = $this->input->get('student_nis');
+
+  //   $student    = $this->Student_model->get(array('student_nis' => $nis));
+
+  //   $noref = "SPSMK146/294.09621032501";
+  //   $itemBayar = $this->Payout_model->get_item_pembayaran($noref);
+
+  //   $status_whatsapp        = $this->Setting_model->get(array('name' => 'setting_notif'));
+  //   $status                 = $status_whatsapp['setting_value'];
+
+  //   if ($status == 'active' and isset($student['student_parent_phone']) and $student['student_parent_phone'] != '+62') {
+
+  //     $wa_center              = $this->Setting_model->get(array('id' => 17));
+  //     $wa_key                 = $this->Setting_model->get(array('name' => 'setting_wa_key'));
+  //     $setting_whatsapp       = $this->Setting_model->get(array('id' => 92));
+  //     $set_key                = $wa_key['setting_value'];
+  //     $set_wa                 = $setting_whatsapp['setting_value'];
+
+  //     $tanggal_ini            = date("d-m-Y");
+  //     $today                  = date("Y-m-d");
+  //     $nis_enc                = base64_encode($student['student_nis']);
+  //     $noref_enc              = base64_encode($noref);
+  //     $date_enc               = base64_encode($today);
+  //     $params_msg['pesan']    = 'Terima kasih, Pembayaran Sekolah ' . $student['majors_school_name'] . "\n\n" .
+  //       'Nama : ' . $student['student_full_name'] . "\n" .
+  //       'Kelas   : ' . $student['class_name'] .
+  //       "\n\n" . 'Telah kami terima Tanggal ' . $tanggal_ini . ' sejumlah ' . number_format($total) . ' Referensi ID : ' . $noref  . ' dengan rincian sebagia berikut: ' .
+  //       "\n";
+
+  //     $i = 1;
+  //     foreach ($itemBayar as $value) {
+  //       $params_msg['pesan']    .= "\n" . $i++ . '. ' . $value['keterangan'];
+  //     }
+
+  //     $params_msg['pesan']    .=  "\n\n" . 'Download kwitansi : ' . base_url() . 'payout/cetakBukti?r=' . $nis_enc . '&d=' . $date_enc .  '&f=' . $noref_enc . "\n\n" .
+  //       'Nomor WA Sekolah : http://wa.me/' . $wa_center['setting_value'];
+
+  //     $params_msg['no_wa']                = $student['student_parent_phone'];
+  //     $params_msg['status_kirim']         = 'PENDING';
+  //     $params_msg['id_funding']           = $noref;
+  //     $params_msg['created_by']           = $user_id = $this->session->userdata('uid');
+  //     $params_msg['created_date']         = date("Y-m-d H:i:s");
+
+  //     $this->Log_trx_model->send_pesan($params_msg);
+
+  //     $no_wa = $student['student_parent_phone'];
+  //     $psn    = $params_msg['pesan'];
+
+  //     send_whatsapp($no_wa, $psn, $set_key, $set_wa);
+  //   }
+  // }
+
+  function payout_finish()
+  {
+    $nis        = $this->input->post('student_nis');
+
+    $student    = $this->Student_model->get(array('student_nis' => $nis));
+
+    $noref      = $this->input->post('kas_noref');
+    $tglKas     = $this->input->post('kas_date');
+
+    $date       = date('Y-m-d');
+    $bulan      = $this->db->query("SELECT MONTH('$date') as n")->row_array();
+
+    if ($bulan['n'] == '1') {
+      $id_bulan = '7';
+    } else if ($bulan['n'] == '2') {
+      $id_bulan = '8';
+    } else if ($bulan['n'] == '3') {
+      $id_bulan = '9';
+    } else if ($bulan['n'] == '4') {
+      $id_bulan = '10';
+    } else if ($bulan['n'] == '5') {
+      $id_bulan = '11';
+    } else if ($bulan['n'] == '6') {
+      $id_bulan = '12';
+    } else if ($bulan['n'] == '7') {
+      $id_bulan = '1';
+    } else if ($bulan['n'] == '8') {
+      $id_bulan = '2';
+    } else if ($bulan['n'] == '9') {
+      $id_bulan = '3';
+    } else if ($bulan['n'] == '10') {
+      $id_bulan = '4';
+    } else if ($bulan['n'] == '11') {
+      $id_bulan = '5';
+    } else if ($bulan['n'] == '12') {
+      $id_bulan = '6';
+    }
+
+    $totalBulan = $this->db->query("SELECT SUM(bulan_bill) as sumBulan FROM bulan WHERE bulan_status = '1' AND bulan_noref = '$noref'")->row_array();
+    $totalBebas = $this->db->query("SELECT SUM(bebas_pay_bill) as sumBebas FROM bebas_pay WHERE bebas_pay_noref = '$noref'")->row_array();
+
+    if ($totalBulan['sumBulan'] == '') {
+      $sumBulan = 0;
+    } else {
+      $sumBulan = $totalBulan['sumBulan'];
+    }
+
+    if ($totalBebas['sumBebas'] == '') {
+      $sumBebas = 0;
+    } else {
+      $sumBebas = $totalBebas['sumBebas'];
+    }
+
+    $total = $sumBulan + $sumBebas;
+
+    $kas_account_id = $this->input->post('kas_account_id');
+
+    $params['kas_account_id']   = $this->input->post('kas_account_id');
+    $params['kas_noref']        = $this->input->post('kas_noref');
+    $params['kas_majors_id']    = $student['majors_id'];
+    $params['kas_note']         = 'Pembayaran  Sekolah ' . $student['student_full_name'];
+    $params['kas_debit']        = $total;
+    $params['kas_period']       = $this->input->post('period');
+    // $params['kas_date']         = date('Y-m-d');
+    $params['kas_date']         = $tglKas;
+    $params['kas_input_date']   = date('Y-m-d');
+    $params['kas_last_update']  = date('Y-m-d');
+    $params['kas_month_id']     = $id_bulan;
+    $params['kas_category']     = '1';
+    $params['kas_user_id']      = $user_id = $this->session->userdata('uid');
+
+    $this->Log_trx_model->trx_finish($params);
+
+    $this->db->query("DELETE a FROM kas a INNER JOIN kas b WHERE a.kas_id > b.kas_id AND a.kas_noref = b.kas_noref AND DATE(b.kas_input_date)=CURDATE()");
+
+    $jurnal_umum = array(
+      'sekolah_id' => $student['majors_id'],
+      'majors_id' => $student['majors_id'],
+      'noref'       => $this->input->post('kas_noref'),
+      'keterangan' => 'Pembayaran Siswa ' . $student['student_full_name'],
+      // 'tanggal'    => date('Y-m-d'),
+      'tanggal'    => $tglKas,
+      'pencatatan' => 'auto',
+      'source_type' => 'BULAN',
+      'status_posting' => 'DRAFT',
+      'waktu_update' => date('Y-m-d H:i:s'),
+      'keterangan_lainnya' => '-'
+    );
+
+    $this->db->insert('jurnal_akrual', $jurnal_umum);
+
+    $jurum = $this->db->query("SELECT MAX(id) AS last_id FROM jurnal_akrual")->row_array();
+    $lastJurum = $jurum['last_id'];
+
+    $kas = $this->db->query("SELECT coa_code AS kas_akun
+                          FROM coa
+                          WHERE coa_id ='$kas_account_id'")->row_array();
+
+    $dataKas = array(
+      'id_jurnal' => $lastJurum,
+      'account_code' => $kas['kas_akun'],
+      'debet' => $total,
+      'kredit' => 0,
+    );
+
+    // echo json_encode($dataKas);
+    // exit;
+
+    $this->db->insert('jurnal_akrual_detail', $dataKas);
+
+    $trxBulans = $this->db->query("SELECT bulan_jurnal_account_code AS trx_akun,
+                          bulan_jurnal_nominal AS trx_value
+                          FROM bulan_jurnal
+                          WHERE bulan_jurnal_noref = '$noref'")->result_array();
+
+    $trxFrees = $this->db->query("SELECT bebas_jurnal_account_code AS trx_akun,
+                          bebas_jurnal_nominal AS trx_value
+                          FROM bebas_jurnal
+                          WHERE bebas_jurnal_noref = '$noref'")->result_array();
+
+    if (count($trxBulans) > 0) {
+
+      foreach ($trxBulans as $trxBulan) :
+        $dataKasBulan = array(
+          'id_jurnal' => $lastJurum,
+          'account_code' => $trxBulan['trx_akun'],
+          'debet' => 0,
+          'kredit' => $trxBulan['trx_value'],
+        );
+
+        $this->db->insert('jurnal_akrual_detail', $dataKasBulan);
+
+      endforeach;
+
+      $this->db->query("DELETE FROM bulan_jurnal WHERE bulan_jurnal_noref = '$noref'");
+    }
+
+    if (count($trxFrees) > 0) {
+
+      foreach ($trxFrees as $trxBebas) :
+        $dataKasBebas = array(
+          'id_jurnal' => $lastJurum,
+          'account_code' => $trxBebas['trx_akun'],
+          'debet' => 0,
+          'kredit' => $trxBebas['trx_value'],
+        );
+
+        $this->db->insert('jurnal_akrual_detail', $dataKasBebas);
+
+      endforeach;
+
+      $this->db->query("DELETE FROM bebas_jurnal WHERE bebas_jurnal_noref = '$noref'");
+    }
+
+    $this->Logs_model->add_trx(
+      array(
+        'ltrx_date' => date('Y-m-d H:i:s'),
+        'user_id' => $this->session->userdata('uid'),
+        'ltrx_module' => 'Pembayaran',
+        'ltrx_action' => 'Simpan Pembayaran',
+        'ltrx_info' => 'NIS:' . $student['student_nis'] . ';Title: Simpan No. Ref : ' . $this->input->post('kas_noref'),
+        'ltrx_browser' => $this->agent->browser(),
+        'ltrx_version' => $this->agent->version(),
+        'ltrx_os'      => $this->agent->platform(),
+        'ltrx_ip'      => $this->input->ip_address()
+      )
+    );
+
+    $status_whatsapp        = $this->Setting_model->get(array('name' => 'setting_notif'));
+    $status                 = $status_whatsapp['setting_value'];
+
+    if ($status == 'active' and isset($student['student_parent_phone']) and $student['student_parent_phone'] != '+62') {
+      $itemBayar = $this->Payout_model->get_item_pembayaran($noref);
+
+      $wa_center              = $this->Setting_model->get(array('id' => 17));
+      $wa_key                 = $this->Setting_model->get(array('name' => 'setting_wa_key'));
+      $setting_whatsapp       = $this->Setting_model->get(array('id' => 92));
+      $set_key                = $wa_key['setting_value'];
+      $set_wa                 = $setting_whatsapp['setting_value'];
+
+      $tanggal_ini            = date("d-m-Y");
+      $today                  = date("Y-m-d");
+      $nis_enc                = base64_encode($student['student_nis']);
+      $noref_enc              = base64_encode($noref);
+      $date_enc               = base64_encode($today);
+
+      $params_msg['pesan']    = 'Terima kasih, Pembayaran Sekolah ' . $student['majors_school_name'] . "\n\n" .
+        'Nama : ' . $student['student_full_name'] . "\n" .
+        'Kelas   : ' . $student['class_name'] .
+        "\n\n" . 'Telah kami terima Tanggal ' . $tanggal_ini . ' sejumlah ' . number_format($total) . ' Referensi ID : ' . $noref  . ' dengan rincian sebagia berikut: ' .
+        "\n";
+
+      $i = 1;
+      foreach ($itemBayar as $value) {
+        $params_msg['pesan']    .= "\n" . $i++ . '. ' . $value['keterangan'];
+      }
+
+      $params_msg['pesan']    .=  "\n\n" . 'Download kwitansi : ' . base_url() . 'payout/cetakBukti?r=' . $nis_enc . '&d=' . $date_enc .  '&f=' . $noref_enc . "\n\n" .
+        'Nomor WA Sekolah : http://wa.me/' . $wa_center['setting_value'];
+
+      $params_msg['no_wa']                = $student['student_parent_phone'];
+      $params_msg['status_kirim']         = 'PENDING';
+      $params_msg['id_funding']           = $noref;
+      $params_msg['created_by']           = $user_id = $this->session->userdata('uid');
+      $params_msg['created_date']         = date("Y-m-d H:i:s");
+
+      $this->Log_trx_model->send_pesan($params_msg);
+
+      $no_wa = $student['student_parent_phone'];
+      $psn    = $params_msg['pesan'];
+
+      send_whatsapp($no_wa, $psn, $set_key, $set_wa);
+    }
+
+    $this->session->set_flashdata('success', 'Pembayaran Berhasil Masuk Ke Kas');
+  }
+
+  function pay_batch()
+  {
+
+    $requestData = json_decode(file_get_contents('php://input'), true);
+
+    if ($requestData !== null) {
+
+      $dataBulan = $requestData['bulans'];
+      $data = $requestData['additionals'];
+      $cond = $data['cond'];
+      $nis = $data['nis'];
+      $period = $data['period'];
+      $kas = $data['kas'];
+      $noref = $data['noref'];
+
+      $stud = $this->db->query(
+        "SELECT student_id AS id, student_nis,majors_id ,majors_short_name
+                                FROM student
+                                JOIN majors ON majors.majors_id = student.majors_majors_id 
+                                WHERE student_nis = '$nis'"
+      )->row_array();
+      $student_id = $stud['id'];
+
+      $ta = $this->db->query("SELECT period_start, period_end FROM period WHERE period_id = '$period'")->row_array();
+
+      $tahun = NULL;
+      $bulan = NULL;
+
+      foreach ($dataBulan as $bul_id) {
+
+        $lastletter = $this->Letter_model->get(array('limit' => 1));
+        $student = $this->Bulan_model->get(array('student_id' => $student_id, 'id' => $bul_id));
+
+        if ($cond) {
+          $bulan = select_month($student['month_month_id']);
+
+          $tahun = ($student['month_month_id'] >= '7') ? $ta['period_end'] : $ta['period_start'];
+          $trx_date = $tahun . '-' . $bulan . '-01';
+
+          $like = 'SP' . str_replace(" ", "", $stud['majors_short_name']) . $stud['student_nis'];
+          $tmp    = $this->Payout_model->get_noref_migrasi($like, $stud['majors_id'], $trx_date);
+          $noref        = 'SP' . str_replace(" ", "", $stud['majors_short_name']) . $stud['student_nis'] . $tmp;
+        } else {
+          $trx_date = date('Y-m-d');
+        }
+
+        if ($lastletter['letter_year'] < date('Y') or count($lastletter) == 0) {
+          $this->Letter_model->add(array('letter_number' => '00001', 'letter_month' => date('m'), 'letter_year' => date('Y')));
+          $nomor = sprintf('%05d', '00001');
+          $nofull = date('Y') . date('m') . $nomor;
+        } else {
+          $nomor = sprintf('%05d', $lastletter['letter_number'] + 00001);
+          $this->Letter_model->add(array('letter_number' => $nomor, 'letter_month' => date('m'), 'letter_year' => date('Y')));
+          $nofull = date('Y') . date('m') . $nomor;
+        }
+
+        $this->db->where('bulan_id', $bul_id);
+        $this->db->select('bulan_bill');
+        $this->db->select('account_code');
+        $this->db->join('payment', 'payment.payment_id = bulan.payment_payment_id');
+        $this->db->join('pos', 'pos.pos_id = payment.pos_pos_id');
+        $this->db->join('account', 'account.account_id = pos.account_account_id');
+        $data_jurnal = $this->db->get('bulan')->row_array();
+
+        $pay = array(
+          'bulan_id'            => $bul_id,
+          'bulan_number_pay'    => $nofull,
+          'bulan_account_id'    => $kas,
+          'bulan_noref'         => $noref,
+          'bulan_date_pay'      => $trx_date,
+          'bulan_last_update'   => date('Y-m-d H:i:s'),
+          'bulan_status'        => 1,
+          'user_user_id'        => $this->session->userdata('uid')
+        );
+
+        $bulan_jurnal = array(
+          'bulan_jurnal_bulan_id'     => $bul_id,
+          'bulan_jurnal_noref'        => $noref,
+          'bulan_jurnal_account_code' => $data_jurnal['account_code'],
+          'bulan_jurnal_nominal'      => $data_jurnal['bulan_bill'],
+        );
+
+        $this->db->insert('bulan_jurnal', $bulan_jurnal);
+
+        $log = array(
+          'bulan_bulan_id' => $bul_id,
+          'student_student_id' => $student_id,
+          'bebas_pay_bebas_pay_id' => NULL,
+          'log_trx_input_date' =>  $trx_date,
+          'log_trx_last_update' => date('Y-m-d H:i:s'),
+        );
+
+
+        $status = $this->Bulan_model->add($pay);
+
+        $this->Log_trx_model->add($log);
+
+        $this->Logs_model->add_trx(
+          array(
+            'ltrx_date' => date('Y-m-d H:i:s'),
+            'user_id' => $this->session->userdata('uid'),
+            'ltrx_module' => 'Pembayaran',
+            'ltrx_action' => 'Bayar Bulanan',
+            'ltrx_info' => 'NIS:' . $student['student_nis'] . ';Title: Bayar' . ' - ' . $student['pos_name'] . ' ' . $student['period_start'] . '/' . $student['period_end'] . ' bulan ' . $student['month_name'],
+            'ltrx_browser' => $this->agent->browser(),
+            'ltrx_version' => $this->agent->version(),
+            'ltrx_os'      => $this->agent->platform(),
+            'ltrx_ip'      => $this->input->ip_address()
+          )
+        );
+      }
+
+      $this->session->set_flashdata('success', ' Pembayaran Berhasil Ditambahkan');
+    }
+  }
+
+  function migrate_trx()
+  {
+    $nis    = $_GET['nis'];
+    $period = $_GET['period'];
+
+    $idBulan = [
+      "January" => 7,
+      "February" => 8,
+      "March" => 9,
+      "April" => 10,
+      "May" => 11,
+      "June" => 12,
+      "July" => 1,
+      "August" => 2,
+      "September" => 3,
+      "October" => 4,
+      "November" => 5,
+      "December" => 6
+    ];
+
+    //Transaksi Yang belum disimpan / untuk migrasi
+    $pending       = $this->Payout_model->list_transaksi_tertunda($nis, '');
+
+    $groupedKas = [];
+    $groupedJurnal = [];
+    $groupedJurnalDetail = [];
+    foreach ($pending as $item) {
+      $noref = $item['noref'];
+      $bill = $item['penerimaan'];
+      $majors_id = $item['idMajors'];
+      $idKas = $item['idKas'];
+      $studentName = $item['nama'];
+      $tanggalBayar = $item['tanggal'];
+
+      $tanggal = new DateTime($tanggalBayar);
+      $bulan = $tanggal->format("F");
+      $month_id = $idBulan[$bulan];
+
+      if (!isset($groupedKas[$noref])) {
+        $groupedKas[$noref]['kas_account_id']   = $idKas;
+        $groupedKas[$noref]['kas_noref']        = $noref;
+        $groupedKas[$noref]['kas_majors_id']    = $majors_id;
+        $groupedKas[$noref]['kas_note']         = 'Pembayaran Pesantren ' . $studentName;
+
+        // diisi 0 karena akan diincrement di bawah
+        $groupedKas[$noref]['kas_debit']        = 0;
+
+        $groupedKas[$noref]['kas_period']       = $period;
+        $groupedKas[$noref]['kas_date']         = $tanggalBayar;
+        $groupedKas[$noref]['kas_input_date']   = date('Y-m-d');
+        $groupedKas[$noref]['kas_month_id']     = $month_id;
+        $groupedKas[$noref]['kas_category']     = '1';
+        $groupedKas[$noref]['kas_user_id']      = 1;
+      }
+
+      if (!isset($groupedJurnal[$noref])) {
+        $groupedJurnal[$noref]['sekolah_id']          = $majors_id;
+        $groupedJurnal[$noref]['keterangan']          = 'Pembayaran Santri ' . $studentName;
+        $groupedJurnal[$noref]['noref']               = $noref;
+        $groupedJurnal[$noref]['tanggal']             = $tanggalBayar;
+        $groupedJurnal[$noref]['pencatatan']          = 'auto';
+        $groupedJurnal[$noref]['keterangan_lainnya']  = 'Migrasi Pembayaran';
+      }
+
+      if (!isset($groupedJurnalDetail[$noref])) {
+        $groupedJurnalDetail[$noref][$item['kodeKas']]  = 0;
+        $groupedJurnalDetail[$noref][$item['akunBayar']]  = 0;
+      }
+
+      // Tambahkan nilai bulan_bill ke jumlah
+      $groupedKas[$noref]['kas_debit'] += $bill;
+      $groupedJurnalDetail[$noref][$item['kodeKas']]  += $bill;
+      $groupedJurnalDetail[$noref][$item['akunBayar']]  += $bill;
+    }
+
+    if ($item['jenisTransaksi'] == "Bulan") {
+      $this->db->query("DELETE FROM bulan_jurnal WHERE bulan_jurnal_noref = '$noref'");
+    } else if ($item['jenisTransaksi'] == "Bebas") {
+      $this->db->query("DELETE FROM bebas_jurnal WHERE bebas_jurnal_noref = '$noref'");
+    }
+
+
+    // echo "----Data Untuk Kas----<br><br>";
+    // $no = 1;
+    foreach ($groupedKas as $key => $kas) {
+      // echo $no++ . ". Noref : " . $key . "<br>";
+      $this->Log_trx_model->trx_finish($kas);
+      // echo json_encode($kas, JSON_PRETTY_PRINT);
+      // echo "<br>";
+    }
+    // echo "<br><br>----Data Untuk Kas--- ";
+
+    // echo "<br><br>----Data Untuk Jurnal----<br><br>";
+    // $no = 1;
+    foreach ($groupedJurnal as $key => $jurnal) {
+      // echo $no++ . ". Noref : " . $key . "<br>";
+
+      $this->db->insert('jurnal_umum', $jurnal);
+
+      // echo json_encode($jurnal, JSON_PRETTY_PRINT);
+      // echo "<br>";
+      // echo "---Jurnal Detail---<br>";
+      $dataJurnal = $groupedJurnalDetail[$key];
+
+      $lastJurum = 0;
+      $jurum = $this->db->query("SELECT MAX(id) AS last_id FROM jurnal_umum")->row_array();
+      $lastJurum = $jurum['last_id'];
+
+      foreach ($dataJurnal as $key => $value) {
+        if (strpos($key, '1-') === 0) {
+          $insertDetail['id_jurnal']    = $lastJurum;
+          $insertDetail['account_code'] = $key;
+          $insertDetail['debet']        = $value;
+          $insertDetail['kredit']       = 0;
+
+          $this->db->insert('jurnal_umum_detail', $insertDetail);
+
+          // echo "=> " . json_encode($insertDetail, JSON_PRETTY_PRINT) . "<br>";
+        } else {
+          $insertDetail['id_jurnal']    = $lastJurum;
+          $insertDetail['account_code'] = $key;
+          $insertDetail['debet']        = 0;
+          $insertDetail['kredit']       = $value;
+
+          $this->db->insert('jurnal_umum_detail', $insertDetail);
+
+          // echo "=> " . json_encode($insertDetail, JSON_PRETTY_PRINT) . "<br>";
+        }
+      }
+      // echo "<br>";
+    }
+    // echo "<br><br>----Data Untuk Jurnal--- ";
+
+    // echo json_encode($pending);
+    $this->session->set_flashdata('success', 'Migrasi Pembayaran Berhasil Disimpan');
+    redirect('manage/payout?n=' . $period . '&r=' . $nis);
+  }
+
+  function pay_paket_batch()
+  {
+
+    $requestData = json_decode(file_get_contents('php://input'), true);
+
+    if ($requestData !== null) {
+
+      $dataBulan = $requestData['pakets'];
+
+      $value = '';
+
+      foreach ($dataBulan as $subBulan) {
+        $value .= $subBulan . ',';
+      }
+
+      $bulans = explode(',', $value);
+
+      array_pop($bulans);
+
+      $data = $requestData['addeds'];
+
+      $nis = $data['nis'];
+      $period = $data['period'];
+      $kas = $data['kas'];
+      $noref = $data['noref'];
+      $cond = $data['cond'];
+
+      $stud = $this->db->query("SELECT student_id AS id FROM student WHERE student_nis = '$nis'")->row_array();
+      $student_id = $stud['id'];
+
+      $ta = $this->db->query("SELECT period_start, period_end FROM period WHERE period_id = '$period'")->row_array();
+
+      $tahun = NULL;
+      $bulan = NULL;
+
+      foreach ($bulans as $bul_id) {
+
+        $lastletter = $this->Letter_model->get(array('limit' => 1));
+        $student = $this->Bulan_model->get(array('student_id' => $student_id, 'id' => $bul_id));
+
+        if ($lastletter['letter_year'] < date('Y') or count($lastletter) == 0) {
+          $this->Letter_model->add(array('letter_number' => '00001', 'letter_month' => date('m'), 'letter_year' => date('Y')));
+          $nomor = sprintf('%05d', '00001');
+          $nofull = date('Y') . date('m') . $nomor;
+        } else {
+          $nomor = sprintf('%05d', $lastletter['letter_number'] + 00001);
+          $this->Letter_model->add(array('letter_number' => $nomor, 'letter_month' => date('m'), 'letter_year' => date('Y')));
+          $nofull = date('Y') . date('m') . $nomor;
+        }
+
+        if ($cond) {
+          $bulan = select_month($student['month_month_id']);
+
+          $tahun = ($student['month_month_id'] > '7') ? $ta['period_end'] : $ta['period_start'];
+          $trx_date = $tahun . '-' . $bulan . '-01';
+        } else {
+          $trx_date = date('Y-m-d');
+        }
+
+        $this->db->where('bulan_id', $bul_id);
+        $this->db->select('bulan_bill');
+        $this->db->select('account_code');
+        $this->db->join('payment', 'payment.payment_id = bulan.payment_payment_id');
+        $this->db->join('pos', 'pos.pos_id = payment.pos_pos_id');
+        $this->db->join('account', 'account.account_id = pos.account_account_id');
+        $data_jurnal = $this->db->get('bulan')->row_array();
+
+        $pay = array(
+          'bulan_id'            => $bul_id,
+          'bulan_number_pay'    => $nofull,
+          'bulan_account_id'    => $kas,
+          'bulan_noref'         => $noref,
+          'bulan_date_pay'      => $trx_date,
+          'bulan_last_update'   => date('Y-m-d H:i:s'),
+          'bulan_status'        => 1,
+          'user_user_id'        => $this->session->userdata('uid')
+        );
+
+        $bulan_jurnal = array(
+          'bulan_jurnal_bulan_id'     => $bul_id,
+          'bulan_jurnal_noref'        => $noref,
+          'bulan_jurnal_account_code' => $data_jurnal['account_code'],
+          'bulan_jurnal_nominal'      => $data_jurnal['bulan_bill'],
+        );
+
+        $this->db->insert('bulan_jurnal', $bulan_jurnal);
+
+        $log = array(
+          'bulan_bulan_id' => $bul_id,
+          'student_student_id' => $student_id,
+          'bebas_pay_bebas_pay_id' => NULL,
+          'log_trx_input_date' =>  date('Y-m-d H:i:s'),
+          'log_trx_last_update' => date('Y-m-d H:i:s'),
+        );
+
+
+        $status = $this->Bulan_model->add($pay);
+
+        $this->Log_trx_model->add($log);
+
+        $this->Logs_model->add_trx(
+          array(
+            'ltrx_date' => date('Y-m-d H:i:s'),
+            'user_id' => $this->session->userdata('uid'),
+            'ltrx_module' => 'Pembayaran',
+            'ltrx_action' => 'Bayar Bulanan',
+            'ltrx_info' => 'NIS:' . $student['student_nis'] . ';Title: Bayar' . ' - ' . $student['pos_name'] . ' ' . $student['period_start'] . '/' . $student['period_end'] . ' bulan ' . $student['month_name'],
+            'ltrx_browser' => $this->agent->browser(),
+            'ltrx_version' => $this->agent->version(),
+            'ltrx_os'      => $this->agent->platform(),
+            'ltrx_ip'      => $this->input->ip_address()
+          )
+        );
+      }
+
+      $this->session->set_flashdata('success', ' Pembayaran Berhasil Ditambahkan');
+    }
+  }
+
+  function pay_paket()
+  {
+
+    $payout_date    = $this->input->post('payout_date');
+    $values   = $this->input->post('payout_value');
+    $item           = $this->input->post('item');
+    $nis            = $this->input->post('student_nis');
+    $period_id      = $this->input->post('payment_period');
+    $student_id     = $this->input->post('student_id');
+    $ids            = $this->input->post('payout_id');
+    $kas_account_id = $this->input->post('kas_account');
+    $kas_noref      = $this->input->post('kas_noref');
+
+    $lastletter = $this->Letter_model->get(array('limit' => 1));
+    // $student = $this->Bulan_model->get(array('student_id' => $student_id, 'id' => $id));
+
+    if ($lastletter['letter_year'] < date('Y') or count($lastletter) == 0) {
+      $this->Letter_model->add(array('letter_number' => '00001', 'letter_month' => date('m'), 'letter_year' => date('Y')));
+      $nomor = sprintf('%05d', '00001');
+      $nofull = date('Y') . date('m') . $nomor;
+    } else {
+      $nomor = sprintf('%05d', $lastletter['letter_number'] + 00001);
+      $this->Letter_model->add(array('letter_number' => $nomor, 'letter_month' => date('m'), 'letter_year' => date('Y')));
+      $nofull = date('Y') . date('m') . $nomor;
+    }
+
+    $data_id = explode(',', $ids);
+    $data_value = explode(',', $values);
+
+    $result = array_map(function ($id, $value) {
+      return ['id' => $id, 'value' => $value];
+    }, $data_id, $data_value);
+
+    foreach ($result as $data) {
+
+      $this->db->where('bulan_id', $data['id']);
+      $this->db->select('bulan_bill');
+      $this->db->select('account_code');
+
+      $this->db->join('payment', 'payment.payment_id = bulan.payment_payment_id');
+      $this->db->join('pos', 'pos.pos_id = payment.pos_pos_id');
+      $this->db->join('account', 'account.account_id = pos.account_account_id');
+
+      $data_jurnal = $this->db->get('bulan')->row_array();
+
+      $pay = array(
+        'bulan_id'            => $data['id'],
+        'bulan_number_pay'    => $nofull,
+        'bulan_account_id'    => $kas_account_id,
+        'bulan_noref'         => $kas_noref,
+        'bulan_bill'          => $data['value'],
+        'bulan_date_pay'      => $payout_date,
+        'bulan_last_update'   => date('Y-m-d H:i:s'),
+        'bulan_status'        => 1,
+        'user_user_id'        => $this->session->userdata('uid')
+      );
+
+      $bulan_jurnal = array(
+        'bulan_jurnal_bulan_id'     => $data['id'],
+        'bulan_jurnal_noref'        => $kas_noref,
+        'bulan_jurnal_account_code' => $data_jurnal['account_code'],
+        'bulan_jurnal_nominal'      => $data_jurnal['bulan_bill'],
+      );
+
+      $this->db->insert('bulan_jurnal', $bulan_jurnal);
+
+      $status = $this->Bulan_model->add($pay);
+
+      $log = array(
+        'bulan_bulan_id' => $data['id'],
+        'student_student_id' => $student_id,
+        'bebas_pay_bebas_pay_id' => NULL,
+        'log_trx_input_date' =>  date('Y-m-d H:i:s'),
+        'log_trx_last_update' => date('Y-m-d H:i:s'),
+      );
+
+      $this->Log_trx_model->add($log);
+    }
+
+    $total = array_sum($data_value);
+
+    $this->Logs_model->add_trx(
+      array(
+        'ltrx_date' => date('Y-m-d H:i:s'),
+        'user_id' => $this->session->userdata('uid'),
+        'ltrx_module' => 'Pembayaran',
+        'ltrx_action' => 'Bayar Bulanan',
+        'ltrx_info' => 'NIS:' . $nis . ';Title: Bayar' . ' - ' . $item . ' nominal ' . $total,
+        'ltrx_browser' => $this->agent->browser(),
+        'ltrx_version' => $this->agent->version(),
+        'ltrx_os'      => $this->agent->platform(),
+        'ltrx_ip'      => $this->input->ip_address()
+      )
+    );
+
+    if ($this->input->is_ajax_request()) {
+      echo $status;
+    } else {
+      $this->session->set_flashdata('success', ' Pembayaran Berhasil Ditambahkan');
+      redirect('manage/payout?n=' . $period_id . '&r=' . $nis);
+    }
+  }
+
+  function not_pay_paket()
+  {
+
+    $payment_id = $this->input->get('p');
+    $student_id = $this->input->get('s');
+    $bulan_id   = $this->input->get('b');
+
+    $ids = explode(',', $bulan_id);
+
+    foreach ($ids as $id) {
+
+      $student = $this->Bulan_model->get(array('student_id' => $student_id, 'id' => $id));
+
+      $pay = array(
+        'bulan_id' => $id,
+        'bulan_number_pay'  => NULL,
+        'bulan_account_id'  => NULL,
+        'bulan_noref'       => NULL,
+        'bulan_status'      => 0,
+        'bulan_date_pay'    => date('Y-m-d'),
+        'bulan_last_update' => date('Y-m-d H:i:s'),
+        'user_user_id'      => NULL
+      );
+
+      $noref = $student['bulan_noref'];
+      $bill  = $student['bulan_bill'];
+
+      //delete jurnal umum
+      $id_jurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row_array();
+      $this->db->where('id_jurnal', $id_jurnal['id'])->delete("jurnal_umum_detail");
+      $this->db->where('id', $id_jurnal['id'])->delete("jurnal_umum");
+
+      $kas = $this->db->query("SELECT kas_debit FROM kas WHERE kas_noref = '$noref'")->row_array();
+      $kasDebit = $kas['kas_debit'];
+
+      $newKasDebit = $kasDebit - $bill;
+
+      $this->db->query("DELETE FROM bulan_jurnal WHERE bulan_jurnal_bulan_id = '$id'");
+
+      if ($newKasDebit == '0') {
+        $this->db->query("DELETE FROM kas WHERE kas_noref = '$noref'");
+      } else {
+        $this->db->query("UPDATE kas SET kas_debit = '$newKasDebit' WHERE kas_noref = '$noref'");
+      }
+
+      $this->Log_trx_model->delete_log(array(
+        'student_id' => $student_id,
+        'bulan_id' => $id
+      ));
+
+      $this->Logs_model->add_trx(
+        array(
+          'ltrx_date' => date('Y-m-d H:i:s'),
+          'user_id' => $this->session->userdata('uid'),
+          'ltrx_module' => 'Pembayaran',
+          'ltrx_action' => 'Hapus Bayar Bulanan',
+          'ltrx_info' => 'NIS:' . $student['student_nis'] . ';Title: Hapus' . ' - ' . $student['pos_name'] . ' ' . $student['period_start'] . '/' . $student['period_end'] . ' bulan ' . $student['month_name'] . ' nominal ' . $student['bulan_bill'],
+          'ltrx_browser' => $this->agent->browser(),
+          'ltrx_version' => $this->agent->version(),
+          'ltrx_os'      => $this->agent->platform(),
+          'ltrx_ip'      => $this->input->ip_address()
+        )
+      );
+
+      $this->Bulan_model->add($pay);
+    }
+    if ($this->input->is_ajax_request()) {
+      // echo $status;
+    } else {
+      $this->session->set_flashdata('success', 'Hapus Pembayaran Berhasil');
+      redirect('manage/payout?n=' . $student['period_period_id'] . '&r=' . $student['student_nis']);
+    }
+  }
+
+  function aktivasi_tagihan_bulan()
+  {
+    $id_period     = $this->input->post('period_id');
+    $student_nis   = $this->input->post('student_nis');
+    $id_bulan      = $this->input->post('aktivasi_bulan');
+
+    $cek = $this->Payment_model->cek_jurnal_akrual('BULAN', $id_bulan);
+
+    if ($cek) {
+      echo json_encode($cek);
+      $this->session->set_flashdata('failed', ' Sudah ditagihkan');
+    } else {
+      $tagihan = $this->Payment_model->get_bulan_mendatang_by_id($id_bulan);
+      $data['bulan_id']             = $id_bulan;
+
+      $data['status']               = 'DRAFT';
+
+      if ($tagihan) {
+        $data['keterangan']           = $tagihan['keterangan'];
+        $data['akun_piutang']         = $tagihan['akun_piutang'];
+        $data['akun_diterima_dimuka'] = $tagihan['akun_diterima_dimuka'];
+        $data['tagihan']              = $tagihan['tagihan'];
+
+        $this->Payment_model->insert_jurnal_akrual_tagihan($data, $tagihan['coa_majors'], $tagihan['coa_majors']);
+        if ($this->db->trans_status() === FALSE) {
+          $this->db->trans_rollback();
+          $res['message'] = "Rollback! Gagal insert jurnal";
+          $this->session->set_flashdata('failed', ' Rollback! Gagal insert jurnal');
+        } else {
+          $this->db->trans_commit();
+          $this->db->query("UPDATE bulan SET status_tagihan = 'AKTIF' WHERE bulan_id = '$id_bulan'");
+          $res['status'] = 'success';
+          $this->session->set_flashdata('success', ' Berhasil Aktivasi Tagihan');
+        }
+      } else {
+        $this->session->set_flashdata('failed', ' Tagihan tidak ditemukan');
+      }
+    }
+
+    redirect('manage/payout?n=' . $id_period . '&r=' . $student_nis);
+  }
+
+  function pay()
+  {
+    $payment_id     = $this->input->post('payment_id');
+    $payout_date    = $this->input->post('payout_date');
+    $payout_value   = $this->input->post('payout_value');
+    $student_id     = $this->input->post('student_id');
+    $id             = $this->input->post('payout_id');
+    $kas_account_id = $this->input->post('kas_account');
+    $kas_noref      = $this->input->post('kas_noref');
+
+    $lastletter = $this->Letter_model->get(array('limit' => 1));
+    $student = $this->Bulan_model->get(array('student_id' => $student_id, 'id' => $id));
+
+    if ($lastletter['letter_year'] < date('Y') or count($lastletter) == 0) {
+      $this->Letter_model->add(array('letter_number' => '00001', 'letter_month' => date('m'), 'letter_year' => date('Y')));
+      $nomor = sprintf('%05d', '00001');
+      $nofull = date('Y') . date('m') . $nomor;
+    } else {
+      $nomor = sprintf('%05d', $lastletter['letter_number'] + 00001);
+      $this->Letter_model->add(array('letter_number' => $nomor, 'letter_month' => date('m'), 'letter_year' => date('Y')));
+      $nofull = date('Y') . date('m') . $nomor;
+    }
+
+    $this->db->where('bulan_id', $id);
+    $this->db->select('bulan_bill,status_tagihan');
+    $this->db->select('apen.coa_code AS account_code, amuk.coa_code AS akun_diterima_dimuka');
+    $this->db->join('payment', 'payment.payment_id = bulan.payment_payment_id');
+    $this->db->join('pos', 'pos.pos_id = payment.pos_pos_id');
+    $this->db->join('coa apen', 'apen.coa_id = pos.piutang_account_id');
+    $this->db->join('coa amuk', 'amuk.coa_id = pos.pendapatan_dimuka_account_id');
+    $data_jurnal = $this->db->get('bulan')->row_array();
+
+    $pay = array(
+      'bulan_id'            => $id,
+      'bulan_number_pay'    => $nofull,
+      'bulan_account_id'    => $kas_account_id,
+      'bulan_noref'         => $kas_noref,
+      'bulan_bill'          => $payout_value,
+      'bulan_date_pay'      => $payout_date,
+      'bulan_last_update'   => date('Y-m-d H:i:s'),
+      'bulan_status'        => 1,
+      'user_user_id'        => $this->session->userdata('uid')
+    );
+
+    $bulan_jurnal = array(
+      'bulan_jurnal_bulan_id'     => $id,
+      'bulan_jurnal_noref'        => $kas_noref,
+      'bulan_jurnal_account_code' => $data_jurnal['status_tagihan'] == 'AKTIF' ? $data_jurnal['account_code'] : $data_jurnal['akun_diterima_dimuka'],
+      'bulan_jurnal_nominal'      => $data_jurnal['bulan_bill'],
+    );
+
+    // echo json_encode($bulan_jurnal);
+    // exit;
+
+    $this->db->insert('bulan_jurnal', $bulan_jurnal);
+
+    $log = array(
+      'bulan_bulan_id' => $id,
+      'student_student_id' => $student_id,
+      'bebas_pay_bebas_pay_id' => NULL,
+      // 'log_trx_input_date' =>  date('Y-m-d H:i:s'),
+      'log_trx_input_date' =>  $payout_date,
+      'log_trx_last_update' => date('Y-m-d H:i:s'),
+    );
+
+
+    $status = $this->Bulan_model->add($pay);
+
+    $this->Log_trx_model->add($log);
+
+    $this->Logs_model->add_trx(
+      array(
+        'ltrx_date' => date('Y-m-d H:i:s'),
+        'user_id' => $this->session->userdata('uid'),
+        'ltrx_module' => 'Pembayaran',
+        'ltrx_action' => 'Bayar Bulanan',
+        'ltrx_info' => 'NIS:' . $student['student_nis'] . ';Title: Bayar' . ' - ' . $student['pos_name'] . ' ' . $student['period_start'] . '/' . $student['period_end'] . ' bulan ' . $student['month_name'] . ' nominal ' . $payout_value,
+        'ltrx_browser' => $this->agent->browser(),
+        'ltrx_version' => $this->agent->version(),
+        'ltrx_os'      => $this->agent->platform(),
+        'ltrx_ip'      => $this->input->ip_address()
+      )
+    );
+
+
+    if ($this->input->is_ajax_request()) {
+      echo $status;
+    } else {
+      $this->session->set_flashdata('success', ' Pembayaran Berhasil Ditambahkan');
+      redirect('manage/payout?n=' . $student['period_period_id'] . '&r=' . $student['student_nis']);
+    }
+  }
+
+  function not_pay($payment_id = NULL, $student_id = NULL, $id = NULL)
+  {
+
+    $student = $this->Bulan_model->get(array('student_id' => $student_id, 'id' => $id));
+
+    $pay = array(
+      'bulan_id' => $id,
+      'bulan_number_pay'  => NULL,
+      'bulan_account_id'  => NULL,
+      'bulan_noref'       => NULL,
+      'bulan_status'      => 0,
+      'bulan_date_pay'    => NULL,
+      'bulan_last_update' => date('Y-m-d H:i:s'),
+      'user_user_id'      => NULL
+    );
+
+    $noref = $student['bulan_noref'];
+    $bill  = $student['bulan_bill'];
+
+    //delete jurnal umum
+    $id_jurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row_array();
+    $this->db->where('id_jurnal', $id_jurnal['id'])->delete("jurnal_umum_detail");
+    $this->db->where('id', $id_jurnal['id'])->delete("jurnal_umum");
+
+    $kas = $this->db->query("SELECT kas_debit FROM kas WHERE kas_noref = '$noref'")->row_array();
+    $kasDebit = $kas['kas_debit'];
+
+    $newKasDebit = $kasDebit - $bill;
+
+    $this->db->query("DELETE FROM bulan_jurnal WHERE bulan_jurnal_bulan_id = '$id'");
+
+    if ($newKasDebit == '0') {
+      $this->db->query("DELETE FROM kas WHERE kas_noref = '$noref'");
+    } else {
+      $this->db->query("UPDATE kas SET kas_debit = '$newKasDebit' WHERE kas_noref = '$noref'");
+    }
+
+    $this->Log_trx_model->delete_log(array(
+      'student_id' => $student_id,
+      'bulan_id' => $id
+    ));
+
+    $this->Logs_model->add_trx(
+      array(
+        'ltrx_date' => date('Y-m-d H:i:s'),
+        'user_id' => $this->session->userdata('uid'),
+        'ltrx_module' => 'Pembayaran',
+        'ltrx_action' => 'Hapus Bayar Bulanan',
+        'ltrx_info' => 'NIS:' . $student['student_nis'] . ';Title: Hapus' . ' - ' . $student['pos_name'] . ' ' . $student['period_start'] . '/' . $student['period_end'] . ' bulan ' . $student['month_name'] . ' nominal ' . $student['bulan_bill'],
+        'ltrx_browser' => $this->agent->browser(),
+        'ltrx_version' => $this->agent->version(),
+        'ltrx_os'      => $this->agent->platform(),
+        'ltrx_ip'      => $this->input->ip_address()
+      )
+    );
+
+    $this->Bulan_model->add($pay);
+    if ($this->input->is_ajax_request()) {
+      // echo $status;
+    } else {
+      $this->session->set_flashdata('success', 'Hapus Pembayaran Berhasil');
+      redirect('manage/payout?n=' . $student['period_period_id'] . '&r=' . $student['student_nis']);
+    }
+  }
+
+  function printPay($payment_id = NULL, $student_id = NULL, $id = NULL)
+  {
+    $this->load->helper(array('dompdf'));
+    $this->load->helper(array('tanggal'));
+
+    if ($id == NULL)
+      redirect('manage/payout/payout_bulan/' . $payment_id . '/' . $student_id);
+
+    $data['printpay'] = $this->Bulan_model->get(array('id' => $id));
+
+    $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
+    $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+    $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+    $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+    $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+    $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+    $data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+
+
+    $html = $this->load->view('payout/payout_pdf', $data, true);
+    $data = pdf_create($html, $data['printpay']['student_full_name'], TRUE, 'A4', TRUE);
+  }
+
+  function printPayFree($payment_id = NULL, $student_id = NULL, $id = NULL)
+  {
+    $this->load->helper(array('dompdf'));
+    $this->load->helper(array('tanggal'));
+
+    if ($id == NULL)
+      redirect('manage/payout/payout_bebas/' . $payment_id . '/' . $student_id);
+
+    $data['printpay'] = $this->Bebas_pay_model->get(array('id' => $id));
+
+    $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
+    $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+    $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+    $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+    $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+    $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+    $data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+    $data['bebas'] = $this->Bebas_model->get(array('payment_id' => $payment_id, 'student_id' => $student_id));
+
+    $data['total_bill'] = 0;
+    foreach ($data['bebas'] as $key) {
+      $data['total_bill'] += $key['bebas_total_pay'];
+    }
+
+    $data['bill'] = 0;
+    foreach ($data['bebas'] as $key) {
+      $data['bill'] += $key['bebas_bill'];
+    }
+
+    $html = $this->load->view('payout/payout_free_pdf', $data, true);
+    $data = pdf_create($html, $data['printpay']['student_full_name'], TRUE, 'A4', TRUE);
+  }
+
+  function multiple()
+  {
+    $this->load->helper(array('dompdf'));
+    $this->load->helper(array('tanggal'));
+    $action = $this->input->post('action');
+    $print = array();
+    if ($action == "printAll") {
+      $bln = $this->input->post('msg');
+      for ($i = 0; $i < count($bln); $i++) {
+        $print[] = $bln[$i];
+      }
+
+      $data['printpay'] = $this->Bulan_model->get(array('multiple_id' => $print, 'group' => TRUE));
+      $data['pay'] = $this->Bulan_model->get(array('multiple_id' => $print));
+
+      $data['total_pay'] = 0;
+      foreach ($data['pay'] as $row) {
+        $data['total_pay'] += $row['bulan_bill'];
+      }
+
+      $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
+      $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
+      $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
+      $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
+      $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
+      $data['setting_district'] = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
+      $data['setting_city'] = $this->Setting_model->get(array('id' => SCHOOL_CITY));
+
+      $html = $this->load->view('payout/payout_bulan_multiple_pdf', $data, true);
+      $data = pdf_create($html, 'Tagihan_Pembayaran_' . date('d_m_Y'), TRUE, 'A4', TRUE);
+    }
+    redirect('manage/payout');
+  }
+
+  function delete_pay_free($payment_id = NULL, $student_id = NULL, $bebas_id = NULL, $id = NULL)
+  {
+
+    $total_pay = $this->Bebas_pay_model->get(array('id' => $id));
+
+    $this->Bebas_model->add(
+      array(
+        'decrease_budget' => $total_pay['bebas_pay_bill'],
+        'bebas_id' => $bebas_id
+      )
+    );
+
+    $noref = $total_pay['bebas_pay_noref'];
+    $bill  = $total_pay['bebas_pay_bill'];
+
+    //delete jurnal umum
+    $id_jurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row_array();
+    $this->db->where('id_jurnal', $id_jurnal['id'])->delete("jurnal_umum_detail");
+    $this->db->where('id', $id_jurnal['id'])->delete("jurnal_umum");
+
+    $kas = $this->db->query("SELECT kas_debit FROM kas WHERE kas_noref = '$noref'")->row_array();
+    $kasDebit = $kas['kas_debit'];
+
+    $newKasDebit = $kasDebit - $bill;
+
+    if ($newKasDebit == '0') {
+      $this->db->query("DELETE FROM kas WHERE kas_noref = '$noref'");
+    } else {
+      $this->db->query("UPDATE kas SET kas_debit = '$newKasDebit' WHERE kas_noref = '$noref'");
+    }
+
+    $this->db->query("DELETE FROM bebas_jurnal WHERE bebas_jurnal_bebas_id = '$id'");
+
+    $this->Log_trx_model->delete_log(array(
+      'student_id' => $student_id,
+      'bebas_pay_id' => $id
+    ));
+
+    $student = $this->Bebas_model->get(array('id' => $id));
+
+    $this->Logs_model->add_trx(
+      array(
+        'ltrx_date'    => date('Y-m-d H:i:s'),
+        'user_id'      => $this->session->userdata('uid'),
+        'ltrx_module'  => 'Pembayaran',
+        'ltrx_action'  => 'Hapus Bayar Bebas',
+        'ltrx_info'    => 'NIS:' . $student['student_nis'] . ';Title: Hapus ' . $total_pay['bebas_pay_desc'] . ' - ' . $student['pos_name'] . ' ' . $student['period_start'] . '/' . $student['period_end'] . ' nominal ' . $total_pay['bebas_pay_bill'],
+        'ltrx_browser' => $this->agent->browser(),
+        'ltrx_version' => $this->agent->version(),
+        'ltrx_os'      => $this->agent->platform(),
+        'ltrx_ip'      => $this->input->ip_address()
+      )
+    );
+
+    $this->Bebas_pay_model->delete($id);
+
+    if ($this->input->is_ajax_request()) {
+      // echo $status;
+    } else {
+      $this->session->set_flashdata('success', 'Delete Berhasil');
+      redirect('manage/payout/payout_bebas/' . $payment_id . '/' . $student_id . '/' . $bebas_id);
+    }
+  }
+
+  // Delete to database
+  public function delete($id = NULL)
+  {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
+      redirect('manage');
+    }
+    if ($_POST) {
+      $this->Payment_model->delete($id);
+      // activity log
+      $this->load->model('logs/Logs_model');
+      $this->Logs_model->add(
+        array(
+          'log_date' => date('Y-m-d H:i:s'),
+          'user_id' => $this->session->userdata('uid'),
+          'log_module' => 'Jenis Pembayaran',
+          'log_action' => 'Hapus',
+          'log_info' => 'ID:' . $id . ';Title:' . $this->input->post('delName')
+        )
+      );
+      $this->session->set_flashdata('success', 'Hapus Jenis Pembayran berhasil');
+      redirect('manage/payment');
+    } elseif (!$_POST) {
+      $this->session->set_flashdata('delete', 'Delete');
+      redirect('manage/payment/edit/' . $id);
+    }
+  }
+
+  function get_form()
+  {
+    for ($count = 0; $count < count($_POST["bebas_id"]); $count++) {
+      $bebasPay = $this->db->query("SELECT period_id, period_start, period_end, pos_id, pos_name,
+                                            student_nis, student_student_id, bebas_id, payment_payment_id,
+                                            (bebas_bill - bebas_total_pay) as sisa
+                                            FROM bebas 
+                                            LEFT JOIN student ON bebas.student_student_id = student.student_id
+                                            LEFT JOIN payment ON payment.payment_id = bebas.payment_payment_id
+                                            LEFT JOIN pos ON pos.pos_id = payment.pos_pos_id
+                                            LEFT JOIN period ON period.period_id = payment.period_period_id
+                                            WHERE bebas_id IN (" . $_POST['bebas_id'][$count] . ")")->result_array();
+
+      foreach ($bebasPay as $row) {
+        echo '
+		<input type="hidden" name="student_nis" id="student_nis" value="' . $row['student_nis'] . '">					
+      <input type="hidden" name="student_student_id" id="student_student_id" value="' . $row['student_student_id'] . '">
+      <input type="hidden" name="bebas_id[]" id="bebas_id" value="' . $row['bebas_id'] . '">								
+		  <input type="hidden" name="payment_payment_id[]" id="payment_payment_id" value="' . $row['payment_payment_id'] . '">
+		<hr>
+		<div class="form-group">
+			<label>Nama Pembayaran</label>
+			<input class="form-control" readonly="" type="text" value="' . $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '">
+		</div>
+		<div class="row">
+			<div class="col-md-6">
+				<label>Jumlah Bayar</label>
+				<input type="text" required="" name="bebas_pay_bill[]" id="bebas_pay_bill" class="form-control" placeholder="Jumlah Bayar" value="' . $row['sisa'] . '">
+			</div>
+			<div class="col-md-6">
+				<label>Keterangan</label>
+				<input type="text" required="" name="bebas_pay_desc[]" id="bebas_pay_desc" class="form-control" placeholder="Keterangan">
+			</div>
+		</div>';
+      }
+    }
+  }
+}

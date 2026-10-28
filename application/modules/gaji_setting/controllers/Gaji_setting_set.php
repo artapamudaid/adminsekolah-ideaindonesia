@@ -125,9 +125,9 @@ class Gaji_setting_set extends CI_Controller
     }
     if ($_POST) {
 
-      $gd = $this->db->get_where('gaji_setting', array('gaji_setting_default_id' => $id))->result_array();
+      $siswa = $this->Penggajian_model->get_default_gaji(array('default_gaji_id' => $id));
 
-      if (count($gd) > 0) {
+      if (count($siswa) > 0) {
         $this->session->set_flashdata('failed', 'Data Setting Penggajian tidak dapat dihapus');
         redirect('manage/gaji_setting');
       }

@@ -62,19 +62,53 @@ class Poshutang_set extends CI_Controller
     public function add_glob()
     {
         if ($_POST == TRUE) {
-            $posName = $_POST['poshutang_name'];
-            $posKet = $_POST['poshutang_description'];
-            $accountID = $_POST['poshutang_account_id'];
-            $cpt = count($_POST['poshutang_name']);
+            $posName = sanitizeStrict($_POST['poshutang_name']);
+            $posKet = sanitizeStrict($_POST['poshutang_description']);
+            $accountID = sanitizeStrict($_POST['poshutang_account_id']);
+
+            $cpt = count($posName);
+
+            $added = 0;
+            $skipped = 0;
+
             for ($i = 0; $i < $cpt; $i++) {
+                if (empty($posName[$i]) || empty($posKet[$i])) {
+                    $skipped++;
+                    continue;
+                }
+
+                $colWhere = ['poshutang_name' => $posName[$i], "poshutang_description" => $posKet[$i], "poshutang_account_id" => $accountID[$i]];
+                if ($this->General_model->checkDataExists("poshutang", $colWhere)) {
+                    $skipped++;
+                    continue;
+                }
                 $params['poshutang_name'] = $posName[$i];
                 $params['poshutang_description'] = $posKet[$i];
                 $params['poshutang_account_id'] = $accountID[$i];
 
-                $this->Poshutang_model->add($params);
+                $insert = $this->Poshutang_model->add($params);
+                if (!$insert) {
+                    $skipped++;
+                    continue;
+                }
+
+                $added++;
             }
+
+            if ($added > 1) {
+                $msg = "$added POS berhasil ditambahkan";
+            } elseif ($added == 1) {
+                $msg = "1 POS berhasil ditambahkan";
+            } else {
+                $msg = "Tidak ada yang ditambahkan";
+            }
+
+            if ($skipped > 0) {
+                $msg .= "<br>($skipped POS dilewati)";
+            }
+
+            $this->session->set_flashdata('success', $msg);
         }
-        $this->session->set_flashdata('success', ' Tambah POS Berhasil');
         redirect('manage/poshutang');
     }
 
@@ -91,12 +125,32 @@ class Poshutang_set extends CI_Controller
         if ($_POST and $this->form_validation->run() == TRUE) {
 
             if ($this->input->post('poshutang_id')) {
-                $params['poshutang_id'] = $this->input->post('poshutang_id');
+                $id = sanitizeStrict($this->input->post('poshutang_id'));
+                $params['poshutang_id'] = $id;
             }
 
-            $params['poshutang_name'] = $this->input->post('poshutang_name');
-            $params['poshutang_description'] = $this->input->post('poshutang_description');
-            $params['poshutang_account_id'] = $this->input->post('poshutang_account_id');
+            $posName = sanitizeStrict($this->input->post('poshutang_name'));
+            $posKet = sanitizeStrict($this->input->post('poshutang_description'));
+            $accountID = sanitizeStrict($this->input->post('poshutang_account_id'));
+
+            $colWhere = [
+                'poshutang_name' => $posName,
+                "poshutang_description" => $posKet,
+                "poshutang_account_id" => $accountID
+            ];
+
+            if (!empty($id)) {
+                $colWhere['poshutang_id <>'] = $id;
+            }
+
+            if ($this->General_model->checkDataExists("poshutang", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data sudah ada');
+                redirect('manage/poshutang/edit/' . $id);
+            }
+
+            $params['poshutang_name'] = $posName;
+            $params['poshutang_description'] = $posKet;
+            $params['poshutang_account_id'] = $accountID;
 
             $status = $this->Poshutang_model->add($params);
             $paramsupdate['poshutang_id'] = $status;

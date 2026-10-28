@@ -31,16 +31,16 @@ class Profile_student extends CI_Controller {
 
     if ($_POST == TRUE) {
 
-      $params['student_id'] = (int) $this->session->userdata('uid_student');
-      $params['student_gender'] = $this->input->post('student_gender', TRUE);
-      $params['student_phone'] = $this->input->post('student_phone', TRUE);
+      $params['student_id'] = $this->input->post('student_id');
+      $params['student_gender'] = $this->input->post('student_gender');
+      $params['student_phone'] = $this->input->post('student_phone');
       $params['student_last_update'] = date('Y-m-d H:i:s');
-      $params['student_born_place'] = $this->input->post('student_born_place', TRUE); 
-      $params['student_born_date'] = $this->input->post('student_born_date', TRUE); 
-      $params['student_address'] = $this->input->post('student_address', TRUE); 
-      $params['student_name_of_mother'] = $this->input->post('student_name_of_mother', TRUE); 
-      $params['student_name_of_father'] = $this->input->post('student_name_of_father', TRUE); 
-      $params['student_parent_phone'] = $this->input->post('student_parent_phone', TRUE); 
+      $params['student_born_place'] = $this->input->post('student_born_place'); 
+      $params['student_born_date'] = $this->input->post('student_born_date'); 
+      $params['student_address'] = $this->input->post('student_address'); 
+      $params['student_name_of_mother'] = $this->input->post('student_name_of_mother'); 
+      $params['student_name_of_father'] = $this->input->post('student_name_of_father'); 
+      $params['student_parent_phone'] = $this->input->post('student_parent_phone'); 
 
       $status = $this->Student_model->add($params);
 
@@ -49,7 +49,7 @@ class Profile_student extends CI_Controller {
       redirect('student/profile');
     } else {
       if ($this->input->post('student_id')) {
-        redirect('student/profile/edit/' . (int) $this->session->userdata('uid_student'));
+        redirect('student/profile/edit/' . $this->input->post('student_id'));
       }
 
             // Edit mode

@@ -51,6 +51,8 @@ class Auth_guru extends CI_Controller
             $password = $this->input->post('password', TRUE);
 
             $employees = $this->Employees_model->get_employee(array('nip' => $nip, 'password' => md5($password)));
+            // pre($employees);
+            // die;
             // echo count($employees);
             // exit;
             if (count($employees) > 0) {
@@ -77,6 +79,10 @@ class Auth_guru extends CI_Controller
         } else {
             $data['setting_school'] = $this->Setting_model->get(array('id' => 1));
             $data['setting_logo'] = $this->Setting_model->get(array('id' => SCHOOL_LOGO));
+
+            // NOTE: Check RFID Subscription
+            $data['is_rfid_subscription'] = table_exists_cached('cards');
+            $data['is_rfid_subscription_employee'] = table_exists_cached('employee_cards');
             $this->load->view('guru/login', $data);
         }
     }

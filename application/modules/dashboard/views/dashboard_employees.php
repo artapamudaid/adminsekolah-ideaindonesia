@@ -45,7 +45,12 @@
                         <div class="adjust1"> 
                             <div class="caption"> 
                               <p class="text-info lead adjust2">
-                                  <img src="<?php echo base_url()."uploads/information/".$row['information_img'] ?>" width="500">
+                                  <?php 
+                                  $img_file = !empty($row['information_img']) ? FCPATH . 'uploads/information/' . $row['information_img'] : '';
+                                  if (!empty($row['information_img']) && file_exists($img_file)): 
+                                  ?>
+                                      <img src="<?php echo base_url("uploads/information/" . $row['information_img']); ?>" class="img-responsive" style="max-width: 100%; max-height: 400px; margin: 0 auto 10px auto;" alt="<?php echo html_escape($row['information_title']); ?>">
+                                  <?php endif; ?>
                                   <?php echo $row['information_title'] ?>
                               </p>  
                               <blockquote class="adjust2"> <p><?php echo strip_tags(character_limiter($row['information_desc'], 250)) ?></p> 

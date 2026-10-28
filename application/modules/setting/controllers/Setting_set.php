@@ -9,9 +9,6 @@ class Setting_set extends CI_Controller
         if ($this->session->userdata('logged') == NULL) {
             redirect('manage/auth/login?location=' . urlencode($_SERVER['REQUEST_URI']));
         }
-        if ($this->session->userdata('uroleid') != '3') {
-            redirect('manage');
-        }
     }
 
     public function index()
@@ -26,7 +23,7 @@ class Setting_set extends CI_Controller
 
         if ($_POST and $this->form_validation->run() == TRUE) {
 
-            $wa_center = $this->input->post('setting_wa_center');
+            $wa_center = sanitizeStrict($this->input->post('setting_wa_center'));
 
             $wa_center = str_replace(" ", "", $wa_center);
             $wa_center = str_replace("(", "", $wa_center);
@@ -47,37 +44,33 @@ class Setting_set extends CI_Controller
                 }
             }
 
-            $param['setting_school'] = $this->input->post('setting_school');
-            $param['setting_address'] = $this->input->post('setting_address');
-            $param['setting_phone'] = $this->input->post('setting_phone');
-            $param['setting_district'] = $this->input->post('setting_district');
-            $param['setting_city'] = $this->input->post('setting_city');
-            $param['setting_nip_kepsek'] = $this->input->post('setting_nip_kepsek');
-            $param['setting_nama_katu'] = $this->input->post('setting_nama_katu');
-            $param['setting_nip_kepsek'] = $this->input->post('setting_nip_kepsek');
-            $param['setting_nama_katu'] = $this->input->post('setting_nama_katu');
-            $param['setting_nip_bendahara'] = $this->input->post('setting_nip_bendahara');
-            $param['setting_nama_bendahara'] = $this->input->post('setting_nama_bendahara');
+            $param['setting_school'] = sanitizeStrict($this->input->post('setting_school'));
+            $param['setting_address'] = sanitizeStrict($this->input->post('setting_address'));
+            $param['setting_phone'] = sanitizeStrict($this->input->post('setting_phone'));
+            $param['setting_district'] = sanitizeStrict($this->input->post('setting_district'));
+            $param['setting_city'] = sanitizeStrict($this->input->post('setting_city'));
+            $param['setting_nip_kepsek'] = sanitizeStrict($this->input->post('setting_nip_kepsek'));
+            $param['setting_nama_katu'] = sanitizeStrict($this->input->post('setting_nama_katu'));
+            $param['setting_nip_kepsek'] = sanitizeStrict($this->input->post('setting_nip_kepsek'));
+            $param['setting_nama_katu'] = sanitizeStrict($this->input->post('setting_nama_katu'));
+            $param['setting_nip_bendahara'] = sanitizeStrict($this->input->post('setting_nip_bendahara'));
+            $param['setting_nama_bendahara'] = sanitizeStrict($this->input->post('setting_nama_bendahara'));
             $param['setting_wa_center'] = $wa;
-            $param['setting_wa_key'] = $this->input->post('setting_wa_key');
-            $param['setting_level'] = $this->input->post('setting_level');
-            $param['setting_user_sms'] = $this->input->post('setting_user_sms');
-            $param['setting_pass_sms'] = $this->input->post('setting_pass_sms');
-            $param['setting_sms'] = $this->input->post('setting_sms');
-            $param['setting_email'] = $this->input->post('setting_email');
-            $param['setting_website'] = $this->input->post('setting_website');
-            $param['setting_whatsapp'] = $this->input->post('setting_whatsapp');
-            $param['setting_facebook'] = $this->input->post('setting_facebook');
-            $param['setting_instagram'] = $this->input->post('setting_instagram');
-            $param['setting_youtube'] = $this->input->post('setting_youtube');
-            $param['setting_package'] = $this->input->post('package_id');
-            $param['setting_date'] = $this->input->post('package_date');
-            $param['use_limit'] = $this->input->post('use_limit');
-            $param['limit_tabungan'] = $this->input->post('limit_tabungan');
-            $param['scheduler_status'] = $this->input->post('scheduler_status');
-            $param['scheduler_date'] = $this->input->post('scheduler_date');
-            $param['scheduler_time'] = $this->input->post('scheduler_time');
-            $param['scheduler_domain'] = $this->input->post('scheduler_domain');
+            $param['setting_wa_key'] = sanitizeStrict($this->input->post('setting_wa_key'));
+            $param['setting_level'] = sanitizeStrict($this->input->post('setting_level'));
+            $param['setting_user_sms'] = sanitizeStrict($this->input->post('setting_user_sms'));
+            $param['setting_pass_sms'] = sanitizeStrict($this->input->post('setting_pass_sms'));
+            $param['setting_sms'] = sanitizeStrict($this->input->post('setting_sms'));
+            $param['setting_email'] = sanitizeStrict($this->input->post('setting_email'));
+            $param['setting_website'] = sanitizeStrict($this->input->post('setting_website'));
+            $param['setting_whatsapp'] = sanitizeStrict($this->input->post('setting_whatsapp'));
+            $param['setting_facebook'] = sanitizeStrict($this->input->post('setting_facebook'));
+            $param['setting_instagram'] = sanitizeStrict($this->input->post('setting_instagram'));
+            $param['setting_youtube'] = sanitizeStrict($this->input->post('setting_youtube'));
+            $param['setting_package'] = sanitizeStrict($this->input->post('package_id'));
+            $param['setting_date'] = sanitizeStrict($this->input->post('package_date'));
+            $param['use_limit'] = sanitizeStrict($this->input->post('use_limit'));
+            $param['limit_tabungan'] = sanitizeStrict($this->input->post('limit_tabungan'));
 
             $status = $this->Setting_model->save($param);
 
@@ -133,15 +126,11 @@ class Setting_set extends CI_Controller
             $data['setting_facebook'] = $this->Setting_model->get(array('id' => 93));
             $data['setting_instagram'] = $this->Setting_model->get(array('id' => 94));
             $data['setting_youtube'] = $this->Setting_model->get(array('id' => 95));
-            $data['setting_package'] = $this->Setting_model->get(array('id' => 100));
-            $data['setting_date'] = $this->Setting_model->get(array('id' => 101));
+            $data['setting_package'] =  $this->Setting_model->get(array('name' => 'setting_package'));
+            $data['setting_date'] = $this->Setting_model->get(array('name' => 'setting_date'));
             $data['setting_duration'] = $this->Setting_model->get(array('id' => 102));
             $data['use_limit'] = $this->Setting_model->get(array('id' => 208));
             $data['limit_tabungan'] = $this->Setting_model->get(array('id' => 209));
-            $data['scheduler_status'] = $this->Setting_model->get(array('id' => 400));
-            $data['scheduler_date'] = $this->Setting_model->get(array('id' => 401));
-            $data['scheduler_time'] = $this->Setting_model->get(array('id' => 402));
-            $data['scheduler_domain'] = $this->Setting_model->get(array('id' => 403));
 
             $data['main'] = 'setting/setting_list';
             $this->load->view('manage/layout', $data);
@@ -162,10 +151,9 @@ class Setting_set extends CI_Controller
     public function act_val()
     {
 
-        $act = $this->input->get('act', TRUE);
-        if ($act == 'active') {
+        if ($_GET['act'] == 'active') {
             $this->session->set_flashdata('success', ' Notifikasi WA Berhasil Diaktifkan');
-        } else if ($act == 'inactive') {
+        } else if ($_GET['act'] == 'inactive') {
             $this->session->set_flashdata('success', ' Notifikasi WA Berhasil Dinonaktifkan');
         }
 
@@ -181,17 +169,12 @@ class Setting_set extends CI_Controller
 
         /* create directory if not exist */
         if (!is_dir($config['upload_path'])) {
-            mkdir($config['upload_path'], 0755, TRUE);
+            mkdir($config['upload_path'], 0777, TRUE);
         }
 
         $config['allowed_types'] = 'gif|jpg|jpeg|png';
         $config['max_size'] = '1024';
-        $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
         $config['file_name'] = $fileName;
-        $config["file_ext_tolower"] = TRUE;
-        $config["remove_spaces"] = TRUE;
-        $config["detect_mime"] = TRUE;
-        $config["mod_mime_fix"] = TRUE;
         $this->upload->initialize($config);
 
         if (!$this->upload->do_upload($name)) {
@@ -212,17 +195,12 @@ class Setting_set extends CI_Controller
 
         /* create directory if not exist */
         if (!is_dir($config['upload_path'])) {
-            mkdir($config['upload_path'], 0755, TRUE);
+            mkdir($config['upload_path'], 0777, TRUE);
         }
 
         $config['allowed_types'] = 'gif|jpg|jpeg|png';
         $config['max_size'] = '1024';
-        $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
         $config['file_name'] = $fileName;
-        $config["file_ext_tolower"] = TRUE;
-        $config["remove_spaces"] = TRUE;
-        $config["detect_mime"] = TRUE;
-        $config["mod_mime_fix"] = TRUE;
         $this->upload->initialize($config);
 
         if (!$this->upload->do_upload($name)) {
@@ -237,10 +215,11 @@ class Setting_set extends CI_Controller
 
     public function change_package()
     {
-        $package = $this->input->post('paket', TRUE);
+        $package = $this->input->post('paket');
 
-        $this->db->where('setting_name', 'setting_package');
-        $this->db->update('setting', array('setting_value' => $package));
+        $this->db->query("UPDATE setting
+                      SET setting_value = '$package'
+                      WHERE setting_name = 'setting_package'");
     }
 }
 

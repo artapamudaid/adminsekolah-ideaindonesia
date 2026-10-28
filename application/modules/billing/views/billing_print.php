@@ -3,6 +3,11 @@
 
 <head>
 	<title><?php echo 'Tagihan Pembayaran ' . $student['student_full_name'] . ' Kelas ' . $student['class_name'] ?></title>
+	<style>
+		.keep-together {
+			page-break-inside: avoid;
+		}
+	</style>
 </head>
 
 <body>
@@ -59,70 +64,54 @@
 	<br>
 	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
 		<tr>
-			<th align='center' style='font-size: 8pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
-			<th align='center' style='font-size: 8pt; width: 110mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nama Tunggakan</th>
-			<th align='center' style='font-size: 8pt; width: 10mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'></th>
-			<th align='center' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nominal</th>
-			<th align='center' style='font-size: 8pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='center' style='font-size: 10pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='center' style='font-size: 10pt; width: 110mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nama Tagihan</th>
+			<th align='center' style='font-size: 10pt; width: 10mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'></th>
+			<th align='center' style='font-size: 10pt; width: 30mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nominal</th>
+			<th align='center' style='font-size: 10pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
 		</tr>
 		<?php
 		$billBulan = 0;
 		$billBebas = 0;
-		$billPaket = 0;
 		foreach ($bulan as $row) {
 		?>
 			<tr valign='top'>
-				<td align='center' style='padding: 1px; font-size: 8pt; '></td>
-				<td align='left' style='padding: 1px; font-size: 8pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] ?>
+				<td align='center' style='padding: 1px; font-size: 10pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] ?>
 				</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '>Rp</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>
 					<?php echo number_format($row['bulan_bill'], 0, ",", ".") ?>
 				</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '></td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '></td>
 			</tr>
 			<?php $billBulan += $row['bulan_bill']; ?>
-		<?php
-		};
-		foreach ($paket as $row) {
-		?>
-			<tr valign='top'>
-				<td align='center' style='padding: 1px; font-size: 8pt; '></td>
-				<td align='left' style='padding: 1px; font-size: 8pt; '><?php echo $row['name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] . '-' . $row['month_name'] ?>
-				</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '>Rp</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '>
-					<?php echo number_format($row['paket_bill'], 0, ",", ".") ?>
-				</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '></td>
-			</tr>
-			<?php $billPaket += $row['paket_bill']; ?>
 		<?php
 		};
 		foreach ($bebas as $row) {
 		?>
 			<tr valign='top'>
-				<td align='center' style='padding: 1px; font-size: 8pt; '></td>
-				<td align='left' style='padding: 1px; font-size: 8pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] ?>
+				<td align='center' style='padding: 1px; font-size: 10pt; '></td>
+				<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'] . ' - T.A ' . $row['period_start'] . '/' . $row['period_end'] ?>
 				</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '>Rp</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '>
-					<?php echo number_format($row['bebas_bill'] - $row['bebas_total_pay'], 0, ",", ".") ?>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '>
+					<?php echo number_format($row['bebas_bill'] - $row['bebas_diskon'] - $row['bebas_total_pay'], 0, ",", ".") ?>
 				</td>
-				<td align='right' style='padding: 1px; font-size: 8pt; '></td>
+				<td align='right' style='padding: 1px; font-size: 10pt; '></td>
 			</tr>
-			<?php $billBebas += $row['bebas_bill'] - $row['bebas_total_pay']; ?>
+			<?php $billBebas += $row['bebas_bill'] - $row['bebas_diskon'] - $row['bebas_total_pay']; ?>
 		<?php } ?>
 		<tr>
-			<td align='right' style='padding: 1px; font-size: 8pt; '></td>
-			<td align="left" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 8pt;">
+			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
+			<td align="left" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
 				<b>Total Tagihan Siswa</b>
 			</td>
-			<td align='right' style='border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 8pt; '>Rp</td>
-			<td align="right" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 8pt;">
-				<b><?php echo number_format($billPaket + $billBulan + $billBebas, 0, ",", ".") ?></b>
+			<td align='right' style='border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt; '>Rp</td>
+			<td align="right" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
+				<b><?php echo number_format($billBulan + $billBebas, 0, ",", ".") ?></b>
 			</td>
-			<td align='right' style='padding: 1px; font-size: 8pt; '></td>
+			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
 		</tr>
 	</table>
 	<br>
@@ -134,112 +123,115 @@
 	<br>
 	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
 		<tr>
-			<th align='center' style='font-size: 10pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
-			<th align='center' style='font-size: 10pt; width: 110mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nama Tunggakan</th>
-			<th align='center' style='font-size: 10pt; width: 10mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'></th>
-			<th align='center' style='font-size: 10pt; width: 30mm; padding: 1px 0px 1px 0px; border-top: 2px solid black; border-bottom: 2px solid black;'>Nominal</th>
-			<th align='center' style='font-size: 10pt; width: 20mm; padding: 1px 0px 1px 0px;'></th>
+			<th align='center' style='font-size: 10pt; width: 20mm;'></th>
+			<th align='center' style='font-size: 10pt; width: 110mm; border-top: 2px solid black; border-bottom: 2px solid black;'>Nama Tagihan</th>
+			<th align='center' style='font-size: 10pt; width: 10mm; border-top: 2px solid black; border-bottom: 2px solid black;'></th>
+			<th align='center' style='font-size: 10pt; width: 30mm; border-top: 2px solid black; border-bottom: 2px solid black;'>Nominal</th>
+			<th align='center' style='font-size: 10pt; width: 20mm;'></th>
 		</tr>
+
 		<?php
-			$billBulanLama = 0;
-			$billBebasLama = 0;
-			foreach ($bulanLama as $row) {
-				?>
-				<tr valign='top'>
-					<td align='center' style='padding: 1px; font-size: 10pt; '></td>
-					<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'].' - T.A '.$row['period_start'].'/'.$row['period_end'].'-'.$row['month_name'] ?>
-					</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '>
-						<?php echo number_format($row['bulan_bill'],0,",",".") ?>
-					</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '></td>
-				</tr>
-				<?php $billBulanLama += $row['bulan_bill']; ?>
-		<?php 
-			};
-		foreach($bebasLama as $row) { 
+		$totalPeriodLama = 0;
+		$grouped = [];
+
+		// Gabungkan bulan dan bebas lama ke satu array agar bisa digroup
+		foreach ($bulanLama as $row) {
+			$ta = $row['period_start'] . '/' . $row['period_end'];
+			$grouped[$ta][] = [
+				'nama' => $row['pos_name'] . ' - ' . $row['month_name'],
+				'nominal' => $row['bulan_bill']
+			];
+		}
+
+		foreach ($bebasLama as $row) {
+			$ta = $row['period_start'] . '/' . $row['period_end'];
+			$grouped[$ta][] = [
+				'nama' => $row['pos_name'],
+				'nominal' => $row['bebas_bill'] - $row['bebas_total_pay']
+			];
+		}
+
+		// Tampilkan hasil grouping
+		foreach ($grouped as $ta => $rows) {
+			$subTotal = 0;
 		?>
+			<tr>
+				<td colspan="5" style="font-size:10pt; padding-top:4px;"><b>Tagihan Tahun Ajaran <?php echo $ta; ?></b></td>
+			</tr>
+			<?php foreach ($rows as $r) { ?>
 				<tr valign='top'>
-					<td align='center' style='padding: 1px; font-size: 10pt; '></td>
-					<td align='left' style='padding: 1px; font-size: 10pt; '><?php echo $row['pos_name'].' - T.A '.$row['period_start'].'/'.$row['period_end'] ?>
-					</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '>Rp</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '>
-						<?php echo number_format($row['bebas_bill']-$row['bebas_total_pay'],0,",",".") ?>
-					</td>
-					<td align='right' style='padding: 1px; font-size: 10pt; '></td>
+					<td></td>
+					<td style='padding: 1px; font-size: 10pt;'><?php echo $r['nama']; ?></td>
+					<td align='right' style='padding: 1px; font-size: 10pt;'>Rp</td>
+					<td align='right' style='padding: 1px; font-size: 10pt;'><?php echo number_format($r['nominal'], 0, ",", "."); ?></td>
+					<td></td>
 				</tr>
-				<?php $billBebasLama += $row['bebas_bill']-$row['bebas_total_pay']; ?>
-		<?php } ?>
-		<tr>
-			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
-			<td align="left" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
-				<b>Total Tagihan Siswa</b>
-			</td>
-					<td align='right' style='border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt; '>Rp</td>
-			<td align="right" style="border-top: 2px solid black; background-color: #F0F0F0; padding: 1px; font-size: 10pt;">
-				<b><?php echo number_format($billBulanLama+$billBebasLama,0,",",".") ?></b>
-			</td>
-			<td align='right' style='padding: 1px; font-size: 10pt; '></td>
-		</tr>
+				<?php $subTotal += $r['nominal']; ?>
+			<?php } ?>
+			<tr>
+				<td></td>
+				<td align="left" style="border-top: 1px solid black; background-color: #F9F9F9; padding: 1px; font-size: 10pt;"><b>Total T.A <?php echo $ta; ?></b></td>
+				<td align='right' style='border-top: 1px solid black; background-color: #F9F9F9; font-size: 10pt;'>Rp</td>
+				<td align="right" style="border-top: 1px solid black; background-color: #F9F9F9; font-size: 10pt;"><b><?php echo number_format($subTotal, 0, ",", "."); ?></b></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td colspan="5" style="height:4px;"></td>
+			</tr>
+		<?php
+			$totalPeriodLama += $subTotal;
+		}
+		?>
+
 	</table>
 	<br>
 	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
 		<tr>
 			<td align='left' style='font-size: 10pt; padding: 1px;'>
-				<b><?php echo 'Total Keseluruhan : Rp ' . number_format($billBulan+$billBebas+$billBulanLama+$billBebasLama,0,",",".") ?></b>
+				<b><?php echo 'Total Keseluruhan : Rp ' . number_format($billBulan + $billBebas + $totalPeriodLama, 0, ",", ".") ?></b>
 			</td>
 		</tr>
 	</table>
 	<br>
-	
-	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
-		<tr>
-			<td align='left' style='font-size: 8pt; padding: 1px;'>
-				Kami mohon dengan sangat kepada bapak/ibu untuk segera melunasi tunggakan biaya diatas. Mohon kerjasamanya. <br><br>
-				Demikian surat pemberitahuan ini kami sampaikan atas perhatian dan kerjasamanya kami ucapkan terima kasih. Apabila ada kekeliruan dengan surat pemberitahuan ini. Kami mohon bapak/ibu melakukan konfirmasi ke bagian keuangan dengan membawa tanda bukti.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td align='left' style='font-size: 8pt; padding: 1px;'>
-				Atas perhatian dan partisipasinya kami ucapkan terima kasih. <br><br>
-			</td>
-		</tr>
-	</table>
-	<br>
-	<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
-		<tr>
-			<th align='center' style='font-size: 8pt; width: 5mm; padding: 1px 0px 1px 0px;'></th>
-			<th align='center' style='font-size: 8pt; width: 25mm; padding: 1px 0px 1px 0px;'></th>
-			<th align='center' style='font-size: 8pt; width: 40mm; padding: 1px 0px 1px 0px;'></th>
-			<th align='left' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px;'></th>
-			<th align='left' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px;'></th>
-			<th align='left' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px;'></th>
-			<th align='center' style='font-size: 8pt; width: 30mm; padding: 1px 0px 1px 0px;'></th>
-		</tr>
-		<tr>
-			<td colspan='5' align='right' style='font-size: 8pt; padding: 1px;'></td>
-			<td colspan='2' style='font-size: 8pt; padding: 1px;' align='center'><?php echo $setting_city['setting_value'] ?>, <?php echo pretty_date(date('Y-m-d'), 'd F Y', false) ?></td>
-		</tr>
-		<tr>
-			<td colspan='3' align='right' style='font-size: 8pt; padding: 1px; border-top: 0px solid black; border-bottom: 0px solid black;'><br><br></td>
-			<td colspan='4' style='font-size: 8pt; padding: 1px;' align='right'><br><br></td>
-			<td align='right' style='font-size: 8pt; padding: 1px;'><br><br></td>
-		</tr>
-		<tr>
-			<td colspan='3' align='right' style='font-size: 8pt; padding: 1px;'><br><br></td>
-			<td colspan='4' style='font-size: 8pt; padding: 1px;' align='right'><br><br></td>
-			<td align='right' style='font-size: 8pt; padding: 1px;'><br><br></td>
-		</tr>
-		<tr>
-			<td colspan='5' align='right' style='font-size: 8pt; padding: 1px;'></td>
-			<td colspan='2' style='font-size: 8pt; padding: 1px;' align='center'><?php
-																					echo ucfirst($setting_nama_bendahara['setting_value']); ?><br><?php
-																																					echo 'NIP. ' . $setting_nip_bendahara['setting_value']; ?></td>
-			<td align='right' style='font-size: 8pt; padding: 1px;'></td>
-		</tr>
-	</table>
+	<div class="keep-together">
+		<table cellpadding='0' cellspacing='0' style='width: 190mm;'>
+			<tr>
+				<td align='left' style='font-size: 8pt; padding: 1px;'>
+					Demikian surat pemberitahuan ini kami sampaikan atas perhatian dan kerjasamanya kami ucapkan terima kasih.
+					Apabila ada kekeliruan dengan surat pemberitahuan ini, mohon bapak/ibu melakukan konfirmasi ke bagian keuangan
+					dengan membawa tanda bukti.<br><br>
+				</td>
+			</tr>
+			<tr>
+				<td align='left' style='font-size: 8pt; padding: 1px;'>
+					Atas perhatian dan partisipasinya kami ucapkan terima kasih. <br><br>
+				</td>
+			</tr>
+		</table>
+
+		<br>
+
+		<table cellpadding='0' cellspacing='0' style='width: 170mm;'>
+			<tr>
+				<td style='width: 60%;'></td>
+				<td style='width: 40%; text-align: right; font-size: 8pt; padding: 1px;'>
+					<?php echo $setting_city['setting_value'] ?>, <?php echo pretty_date(date('Y-m-d'), 'd F Y', false) ?>
+				</td>
+			</tr>
+
+			<tr>
+				<td colspan='2' style='height: 50px;'></td>
+			</tr> <!-- jarak tanda tangan -->
+
+			<tr>
+				<td style='width: 60%;'></td>
+				<td style='width: 40%; text-align: right; font-size: 8pt; padding: 1px;'>
+					<b><?php echo ucfirst($setting_nama_bendahara['setting_value']); ?></b><br>
+					NIP. <?php echo $setting_nip_bendahara['setting_value']; ?>
+				</td>
+			</tr>
+		</table>
+	</div>
 </body>
 
 </html>

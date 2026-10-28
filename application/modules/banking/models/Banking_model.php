@@ -44,19 +44,9 @@ class Banking_model extends CI_Model
 			$this->db->where('class.class_id', $params['class_id']);
 		}
 
-		$umajors = $this->session->userdata('umajorsid');
-		if ($umajors) {
-			if ($this->session->userdata('umajorsid') != '0') {
-				$this->db->where('majors_id', $this->session->userdata('umajorsid'));
-			}
-		}
-
-		$umajors = $this->session->userdata('umajorsid');
-		if ($umajors) {
-			if ($this->session->userdata('umajorsid') != '0') {
-				$this->db->where('majors_id', $this->session->userdata('umajorsid'));
-			}
-		}
+		// if ($this->session->userdata('umajorsid') != '0') {
+		// 	$this->db->where('majors_id', $this->session->userdata('umajorsid'));
+		// }
 
 		if (isset($params['order_by'])) {
 			$this->db->order_by('banking_id', $params['order_by']);

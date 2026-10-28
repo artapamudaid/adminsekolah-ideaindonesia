@@ -196,7 +196,7 @@ class Payout_student extends CI_Controller {
 
   /* create directory if not exist */
   if (!is_dir($config['upload_path'])) {
-    mkdir($config['upload_path'], 0755, TRUE);
+    mkdir($config['upload_path'], 0777, TRUE);
   }
   $this->upload->initialize($config);
 

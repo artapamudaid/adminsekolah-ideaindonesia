@@ -9,6 +9,118 @@ class Debit_model extends CI_Model
 		parent::__construct();
 	}
 
+	function count_trx($data = array())
+	{
+		$this->db->select('COUNT(debit_id) AS totalBaris');
+		$this->db->select('SUM(debit_value) AS totalPengeluaran');
+		$this->db->from('debit');
+		$this->db->join('account', 'account.account_id = debit.debit_account_id');
+		$this->db->join('account AS acc', 'acc.account_id = debit.debit_kas_account_id');
+
+		if (isset($data['search'])) {
+			$search = $data['search'];
+			$this->db->group_start();
+
+			$this->db->like("debit_date", $search);
+			$this->db->or_like("debit_desc", $search);
+			$this->db->or_like("debit_value", $search);
+			$this->db->or_like("debit_kas_noref", $search);
+			$this->db->or_like("account.account_code", $search);
+			$this->db->or_like("account.account_description", $search);
+			$this->db->or_like("acc.account_code", $search);
+			$this->db->or_like("acc.account_description", $search);
+
+			$this->db->group_end();
+		}
+
+		if (isset($data['date_start']) and isset($data['date_end'])) {
+			$this->db->where('debit_date >=', $data['date_start']);
+			$this->db->where('debit_date <=', $data['date_end']);
+		}
+
+		if (isset($data['majors_id'])) {
+			if ($data['majors_id'] !== 'all') {
+				$this->db->group_start();
+				$this->db->where('account.account_majors_id', $data['majors_id']);
+				$this->db->or_where('acc.account_majors_id', $data['majors_id']);
+				$this->db->group_end();
+			}
+		}
+
+		// if (isset($data['kas_account_id'])) {
+		// 	$this->db->where_in('idKas', $data['kas_account_id']);
+		// }
+
+		$query = $this->db->get();
+
+		// Memeriksa apakah query berhasil dan mengembalikan hasilnya
+		if ($query->num_rows() > 0) {
+			return $query->row_array();  // Mengembalikan hasil dalam bentuk object
+		} else {
+			return null;  // Jika tidak ada hasil
+		}
+	}
+
+	function list_debit($limit, $start, $search, $data = array())
+	{
+		$this->db->select("debit_id, debit_kas_noref, debit_date, debit_value, 
+		IF(debit_tax_id != 0, tax_number, 0) AS debit_tax, 
+		IF(debit_item_id != 0, item_name, 'Tidak Ada') as debit_item, 
+		debit_desc, debit_account_id, account.account_id, account.account_code, 
+		account.account_description, tax_id, item_id, debit_input_date, debit_last_update, log_tf.log_tf_balance_id AS balance_id");
+
+		$this->db->select('acc.account_id AS accID, acc.account_code AS accCode, acc.account_description AS accDesc');
+		$this->db->from('debit');
+		$this->db->join('account', 'account.account_id = debit.debit_account_id');
+		$this->db->join('account AS acc', 'acc.account_id = debit.debit_kas_account_id');
+		$this->db->join('tax', 'tax.tax_id = debit.debit_tax_id', 'left');
+		$this->db->join('item', 'item.item_id = debit.debit_item_id', 'left');
+		$this->db->join('log_tf', 'log_tf.log_tf_debit_id = debit.debit_id', 'left');
+
+		if (isset($data['search'])) {
+			$search = $data['search'];
+			$this->db->group_start();
+
+			$this->db->like("debit_date", $search);
+			$this->db->or_like("debit_desc", $search);
+			$this->db->or_like("debit_value", $search);
+			$this->db->or_like("debit_kas_noref", $search);
+			$this->db->or_like("account.account_code", $search);
+			$this->db->or_like("account.account_description", $search);
+			$this->db->or_like("acc.account_code", $search);
+			$this->db->or_like("acc.account_description", $search);
+
+			$this->db->group_end();
+		}
+
+		if (isset($data['date_start']) and isset($data['date_end'])) {
+			$this->db->where('debit_date >=', $data['date_start']);
+			$this->db->where('debit_date <=', $data['date_end']);
+		}
+
+		if (isset($data['majors_id'])) {
+			if ($data['majors_id'] !== 'all') {
+				$this->db->group_start();
+				$this->db->where('account.account_majors_id', $data['majors_id']);
+				$this->db->or_where('acc.account_majors_id', $data['majors_id']);
+				$this->db->group_end();
+			}
+		}
+
+		if (isset($data['order_column']) and isset($data['order_dir'])) {
+			if (!empty($data['order_column']) and !empty($data['order_dir'])) {
+				$this->db->order_by($data['order_column'], $data['order_dir']);
+			}
+		} else {
+			$this->db->order_by('debit_date', 'ASC');
+		}
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		return $query;
+	}
+
 	// Get debit from database
 	function get($params = array())
 	{
@@ -413,11 +525,10 @@ class Debit_model extends CI_Model
 			return $res->result_array();
 		}
 	}
-	
+
 	function get_last_kas($param = array())
 	{
-		if(isset($param['id']))
-		{
+		if (isset($param['id'])) {
 			$this->db->where('debit_id', $param['id']);
 		}
 
@@ -432,64 +543,53 @@ class Debit_model extends CI_Model
 		if (isset($param['debit_desc'])) {
 			$this->db->like('debit_desc', $param['debit_desc']);
 		}
-		
-        if(isset($param['account_majors_id']))
-        {
-            $this->db->where('acc.account_majors_id', $param['account_majors_id']);             
-            $this->db->like('acc.account_description', 'Tunai');
-            $this->db->like('kas_noref', 'JM', 'after');
-        }
-            
-        if(isset($param['kas_noref']))
-		{          
-		    $this->db->like('acc.account_description', 'Tunai');
-		    $this->db->like('kas_noref', 'JM', 'after');
+
+		if (isset($param['account_majors_id'])) {
+			$this->db->where('acc.account_majors_id', $param['account_majors_id']);
+			$this->db->like('acc.account_description', 'Tunai');
+			$this->db->like('kas_noref', 'JM', 'after');
 		}
 
-		if(isset($param['debit_input_date']))
-		{
+		if (isset($param['kas_noref'])) {
+			$this->db->like('acc.account_description', 'Tunai');
+			$this->db->like('kas_noref', 'JM', 'after');
+		}
+
+		if (isset($param['debit_input_date'])) {
 			$this->db->where('debit_input_date', $param['debit_input_date']);
 		}
 
-		if(isset($param['debit_last_update']))
-		{
+		if (isset($param['debit_last_update'])) {
 			$this->db->where('debit_last_update', $param['debit_last_update']);
 		}
-		
+
 		// if(isset($param['date_start']) AND isset($param['date_end']))
 		// {
 		// 	$this->db->where('debit_date >=', $param['date_start'] . ' 00:00:00');
 		// 	$this->db->where('debit_date <=', $param['date_end'] . ' 23:59:59');
 		// }
-		
-		if(isset($param['date_start']))
-		{
+
+		if (isset($param['date_start'])) {
 			$this->db->where('debit_date <', $param['date_start'] . ' 00:00:00');
 		}
-		
+
 		if (isset($param['period_id'])) {
-			
 		}
 
-		if(isset($param['limit']))
-		{
-			if(!isset($param['offset']))
-			{
+		if (isset($param['limit'])) {
+			if (!isset($param['offset'])) {
 				$param['offset'] = NULL;
 			}
 
 			$this->db->limit($param['limit'], $param['offset']);
 		}
-		if(isset($param['order_by']))
-		{
+		if (isset($param['order_by'])) {
 			$this->db->order_by($param['order_by'], 'desc');
-		}
-		else
-		{
+		} else {
 			$this->db->order_by('debit_id', 'desc');
 		}
 
-        $this->db->where('majors_status', '1');
+		$this->db->where('majors_status', '1');
 
 		$this->db->select('SUM(debit_value) AS debit_value');
 
@@ -497,7 +597,7 @@ class Debit_model extends CI_Model
 		$this->db->join('users', 'users.user_id = debit.user_user_id');
 		$this->db->join('account', 'account.account_id = debit.debit_account_id');
 		$this->db->join('account AS acc', 'acc.account_id = kas.kas_account_id');
-        $this->db->join('majors', 'majors.majors_id = account.account_majors_id');
+		$this->db->join('majors', 'majors.majors_id = account.account_majors_id');
 
 		$res = $this->db->get('debit');
 		return $res->result_array();
@@ -505,13 +605,13 @@ class Debit_model extends CI_Model
 		// if(isset($param['id']))
 		// {
 		// 	return $res->row_array();
-		
+
 		// }
 		// else
 		// {
 		// 	return $res->result_array();
 		// }
-		
+
 	}
 
 	function get_bank($params = array())
@@ -949,6 +1049,40 @@ class Debit_model extends CI_Model
 		} else {
 			return $res->result_array();
 		}
+	}
+
+	function update_detail_jurnal_akun($idJurnal, $kodeAkun, $data = array())
+	{
+		$this->db->where('id_jurnal', $idJurnal);
+		$this->db->where('account_code', $kodeAkun);
+
+		if (isset($data['kode_baru'])) {
+			$this->db->set('account_code', $data['kode_baru']);
+		}
+
+		// Ini untuk KODE AKUN set KREDIT karena transaksinya KAS MASUK
+		if (isset($data['value_baru'])) {
+			$this->db->set('kredit', $data['value_baru']);
+		}
+
+		$this->db->update('jurnal_umum_detail');
+
+		$status = $this->db->affected_rows();
+		return ($status == 0) ? FALSE : $idJurnal;
+	}
+
+	function update_detail_jurnal_kas($idJurnal, $kodeAkunKas, $total)
+	{
+		$this->db->where('id_jurnal', $idJurnal);
+		$this->db->where('account_code', $kodeAkunKas);
+
+		// Ini untuk KODE KAS set DEBET karena transaksinya KAS MASUK
+		$this->db->set('debet', $total);
+
+		$this->db->update('jurnal_umum_detail');
+
+		$status = $this->db->affected_rows();
+		return ($status == 0) ? FALSE : $idJurnal;
 	}
 }
 

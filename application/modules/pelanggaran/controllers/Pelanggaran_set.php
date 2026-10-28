@@ -28,16 +28,30 @@ class Pelanggaran_set extends CI_Controller
 
     public function simpan_pelanggaran()
     {
-        $id = $this->input->post('id');
+        $id = sanitizeStrict($this->input->post('id'));
+        $pelanggaran = sanitizeStrict($this->input->post('pelanggaran'));
+        $poin = sanitizeStrict($this->input->post('poin'));
+        $idKategori = sanitizeStrict($this->input->post('id_kategori'));
+
         $data = [
-            'pelanggaran' => $this->input->post('pelanggaran'),
-            'poin' => $this->input->post('poin'),
-            'id_kategori' => $this->input->post('id_kategori')
+            'pelanggaran' => $pelanggaran,
+            'poin' => $poin,
+            'id_kategori' => $idKategori,
         ];
+        $colWhere = $data;
 
         if ($id) {
+            $colWhere['id <>'] = $id;
+            if ($this->General_model->checkDataExists("pelanggaran", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data Jenis Pelanggaran sudah ada.');
+                redirect('manage/pelanggaran');
+            }
             $this->db->where('id', $id)->update('pelanggaran', $data);
         } else {
+            if ($this->General_model->checkDataExists("pelanggaran", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data Jenis Pelanggaran sudah ada.');
+                redirect('manage/pelanggaran');
+            }
             $this->db->insert('pelanggaran', $data);
         }
 
@@ -47,12 +61,24 @@ class Pelanggaran_set extends CI_Controller
 
     public function simpan_kategori_pelanggaran()
     {
-        $id = $this->input->post('id');
-        $data = ['kategori' => $this->input->post('kategori')];
+        $id = sanitizeStrict($this->input->post('id'));
+        $kategori = sanitizeStrict($this->input->post('kategori'));
+
+        $data = ['kategori' => $kategori];
+        $colWhere = $data;
 
         if ($id) {
+            $colWhere['id <>'] = $id;
+            if ($this->General_model->checkDataExists("kategori_pelanggaran", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data Kategori Pelanggaran sudah ada.');
+                redirect('manage/pelanggaran');
+            }
             $this->db->where('id', $id)->update('kategori_pelanggaran', $data);
         } else {
+            if ($this->General_model->checkDataExists("kategori_pelanggaran", $colWhere)) {
+                $this->session->set_flashdata('failed', 'Data Kategori Pelanggaran sudah ada.');
+                redirect('manage/pelanggaran');
+            }
             $this->db->insert('kategori_pelanggaran', $data);
         }
 
@@ -95,30 +121,17 @@ class Pelanggaran_set extends CI_Controller
 
     public function import_pelanggaran()
     {
-        if (
-            empty($_FILES['file_excel']['name']) ||
-            $_FILES['file_excel']['error'] !== UPLOAD_ERR_OK ||
-            strtolower(pathinfo($_FILES['file_excel']['name'], PATHINFO_EXTENSION)) !== 'xlsx' ||
-            $_FILES['file_excel']['size'] > 5 * 1024 * 1024 ||
-            !is_uploaded_file($_FILES['file_excel']['tmp_name'])
-        ) {
-            $this->session->set_flashdata('failed', 'File import pelanggaran harus .xlsx dan maksimal 5MB.');
-            redirect('manage/pelanggaran');
-        }
-
         $file = $_FILES['file_excel']['tmp_name'];
 
         if ($file) {
-            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
-            $reader->setReadDataOnly(TRUE);
-            $spreadsheet = $reader->load($file);
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
             $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
 
             foreach ($sheet as $i => $row) {
-                if ($i < 2) continue; // skip header
+                if ($i < 3) continue; // skip header
 
                 $data = [
-                    'pelanggaran' => trim((string) $row['A']),
+                    'pelanggaran' => $row['A'],
                     'poin' => (int)$row['B'],
                     'id_kategori' => (int)$row['C']
                 ];

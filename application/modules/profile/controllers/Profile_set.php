@@ -35,10 +35,11 @@ class Profile_set extends CI_Controller
 
         if ($_POST == TRUE) {
 
-            $params['user_id'] = (int) $this->session->userdata('uid');
+            $params['user_id'] = $this->input->post('user_id');
+            $params['user_role_role_id'] = $this->input->post('role_id');
             $params['user_last_update'] = date('Y-m-d H:i:s');
-            $params['user_full_name'] = $this->input->post('user_full_name', TRUE);
-            $params['user_description'] = $this->input->post('user_description', TRUE);
+            $params['user_full_name'] = $this->input->post('user_full_name');
+            $params['user_description'] = $this->input->post('user_description');
             $status = $this->Users_model->add($params);
             if (!empty($_FILES['user_image']['name'])) {
                 $paramsupdate['user_image'] = $this->do_upload($name = 'user_image', $fileName = $params['user_full_name']);
@@ -63,7 +64,7 @@ class Profile_set extends CI_Controller
             redirect('manage/profile');
         } else {
             if ($this->input->post('user_id')) {
-                redirect('manage/profile/edit/' . (int) $this->session->userdata('uid'));
+                redirect('manage/profile/edit/' . $this->input->post('user_id'));
             }
 
             // Edit mode
@@ -84,17 +85,12 @@ class Profile_set extends CI_Controller
 
         /* create directory if not exist */
         if (!is_dir($config['upload_path'])) {
-            mkdir($config['upload_path'], 0755, TRUE);
+            mkdir($config['upload_path'], 0777, TRUE);
         }
 
         $config['allowed_types'] = 'gif|jpg|jpeg|png';
         $config['max_size'] = '32000';
-        $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
         $config['file_name'] = $fileName;
-        $config["file_ext_tolower"] = TRUE;
-        $config["remove_spaces"] = TRUE;
-        $config["detect_mime"] = TRUE;
-        $config["mod_mime_fix"] = TRUE;
         $this->upload->initialize($config);
 
         if (!$this->upload->do_upload($name)) {
@@ -134,23 +130,17 @@ class Profile_set extends CI_Controller
         $this->form_validation->set_rules('user_current_password', 'Old Password', 'required');
         $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
         if ($_POST and $this->form_validation->run() == TRUE) {
-            $old_password = md5($this->input->post('user_current_password'));
-            $user_id = (int) $this->session->userdata('uid');
+            $old_password               = md5($this->input->post('user_current_password'));
+            $user_id                    = $this->input->post('user_id');
 
             $params['user_password']    = md5($this->input->post('user_password'));
             $params['user_password_last_update'] = date('Y-m-d H:i:s');
 
-            $current_password = $this->db
-                ->where('user_id', $user_id)
-                ->where('user_password', $old_password)
-                ->get('users')
-                ->num_rows();
+            $current_password = $this->db->query("SELECT user_id FROM users WHERE user_id = '$user_id' AND user_password= '$old_password'")->num_rows();
 
             if ($current_password > 0) {
                 $status    = $this->Users_model->change_password($this->session->userdata('uid'), $params);
-                // Update session so hook reads fresh value immediately
                 $this->session->set_userdata('user_password_last_update', date('Y-m-d H:i:s'));
-                // Reset dismiss flag so reminder logic works correctly next time
                 $this->session->unset_userdata('password_reminder_dismissed_' . $this->session->userdata('uid'));
             } else {
                 $this->session->set_flashdata('failed', 'Password lama salah bisa hubungi administrator');

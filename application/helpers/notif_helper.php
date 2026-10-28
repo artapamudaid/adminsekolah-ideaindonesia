@@ -1,43 +1,53 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-    function send_whatsapp($no_wa, $psn, $set_key, $set_wa)
-    {
+function get_key(){
+    $host   = '103.41.206.228';
+    $user   = 'indoweb_admin';
+    $pass   = '$qlC9I)CJ;r&rzIavW';
+    $db     = 'indoweb_wacenter';
+    
+    $conn   = mysqli_connect($host, $user, $pass, $db);
+    
+    $query  = mysqli_query($conn, "SELECT wa_key FROM datas WHERE subdomain = 'other' AND provider='dripsender'");
+    
+    $res    = mysqli_fetch_array($query);
+    
+    return $res['wa_key'];
+}
 
-        $url = "https://wa-scheduler.indoweb.id/api/queue";
+function send_whatsapp($no_wa, $psn)
+{
+    
+    $key = get_key();
+    
+    $url    = 'https://api.dripsender.id/send';
+    $data   = array(
+        "phone"     => $no_wa,
+        "api_key"   => $key,
+        "text"      => $psn
+    );
+    $data_string = json_encode($data);
 
-        $token = "19a90a35eeb8ceb11e0141ed997a871149dadcb3"; // Bearer Token
-
-        $receiver    = str_replace('+', '', $no_wa);
-        $data = [
-            "apikey"   => 'VWEq8UuGKCoSRBYGXVWWQ3CdSHBbsp',
-            "sender"   => '6282229129292',
-            "receiver" => $receiver,
-            "message"  => $psn
-        ];
-
-        $payload = json_encode($data);
-
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: Bearer " . $token,
-            "Content-Type: application/json",
-            "Content-Length: " . strlen($payload)
-        ]);
-
-        $response = curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            echo "cURL Error: " . curl_error($ch);
-        } else {
-            echo "Response:\n";
-            echo $response;
-        }
-    }
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_VERBOSE, 0);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 360);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt(
+        $ch,
+        CURLOPT_HTTPHEADER,
+        array(
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($data_string)
+        )
+    );
+    return $res = curl_exec($ch);
+    curl_close($ch);
+}
 
     function send_telegram($telegram_id, $psn){
         $secret_token = "5777086871:AAHeNMB2mZJanX2-ckqySkh8sknmSdMCSQs";

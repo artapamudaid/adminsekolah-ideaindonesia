@@ -14,6 +14,20 @@ class Student_model extends CI_Model
     // Get From Databases
     function get($params = array())
     {
+        $cache_key = get_session_cache_key('student', $params);
+        try {
+            if (!isset($this->cache)) {
+                $this->load->driver('cache', array('adapter' => 'file'));
+            }
+            if (isset($this->cache)) {
+                $cached = $this->cache->get($cache_key);
+                if ($cached !== FALSE) {
+                    return $cached;
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache read error in Student_model::get: ' . $e->getMessage());
+        }
 
         if (isset($params['id'])) {
             $this->db->where('student.student_id', $params['id']);
@@ -117,13 +131,29 @@ class Student_model extends CI_Model
 
         $res = $this->db->get('student');
 
-        if (isset($params['id'])) {
-            return $res->row_array();
-        } else if (isset($params['student_nis'])) {
-            return $res->row_array();
+        if (isset($params['id']) || isset($params['student_nis'])) {
+            $result = $res->row_array();
+            if ($result && isset($result['student_password'])) {
+                $result['student_password'] = '[PROTECTED]';
+            }
         } else {
-            return $res->result_array();
+            $result = $res->result_array();
+            foreach ($result as &$row) {
+                if (isset($row['student_password'])) {
+                    $row['student_password'] = '[PROTECTED]';
+                }
+            }
         }
+
+        try {
+            if (isset($this->cache)) {
+                $this->cache->save($cache_key, $result, CACHE_TTL);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache write error in Student_model::get: ' . $e->getMessage());
+        }
+
+        return $result;
     }
 
     function get_home($params = array())
@@ -694,6 +724,7 @@ class Student_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('student');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -722,6 +753,7 @@ class Student_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('student');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -777,6 +809,7 @@ class Student_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('student');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -784,18 +817,21 @@ class Student_model extends CI_Model
     {
         $this->db->where('student_id', $id);
         $this->db->delete('student');
+        bump_cache_version('student');
     }
 
     function delete_class($id)
     {
         $this->db->where('class_id', $id);
         $this->db->delete('class');
+        bump_cache_version('student');
     }
 
     function delete_majors($id)
     {
         $this->db->where('majors_id', $id);
         $this->db->delete('majors');
+        bump_cache_version('student');
     }
 
     public function is_exist($field, $value)
@@ -809,6 +845,45 @@ class Student_model extends CI_Model
     {
         $this->db->where('student_id', $id);
         $this->db->update('student', $params);
+        bump_cache_version('student');
+    }
+
+    function count_all($params = array())
+    {
+        if (isset($params['status'])) {
+            $this->db->where('student_status', $params['status']);
+        }
+
+        return $this->db->count_all_results('student');
+    }
+
+    function list_siswa($limit, $start, $search)
+    {
+        $this->db->select('student.student_id, student_nis, student_nisn, student_password, student_gender, student_phone, 
+                            student_hobby, student_address, student_parent_phone,student_full_name, student_born_place, 
+                            student_born_date, student_img, student_status, student_name_of_mother, student_name_of_father,
+                            student_input_date, student_last_update');
+        $this->db->select('class.class_id, student.class_class_id, class.class_name, class.majors_majors_id');
+        $this->db->select('student.majors_majors_id, majors_id, majors_name, majors_short_name, majors_school_name, majors_status');
+
+        $this->db->from('student');
+
+        $this->db->join('class', 'class.class_id = student.class_class_id', 'left');
+        $this->db->join('majors', 'majors.majors_id = student.majors_majors_id', 'left');
+
+        if (!empty($search)) {
+            $this->db->group_start();
+
+            $this->db->like("student.student_full_name", $search);
+            $this->db->or_like("student.student_nis", $search);
+
+            $this->db->group_end();
+        }
+
+        $this->db->where('student.student_status', '1');
+
+        $this->db->limit($limit, $start);
+        return $this->db->get();
     }
 
     function get_jurnal($params = array())

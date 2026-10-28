@@ -30,17 +30,15 @@ class Registrasi_set extends CI_Controller
     $config['base_url'] = site_url('manage/registrasi_set/index');
 
     // Jika ada query string, tambahkan ke base_url
-    $queryString = $this->input->get(NULL, TRUE);
-    if (!empty($queryString)) {
-      $config['base_url'] .= '?' . http_build_query($queryString, '', "&");
+    if (!empty($_GET)) {
+      $config['base_url'] .= '?' . http_build_query($_GET, '', "&");
     }
 
-    $search = (string) $this->input->get('q', TRUE);
-    if ($search !== '') {
+    if ($this->input->get('q')) {
       $this->db->group_start();
-      $this->db->like('registrasi_name', $search);
-      $this->db->or_like('registrasi_school', $search);
-      $this->db->or_like('registrasi_email', $search);
+      $this->db->like('registrasi_name', $this->input->get('q'));
+      $this->db->or_like('registrasi_school', $this->input->get('q'));
+      $this->db->or_like('registrasi_email', $this->input->get('q'));
       $this->db->group_end();
     }
 
@@ -52,7 +50,7 @@ class Registrasi_set extends CI_Controller
 
 
     $config['base_url'] = site_url('manage/registrasi/index');
-    $config['suffix'] = '?' . http_build_query($queryString, '', "&");
+    $config['suffix'] = '?' . http_build_query($_GET, '', "&");
 
     // Bootstrap 3 Pagination Styles
     $config['full_tag_open'] = '<ul class="pagination">';
@@ -85,8 +83,8 @@ class Registrasi_set extends CI_Controller
       'offset' => $offset
     );
 
-    if ($search !== '') {
-      $params['search'] = $search;
+    if ($this->input->get('q')) {
+      $params['search'] = $this->input->get('q');
     }
 
     $data['registrasi_list'] = $this->Registrasi_model->get($params);
@@ -106,7 +104,7 @@ class Registrasi_set extends CI_Controller
 
   public function copy_msg()
   {
-    $id = (int) $this->input->post('id', TRUE);
+    $id = $this->input->post('id');
     if ($id == NULL) {
       echo json_encode(array('status' => 'error', 'message' => 'ID tidak ditemukan'));
       exit;
@@ -127,33 +125,50 @@ class Registrasi_set extends CI_Controller
     //          ', Anda telah terdaftar di demo.adminsekolah.net. Untuk login gunakan Username/Email: ' .
     //          $username . ' dan Password: ' . $pswd;
 
-     $greetings = 'Selamat Pagi';
-      $current_hour = date('H');
-      if ($current_hour >= 11 && $current_hour < 15) {
-          $greetings = 'Selamat Siang';
-      } else if ($current_hour >= 15 && $current_hour < 18) {
-          $greetings = 'Selamat Sore';
-      } else if ($current_hour >= 18 || $current_hour < 3) {
-          $greetings = 'Selamat Malam';
-      }
-        
-    $pesan = $greetings . " Bapak/Ibu " . strtoupper($name)
+    $pesan = "Yth. Bapak/Ibu " . strtoupper($name)
       . "\n"
       . ' dari ' . strtoupper($school)
       . "\n\n"
-      . "Terimakasih sudah telah mendaftar Demo AdminsekolahNet "
+      . "Terimakasih sudah mendaftar trial aplikasi AdminSekolah.net "
       . "\n\n"
-      . "Perkenalkan saya Tiya, yang akan membantu Bapak/Ibu dalam penggunaan aplikasi AdminSekolah "
+      . "Perkenalkan saya Kiki, yang akan membantu dalam penggunaan aplikasi AdminSekolah "
       . "\n\n"
-      . "Untuk Login Demo gunakan:"
+      . "Silahkan login menggunakan akses berikut:"
       . "\n"
-      . "URL : https://demo.adminsekolah.net"
+      . "Login: demo.adminsekolah.net"
       . "\n"
       . "Username: " . $username
       . "\n"
       . "Password: " . $pswd
       . "\n\n"
-      . "Silakan login menggunakan username dan password tersebut. Jika mengalami kendala atau ada yang ingin didiskusikan, jangan ragu untuk menghubungi saya kembali ya, Pak/Bu 😊🙏🏻";
+      . "Berikut panduan untuk mencoba fitur-fiturnya :"
+      . "\n"
+      . "- tutorial.adminsekolah.net "
+      . "\n"
+      . "- s.id/YoutubeTutorialAdminSekolah"
+      . "\n\n"
+      . "Apabila Bapak/Ibu berkenan silahkan coba juga demo aplikasi Mobile AdminSekolah secara GRATIS melalui akses berikut:"
+      . "\n"
+      . "iOs : s.id/AdminSekolahiOS"
+      . "\n"
+      . "Android : s.id/AdminSekolahAndroid"
+      . "\n\n"
+      . "*AKSES PEGAWAI*"
+      . "\n"
+      . "Kode Sekolah : 2020123"
+      . "\n"
+      . "NIP : 123"
+      . "\n"
+      . "Password : 123456"
+      . "\n\n"
+      . "*AKSES SISWA & WALIMURID*"
+      . "Kode Sekolah : 2020123"
+      . "\n"
+      . "NIS : 20250201"
+      . "\n"
+      . "Password : 123456"
+      . "\n\n"
+      . "Apabila terdapat kendala atau ada yang ingin ditanyakan jangan ragu untuk menghubungi nomor ini ☺️";
 
     // Set header agar browser tahu ini JSON
     header('Content-Type: application/json');
@@ -191,22 +206,11 @@ class Registrasi_set extends CI_Controller
   function rpw($id)
   {
 
-    $id = (int) $id;
-    if ($id <= 0) {
-      redirect('manage/registrasi');
-    }
-
     $registrasi_password = '123456';
 
-    $this->db
-      ->where('registrasi_id', $id)
-      ->update('registrasi', array('registrasi_password' => $registrasi_password));
+    $this->db->query("UPDATE registrasi SET registrasi_password = '$registrasi_password' WHERE registrasi_id = '$id'");
 
-    $registrasi = $this->db
-      ->select('registrasi_name, registrasi_email')
-      ->where('registrasi_id', $id)
-      ->get('registrasi')
-      ->row_array();
+    $registrasi = $this->db->query("SELECT registrasi_name, registrasi_email FROM registrasi WHERE registrasi_id = '$id'")->row_array();
 
     $this->session->set_flashdata('success', 'Reset Password Berhasil');
     redirect('manage/registrasi');
@@ -215,8 +219,8 @@ class Registrasi_set extends CI_Controller
   public function export_excel()
   {
 
-    $dari = $this->input->post('dari_tanggal', TRUE);
-    $sampai = $this->input->post('sampai_tanggal', TRUE);
+    $dari = $this->input->post('dari_tanggal');
+    $sampai = $this->input->post('sampai_tanggal');
 
     $params['dari_tanggal']   = $dari;
     $params['sampai_tanggal'] = $sampai;
@@ -236,7 +240,175 @@ class Registrasi_set extends CI_Controller
     $this->load->view('registrasi/registrasi_excel', $data);
   }
 
-   function formatPhoneNumber($phoneNumber)
+  // public function regis()
+  // {
+  //   $data['operation']  = 'Tambah';
+
+  //   if ($_POST) {
+
+  //     $email  = $this->input->post('registrasi_email');
+  //     $phone  = $this->input->post('registrasi_phone');
+
+  //     $phone = str_replace(" ", "", $phone);
+  //     $phone = str_replace("(", "", $phone);
+  //     $phone = str_replace(")", "", $phone);
+  //     $phone = str_replace(".", "", $phone);
+
+  //     if (!preg_match('/[^+0-9]/', trim($phone))) {
+  //       if (substr(trim($phone), 0, 1) == '+') {
+  //         $hp = trim($phone);
+  //       } elseif (substr(trim($phone), 0, 1) == '0') {
+  //         $hp = '+62' . substr(trim($phone), 1);
+  //       } elseif (substr(trim($phone), 0, 2) == '62') {
+  //         $hp = '+' . trim($phone);
+  //       } elseif (substr(trim($phone), 0, 1) == '8') {
+  //         $hp = '+62' . trim($phone);
+  //       } else {
+  //         $hp = '+' . trim($phone);
+  //       }
+  //     }
+
+  //     $cek    = $this->db->query("SELECT COUNT(registrasi_email) AS count FROM registrasi WHERE registrasi_email = '$email'")->row_array();
+
+  //     $cek2   = $this->db->query("SELECT COUNT(registrasi_phone) AS count FROM registrasi WHERE registrasi_phone = '$hp'")->row_array();
+
+  //     //if($cek['count'] == 0 && $cek2['count'] == 0){
+
+  //     $pass_generate              = $this->password_generate(7);
+  //     $pass                       = $pass_generate;
+
+  //     $params['registrasi_name']          =  $this->input->post('registrasi_name');
+  //     $params['registrasi_school']        =  $this->input->post('registrasi_school');
+  //     $params['registrasi_address']       =  $this->input->post('registrasi_address');
+  //     $params['registrasi_city']          =  $this->input->post('registrasi_city');
+  //     $params['registrasi_province']      =  $this->input->post('registrasi_province');
+  //   $params['registrasi_sumber']        =  $this->input->post('registrasi_sumber');
+  //     $params['registrasi_phone']         =  $hp;
+  //     $params['registrasi_email']         =  $email;
+  //     $params['registrasi_password']      = $pass;
+  //     $params['registrasi_input_date']    = date('Y-m-d H:i:s');
+  //     $params['registrasi_last_update']   = date('Y-m-d H:i:s');
+
+  //     $this->Registrasi_model->add($params);
+
+  //     $users = array(
+  //       'user_email'        => $this->input->post('registrasi_email'),
+  //       'user_password'     => md5($pass),
+  //       'user_email'        => $this->input->post('registrasi_email'),
+  //       'user_role_role_id' => '1',
+  //       'user_majors_id'    => '0',
+  //       'user_full_name'    => $this->input->post('registrasi_name'),
+  //       'user_description'  => $this->input->post('registrasi_school'),
+  //       'user_input_date'   => date('Y-m-d H:i:s'),
+  //       'user_last_update'  => date('Y-m-d H:i:s'),
+
+  //     );
+
+
+  //     $this->db->insert('users', $users);
+
+  //     if (isset($hp)) {
+
+  //       $wa_center              = $this->Setting_model->get(array('id' => 17));
+  //       $wa_key                 = $this->Setting_model->get(array('name' => 'setting_wa_key'));
+  //       $setting_whatsapp       = $this->Setting_model->get(array('id' => 92));
+  //       $set_key                = $wa_key['setting_value'];
+  //       $set_wa                 = $setting_whatsapp['setting_value'];
+
+  //       $no_wa      = $this->formatPhoneNumber($hp);
+  //       $name       = $this->input->post('registrasi_name');
+  //       $school     = $this->input->post('registrasi_school');
+  // 	$address    =  $this->input->post('registrasi_address');
+  //       $username   = $this->input->post('registrasi_email');
+  // 	$sumber     = $this->input->post('registrasi_sumber');
+  // 	$city_id    = $this->input->post('registrasi_city');
+  // 	$prov_id    = $this->input->post('registrasi_province');
+  //       $pswd       = $pass;
+
+  //       //$pesan = 'Terima kasih Bapak/Ibu ' . $this->input->post('registrasi_name') . ' dari ' . $this->input->post('registrasi_school') . ', Anda telah terdaftar di demo.adminsekolah.net . Untuk login gunakan Username/Email : ' . $this->input->post('registrasi_email') . ' dan Password : ' . $pass;
+
+  //       $pesan = "Yth. Bapak/Ibu " . strtoupper($this->input->post('registrasi_name'))
+  //               ."\n"
+  //               . ' dari ' . strtoupper($this->input->post('registrasi_school'))
+  //               . "\n\n"
+  //               . "Terimakasih sudah mendaftar trial aplikasi AdminSekolah.net 📑"
+  //               . "\n\n"
+  //               . "Perkenalkan saya Kiki, yang akan membantu dalam penggunaan aplikasi AdminSekolah 👩🏻‍💻"
+  //               . "\n\n"
+  //               . "Silahkan login menggunakan akses berikut:"
+  //               . "\n"
+  //               . "Login: demo.adminsekolah.net"
+  //               . "\n"
+  //               . "Username: " . $this->input->post('registrasi_email')
+  //               . "\n"
+  //               . "Password: " . $pswd
+  //               . "\n\n"
+  //               . "Berikut panduan untuk mencoba fitur-fiturnya :"
+  //               . "\n"
+  //               . "- tutorial.adminsekolah.net "
+  //               . "\n"
+  //               . "- s.id/YoutubeTutorialAdminSekolah"
+  //               . "\n\n"
+  //               . "Apabila Bapak/Ibu berkenan silahkan coba juga demo aplikasi Mobile AdminSekolah secara GRATIS melalui akses berikut:"
+  //               . "\n"
+  //               . "📌 iOs : s.id/AdminSekolahiOS"
+  //               . "\n"
+  //               . "📌 Android : s.id/AdminSekolahAndroid"
+  //               . "\n\n"
+  //               . "🔐 AKSES PEGAWAI"
+  //               . "\n"
+  //               . "Kode Sekolah : 2020123"
+  //               . "\n"
+  //               . "NIP : 123"
+  //               . "\n"
+  //               . "Password : 123456"
+  //               . "\n\n"
+  //               . "🔐 AKSES SISWA & WALIMURID"
+  //               . "Kode Sekolah : 2020123"
+  //               . "\n"
+  //               ."NIS : 20250201"
+  //               . "\n"
+  //               . "Password : 123456"
+  //               . "\n\n"
+  //               . "Apabila terdapat kendala atau ada yang ingin ditanyakan jangan ragu untuk menghubungi nomor ini ☺️🙏🏻";
+
+  //       // send_whatsapp($no_wa, $pesan, '', '');
+  //       send_whatsapp($no_wa, $pesan, $set_key, $set_wa);
+
+  //       $this->wa_admin($no_wa, $name, $school, $username, $pswd, $address, $city_id, $prov_id, $sumber);
+  //     }
+  //     $this->session->set_flashdata('success', ' Registrasi Berhasil Silahkan Cek Whatsapp-mu');
+  //     redirect('manage/auth/login');
+
+  //     // } else if($cek['count'] != 0 && $cek2['count'] == 0) {
+  //     //     $this->session->set_flashdata('failed', ' Email Sudah Pernah Didaftarakan');
+  //     //     redirect('registrasi');
+  //     // } else if($cek['count'] == 0 && $cek2['count'] != 0) {
+  //     //     $this->session->set_flashdata('failed', ' No. Whatsapp Sudah Pernah Didaftarakan');
+  //     //     redirect('registrasi');
+  //     // } else {
+  //     //     $this->session->set_flashdata('failed', ' Email dan No. Whatsapp Sudah Pernah Didaftarakan');
+  //     //     redirect('registrasi');
+  //     // }
+
+  //   }
+
+  //   $data['setting_school']     = $this->Setting_model->get(array('id' => 1));
+  //   $data['setting_address']    = $this->Setting_model->get(array('id' => 2));
+  //   $data['setting_phone']      = $this->Setting_model->get(array('id' => 3));
+  //   $data['setting_district']   = $this->Setting_model->get(array('id' => 4));
+  //   $data['setting_city']       = $this->Setting_model->get(array('id' => 5));
+  //   $data['setting_logo']       = $this->Setting_model->get(array('id' => 6));
+
+  //   $data['province']   = $this->Registrasi_model->get_province();
+  //   $data['city']       = $this->Registrasi_model->get_city();
+
+  //   $data['title']      = 'Form Pendaftaran';
+  //   $data['main']       = 'registrasi/register';
+  //   $this->load->view('registrasi/register', $data);
+  // }
+
+  function formatPhoneNumber($phoneNumber)
   {
     // Cek apakah nomor sudah diawali dengan "+62"
     if (substr($phoneNumber, 0, 3) === '+62') {
@@ -254,20 +426,16 @@ class Registrasi_set extends CI_Controller
 
   public function get_city()
   {
-    $province_id = (int) $this->input->post('province_id', TRUE);
-    $dataKota = $this->db
-      ->where('city_province_id', $province_id)
-      ->order_by('city_id', 'ASC')
-      ->get('city')
-      ->result_array();
+    $province_id = $this->input->post('province_id');
+    $dataKota    = $this->db->query("SELECT * FROM city WHERE city_province_id = '$province_id' ORDER BY city_id ASC")->result_array();
 
     echo '<select name="registrasi_city" id="registrasi_city" class="form-control" required="">
       <option value=""> -- Pilih Kota/Kabupaten -- </option>';
     foreach ($dataKota as $row) {
 
-      echo '<option value="' . (int) $row['city_id'] . '">';
+      echo '<option value="' . $row['city_id'] . '">';
 
-      echo html_escape(ucwords(strtolower($row['city_name'])));
+      echo ucwords(strtolower($row['city_name']));
 
       echo '</option>';
     }

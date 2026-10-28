@@ -85,10 +85,32 @@ class Presensi_data_area_set extends CI_Controller
         $params['created_date'] = date('Y-m-d H:i:s');
         $params['created_by'] = $this->session->userdata('uid');
       }
-      $params['nama_area'] = $this->input->post('nama_area');
-      $params['longi'] = $this->input->post('longi');
-      $params['lati'] = $this->input->post('lati');
-      $params['remark'] = $this->input->post('remark');
+
+      $namaArea = sanitizeStrict($this->input->post('nama_area'));
+      $longi = sanitizeStrict($this->input->post('longi'));
+      $lati = sanitizeStrict($this->input->post('lati'));
+      $remark = sanitizeStrict($this->input->post('remark'));
+
+      $colWhere = [
+        "nama_area" => $namaArea,
+        "longi" => $longi,
+        "lati" => $lati,
+      ];
+
+      if (!empty($id)) {
+        $colWhere["id_area != "] = $id;
+      }
+
+      if ($this->General_model->checkDataExists("area_absensi", $colWhere)) {
+        $this->session->set_flashdata('failed', ' Data sudah ada');
+        $redirectUrl = (!empty($id)) ? "manage/presensi_data_area/edit/$id" : "manage/presensi_data_area";
+        redirect($redirectUrl);
+      }
+
+      $params['nama_area'] = $namaArea;
+      $params['longi'] = $longi;
+      $params['lati'] = $lati;
+      $params['remark'] = $remark;
       $status = $this->Presensi_data_area_model->add($params);
 
       // activity log

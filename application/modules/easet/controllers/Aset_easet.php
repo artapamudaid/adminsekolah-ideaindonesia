@@ -117,7 +117,7 @@ class Aset_easet extends CI_Controller
 
 				$image_name = $image . '.png'; //buat name dari qr code sesuai dengan nim
 
-				$url = base_url('aset/detail_aset/') . $id_aset;
+				$url = 'http://urlkamu.com/' . $id_aset;
 
 				$params['data'] = $url; //data yang akan di jadikan QR CODE
 				$params['level'] = 'H'; //H=High
@@ -131,13 +131,21 @@ class Aset_easet extends CI_Controller
 
 				$idBarang = $this->input->post('id_barang');
 				$idKas = $this->input->post('akun_kas');
+				$akunBiaya = $this->db->query(
+					"SELECT kb.akun_id, ac.account_code
+					 FROM barang br
+					 JOIN kategori_barang kb ON kb.id_kategori = br.id_kategori
+					 JOIN account ac ON ac.account_id = kb.akun_id
+					 WHERE br.id_barang = $idBarang"
+				)->row();
+				$kodeBiaya = $akunBiaya->account_code;
 
 				$data = array(
 					'id_aset' => $id_aset,
 					'kode_aset' => $kode_aset,
 					'id_barang' => $idBarang,
 					'id_lokasi' => $this->input->post('id_lokasi'),
-					'kas_account_id' => $idKas,
+					'kas_account_id' => $this->input->post('akun_kas'),
 					'volume' => $volume,
 					'satuan' => $this->input->post('satuan'),
 					'harga' => $harga,
@@ -149,18 +157,11 @@ class Aset_easet extends CI_Controller
 					'qr_code' => $image_name
 				);
 
+				echo 'Akun Biaya = ' . $akunBiaya->akun_id . '<br>';
+				echo json_encode($data);
+				exit;
+
 				$result = $this->ma->storeAset($data);
-				if (!empty($idKas)) {
-					$akunBiaya = $this->db->query(
-						"SELECT kb.akun_id, ac.account_code
-					 FROM barang br
-					 JOIN kategori_barang kb ON kb.id_kategori = br.id_kategori
-					 JOIN account ac ON ac.account_id = kb.akun_id
-					 WHERE br.id_barang = $idBarang"
-					)->row();
-					$kodeBiaya = $akunBiaya->account_code;
-					$this->insertJurnal($majors_id, $id_aset, $idKas, $kodeBiaya, $harga);
-				}
 
 				if ($result >= 1) {
 					$this->session->set_flashdata('sukses', 'Disimpan');
@@ -180,6 +181,14 @@ class Aset_easet extends CI_Controller
 
 				$idBarang = $this->input->post('id_barang');
 				$idKas = $this->input->post('akun_kas');
+				$akunBiaya = $this->db->query(
+					"SELECT kb.akun_id, ac.account_code
+					 FROM barang br
+					 JOIN kategori_barang kb ON kb.id_kategori = br.id_kategori
+					 JOIN account ac ON ac.account_id = kb.akun_id
+					 WHERE br.id_barang = $idBarang"
+				)->row();
+				$kodeBiaya = $akunBiaya->account_code;
 
 				$data = array(
 					'id_aset' => $id_aset,
@@ -197,20 +206,13 @@ class Aset_easet extends CI_Controller
 					'jenis_bantuan' => $this->input->post('jenis_bantuan')
 				);
 
+				// echo 'Akun Biaya = ' . $kodeBiaya . '<br>';
+				// echo json_encode($data);
+				// $this->insertJurnal($majors_id, $id_aset, $idKas, $kodeBiaya, $harga);
+				// exit;
+
 				$result = $this->ma->storeAset($data);
-
-				if (!empty($idKas)) {
-					$akunBiaya = $this->db->query(
-						"SELECT kb.akun_id, ac.account_code
-					 FROM barang br
-					 JOIN kategori_barang kb ON kb.id_kategori = br.id_kategori
-					 JOIN account ac ON ac.account_id = kb.akun_id
-					 WHERE br.id_barang = $idBarang"
-					)->row();
-					$kodeBiaya = $akunBiaya->account_code;
-					$this->insertJurnal($majors_id, $id_aset, $idKas, $kodeBiaya, $harga);
-				}
-
+				$this->insertJurnal($majors_id, $id_aset, $idKas, $kodeBiaya, $harga);
 
 				if ($result >= 1) {
 					$this->session->set_flashdata('sukses', 'Disimpan');
@@ -339,7 +341,7 @@ class Aset_easet extends CI_Controller
 
 				$image_name = $image . '.png'; //buat name dari qr code sesuai dengan nim
 
-				$url = base_url('aset/detail_aset/') . $id_aset;
+				$url = 'http://urlkamu.com/' . $id_aset;
 
 				$params['data'] = $url; //data yang akan di jadikan QR CODE
 				$params['level'] = 'H'; //H=High
@@ -451,32 +453,6 @@ class Aset_easet extends CI_Controller
 		$data['title']          = 'Detail Aset Berwujud';
 		$data['main']           = 'easet/aset/d_wujud';
 		$this->load->view('manage/layout', $data);
-	}
-
-	public function qrcode($id_aset)
-	{
-		$id_aset = $this->uri->segment(5);
-		$aset = $this->ma->detailAset($id_aset);
-
-		if ($aset) {
-			$this->load->library('dompdflib');
-
-			$data['kode_aset'] 	 = $aset['kode_aset'];
-			$data['qr_code'] 	 = $aset['qr_code'];
-			$data['jumlah_aset'] = $aset['volume'];
-			$data['nama'] 		 = $aset['nama_barang'];
-			$data['tahun']		 = $aset['tahun_perolehan'];
-
-			$nama_file = 'Cetak QR Code Aset-' . $data['nama'] . '-' . $data['tahun'] . '.pdf';
-
-			$paper = 'A4';
-			$orientation = "potrait";
-			$html = $this->load->view('easet/aset/p_qrcode', $data, TRUE);
-			$this->dompdflib->generate($html, $nama_file, $paper, $orientation);
-		} else {
-			$this->session->set_flashdata('failed', 'Data Aset Tidak Ditemukan');
-			redirect('manage/easet/aset');
-		}
 	}
 
 	public function hapusAset($id_aset)

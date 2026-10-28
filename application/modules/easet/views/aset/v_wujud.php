@@ -101,13 +101,10 @@
                   <td align="center"><?= $row['volume']; ?></td>
                   <td><?= rupiah($row['harga']); ?></td>
                   <td>
-                    <a target="_blank" href="<?= base_url('manage/easet/aset/qrcode/' . $row['id_aset']) ?>" class="btn btn-success btn-sm">
-                      <i class="fa fa-qrcode"></i>
-                    </a>
-                    <a href="<?= base_url('manage/easet/aset/detailAset/' . $row['id_aset']) ?>" class="btn btn-info btn-sm">
+                    <a href="<?= base_url('manage/easet/aset/detailAset/' . $row['id_aset']) ?>" class="btn btn-success btn-sm">
                       <i class="fa fa-eye"></i>
                     </a>
-                    <a href="<?= base_url('manage/easet/aset/editAset/' . $row['id_aset']) ?>" class="btn btn-warning btn-sm">
+                    <a href="<?= base_url('manage/easet/aset/editAset/' . $row['id_aset']) ?>" class="btn btn-info btn-sm">
                       <i class="fa fa-edit"></i>
                     </a>
                     <a href="<?= base_url('manage/easet/aset/hapusAset/' . $row['id_aset']) ?>" class="btn btn-danger btn-sm tombol-hapus">

@@ -39,9 +39,7 @@
         </div> -->
       </div>
       <div class="card-body">
-        <form action="<?= base_url('manage/easet/laporan/printQrcode') ?>"
-          method="post"
-          target="_blank">
+        <form action="<?= base_url('manage/easet/laporan/printQrcode') ?>" method="post">
           <div class="row">
             <div class="col-md-3">
               <select name="id_lokasi" class="form-control" required>
@@ -51,22 +49,21 @@
                 <?php endforeach ?>
               </select>
             </div>
-
             <div class="col-md-2">
               <select name="tahun_perolehan" class="form-control" required>
                 <option value="">- Tahun Perolehan --</option>
-                <?php foreach ($tahun_perolehan as $row): ?>
-                  <option value="<?= $row['tahun_perolehan']; ?>">
-                    <?= $row['tahun_perolehan']; ?>
-                  </option>
-                <?php endforeach; ?>
+                <?php
+                for ($i = 2015; $i <= date('Y'); $i++) {
+                  echo "<option value='$i'>$i</option>";
+                }
+                ?>
               </select>
             </div>
-
             <div class="col-md-2">
               <button type="submit" class="btn btn-info btn-outline-primary">Cari</button>
               <button type="reset" class="btn btn-warning btn-outline-danger">Reset</button>
             </div>
+
           </div>
         </form>
       </div>

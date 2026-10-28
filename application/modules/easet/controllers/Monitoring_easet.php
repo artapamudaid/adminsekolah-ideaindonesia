@@ -58,10 +58,6 @@ class Monitoring_easet extends CI_Controller
 		$config['upload_path'] = 'easet/src/img/aset/';
 		$config['allowed_types'] = 'gif|jpg|png';
 		$config['encrypt_name'] = TRUE;
-		$config['file_ext_tolower'] = TRUE;
-		$config['remove_spaces'] = TRUE;
-		$config['detect_mime'] = TRUE;
-		$config['mod_mime_fix'] = TRUE;
 
 		$this->upload->initialize($config);
 		if (!empty($_FILES['foto']['name'])) {
@@ -150,10 +146,6 @@ class Monitoring_easet extends CI_Controller
 			$config['upload_path'] = 'easet/src/img/aset/';
 			$config['allowed_types'] = 'gif|jpg|png';
 			$config['encrypt_name'] = TRUE;
-			$config['file_ext_tolower'] = TRUE;
-			$config['remove_spaces'] = TRUE;
-			$config['detect_mime'] = TRUE;
-			$config['mod_mime_fix'] = TRUE;
 
 			$this->upload->initialize($config);
 			if (! $this->upload->do_upload('foto')) {

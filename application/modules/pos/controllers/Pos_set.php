@@ -64,21 +64,59 @@ class Pos_set extends CI_Controller
     public function add_glob()
     {
         if ($_POST == TRUE) {
-            $posName = $_POST['pos_name'];
-            $posKet = $_POST['pos_description'];
-            $accountID = $_POST['account_account_id'];
-            $piutangID = $_POST['piutang_account_id'];
-            $cpt = count($_POST['pos_name']);
+            $posName = sanitizeStrict($_POST['pos_name']);
+            $posKet = sanitizeStrict($_POST['pos_description']);
+            $accountID = sanitizeStrict($_POST['account_account_id']);
+            $piutangID = sanitizeStrict($_POST['piutang_account_id']);
+
+            $cpt = count($posName);
+
+            $added = 0;
+            $skipped = 0;
+
             for ($i = 0; $i < $cpt; $i++) {
+
+                if (
+                    empty($posName[$i]) || empty($posKet[$i]) ||
+                    empty($accountID[$i]) || empty($piutangID[$i])
+                ) {
+                    $skipped++;
+                    continue;
+                }
+
+                $colWhere = ["account_account_id" => $accountID[$i]];
+                if ($this->General_model->checkDataExists('pos', $colWhere)) {
+                    $skipped++;
+                    continue;
+                }
+
                 $params['pos_name'] = $posName[$i];
                 $params['pos_description'] = $posKet[$i];
                 $params['account_account_id'] = $accountID[$i];
                 $params['piutang_account_id'] = $piutangID[$i];
 
-                $this->Pos_model->add($params);
+                $insert = $this->Pos_model->add($params);
+                if (!$insert) {
+                    $skipped++;
+                    continue;
+                }
+                $added++;
             }
+
+            if ($added > 1) {
+                $msg = "$added data berhasil ditambahkan";
+            } elseif ($added == 1) {
+                $msg = "1 data berhasil ditambahkan";
+            } else {
+                $msg = "Tidak ada yang ditambahkan";
+            }
+
+            if ($skipped > 0) {
+                $msg .= "<br>($skipped data dilewati)";
+            }
+
+            $this->session->set_flashdata('success', $msg);
         }
-        $this->session->set_flashdata('success', ' Tambah POS Berhasil');
         redirect('manage/pos');
     }
 
@@ -95,13 +133,26 @@ class Pos_set extends CI_Controller
         if ($_POST and $this->form_validation->run() == TRUE) {
 
             if ($this->input->post('pos_id')) {
-                $params['pos_id'] = $this->input->post('pos_id');
+                $id = sanitizeStrict($this->input->post('pos_id'));
+                $params['pos_id'] = $id;
             }
 
-            $params['pos_name'] = $this->input->post('pos_name');
-            $params['pos_description'] = $this->input->post('pos_description');
-            $params['account_account_id'] = $this->input->post('account_account_id');
-            $params['piutang_account_id'] = $this->input->post('account_piutang_id');
+            $accountID = sanitizeStrict($this->input->post('account_account_id'));
+
+            $colWhere = ["account_account_id" => $accountID];
+
+            if (!empty($id)) {
+                $colWhere["pos_id <>"] = $id;
+            }
+            if ($this->General_model->checkDataExists('pos', $colWhere)) {
+                $this->session->set_flashdata('failed', "Akun sudah ada.");
+                redirect('manage/pos/edit/' . $id);
+            }
+
+            $params['pos_name'] = sanitizeStrict($this->input->post('pos_name'));
+            $params['pos_description'] = sanitizeStrict($this->input->post('pos_description'));
+            $params['account_account_id'] = $accountID;
+            $params['piutang_account_id'] = sanitizeStrict($this->input->post('account_piutang_id'));
 
             $status = $this->Pos_model->add($params);
             $paramsupdate['pos_id'] = $status;
@@ -148,7 +199,7 @@ class Pos_set extends CI_Controller
     // Delete to database
     public function delete($id = NULL)
     {
-        if ($this->session->userdata('uroleid') != SUPERUSER) {
+        if ($this->session->userdata('uroleid') != SUPERUSER && $this->session->userdata('uroleid') != 3) {
             redirect('manage');
         }
         if ($_POST) {

@@ -15,7 +15,7 @@
 			<div class="col-md-12">
 				<div class="box box-success">
 					<div class="box-header">
-						<?php echo form_open(current_url(), array('method' => 'get')) ?>
+						<?php echo form_open(current_url(), array('method' => 'get', 'id' => 'form-report')) ?>
 						<div class="row">
 							<div class="col-md-2">
 								<div class="form-group">
@@ -67,7 +67,8 @@
 							</div>
 							<div class="col-md-4">
 								<div style="margin-top:25px;">
-									<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Cari</button>
+									<button type="button" class="btn btn-primary" id="btn-cari"><i class="fa fa-search"></i> Cari</button>
+									<button type="submit" class="btn btn-primary hidden"><i class="fa fa-search"></i> Cari</button>
 									<?php if ($q and !empty($student)) { ?>
 										<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/presensi_harian/report_print' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Cetak</a>
 										<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/presensi_harian/report_print_time' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Cetak Waktu Presensi</a>
@@ -118,7 +119,7 @@
 											<td><?php echo $row['student_full_name'] ?></td>
 											<?php
 											$student_id = $row['student_id'];
-											$absensiSiswa = $data_absen[$student_id];
+											$absensiSiswa = @$data_absen[$student_id];
 
 											foreach ($daterange as $dt) {
 												$day = $dt->format("d");
@@ -194,5 +195,37 @@
 			else
 				$(".alpha").removeAttr("checked");
 		});
+	});
+</script>
+
+<script>
+	$(function() {
+		$('#btn-cari').click(function() {
+			let tahun_ajaran = $('select[name="p"]').val();
+			let bulan = $('select[name="m"]').val();
+			let unit_sekolah = $('select[name="k"]').val();
+			let kelas = $('select[name="c"]').val();
+
+			if (!tahun_ajaran) {
+				toastNotifikasi('error', 'Pilih Tahun Ajaran dahulu!', 'Gagal!');
+				return;
+			}
+
+			if (!bulan) {
+				toastNotifikasi('error', 'Pilih Bulan dahulu!', 'Gagal!');
+				return;
+			}
+
+			if (!unit_sekolah) {
+				toastNotifikasi('error', 'Pilih Unit Pesantren dahulu!', 'Gagal!');
+				return;
+			}
+
+			$('#btn-cari').addClass('disabled');
+			$('#btn-cari').html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
+
+			let form = $('#form-report');
+			form.submit();
+		})
 	});
 </script>

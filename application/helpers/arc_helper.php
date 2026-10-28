@@ -54,6 +54,10 @@ if (!function_exists('pretty_date')) {
 
     function pretty_date($date = '', $format = '', $timezone = TRUE)
     {
+        if (empty($date)) {
+            return '-';
+        }
+
         $date_str = strtotime($date);
 
         if (empty($format)) {
@@ -119,6 +123,20 @@ if (!function_exists('pretty_date')) {
     }
 }
 
+if (!function_exists('upload_prove_url')) {
+
+    function upload_prove_url($name = '')
+    {
+        if (stristr($name, '://') !== FALSE) {
+            // If it contains a full URL, strip any directory prefixes (like 'users/https://...')
+            $parts = explode('://', $name);
+            return 'https://' . ltrim($parts[1], '/'); // Rebuild using actual URL
+        } else {
+            return base_url('uploads/prove/' . $name);
+        }
+    }
+}
+
 if (! function_exists('idr_format')) {
     function idr_format($param = '')
     {
@@ -164,6 +182,49 @@ function majors()
     return $result['setting_value'];
 }
 
+if (!function_exists('sanitizeStrict')) {
+    function sanitizeStrict($input)
+    {
+        if (is_array($input)) {
+            foreach ($input as $key => $val) {
+                $input[$key] = sanitizeStrict($val);
+            }
+            return $input;
+        }
+
+        $input = (string) $input;
+
+        $input = strip_tags($input);
+
+        $input = preg_replace('/&#[0-9]+;|&#x[0-9A-F]+;/i', '', $input);
+
+        $input = preg_replace('/[<>]/', '', $input);
+
+        $input = str_ireplace('[removed]', '', $input);
+
+        $input = preg_replace('/[^a-zA-Z0-9\s\.\,\-\_\(\)\!\?\:\@\'\/]/', '', $input);
+
+        return trim($input);
+    }
+}
+
+function pre($data)
+{
+    echo '<pre>';
+    print_r($data);
+    echo '</pre>';
+}
+
+if (!function_exists('printQuery')) {
+    function printQuery()
+    {
+        $CI = &get_instance();
+        echo '<pre>';
+        echo $CI->db->last_query();
+        echo '</pre>';
+        die;
+    }
+}
 
 if (!function_exists('time_passed')) {
     function time_passed($datetime, $penuh = false)
@@ -186,5 +247,38 @@ if (!function_exists('time_passed')) {
         $string = array_filter($string);
         if (!$penuh) $string = array_slice($string, 0, 1);
         return $string ? implode(', ', $string) . ' yang lalu' : 'Baru saja';
+    }
+}
+
+if (!function_exists('table_exists_cached')) {
+
+    /**
+     * Cek apakah tabel ada dengan cache.
+     *
+     * @param string $table_name
+     * @param int    $ttl
+     * @return bool
+     */
+    function table_exists_cached($table_name, $ttl = 3600)
+    {
+        $CI = &get_instance();
+
+        $CI->load->driver('cache', ['adapter' => 'file']);
+
+        if ($CI->input->get('clear_cache') == '1') {
+            $CI->cache->clean();
+        }
+
+        $cache_key = 'table_exists_' . strtolower($table_name);
+
+        $exists = $CI->cache->get($cache_key);
+
+        if ($exists === FALSE) {
+            $exists = $CI->db->table_exists($table_name);
+
+            $CI->cache->save($cache_key, $exists, $ttl);
+        }
+
+        return (bool) $exists;
     }
 }

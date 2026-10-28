@@ -17,7 +17,7 @@
 					<div class="box-header">
 						<div class="row">
 							<div class="col-md-9">
-								<?php echo form_open(current_url(), array('class' => 'form-horizontal', 'method' => 'get')) ?>
+								<?php echo form_open(current_url(), array('class' => 'form-horizontal', 'method' => 'get', 'onsubmit' => 'cari_data(); return false;')) ?>
 								<div class="box-body table-responsive">
 									<table>
 										<tr>
@@ -48,6 +48,7 @@
 											<td>
 												<select style="width: 200px;" id="s" name="s" class="form-control" required>
 													<option value="" <?php echo (isset($s['s']) && $s['s'] == '') ? 'selected' : '' ?>> --- Pilih Status --- </option>
+													<option value="all" <?php echo (isset($s['s']) && $s['s'] == 'all') ? 'selected' : '' ?>>Semua</option>
 													<option value="1" <?php echo (isset($s['s']) && $s['s'] == '1') ? 'selected' : '' ?>>Terverifikasi</option>
 													<option value="0" <?php echo (isset($s['s']) && $s['s'] == '0') ? 'selected' : '' ?>>Dibatalkan</option>
 													<option value="2" <?php echo (isset($s['s']) && $s['s'] == '2') ? 'selected' : '' ?>>Dibayar</option>
@@ -58,7 +59,7 @@
 												&nbsp&nbsp
 											</td>
 											<td>
-												<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Cari</button>
+												<button type="button" class="btn btn-primary" onclick="cari_data()"><i class="fa fa-search"></i> Cari</button>
 											</td>
 										</tr>
 									</table>
@@ -83,94 +84,51 @@
 									</tr>
 								</thead>
 								<tbody>
-									<?php
-									if (!empty($prove)) {
-										$i = 1;
-										foreach ($prove as $row):
-											$date = date_create($row['prove_date']);
-									?>
-											<tr>
-												<td><?php echo $i; ?></td>
-												<td><?php echo $row['student_nis']; ?></td>
-												<td><?php echo $row['student_full_name']; ?></td>
-												<td><?php echo $row['majors_short_name'] . ' - ' . $row['class_name']; ?></td>
-												<td><?php echo date_format($date, "d-m-Y H:i:s"); ?></td>
-												<td><a href="<?php echo base_url() . 'uploads/prove/' . $row['prove_img']; ?>" target="_blank"><img src="<?php echo base_url() . 'uploads/prove/' . $row['prove_img']; ?>" width="70"></a></td>
-												<td><?php echo $row['prove_note']; ?></td>
-												<td><label class="label <?php if ($row['prove_status'] == 1) {
-																			echo 'label-success';
-																		} else if ($row['prove_status'] == 0) {
-																			echo 'label-danger';
-																		} else if ($row['prove_status'] == 2) {
-																			echo 'label-warning';
-																		} else if ($row['prove_status'] == 3) {
-																			echo 'label-danger';
-																		} ?>"><?php if ($row['prove_status'] == 1) {
-																					echo 'DIVERIFIKASI [Sudah Diverifikasi Admin]';
-																				} else if ($row['prove_status'] == 0) {
-																					echo 'DIBATALKAN [Dibatalkan oleh Pengirim]';
-																				} else if ($row['prove_status'] == 2) {
-																					echo 'DIBAYAR [Menunggu Verifikasi Admin]';
-																				} else if ($row['prove_status'] == 3) {
-																					echo 'DITOLAK [Bukti Transfer Ditolak Admin]';
-																				} ?></label></td>
-												<td>
-													<?php if ($row['prove_status'] == 2) { ?>
-														<a href="#verificationProve<?php echo $row['prove_id']; ?>" data-toggle="modal" class="btn btn-xs btn-success">Verifikasi Transaksi</a>
-													<?php } ?>
-												</td>
-											</tr>
-
-											<div class="modal modal-default fade" id="verificationProve<?php echo $row['prove_id']; ?>">
-												<div class="modal-dialog">
-													<div class="modal-content">
-														<div class="modal-header">
-															<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-																<span aria-hidden="true">&times;</span></button>
-															<h3 class="modal-title"><span class="fa fa-warning"></span> Konfirmasi Verifikasi Transfer Wali Murid</h3>
-														</div>
-														<div class="modal-body">
-															<center>
-																<a href="prove/approve/<?php echo $row['prove_id'] ?>" type="button" class="btn btn-success">Verifikasi</a>
-																<a href="prove/ignore/<?php echo $row['prove_id'] ?>" type="button" class="btn btn-danger">Tolak</a>
-															</center>
-														</div>
-														<div class="modal-footer">
-														</div>
-													</div>
-													<!-- /.modal-content -->
-												</div>
-												<!-- /.modal-dialog -->
-											</div>
-										<?php
-											$i++;
-										endforeach;
-									} else {
-										?>
-										<tr id="row">
-											<td colspan="6" align="center">Data Kosong</td>
-										</tr>
-									<?php } ?>
 								</tbody>
 							</table>
 						</div>
 						<!-- /.box-body -->
 					</div>
-					<div>
-						<?php echo $this->pagination->create_links(); ?>
-					</div>
 					<!-- /.box -->
 				</div>
 			</div>
-			</form>
 	</section>
 	<!-- /.content -->
 </div>
 
 <script>
+	$(document).ready(function() {
+		cari_data();
+	});
+
+	function cari_data() {
+		var m = $("#m").val();
+		var c = $("#c").val();
+		var s = $("#s").val();
+
+		$("#dtable").DataTable({
+			ordering: true,
+			order: [[4, 'desc']],
+			processing: true,
+			serverSide: true,
+			destroy: true,
+			language: {
+				processing: "<img src='<?php echo base_url() ?>uploads/loading/loading.gif' style='width:50px; height:50px;' />"
+			},
+			ajax: {
+				url: "<?php echo base_url('manage/prove/datatable_prove'); ?>",
+				type: 'POST',
+				data: {
+					m: m,
+					c: c,
+					s: s
+				}
+			}
+		});
+	}
+
 	function get_kelas() {
 		var id_majors = $("#m").val();
-		//alert(id_jurusan+id_kelas);
 		$.ajax({
 			url: '<?php echo base_url(); ?>manage/prove/class_searching',
 			type: 'POST',

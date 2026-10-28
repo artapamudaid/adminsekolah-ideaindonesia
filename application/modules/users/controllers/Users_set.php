@@ -39,6 +39,7 @@ class Users_set extends CI_Controller
         // $data['user'] = $this->Users_model->get($params);
 
         // $data['majors'] = $this->Student_model->get_majors();
+
         $data['param'] = [];
         $data['title'] = 'Pengguna';
         $data['main'] = 'users/user_list';
@@ -47,13 +48,12 @@ class Users_set extends CI_Controller
 
     function datatablesUsers()
     {
-        $param = $this->input->post('param', TRUE);
+        $param = isset($_POST['param']) ? $_POST['param'] : '';
 
-        $draw = (int) $this->input->get_post('draw');
-        $length = (int) $this->input->get_post('length');
-        $start = (int) $this->input->get_post('start');
-        $searchParam = $this->input->get_post('search', TRUE);
-        $search = isset($searchParam['value']) ? $searchParam['value'] : '';
+        $draw = $_REQUEST['draw'];
+        $length = $_REQUEST['length'];
+        $start = $_REQUEST['start'];
+        $search = $_REQUEST['search']["value"];
 
         $total = $this->Users_model->count_all(array());
         $output = array();
@@ -81,8 +81,6 @@ class Users_set extends CI_Controller
                 $btnAksi .= '<a href="' . site_url('manage/profile/cpw/') . '" class="btn btn-xs btn-warning"><i class="fa fa-rotate-left" data-toggle="tooltip" title="Ubah Password"></i></a> ';
             }
 
-
-            // Nanti tambahkan agar role superadmin dan dan user ts tidak bisa dihapus
             if ($dt['user_id'] != $this->session->userdata('uid')) {
                 $btnAksi .= '<button data-user="' . $dt['user_id'] . '" data-nama="' . $dt['user_full_name'] . '" class="btnHapusUser btn btn-xs btn-danger"><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></button>';
             }
@@ -104,9 +102,6 @@ class Users_set extends CI_Controller
     // Add User and Update
     public function add($id = NULL)
     {
-        if (!in_array($this->session->userdata('uroleid'), array('1', '3'), TRUE)) {
-            redirect('manage/users');
-        }
         $this->load->library('form_validation');
 
         if (!$this->input->post('user_id')) {
@@ -141,19 +136,19 @@ class Users_set extends CI_Controller
         if ($_POST and $this->form_validation->run() == TRUE) {
 
             if ($this->input->post('user_id')) {
-                $params['user_id'] = (int) $id;
+                $params['user_id'] = $id;
             } else {
                 $params['user_input_date'] = date('Y-m-d H:i:s');
-                $params['user_email'] = $this->input->post('user_email', TRUE);
+                $params['user_email'] = $this->input->post('user_email');
                 $params['user_password'] = md5($this->input->post('user_password'));
                 $params['user_password_last_update'] = date('Y-m-d H:i:s');
             }
-            $params['user_email'] = $this->input->post('user_email', TRUE);
-            $params['user_role_role_id'] = (int) $this->input->post('role_id');
-            $params['user_majors_id'] = (int) $this->input->post('majors_id');
+            $params['user_email'] = $this->input->post('user_email');
+            $params['user_role_role_id'] = $this->input->post('role_id');
+            $params['user_majors_id'] = $this->input->post('majors_id');
             $params['user_last_update'] = date('Y-m-d H:i:s');
-            $params['user_full_name'] = $this->input->post('user_full_name', TRUE);
-            $params['user_description'] = $this->input->post('user_description', TRUE);
+            $params['user_full_name'] = $this->input->post('user_full_name');
+            $params['user_description'] = $this->input->post('user_description');
             $params['user_last_update'] = date('Y-m-d H:i:s');
             $status = $this->Users_model->add($params);
 
@@ -180,12 +175,12 @@ class Users_set extends CI_Controller
             redirect('manage/users');
         } else {
             if ($this->input->post('user_id')) {
-                redirect('manage/users/edit/' . (int) $this->input->post('user_id'));
+                redirect('manage/users/edit/' . $this->input->post('user_id'));
             }
 
             // Edit mode
             if (!is_null($id)) {
-                $object = $this->Users_model->get(array('id' => (int) $id));
+                $object = $this->Users_model->get(array('id' => $id));
                 if ($object == NULL) {
                     redirect('manage/users');
                 } else {
@@ -203,7 +198,7 @@ class Users_set extends CI_Controller
     // View data detail
     public function view($id = NULL)
     {
-        $data['user'] = $this->Users_model->get(array('id' => (int) $id));
+        $data['user'] = $this->Users_model->get(array('id' => $id));
         $data['title'] = 'Pengguna';
         $data['main'] = 'users/user_view';
         $this->load->view('manage/layout', $data);
@@ -212,10 +207,7 @@ class Users_set extends CI_Controller
     // Delete to database
     public function delete()
     {
-        if (!in_array($this->session->userdata('uroleid'), array('1', '3'), TRUE)) {
-            redirect('manage/users');
-        }
-        $idUser = (int) $this->input->post('delUser');
+        $idUser = $this->input->post('delUser');
 
         if ($_POST) {
             $this->Users_model->delete($idUser);
@@ -240,9 +232,6 @@ class Users_set extends CI_Controller
 
     function role()
     {
-        if (!in_array($this->session->userdata('uroleid'), array('1', '3'), TRUE)) {
-            redirect('manage/users');
-        }
         $data['roles'] = $this->Users_model->get_role();
         $data['title'] = 'Manajemen Pengguna';
         $data['main'] = 'users/user_role';
@@ -251,10 +240,7 @@ class Users_set extends CI_Controller
 
     function modul()
     {
-        if (!in_array($this->session->userdata('uroleid'), array('1', '3'), TRUE)) {
-            redirect('manage/users');
-        }
-        $role_id = (int) $this->input->get('role_id');
+        $role_id = $_GET['role_id'];
         echo "<table class='table table-hover table-responsive'>
                     <tr>
                         <th width='10'>No</th>
@@ -262,12 +248,14 @@ class Users_set extends CI_Controller
                         <th>Keterangan</th>
                         <th width='100'>Aksi</th>
                     </tr>";
-        $main_menu = $this->db->where('menu_child', '0')->order_by('menu_order', 'ASC')->get('navmenu')->result();
+        $sql_menu = "SELECT * FROM navmenu WHERE menu_child = '0' ORDER BY menu_order ASC";
+        $main_menu = $this->db->query($sql_menu)->result();
         $no = 1;
         foreach ($main_menu as $main) {
 
-            $main_id = (int) $main->menu_id;
-            $sub_menu = $this->db->where('menu_child', $main_id)->order_by('menu_order', 'ASC')->get('navmenu')->result();
+            $main_id = $main->menu_id;
+            $sql_sub = "SELECT * FROM navmenu WHERE menu_child = '$main_id' ORDER BY menu_order ASC";
+            $sub_menu = $this->db->query($sql_sub)->result();
 
             if (count($sub_menu) > 0) {
 
@@ -282,8 +270,9 @@ class Users_set extends CI_Controller
 
                 foreach ($sub_menu as $sub) {
 
-                    $sub_id = (int) $sub->menu_id;
-                    $child_menu = $this->db->where('menu_child', $sub_id)->order_by('menu_order', 'ASC')->get('navmenu')->result();
+                    $sub_id = $sub->menu_id;
+                    $sql_child = "SELECT * FROM navmenu WHERE menu_child = '$sub_id' ORDER BY menu_order ASC";
+                    $child_menu = $this->db->query($sql_child)->result();
 
                     if (count($child_menu) > 0) {
                         echo "<tr>
@@ -332,7 +321,7 @@ class Users_set extends CI_Controller
 
     function cek_akses($role_id, $menu_id)
     {
-        $data = array('role_id' => (int) $role_id, 'menu_id' => (int) $menu_id);
+        $data = array('role_id' => $role_id, 'menu_id' => $menu_id);
         $cek = $this->db->get_where('hak_akses', $data);
         if ($cek->num_rows() > 0) {
             echo "checked";
@@ -341,11 +330,8 @@ class Users_set extends CI_Controller
 
     function addrule()
     {
-        if (!in_array($this->session->userdata('uroleid'), array('1', '3'), TRUE)) {
-            redirect('manage/users');
-        }
-        $role_id = (int) $this->input->get('role_id');
-        $menu_id = (int) $this->input->get('menu_id');
+        $role_id    = $_GET['role_id'];
+        $menu_id    = $_GET['menu_id'];
         $data       = array('role_id' => $role_id, 'menu_id' => $menu_id);
         $cek       = $this->db->get_where('hak_akses', $data);
         if ($cek->num_rows() < 1) {
@@ -368,17 +354,12 @@ class Users_set extends CI_Controller
 
         /* create directory if not exist */
         if (!is_dir($config['upload_path'])) {
-            mkdir($config['upload_path'], 0755, TRUE);
+            mkdir($config['upload_path'], 0777, TRUE);
         }
 
         $config['allowed_types'] = 'gif|jpg|jpeg|png';
         $config['max_size'] = '10240';
-        $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
         $config['file_name'] = base64_encode($fileName);
-        $config["file_ext_tolower"] = TRUE;
-        $config["remove_spaces"] = TRUE;
-        $config["detect_mime"] = TRUE;
-        $config["mod_mime_fix"] = TRUE;
         $this->upload->initialize($config);
 
         if (!$this->upload->do_upload($name)) {
@@ -405,8 +386,8 @@ class Users_set extends CI_Controller
                 array(
                     'complex_password',
                     function ($str) {
-                        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/', $str)) {
-                            $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus.');
+                        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$&])[a-zA-Z\d@#$&]{12,}$/', $str)) {
+                            $this->form_validation->set_message('complex_password', 'Password minimal 12 karakter, mengandung huruf besar, kecil, angka, dan karakter khusus (@#$&).');
                             return FALSE;
                         }
                         return TRUE;
@@ -421,6 +402,7 @@ class Users_set extends CI_Controller
             $params['user_password'] = md5($this->input->post('user_password'));
             $params['user_password_last_update'] = date('Y-m-d H:i:s');
             $status = $this->Users_model->change_password($id, $params);
+            $this->session->set_userdata('user_password_last_update', date('Y-m-d H:i:s'));
 
             // activity log
             $this->load->model('logs/Logs_model');

@@ -61,24 +61,62 @@ class Schedule_set extends CI_Controller
   {
     if ($_POST == TRUE) {
 
-      $scheduleMajors   = $_POST['schedule_majors_id'];
-      $scheduleSemester = $_POST['schedule_semester_id'];
-      $scheduleClass    = $_POST['schedule_class_id'];
-      $scheduleLesson   = $_POST['schedule_lesson'];
-      $scheduleDay      = $_POST['schedule_day'];
-      $scheduleJampel   = $_POST['schedule_jampel'];
+      $scheduleMajors   = sanitizeStrict($_POST['schedule_majors_id']);
+      $scheduleSemester = sanitizeStrict($_POST['schedule_semester_id']);
+      $scheduleClass    = sanitizeStrict($_POST['schedule_class_id']);
+      $scheduleLesson   = sanitizeStrict($_POST['schedule_lesson']);
+      $scheduleDay      = sanitizeStrict($_POST['schedule_day']);
+      $scheduleJampel   = sanitizeStrict($_POST['schedule_jampel']);
 
-      $cpt = count($_POST['schedule_lesson']);
+      $cpt = count($scheduleLesson);
+      $added = 0;
+      $skipped = 0;
       for ($i = 0; $i < $cpt; $i++) {
+        if (empty($scheduleLesson[$i])) {
+          $skipped++;
+          continue;
+        }
+
+        $colWhere = [
+          'schedule_class_id' => $scheduleClass,
+          'schedule_day' => $scheduleDay,
+          'schedule_semester_id' => $scheduleSemester,
+          'schedule_lesson_id' => $scheduleLesson[$i],
+          'schedule_jampel' => $scheduleJampel[$i],
+        ];
+        if ($this->General_model->checkDataExists('schedule', $colWhere)) {
+          $skipped++;
+          continue;
+        }
+
         $params['schedule_class_id'] = $scheduleClass;
         $params['schedule_day'] = $scheduleDay;
         $params['schedule_semester'] = $scheduleSemester;
         $params['schedule_lesson_id'] = $scheduleLesson[$i];
         $params['schedule_jampel'] = $scheduleJampel[$i];
-        $this->Schedule_model->add($params);
+        $insert = $this->Schedule_model->add($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+
+        $added++;
       }
+
+      if ($added > 1) {
+        $msg = "$added data berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 data berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped data dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
     }
-    $this->session->set_flashdata('success', ' Tambah Jadwal Pelajaran Berhasil');
     redirect('manage/schedule?n=' . $scheduleMajors . '&r=' . $scheduleClass);
   }
 
@@ -90,15 +128,28 @@ class Schedule_set extends CI_Controller
     if ($_POST) {
 
       if ($this->input->post('schedule_id')) {
-        $params['schedule_id'] = $this->input->post('schedule_id');
+        $id = sanitizeStrict($this->input->post('schedule_id'));
+        $params['schedule_id'] = $id;
       }
 
+      $majors_id        = sanitizeStrict($_POST['majors_id']);
+      $class_id         = sanitizeStrict($_POST['class_id']);
+      $scheduleLesson   = sanitizeStrict($_POST['schedule_lesson']);
+      $scheduleDay      = sanitizeStrict($_POST['schedule_day']);
+      $scheduleJampel   = sanitizeStrict($_POST['schedule_jampel']);
+      $scheduleSemester = sanitizeStrict($_POST['schedule_semester']);
 
-      $majors_id        = $_POST['majors_id'];
-      $class_id         = $_POST['class_id'];
-      $scheduleLesson   = $_POST['schedule_lesson'];
-      $scheduleDay      = $_POST['schedule_day'];
-      $scheduleJampel   = $_POST['schedule_jampel'];
+      $colWhere = [
+        'schedule_class_id' => $class_id,
+        'schedule_day' => $scheduleDay,
+        'schedule_semester_id' => $scheduleSemester,
+        'schedule_lesson_id' => $scheduleLesson,
+        'schedule_jampel' => $scheduleJampel,
+      ];
+      if ($this->General_model->checkDataExists('schedule', $colWhere)) {
+        $this->session->set_flashdata('error', 'Jadwal Pelajaran sudah ada');
+        redirect('manage/schedule?n=' . $majors_id . '&r=' . $class_id);
+      }
 
       $params['schedule_day'] = $scheduleDay;
       $params['schedule_lesson_id'] = $scheduleLesson;
@@ -136,20 +187,12 @@ class Schedule_set extends CI_Controller
   // Delete to database
   public function delete($id = NULL)
   {
-
     if ($_POST) {
-
       $majors_id  = $this->input->post('majors_id');
       $class_id   = $this->input->post('class_id');
 
-      $check = $this->db->query("SELECT COUNT(*) AS num FROM `jurnal` WHERE jurnal_schedule_id = '$id'")->row_array();
-
-      if ($check['num'] < 1) {
-        $this->Schedule_model->delete($id);
-        $this->session->set_flashdata('success', 'Hapus Jadwal Pelajaran berhasil');
-      } else {
-        $this->session->set_flashdata('delete', 'Gagal Menghapus Jadwal Pelajaran');
-      }
+      $this->Schedule_model->delete($id);
+      $this->session->set_flashdata('success', 'Hapus Jadwal Pelajaran berhasil');
       redirect('manage/schedule?n=' . $majors_id . '&r=' . $class_id);
     } elseif (!$_POST) {
       $this->session->set_flashdata('delete', 'Gagal Menghapus Jadwal Pelajaran');
@@ -250,25 +293,18 @@ class Schedule_set extends CI_Controller
 
         $path = FCPATH . 'uploads/xls_tmp/';
         $pathFile = $path . $file;
-        $realPath = realpath($pathFile);
-        $realBase = realpath($path);
-        if ($realPath === FALSE || $realBase === FALSE || strpos($realPath, $realBase) !== 0) {
-          $this->session->set_flashdata('failed', 'File import jadwal tidak valid');
-          redirect('manage/schedule');
-        }
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $reader->setReadDataOnly(TRUE);
-        $spreadsheet = $reader->load($realPath);
+        $spreadsheet = $reader->load($pathFile);
         $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
         $numrow = 1;
         foreach ($sheet as $row) {
 
-          $schedule_semester_id   = (int) $row['A'];
-          $schedule_class_id      = (int) $row['B'];
-          $lesson_code            = trim((string) $row['C']);
-          $day_name               = trim((string) $row['D']);
-          $schedule_jampel        = trim((string) $row['E']);
+          $schedule_semester_id   = $row['A'];
+          $schedule_class_id      = $row['B'];
+          $lesson_code            = $row['C'];
+          $day_name               = $row['D'];
+          $schedule_jampel        = $row['E'];
 
           if ($numrow > 2) {
             if (empty($schedule_semester_id) or empty($schedule_class_id) or empty($lesson_code) or empty($day_name) or empty($schedule_jampel)) {
@@ -287,7 +323,7 @@ class Schedule_set extends CI_Controller
           $numrow++;
         }
 
-        unlink($realPath);
+        unlink($pathFile);
 
         $this->session->set_flashdata('success', 'Import Jadwal Pelajaran Berhasil');
       }
@@ -297,13 +333,9 @@ class Schedule_set extends CI_Controller
 
   private function getLessonId($lessonCode = null)
   {
-    $lesson = $this->db
-      ->select('lesson_id')
-      ->where('lesson_code', $lessonCode)
-      ->get('lesson')
-      ->row_array();
+    $lesson = $this->db->query("SELECT lesson_id FROM lesson WHERE lesson_code = '$lessonCode'")->row_array();
 
-    return isset($lesson['lesson_id']) ? $lesson['lesson_id'] : NULL;
+    return $lesson['lesson_id'];
   }
 
   private function getDayId($dayName = null)
@@ -330,17 +362,12 @@ class Schedule_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0755, TRUE);
+      mkdir($config['upload_path'], 0777, TRUE);
     }
 
-    $config['allowed_types'] = 'xlsx';
+    $config['allowed_types'] = 'xls|xlsx|csv';
     $config['max_size'] = '10240';
-    $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
     $config['file_name'] = $fileName;
-    $config["file_ext_tolower"] = TRUE;
-    $config["remove_spaces"] = TRUE;
-    $config["detect_mime"] = TRUE;
-    $config["mod_mime_fix"] = TRUE;
     $this->upload->initialize($config);
 
     if (!$this->upload->do_upload($name)) {
@@ -351,5 +378,87 @@ class Schedule_set extends CI_Controller
     $upload_data = $this->upload->data();
 
     return $upload_data['file_name'];
+  }
+
+  public function getSemseterObj()
+  {
+    $periodId = $this->input->post('periodId');
+    $semesterId = $this->input->post('semesterId');
+    $this->db->select("s.semester_name, p.period_start,	p.period_end, s.semester_id, p.period_id")
+      ->join("period p", "s.semester_period_id = p.period_id", "left")
+      ->where([
+        "s.semester_period_id" => $periodId,
+        "s.semester_id <> " => $semesterId
+      ]);
+    $semester = $this->db->get("semester s")->row_array();
+
+    echo json_encode($semester);
+  }
+
+  public function copySchedule()
+  {
+    $unitId = sanitizeStrict($this->input->post('unitId'));
+    $classId = sanitizeStrict($this->input->post('classId'));
+    $periodId = sanitizeStrict($this->input->post('periodId'));
+    $semesterId = sanitizeStrict($this->input->post('semesterId'));
+
+    $semesterObj = $this->db->get_where('semester', [
+      'semester_id <> ' => $semesterId,
+      'semester_period_id' => $periodId
+    ])->row_array();
+
+    if (!$semesterObj) {
+      echo json_encode([
+        'status' => 'error',
+        'message' => 'Semester tujuan tidak ditemukan.'
+      ]);
+      return;
+    }
+
+    $schedules = $this->db->get_where(
+      'schedule',
+      [
+        'schedule_semester_id' => $semesterId,
+        'schedule_class_id' => $classId
+      ]
+    )->result_array();
+
+    if (!$schedules) {
+      echo json_encode([
+        'status' => 'error',
+        'message' => 'Tidak ada jadwal untuk disalin.'
+      ]);
+      return;
+    }
+
+    foreach ($schedules as $row) {
+      $colWhere = [
+        'schedule_semester_id' => $semesterObj['semester_id'],
+        'schedule_class_id' => $classId,
+        'schedule_lesson_id' => $row['schedule_lesson_id'],
+        'schedule_day' => $row['schedule_day'],
+        'schedule_time' => $row['schedule_time'],
+        'schedule_jampel' => $row['schedule_jampel'],
+      ];
+      if ($this->General_model->checkDataExists('schedule', $colWhere)) {
+        continue;
+      }
+
+      $dataInsert = [
+        'schedule_semester_id' => $semesterObj['semester_id'],
+        'schedule_class_id' => $classId,
+        'schedule_lesson_id' => $row['schedule_lesson_id'],
+        'schedule_day' => $row['schedule_day'],
+        'schedule_time' => $row['schedule_time'],
+        'schedule_jampel' => $row['schedule_jampel'],
+      ];
+
+      $this->db->insert('schedule', $dataInsert);
+    }
+
+    echo json_encode([
+      'status' => 'success',
+      'message' => 'Copy jadwal berhasil.'
+    ]);
   }
 }

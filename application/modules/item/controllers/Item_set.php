@@ -54,20 +54,53 @@ class Item_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $itemName         = $_POST['item_name'];
-      $majorsMajorsId   = $_POST['item_majors_id'];
+      $itemName         = sanitizeStrict($_POST['item_name']);
+      $majorsMajorsId   = sanitizeStrict($_POST['item_majors_id']);
 
       $q = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$majorsMajorsId'")->row_array();
 
-      $cpt = count($_POST['item_name']);
-      for ($i = 0; $i < $cpt; $i++) {
-        $params['item_majors_id']   = $majorsMajorsId;
-        $params['item_name']        = $itemName[$i] . ' ' . $q['majors_short_name'];
+      $cpt = count($itemName);
 
-        $this->Item_model->add($params);
+      $added = 0;
+      $skipped = 0;
+      for ($i = 0; $i < $cpt; $i++) {
+        if (empty($itemName[$i]) || empty($majorsMajorsId)) {
+          $skipped++;
+          continue;
+        }
+
+        $nameItem = $itemName[$i] . ' ' . $q['majors_short_name'];
+        $colWhere = ["item_name" => $nameItem, "item_majors_id" => $majorsMajorsId,];
+        if ($this->General_model->checkDataExists('item', $colWhere)) {
+          $skipped++;
+          continue;
+        }
+
+        $params['item_majors_id']   = $majorsMajorsId;
+        $params['item_name']        = $nameItem;
+
+        $insert = $this->Item_model->add($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+        $added++;
       }
+
+      if ($added > 1) {
+        $msg = "$added Unit POS berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 Unit POS berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped Unit POS dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
     }
-    $this->session->set_flashdata('success', ' Tambah Unit POS Berhasil');
     redirect('manage/item');
   }
 
@@ -82,19 +115,37 @@ class Item_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('item_id')) {
-        $params['item_id'] = $this->input->post('item_id');
+        $id = sanitizeStrict($this->input->post('item_id'));
+        $params['item_id'] = $id;
       }
-      $params['item_name'] = $this->input->post('item_name');
-      $params['item_majors_id'] = $this->input->post('item_majors_id');
+
+      $itemName = sanitizeStrict($this->input->post('item_name'));
+      $itemMajorsId = sanitizeStrict($this->input->post('item_majors_id'));
+
+      $colWhere = ["item_name" => $itemName, "item_majors_id" => $itemMajorsId,];
+      if (!empty($id)) {
+        $colWhere['item_id <>'] = $id;
+      }
+      if ($this->General_model->checkDataExists('item', $colWhere)) {
+        $this->session->set_flashdata('failed', "Unit POS sudah ada.");
+        redirect('manage/item/edit/' . $id);
+      }
+
+      $params['item_name'] = $itemName;
+      $params['item_majors_id'] = $itemMajorsId;
       $status = $this->Item_model->add($params);
 
-
-      $this->session->set_flashdata('success', $data['operation'] . ' Keterangan Unit POS');
-      redirect('manage/item');
+      if ($status) {
+        $this->session->set_flashdata('success', $data['operation'] . ' Unit POS Berhasil');
+      } else {
+        $this->session->set_flashdata('failed', 'Gagal ' . strtolower($data['operation']) . ' Unit POS');
+      }
 
       if ($this->input->post('from_angular')) {
-        echo $status;
+        echo json_encode(array('status' => $status));
+        return;
       }
+      redirect('manage/item');
     } else {
       if ($this->input->post('item_id')) {
         redirect('manage/item/edit/' . $this->input->post('item_id'));

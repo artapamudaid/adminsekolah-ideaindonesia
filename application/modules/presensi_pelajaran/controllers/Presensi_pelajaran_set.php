@@ -52,17 +52,43 @@ class Presensi_pelajaran_set extends CI_Controller
 			$class_id  = $q['c'];
 		}
 
+		// if (isset($q['l']) && !empty($q['l']) && $q['l'] != '') {
+		// 	$params['lesson_id']  = $q['l'];
+		// 	$param['lesson_id']  = $q['l'];
+
+		// 	$data['student']    = $this->Student_model->get($params);
+		// }
+
 		if (isset($q['l']) && !empty($q['l']) && $q['l'] != '') {
-			$params['lesson_id']  = $q['l'];
-			$param['lesson_id']  = $q['l'];
+			$params['schedule_id']  = $q['l'];
+			$param['schedule_id']  = $q['l'];
+			$idJadwal = $q['l'];
+			$jadwal = $this->db->query("SELECT schedule_lesson_id FROM schedule WHERE schedule_id = '$idJadwal'")->row_array();
+			$data['id_mapel'] 	= $jadwal['schedule_lesson_id'];
+			$data['student']    = $this->Student_model->get($params);
+			$data['check']      = $this->Presensi_pelajaran_model->check($param);
 		}
 
-		$data['check']      = $this->Presensi_pelajaran_model->check($param);
 
 		$data['class']      = $this->Student_model->get_class($params);
 		$data['majors']     = $this->Student_model->get_majors($params);
-		$data['student']    = $this->Student_model->get($params);
-		$data['lesson']     = $this->db->query("SELECT lesson_id, lesson_code, lesson_teacher, lesson_name FROM schedule JOIN lesson ON lesson_id = schedule_lesson_id JOIN day ON day.day_id = schedule.schedule_day WHERE schedule_class_id = '$class_id' AND day_name = '$day' ORDER BY schedule_time ASC")->result_array();
+
+		$this->db->select("s.semester_id")
+			->where([
+				"s.semester_status" => 1
+			]);
+		$semesterAktif = $this->db->get("semester s")->row_array();
+		$idSemesterAktif   = $semesterAktif['semester_id'];
+
+		$data['lesson']     = $this->db->query(
+			"SELECT schedule_id, lesson_id, lesson_code, lesson_name, jam_pelajaran_start, jam_pelajaran_end
+				FROM schedule 
+				JOIN lesson ON lesson_id = schedule_lesson_id 
+				JOIN day ON day.day_id = schedule.schedule_day 
+				JOIN jam_pelajaran ON jam_pelajaran.jam_pelajaran_id = schedule.schedule_jampel
+				WHERE schedule_class_id = '$class_id' AND day_name = '$day' AND schedule_semester_id = '$idSemesterAktif'
+				ORDER BY jam_pelajaran_start ASC"
+		)->result_array();
 
 		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
 
@@ -118,6 +144,24 @@ class Presensi_pelajaran_set extends CI_Controller
 			$params['class_id']  = $q['c'];
 			$param['class_id']  = $q['c'];
 			$class_id  = $q['c'];
+
+			$this->db->select("s.semester_id")
+				->where([
+					"s.semester_status" => 1
+				]);
+			$semesterAktif = $this->db->get("semester s")->row_array();
+			$idSemesterAktif   = $semesterAktif['semester_id'];
+
+			$listPelajaran  = $this->db->query(
+				"SELECT lesson_id, lesson_code, lesson_name
+				FROM schedule 
+				JOIN lesson ON lesson_id = schedule_lesson_id
+				WHERE schedule_class_id = '$class_id' AND schedule_semester_id = '$idSemesterAktif'
+				GROUP BY lesson_id
+				ORDER BY lesson_name ASC"
+			)->result_array();
+
+			$data['lesson']     = $listPelajaran;
 		}
 
 		if (isset($q['l']) && !empty($q['l']) && $q['l'] != '') {
@@ -170,29 +214,76 @@ class Presensi_pelajaran_set extends CI_Controller
 			$data['namaBulan']      = $namaBulan['month_name'];
 		}
 
-		$data['check']      = $this->Presensi_pelajaran_model->check($param);
+		// $data['check']      = $this->Presensi_pelajaran_model->check($param);
 
 		$data['class']      = $this->Student_model->get_class($params);
 		$data['majors']     = $this->Student_model->get_majors($params);
 		$data['student']    = $this->Student_model->get($params);
-		$data['lesson']     = $this->db->query("SELECT lesson_id, lesson_code, lesson_name FROM schedule JOIN lesson ON lesson_id = schedule_lesson_id JOIN day ON day.day_id = schedule.schedule_day WHERE schedule_class_id = '$class_id' AND day_name = '$day' ORDER BY schedule_time ASC")->result_array();
-
 		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
 
-		$data['period'] = $this->db->query("SELECT period_id, period_start, period_end FROM period")->result_array();
 
+		// --- buat rentang tanggal
 		$awalbulan = $tahun . '-' . $bulan . '-01';
 		$akhirbulan = date('Y-m-d', strtotime("+1 month", strtotime($awalbulan)));
 
 		$begin = new DateTime($awalbulan);
 		$end = new DateTime($akhirbulan);
-
 		$interval = DateInterval::createFromDateString('1 day');
-		$data['daterange']  = new DatePeriod($begin, $interval, $end);
+		$daterange = new DatePeriod($begin, $interval, $end);
 
-		$data['interval']   = date_diff(date_create($awalbulan), date_create($akhirbulan));
-
+		$data['daterange'] = $daterange;
+		$data['interval'] = date_diff(date_create($awalbulan), date_create($akhirbulan));
 		$data['month'] = $this->db->query("SELECT * FROM month")->result_array();
+
+		if (!empty($data['student'])) {
+			$student_ids = array_column($data['student'], 'student_id');
+			$period_id = @$q['p'];
+			$month_id = @$q['m'];
+			$lesson_id = @$q['l'];
+			// $id_mapel = $data['id_mapel'] ?? null;
+
+			// ambil semua presensi dalam 1x query
+			$this->db->select('presensi_pelajaran_date, presensi_pelajaran_student_id, presensi_pelajaran_status');
+			$this->db->from('presensi_pelajaran');
+			$this->db->join(
+				'teaching',
+				'teaching.teaching_id = presensi_pelajaran.presensi_teaching_id'
+			);
+
+			$this->db->where('presensi_pelajaran_period_id', $period_id);
+			$this->db->where('presensi_pelajaran_month_id', $month_id);
+			$this->db->where('presensi_pelajaran_class_id', $class_id);
+			$this->db->where_in('presensi_pelajaran_student_id', $student_ids);
+			$this->db->where("presensi_pelajaran_date BETWEEN '$awalbulan' AND '$akhirbulan'");
+
+			$this->db->where(
+				"teaching.teaching_id = (
+					SELECT MIN(t2.teaching_id)
+					FROM teaching t2
+					WHERE t2.teaching_lesson_id = '$lesson_id'
+					 AND t2.teaching_class_id = teaching.teaching_class_id
+        			 AND DATE(t2.teaching_date_create) = DATE(teaching.teaching_date_create)
+				)",
+				null,
+				false
+			);
+
+			$presensiList = $this->db->get()->result_array();
+
+			// buat map [student_id][date] => status
+			$presensiMap = [];
+			foreach ($presensiList as $p) {
+				$presensiMap[$p['presensi_pelajaran_student_id']][$p['presensi_pelajaran_date']] = $p['presensi_pelajaran_status'];
+			}
+
+			$data['presensiMap'] = $presensiMap;
+		} else {
+			$data['presensiMap'] = [];
+		}
+
+
+		$data['period'] = $this->db->query("SELECT period_id, period_start, period_end FROM period")->result_array();
+
 
 		$data['title'] = 'Laporan Presensi Pelajaran Siswa';
 		$data['main'] = 'presensi_pelajaran/presensi_pelajaran_report';
@@ -240,13 +331,30 @@ class Presensi_pelajaran_set extends CI_Controller
 			$param['class_id']  = $q['c'];
 			$class_id  = $q['c'];
 			$data['namaKelas'] = $this->db->query("SELECT class_name FROM class WHERE class_id = " . $q['c'] . "")->row_array();
+
+			$this->db->select("s.semester_id")
+				->where([
+					"s.semester_status" => 1
+				]);
+			$semesterAktif = $this->db->get("semester s")->row_array();
+			$idSemesterAktif   = $semesterAktif['semester_id'];
+
+			$listPelajaran  = $this->db->query(
+				"SELECT lesson_id, lesson_code, lesson_name
+				FROM schedule 
+				JOIN lesson ON lesson_id = schedule_lesson_id
+				WHERE schedule_class_id = '$class_id' AND schedule_semester_id = '$idSemesterAktif'
+				GROUP BY lesson_id
+				ORDER BY lesson_name ASC"
+			)->result_array();
+
+			$data['lesson']     = $listPelajaran;
 		}
 
 		if (isset($q['l']) && !empty($q['l']) && $q['l'] != '') {
 			$params['lesson_id']  = $q['l'];
 			$param['lesson_id']  = $q['l'];
 			$data['namaPelajaran'] = $this->db->query("SELECT lesson_name FROM lesson WHERE lesson_id = " . $q['l'] . "")->row_array();
-			$data['pelajaran'] = $this->db->get_where('lesson', array('lesson_id', $q['l']))->row_array();
 		}
 
 		if (isset($q['m']) && !empty($q['m']) && $q['m'] != '') {
@@ -298,24 +406,69 @@ class Presensi_pelajaran_set extends CI_Controller
 		$data['class']      = $this->Student_model->get_class($params);
 		$data['majors']     = $this->Student_model->get_majors($params);
 		$data['student']    = $this->Student_model->get($params);
-		$data['lesson']     = $this->db->query("SELECT lesson_id, lesson_code, lesson_name FROM schedule JOIN lesson ON lesson_id = schedule_lesson_id JOIN day ON day.day_id = schedule.schedule_day WHERE schedule_class_id = '$class_id' AND day_name = '$day' ORDER BY schedule_time ASC")->result_array();
 
 		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
 
 		$data['period'] = $this->db->query("SELECT period_id, period_start, period_end FROM period")->result_array();
 
+		// --- buat rentang tanggal
 		$awalbulan = $tahun . '-' . $bulan . '-01';
 		$akhirbulan = date('Y-m-d', strtotime("+1 month", strtotime($awalbulan)));
 
 		$begin = new DateTime($awalbulan);
 		$end = new DateTime($akhirbulan);
-
 		$interval = DateInterval::createFromDateString('1 day');
-		$data['daterange']  = new DatePeriod($begin, $interval, $end);
+		$daterange = new DatePeriod($begin, $interval, $end);
 
-		$data['interval']   = date_diff(date_create($awalbulan), date_create($akhirbulan));
-
+		$data['daterange'] = $daterange;
+		$data['interval'] = date_diff(date_create($awalbulan), date_create($akhirbulan));
 		$data['month'] = $this->db->query("SELECT * FROM month")->result_array();
+
+		if (!empty($data['student'])) {
+			$student_ids = array_column($data['student'], 'student_id');
+			$period_id = $q['p'];
+			$month_id = $q['m'];
+			$lesson_id = $q['l'];
+			// $id_mapel = $data['id_mapel'] ?? null;
+
+			// ambil semua presensi dalam 1x query
+			$this->db->select('presensi_pelajaran_date, presensi_pelajaran_student_id, presensi_pelajaran_status');
+			$this->db->from('presensi_pelajaran');
+			$this->db->join(
+				'teaching',
+				'teaching.teaching_id = presensi_pelajaran.presensi_teaching_id'
+			);
+
+			$this->db->where('presensi_pelajaran_period_id', $period_id);
+			$this->db->where('presensi_pelajaran_month_id', $month_id);
+			$this->db->where('presensi_pelajaran_class_id', $class_id);
+			$this->db->where_in('presensi_pelajaran_student_id', $student_ids);
+			$this->db->where("presensi_pelajaran_date BETWEEN '$awalbulan' AND '$akhirbulan'");
+
+			$this->db->where(
+				"teaching.teaching_id = (
+					SELECT MIN(t2.teaching_id)
+					FROM teaching t2
+					WHERE t2.teaching_lesson_id = '$lesson_id'
+					 AND t2.teaching_class_id = teaching.teaching_class_id
+        			 AND DATE(t2.teaching_date_create) = DATE(teaching.teaching_date_create)
+				)",
+				null,
+				false
+			);
+
+			$presensiList = $this->db->get()->result_array();
+
+			// buat map [student_id][date] => status
+			$presensiMap = [];
+			foreach ($presensiList as $p) {
+				$presensiMap[$p['presensi_pelajaran_student_id']][$p['presensi_pelajaran_date']] = $p['presensi_pelajaran_status'];
+			}
+
+			$data['presensiMap'] = $presensiMap;
+		} else {
+			$data['presensiMap'] = [];
+		}
 
 		$data['title'] = 'Laporan Presensi Pelajaran Siswa';
 
@@ -340,6 +493,7 @@ class Presensi_pelajaran_set extends CI_Controller
 			$majorsID     = $_POST['majors_id'];
 			$classID      = $_POST['class_id'];
 			$lessonID     = $_POST['lesson_id'];
+			$scheduleID   = $_POST['schedule_id'];
 			$studentID    = $_POST['student_id'];
 			$materi    	  = $_POST['materi'];
 			$employee_id  = $_POST['employee_id'];
@@ -378,21 +532,16 @@ class Presensi_pelajaran_set extends CI_Controller
 			$param['teaching_class_id'] =  $classID;
 			$param['teaching_materi'] =  $materi;
 			$param['teaching_lesson_id'] = $lessonID;
+			$param['teaching_schedule_id'] = $scheduleID;
 			$param['teaching_month_id'] = $month_id;
 			$param['teaching_semester_id'] = $semesterID;
 
 			$this->Presensi_pelajaran_model->add_teaching($param);
 
 			//Mengambil ID Teaching utk dimasukkan ke presensi pelajaran
-			$teaching	  = $this->db->query("SELECT teaching_id FROM teaching WHERE teaching_semester_id = '$semesterID' AND teaching_lesson_id = '$lessonID' AND teaching_class_id='$classID' AND DATE(teaching_date_create)='$presensiDate' ")->row_array();
+			$teaching	  = $this->db->query("SELECT teaching_id FROM teaching WHERE teaching_semester_id = '$semesterID' AND teaching_lesson_id = '$lessonID' AND teaching_class_id='$classID' AND DATE(teaching_date_create)='$presensiDate' AND teaching_schedule_id = '$scheduleID'")->row_array();
 			$teachingID	  = $teaching['teaching_id'];
 			$cpt = count($studentID);
-
-			$jumlah_siswa_masuk = 0;
-			$jumlah_siswa_sakit = 0;
-			$jumlah_siswa_izin  = 0;
-			$jumlah_siswa_alpha = 0;
-			$siswa_tidak_masuk  = [];
 
 			for ($i = 0; $i < $cpt; $i++) {
 
@@ -410,59 +559,12 @@ class Presensi_pelajaran_set extends CI_Controller
 				$params['presensi_pelajaran_student_id']   = $student_id;
 				$params['presensi_pelajaran_status']       = $status[0];
 
-				$this->Presensi_pelajaran_model->add($params);if ($status[0] == 'H') {
-					$jumlah_siswa_masuk++;
-				} else {
-					$student_info = $this->db->query("SELECT student_full_name FROM student WHERE student_id = '$student_id'")->row_array();
-					$nama_siswa = $student_info ? $student_info['student_full_name'] : 'Unknown';
-					
-					if ($status[0] == 'S') {
-						$jumlah_siswa_sakit++;
-						$siswa_tidak_masuk[] = ['nama' => $nama_siswa, 'keterangan' => 'sakit'];
-					} elseif ($status[0] == 'I') {
-						$jumlah_siswa_izin++;
-						$siswa_tidak_masuk[] = ['nama' => $nama_siswa, 'keterangan' => 'izin'];
-					} elseif ($status[0] == 'A') {
-						$jumlah_siswa_alpha++;
-						$siswa_tidak_masuk[] = ['nama' => $nama_siswa, 'keterangan' => 'alpha'];
-					}
-				}
+				$this->Presensi_pelajaran_model->add($params);
 			}
-
-				$this->load->helper('notiftele');
-				$employee = $this->db->query("SELECT employee_name, employee_nip, majors.majors_short_name as unit, position.position_name as jabatan 
-										  FROM employee 
-										  LEFT JOIN majors ON majors.majors_id = employee.employee_majors_id 
-										  LEFT JOIN position ON position.position_id = employee.employee_position_id 
-										  WHERE employee_id = '$employee_id'")->row_array();
-			
-				$class_info = $this->db->query("SELECT class_name FROM class WHERE class_id = '$classID'")->row_array();
-				$lesson_info = $this->db->query("SELECT lesson_name FROM lesson WHERE lesson_id = '$lessonID'")->row_array();
-
-				if ($employee && $class_info && $lesson_info) {
-					$payload_tele = [
-						'topik'  => 'jurnal_mengajar',
-						'pesan'  => 'Jurnal: Mengajar ' . $lesson_info['lesson_name'] . ' Kelas ' . $class_info['class_name'] . ' (Materi ' . $materi . ') pada ' . date('H:i:s'),
-						'detail' => [
-							'tanggal' => date('Y-m-d', strtotime($presensiDate)),
-							'nama'    => $employee['employee_name'],
-							'nip'     => $employee['employee_nip'] ?? '',
-							'unit'    => $employee['unit'] ?? '',
-							'kelas'   => $class_info['class_name'],
-							'jabatan' => $employee['jabatan'] ?? '',
-							'jumlah_siswa_masuk' => $jumlah_siswa_masuk,
-							'jumlah_siswa_sakit' => $jumlah_siswa_sakit,
-							'jumlah_siswa_izin'  => $jumlah_siswa_izin,
-							'jumlah_siswa_alpha' => $jumlah_siswa_alpha,
-							'siswa_tidak_masuk'  => $siswa_tidak_masuk
-						]
-					];
-					create_log($payload_tele);
-				}
 		}
 
 		$this->session->set_flashdata('success', ' Input Presensi Berhasil');
-		redirect('manage/presensi_pelajaran?p=' . $periodID . '&m=' . $monthID . '&d=' . $presensiDate . '&k=' . $majorsID . '&c=' . $classID . '&l=' . $lessonID);
+		redirect('manage/presensi_pelajaran?p=' . $periodID . '&m=' . $monthID . '&d=' . $presensiDate . '&k=' . $majorsID . '&c=' . $classID . '&l=' . $scheduleID);
 	}
 
 	function class_searching()
@@ -501,6 +603,84 @@ class Presensi_pelajaran_set extends CI_Controller
 		            <select name="l" id="lesson_id" class="form-control" required="">
                     <option value="">-- Pilih Mata Pelajaran --</option>';
 		foreach ($dataKelas as $row) {
+
+			echo '<option value="' . $row['lesson_id'] . '">';
+
+			echo $row['lesson_code'] . ' - ' . $row['lesson_name'];
+
+			echo '</option>';
+		}
+		echo '</select>
+				</div>
+			</div>';
+	}
+
+	function lesson_input_jurnal()
+	{
+		$class_id   = $this->input->post('class_id');
+		$day        = pretty_date(date('Y-m-d'), 'l', false);
+
+		$this->db->select("s.semester_id")
+			->where([
+				"s.semester_status" => 1
+			]);
+		$semesterAktif = $this->db->get("semester s")->row_array();
+		$idSemesterAktif   = $semesterAktif['semester_id'];
+
+		$listJamPelajaran  = $this->db->query(
+			"SELECT schedule_id, lesson_id, lesson_code, lesson_name, jam_pelajaran_start, jam_pelajaran_end
+				FROM schedule 
+				JOIN lesson ON lesson_id = schedule_lesson_id 
+				JOIN day ON day.day_id = schedule.schedule_day
+				JOIN jam_pelajaran ON jam_pelajaran.jam_pelajaran_id = schedule.schedule_jampel
+				WHERE schedule_class_id = '$class_id' AND day_name = '$day' AND schedule_semester_id = '$idSemesterAktif'
+				ORDER BY jam_pelajaran_start ASC"
+		)->result_array();
+
+		echo '<div class="col-md-2">  
+				<div class="form-group">
+				    <label>Mata Pelajaran</label>
+		            <select name="l" id="lesson_id" class="form-control" required="">
+                    <option value="">-- Pilih Mata Pelajaran --</option>';
+		foreach ($listJamPelajaran as $row) {
+
+			echo '<option value="' . $row['schedule_id'] . '">';
+
+			echo $row['lesson_code'] . ' - ' . $row['lesson_name'] . ' (' . $row['jam_pelajaran_start'] . '-' . $row['jam_pelajaran_end'] . ')';
+
+			echo '</option>';
+		}
+		echo '</select>
+				</div>
+			</div>';
+	}
+
+	function lesson_report_jurnal()
+	{
+		$class_id   = $this->input->post('class_id');
+
+		$this->db->select("s.semester_id")
+			->where([
+				"s.semester_status" => 1
+			]);
+		$semesterAktif = $this->db->get("semester s")->row_array();
+		$idSemesterAktif   = $semesterAktif['semester_id'];
+
+		$listPelajaran  = $this->db->query(
+			"SELECT lesson_id, lesson_code, lesson_name
+				FROM schedule 
+				JOIN lesson ON lesson_id = schedule_lesson_id
+				WHERE schedule_class_id = '$class_id' AND schedule_semester_id = '$idSemesterAktif'
+				GROUP BY lesson_id
+				ORDER BY lesson_name ASC"
+		)->result_array();
+
+		echo '<div class="col-md-2">  
+				<div class="form-group">
+				    <label>Mata Pelajaran</label>
+		            <select name="l" id="lesson_id" class="form-control" required="">
+                    <option value="">-- Pilih Mata Pelajaran --</option>';
+		foreach ($listPelajaran as $row) {
 
 			echo '<option value="' . $row['lesson_id'] . '">';
 
@@ -567,6 +747,9 @@ class Presensi_pelajaran_set extends CI_Controller
 		$data['lesson']     = $this->db->query("SELECT lesson_id, lesson_code, lesson_name, employee_name, employee_id FROM lesson JOIN employee ON lesson.lesson_teacher=employee.employee_id GROUP BY employee_id ORDER BY lesson_id ASC")->result_array();
 
 		$data['teaching']	= $this->Presensi_pelajaran_model->get_teaching($params);
+		// echo json_encode($data['teaching']);
+		// echo json_encode($params);
+		// exit;
 		// $data['schedule']	= $this->Presensi_pelajaran_model->get_jurnal_schedule($params);
 		$data['period'] 	= $this->db->query("SELECT period_id, period_start, period_end FROM period")->result_array();
 
@@ -578,7 +761,7 @@ class Presensi_pelajaran_set extends CI_Controller
 
 	function report_jurnal()
 	{
-		ob_start();
+		// ob_start();
 
 		$q = $this->input->get(NULL, TRUE);
 
@@ -620,6 +803,14 @@ class Presensi_pelajaran_set extends CI_Controller
 			$class_id  			= $q['c'];
 		}
 
+		if (isset($q['ds']) && !empty($q['ds']) && $q['ds'] != '' && $q['ds'] != '0') {
+			$params['date_start']  = $q['ds'];
+		}
+
+		if (isset($q['de']) && !empty($q['de']) && $q['de'] != '' && $q['de'] != '0') {
+			$params['date_end']  = $q['de'];
+		}
+
 		$data['check']      = $this->Presensi_pelajaran_model->check($param);
 		$data['presensi']	= $this->Presensi_pelajaran_model->get_jurnal_mengajar($params);
 		$data['class']      = $this->Student_model->get_class($params);
@@ -636,20 +827,27 @@ class Presensi_pelajaran_set extends CI_Controller
 		$data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
 		$data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
-		$filename = 'Laporan Per Jenis Anggaran Kas Umum per Tanggal ' . pretty_date($ds, 'd/m/Y', FALSE) . ' Sampai ' . pretty_date($de, 'd/m/Y', FALSE) . '.pdf';
+		$filename = 'Rekap Jurnal Mengajar ' . pretty_date($q['ds'], 'd-m-Y', FALSE) . ' Sampai ' . pretty_date($q['de'], 'd-m-Y', FALSE) . '.pdf';
 
-		$this->load->view('presensi_pelajaran/mengajar_report_print', $data);
+		$this->load->library('dompdflib');
 
-		$html = ob_get_contents();
-		ob_clean();
+		$paper = 'A4';
+		$orientation = "potrait";
 
-		require_once('./assets/html2pdf/html2pdf.class.php');
-		$pdf = new HTML2PDF('P', 'A4', 'en', false, 'ISO-8859-15', array(10, 5, 10, 5));
+		$html = $this->load->view('presensi_pelajaran/mengajar_report_print', $data, TRUE);
+		$this->dompdflib->generate($html, $filename, $paper, $orientation);
 
-		$pdf->setDefaultFont('arial');
-		$pdf->setTestTdInOnePage(false);
-		$pdf->pdf->SetDisplayMode('fullpage');
-		$pdf->WriteHTML($html);
-		$pdf->Output($filename, '');
+		// $html = ob_get_contents();
+		// ob_clean();
+
+		// require_once('./assets/html2pdf/html2pdf.class.php');
+		// $pdf = new HTML2PDF('L','A4','en', false, 'ISO-8859-15',array(10, 5, 10, 5));
+
+		// $pdf->setDefaultFont('arial');
+		// $pdf->setTestTdInOnePage(false);
+		// $pdf->pdf->SetDisplayMode('fullpage');
+		// $pdf->WriteHTML($html);
+		// $pdf->Output($filename, '');
+
 	}
 }

@@ -39,13 +39,12 @@
 							<div class="col-6 pull-right">
 								<form method="get" action="<?php echo site_url('manage/registrasi'); ?>" class="form-inline" style="display: flex; gap: 10px; justify-content: flex-end;">
 									<div class="form-group mb-2">
-										<?php $q = $this->input->get('q', TRUE); ?>
-										<input type="text" name="q" class="form-control" placeholder="Cari nama, sekolah, email..." value="<?php echo html_escape($q); ?>">
+										<input type="text" name="q" class="form-control" placeholder="Cari nama, sekolah, email..." value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>">
 									</div>
 									<div class="form-group mb-2">
 										<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Cari</button>
 									</div>
-									<?php if (!empty($q)): ?>
+									<?php if (!empty($_GET['q'])): ?>
 										<div class="form-group mb-2">
 											<a href="<?php echo site_url('manage/registrasi'); ?>" class="btn btn-default"><i class="fa fa-times"></i> Reset</a>
 										</div>
@@ -83,21 +82,21 @@
 										foreach ($registrasi_list as $row):
 											?>
 											<tr>
-												<td><?php echo (int) $i; ?></td>
-												<td><?php echo html_escape($row['registrasi_name']); ?></td>
-												<td><?php echo html_escape($row['registrasi_school']); ?></td>
-												<td><?php echo html_escape($row['registrasi_address']); ?></td>
-												<td><?php echo html_escape($row['city_name']); ?></td>
-												<td><?php echo html_escape($row['province_name']); ?></td>
-												<td><?php echo html_escape($row['registrasi_sumber']); ?></td>
-												<td><?php echo html_escape(str_replace('+62', '0', $row['registrasi_phone'])); ?></td>
-												<td><?php echo html_escape($row['registrasi_email']); ?></td>
-												<td><?php echo html_escape($row['registrasi_password']); ?></td>
+												<td><?php echo $i; ?></td>
+												<td><?php echo $row['registrasi_name']; ?></td>
+												<td><?php echo $row['registrasi_school']; ?></td>
+												<td><?php echo $row['registrasi_address']; ?></td>
+												<td><?php echo $row['city_name']; ?></td>
+												<td><?php echo $row['province_name']; ?></td>
+												<td><?php echo $row['registrasi_sumber']; ?></td>
+												<td><?php echo str_replace('+62', '0', $row['registrasi_phone']); ?></td>
+												<td><?php echo $row['registrasi_email']; ?></td>
+												<td><?php echo $row['registrasi_password']; ?></td>
 												<td><?php echo pretty_date($row['registrasi_date'], 'd-m-Y', false); ?></td>
 												<td>
-													<a href="<?php echo site_url('manage/registrasi/rpw/' . (int) $row['registrasi_id']) ?>" class="btn btn-xs btn-warning" onclick='return confirm(<?php echo json_encode('Anda yakin akan mereset password a/n ' . $row['registrasi_name'] . ' ?'); ?>)'><i class="fa fa-lock" data-toggle="tooltip" title="Reset Password"></i></a>
-													<a href="<?php echo site_url('manage/registrasi/send_wa/' . (int) $row['registrasi_id']) ?>" class="btn btn-xs btn-success" onclick='return confirm(<?php echo json_encode('Anda yakin akan mengirim wa username & password kepada ' . $row['registrasi_name'] . ' ?'); ?>)'><i class="fa fa-whatsapp" data-toggle="tooltip" title="Kirim WA"></i></a>
-													<button class="btn btn-xs btn-default" onclick="copy_to_clipboard('<?php echo (int) $row['registrasi_id']; ?>')"><i class="fa fa-copy" data-toggle="tooltip" title="Salin Redaksi"></i></button>
+													<a href="<?php echo site_url('manage/registrasi/rpw/' . $row['registrasi_id']) ?>" class="btn btn-xs btn-warning" onclick="return(confirm('Anda yakin akan mereset password a/n <?php echo $row['registrasi_name'] ?> ?'))"><i class="fa fa-lock" data-toggle="tooltip" title="Reset Password"></i></a>
+													<a href="<?php echo site_url('manage/registrasi/send_wa/' . $row['registrasi_id']) ?>" class="btn btn-xs btn-success" onclick="return(confirm('Anda yakin akan mengirim wa username & password kepada <?php echo $row['registrasi_name'] ?> ?'))"><i class="fa fa-whatsapp" data-toggle="tooltip" title="Kirim WA"></i></a>
+													<button class="btn btn-xs btn-default" onclick="copy_to_clipboard('<?php echo $row['registrasi_id']; ?>')"><i class="fa fa-copy" data-toggle="tooltip" title="Salin Redaksi"></i></button>
 												</td>
 											</tr>
 											<?php

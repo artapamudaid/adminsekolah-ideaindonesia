@@ -76,17 +76,12 @@ class Prove_student extends CI_Controller {
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0755, TRUE);
+      mkdir($config['upload_path'], 0777, TRUE);
     }
 
     $config['allowed_types'] = 'gif|jpg|jpeg|png';
     $config['max_size'] = '1024';
-    $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
     $config['file_name'] = $fileName;
-    $config["file_ext_tolower"] = TRUE;
-    $config["remove_spaces"] = TRUE;
-    $config["detect_mime"] = TRUE;
-    $config["mod_mime_fix"] = TRUE;
     $this->upload->initialize($config);
 
     if (!$this->upload->do_upload($name)) {

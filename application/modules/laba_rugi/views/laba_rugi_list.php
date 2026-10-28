@@ -60,7 +60,7 @@
                                 <div class="form-group">
                                     <div class="input-group date " data-date="" data-date-format="yyyy-mm-dd">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-                                        <input class="form-control" type="text" name="end" id="end" readonly="readonly" placeholder="Tanggal Awal">
+                                        <input class="form-control" type="text" name="end" id="end" readonly="readonly" placeholder="Tanggal Akhir">
                                     </div>
                                 </div>
                             </div>
@@ -156,7 +156,7 @@
         var end = $("#end").val();
         var majors_id = $("#majors_id").val();
         //alert(id_jurusan+id_kelas);
-        if (start != '' && end != '' && majors_id != '') {
+        if (end != '' && majors_id != '') {
             $.ajax({
                 url: '<?php echo base_url(); ?>manage/laba_rugi/get_laba_rugi',
                 type: 'POST',

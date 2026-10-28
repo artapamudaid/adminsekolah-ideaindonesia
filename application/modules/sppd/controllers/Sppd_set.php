@@ -256,7 +256,7 @@ class Sppd_set extends CI_Controller
 
   public function printdata()
   {
-    ob_start();
+    // ob_start();
     // $this->load->helper(array('dompdf'));
     $this->load->helper(array('tanggal'));
     $this->load->helper(array('terbilang'));
@@ -281,19 +281,25 @@ class Sppd_set extends CI_Controller
     // $data = pdf_create($html, 'Surat Perjalan Dinas'.date('Y-m-d'), TRUE, 'F4', TRUE);
     $filename = 'Surat Perjalan Dinas.pdf';
 
-    $this->load->view('sppd/sppd_pdf', $data);
+    $html = $this->load->view('sppd/sppd_pdf', $data);
 
-    $html = ob_get_contents();
-    ob_clean();
+    $this->load->library('dompdflib');
 
-    require_once('./assets/html2pdf/html2pdf.class.php');
-    $pdf = new HTML2PDF('P', 'F4', 'en', false, 'ISO-8859-15', array(10, 5, 10, 5));
+    $paper = 'A4';
 
-    $pdf->setDefaultFont('arial');
-    $pdf->setTestTdInOnePage(false);
-    $pdf->pdf->SetDisplayMode('fullpage');
-    $pdf->WriteHTML($html);
-    $pdf->Output($filename, '');
+    $orientation = "potrait";
+    $this->dompdflib->generate($html, $filename, $paper, $orientation);
+    // $html = ob_get_contents();
+    // ob_clean();
+
+    // require_once('./assets/html2pdf/html2pdf.class.php');
+    // $pdf = new HTML2PDF('P', 'F4', 'en', false, 'ISO-8859-15', array(10, 5, 10, 5));
+
+    // $pdf->setDefaultFont('arial');
+    // $pdf->setTestTdInOnePage(false);
+    // $pdf->pdf->SetDisplayMode('fullpage');
+    // $pdf->WriteHTML($html);
+    // $pdf->Output($filename, '');
   }
 
   public function report_sppd($offset = NULL)

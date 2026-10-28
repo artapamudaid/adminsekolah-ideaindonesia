@@ -60,23 +60,60 @@ class Presensi_waktu_set extends CI_Controller
 
     if ($_POST) {
 
-      $majors   = $_POST['data_waktu_majors_id'];
-      $day      = $_POST['data_waktu_day_id'];
-      $masuk    = $_POST['data_waktu_masuk'];
-      $pulang   = $_POST['data_waktu_pulang'];
+      $majors   = sanitizeStrict($_POST['data_waktu_majors_id']);
+      $day      = sanitizeStrict($_POST['data_waktu_day_id']);
+      $masuk    = sanitizeStrict($_POST['data_waktu_masuk']);
+      $pulang   = sanitizeStrict($_POST['data_waktu_pulang']);
 
       $count = count($day);
 
+      $added = 0;
+      $skipped = 0;
       for ($i = 0; $i < $count; $i++) {
+
+        if (empty($day[$i])) {
+          $skipped++;
+          continue;
+        }
+
+        $col_where = [
+          'data_waktu_majors_id' => $majors,
+          'data_waktu_day_id' => $day[$i],
+          'data_waktu_masuk' => $masuk[$i],
+          'data_waktu_pulang' => $pulang[$i],
+        ];
+
+        if ($this->General_model->checkDataExists('data_waktu', $col_where)) {
+          $skipped++;
+          continue;
+        }
 
         $params['data_waktu_majors_id'] = $majors;
         $params['data_waktu_day_id'] = $day[$i];
         $params['data_waktu_masuk'] = $masuk[$i];
         $params['data_waktu_pulang'] = $pulang[$i];
 
-        $this->Presensi_waktu_model->add($params);
+        $insert = $this->Presensi_waktu_model->add($params);
+        if (!$insert) {
+          $skipped++;
+          continue;
+        }
+        $added++;
       }
-      $this->session->set_flashdata('success', $data['operation'] . ' Data Jam Masuk & Pulang Berhasil');
+
+      if ($added > 1) {
+        $msg = "$added Satuan berhasil ditambahkan";
+      } elseif ($added == 1) {
+        $msg = "1 Satuan berhasil ditambahkan";
+      } else {
+        $msg = "Tidak ada yang ditambahkan";
+      }
+
+      if ($skipped > 0) {
+        $msg .= "<br>($skipped Satuan dilewati)";
+      }
+
+      $this->session->set_flashdata('success', $msg);
       redirect('manage/presensi_waktu');
     } else {
 

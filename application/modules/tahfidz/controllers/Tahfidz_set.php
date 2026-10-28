@@ -41,12 +41,12 @@ class Tahfidz_set extends CI_Controller
       $siswaID = $siswa['student_id'];
     }
 
-    $data['siswa'] = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
+    $data['siswa'] = $this->Student_model->get(array('student_id' => @$siswa['student_id'], 'group' => TRUE));
 
     $data['periodActive'] = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
     $data['period']     = $this->Period_model->get($params);
-    $data['tahfidz']      = $this->Tahfidz_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'order_by' => 'tahfidz_id'));
-    $data['tahfidzSum']      = $this->Tahfidz_model->get_sum(array('period_id' => $periodID, 'student_id' => $siswa['student_id']));
+    $data['tahfidz']      = $this->Tahfidz_model->get(array('period_id' => $periodID, 'student_id' => @$siswa['student_id'], 'order_by' => 'tahfidz_id'));
+    $data['tahfidzSum']      = $this->Tahfidz_model->get_sum(array('period_id' => $periodID, 'student_id' => @$siswa['student_id']));
 
     $data['majors']     = $this->Student_model->get_majors();
 
@@ -154,7 +154,7 @@ class Tahfidz_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0755, TRUE);
+      mkdir($config['upload_path'], 0777, TRUE);
     }
     $this->upload->initialize($config);
 

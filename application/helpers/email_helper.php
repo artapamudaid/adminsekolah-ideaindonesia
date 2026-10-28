@@ -81,7 +81,7 @@ if (!function_exists('send_email')) {
         <div style="padding: 0 40px 30px 40px;">
           <p style="font-size: 16px;"><strong>Yth. Bapak/Ibu ' . htmlspecialchars($content['name']) . ' dari '.htmlspecialchars($content['school']).' ,</strong></p>
           <p>Terimakasih sudah mendaftar trial aplikasi <strong>AdminSekolah.net</strong> 📑 </p>
-          <p>Perkenalkan saya Tiya, yang akan membantu Anda dalam penggunaan aplikasi AdminSekolah:</p>
+          <p>Perkenalkan saya Kiki, yang akan membantu Anda dalam penggunaan aplikasi AdminSekolah:</p>
 
           <ul style="list-style: none; padding-left: 0;">
             <li>Silahkan login menggunakan akses berikut:</li>
@@ -128,7 +128,7 @@ if (!function_exists('send_email')) {
             <br>
 
           <p>Salam,<br>
-          Tiya CS AdminSekolah</p>
+          Kiki CS AdminSekolah</p>
         </div>';
         }
 
@@ -138,7 +138,7 @@ if (!function_exists('send_email')) {
                     <p style="font-size: 16px; line-height: 1.6;">'.$greetings.' Bapak/Ibu <strong>'.$content['name'].'</strong>!</p>
 
                     <p style="font-size: 16px; line-height: 1.6;">
-                        Salam kenal, saya <strong>Tiya</strong>, Customer Service dari Software Manajemen Sekolah <strong>AdminSekolah</strong>.
+                        Salam kenal, saya <strong>Kiki</strong>, Customer Service dari Software Manajemen Sekolah <strong>AdminSekolah</strong>.
                         Terima kasih karena bapak/ibu sudah tertarik untuk mencoba layanan kami.
                     </p>
 
@@ -157,7 +157,7 @@ if (!function_exists('send_email')) {
 
                     <p style="font-size: 16px; line-height: 1.6;">
                         Salam hangat,<br><br>
-                        <strong>Tiya </strong><br>
+                        <strong>Kiki Hasanah</strong><br>
                         Customer Service<br>
                         <span style="color: #3081bd;">AdminSekolah</span>
                     </p>
@@ -169,7 +169,7 @@ if (!function_exists('send_email')) {
                     <p style="font-size: 16px; line-height: 1.6;">'.$greetings.' Bapak/Ibu '.$content['name'].'</p>
 
                     <p style="font-size: 16px; line-height: 1.6;">
-                        Salam kenal saya Tiya, Customer Service dari AdminSekolah.
+                        Salam kenal saya Kiki, Customer Service dari AdminSekolah.
                     </p>
 
                     <p style="font-size: 16px; line-height: 1.6;">
@@ -186,12 +186,12 @@ if (!function_exists('send_email')) {
                     </p>
 
                     <p style="font-size: 16px; line-height: 1.6;">
-                        Terakhir, salam kenal dari saya, Tiya, dan sukses terus untuk lembaga Bapak/Ibu 😊✨
+                        Terakhir, salam kenal dari saya, Kiki, dan sukses terus untuk lembaga Bapak/Ibu 😊✨
                     </p>
 
                     <p style="font-size: 16px; line-height: 1.6;">
                         Salam hangat,<br><br>
-                        <strong>Tiya </strong><br>
+                        <strong>Kiki Hasanah</strong><br>
                         Customer Service<br>
                         <span style="color: #3081bd;">AdminSekolah</span>
                     </p>
@@ -202,7 +202,7 @@ if (!function_exists('send_email')) {
                     <p style="font-size: 16px; line-height: 1.6;">'.$greetings.' Bapak/Ibu '.$content['name'].'</p>
 
                     <p style="font-size: 16px; line-height: 1.6;">
-                        Perkenalkan saya Tiya, Customer Service dari AdminSekolah. Sebelumnya terima kasih sudah tertarik untuk mencoba menggunakan Software Manajemen Sekolah AdminSekolah.
+                        Perkenalkan saya Kiki, Customer Service dari AdminSekolah. Sebelumnya terima kasih sudah tertarik untuk mencoba menggunakan Software Manajemen Sekolah AdminSekolah.
                     </p>
 
                     <p style="font-size: 16px; line-height: 1.6;">
@@ -224,7 +224,7 @@ if (!function_exists('send_email')) {
 
                     <p style="font-size: 16px; line-height: 1.6;">
                         Salam hangat,<br><br>
-                        <strong>Tiya </strong><br>
+                        <strong>Kiki Hasanah</strong><br>
                         Customer Service<br>
                         <span style="color: #3081bd;">AdminSekolah</span>
                     </p>

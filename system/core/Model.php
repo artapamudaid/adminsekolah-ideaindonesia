@@ -75,7 +75,20 @@ class CI_Model {
 		//	If you're here because you're getting an error message
 		//	saying 'Undefined Property: system/core/Model.php', it's
 		//	most likely a typo in your model code.
-		return get_instance()->$key;
+		return isset(get_instance()->$key) ? get_instance()->$key : null;
+	}
+
+	/**
+	 * __isset magic
+	 *
+	 * Allows models to check if CI's loaded classes are set.
+	 *
+	 * @param	string	$key
+	 * @return	bool
+	 */
+	public function __isset($key)
+	{
+		return isset(get_instance()->$key);
 	}
 
 }

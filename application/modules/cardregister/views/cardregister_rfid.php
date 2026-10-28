@@ -1,6 +1,6 @@
 <?php
 
-$filename = 'Template_Set_RFID_' . preg_replace('/[^0-9A-Za-z_-]/', '_', $majors['majors_short_name']) . '_Kelas_' . preg_replace('/[^0-9A-Za-z_-]/', '_', $kelas['class_name']);
+$filename = 'Template_Set_RFID_' . $majors['majors_short_name'] . '_Kelas_' . $kelas['class_name'];
 
 header("Content-type: application/octet-stream");
 header("Content-Disposition: attachment; filename = " . $filename . ".xls");
@@ -26,10 +26,10 @@ header("Expires: 0");
     foreach ($student as $row) {
     ?>
         <tr valign='top'>
-            <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'><?php echo "'" . html_escape($row['student_nis']) ?></td>
-            <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'><?php echo html_escape($row['student_full_name']) ?></td>
-            <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'><?php echo html_escape($row['majors_short_name']) ?></td>
-            <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'><?php echo html_escape($row['class_name']) ?></td>
+            <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'><?php echo "'" . $row['student_nis'] ?></td>
+            <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'><?php echo $row['student_full_name'] ?></td>
+            <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'><?php echo $row['majors_short_name'] ?></td>
+            <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'><?php echo $row['class_name'] ?></td>
             <td style='padding: 1px; font-size: 8pt; border: 1px solid #000000;'></td>
         </tr>
     <?php } ?>
