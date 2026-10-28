@@ -34,17 +34,21 @@ class Auth_set extends CI_Controller
         $this->form_validation->set_rules('password', 'Password', 'trim|required');
         if ($_POST and $this->form_validation->run() == TRUE) {
 
-
             $secret_key = $this->config->item('turnstile_secret_key');
-            $token = $_POST['cf-turnstile-response'] ?? '';
-            $remoteip = $_SERVER['HTTP_CF_CONNECTING_IP'] ??
-                $_SERVER['HTTP_X_FORWARDED_FOR'] ??
-                $_SERVER['REMOTE_ADDR'];
+            $captcha_valid = true;
 
-            $validation = $this->validateTurnstile($token, $secret_key, $remoteip);
+            // Turnstile hanya aktif saat environment production dan secret_key terkonfigurasi
+            if (ENVIRONMENT === 'production' && !empty($secret_key)) {
+                $token = $_POST['cf-turnstile-response'] ?? '';
+                $remoteip = $_SERVER['HTTP_CF_CONNECTING_IP'] ??
+                    $_SERVER['HTTP_X_FORWARDED_FOR'] ??
+                    $_SERVER['REMOTE_ADDR'];
 
+                $validation = $this->validateTurnstile($token, $secret_key, $remoteip);
+                $captcha_valid = !empty($validation['success']);
+            }
 
-            if ($validation['success']) {
+            if ($captcha_valid) {
 
                 $email = $this->input->post('email', TRUE);
                 $password = $this->input->post('password', TRUE);

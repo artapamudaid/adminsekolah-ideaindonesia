@@ -43,6 +43,14 @@ if (!empty(getenv('ANAKHEBAT_URL'))) {
 
 $config['kantin_url'] = getenv('KANTIN_URL') ?: "https://kantin.epesantren.co.id";
 
+if (ENVIRONMENT === 'production') {
+    $config['turnstile_site_key']   = getenv('TURNSTILE_SITE_KEY') ?: '0x4AAAAAACre56V3YaUxpVU0';
+    $config['turnstile_secret_key'] = getenv('TURNSTILE_SECRET_KEY') ?: '0x4AAAAAACre58YLmAWmChni_0UgQ0jhdV4';
+} else {
+    $config['turnstile_site_key']   = getenv('TURNSTILE_SITE_KEY') ?: '';
+    $config['turnstile_secret_key'] = getenv('TURNSTILE_SECRET_KEY') ?: '';
+}
+
 /*
 |--------------------------------------------------------------------------
 | Index File

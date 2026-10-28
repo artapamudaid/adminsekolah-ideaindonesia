@@ -18,8 +18,10 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
     <link rel="stylesheet" href="<?php echo media_url() ?>auth/auth.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
+    <?php if (ENVIRONMENT === 'production' && !empty($turnstile_site_key)): ?>
     <link rel="preconnect" href="https://challenges.cloudflare.com">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <?php endif; ?>
 </head>
 
 <body>
@@ -148,6 +150,7 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
                         </div>
                     </div>
 
+                    <?php if (ENVIRONMENT === 'production' && !empty($turnstile_site_key)): ?>
                     <div class="turnstile-wrap">
                         <div class="cf-turnstile"
                             data-sitekey="<?= $turnstile_site_key ?>"
@@ -155,6 +158,7 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
                             data-size="normal"
                             data-callback="onSuccess"></div>
                     </div>
+                    <?php endif; ?>
 
                     <button type="submit" class="btn-submit">Masuk ke Dashboard</button>
 
