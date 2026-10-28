@@ -107,16 +107,16 @@ class Worksheet_set extends CI_Controller
   {
     if ($_POST == TRUE) {
 
-      $params['worksheet_majors_id']      = $_POST['worksheet_majors_id'];
-      $params['worksheet_period_id']      = $_POST['worksheet_period_id'];
-      $params['worksheet_nama_kepsek']    = $_POST['worksheet_nama_kepsek'];
-      $params['worksheet_nama_bendahara'] = $_POST['worksheet_nama_bendahara'];
-      $params['worksheet_nama_komite']    = $_POST['worksheet_nama_komite'];
-      $params['worksheet_nip_kepsek']     = $_POST['worksheet_nip_kepsek'];
-      $params['worksheet_nip_bendahara']  = $_POST['worksheet_nip_bendahara'];
-      $params['worksheet_email_komite']   = $_POST['worksheet_email_komite'];
-      $params['worksheet_nominal']        = $_POST['worksheet_nominal'];
-      $params['worksheet_status']         = $_POST['worksheet_status'];
+      $params['worksheet_majors_id']      = sanitizeStrict($_POST['worksheet_majors_id']);
+      $params['worksheet_period_id']      = sanitizeStrict($_POST['worksheet_period_id']);
+      $params['worksheet_nama_kepsek']    = sanitizeStrict($_POST['worksheet_nama_kepsek']);
+      $params['worksheet_nama_bendahara'] = sanitizeStrict($_POST['worksheet_nama_bendahara']);
+      $params['worksheet_nama_komite']    = sanitizeStrict($_POST['worksheet_nama_komite']);
+      $params['worksheet_nip_kepsek']     = sanitizeStrict($_POST['worksheet_nip_kepsek']);
+      $params['worksheet_nip_bendahara']  = sanitizeStrict($_POST['worksheet_nip_bendahara']);
+      $params['worksheet_email_komite']   = sanitizeStrict($_POST['worksheet_email_komite']);
+      $params['worksheet_nominal']        = sanitizeStrict($_POST['worksheet_nominal']);
+      $params['worksheet_status']         = sanitizeStrict($_POST['worksheet_status']);
 
       $this->Worksheet_model->add($params);
 
@@ -138,12 +138,12 @@ class Worksheet_set extends CI_Controller
 
       // $params['worksheet_majors_id']      = $this->input->post('worksheet_majors_id');
       // $params['worksheet_period_id']      = $this->input->post('worksheet_period_id');
-      $params['worksheet_nama_kepsek']    = $this->input->post('worksheet_nama_kepsek');
-      $params['worksheet_nama_bendahara'] = $this->input->post('worksheet_nama_bendahara');
-      $params['worksheet_nama_komite']    = $this->input->post('worksheet_nama_komite');
-      $params['worksheet_nip_kepsek']     = $this->input->post('worksheet_nip_kepsek');
-      $params['worksheet_nip_bendahara']  = $this->input->post('worksheet_nip_bendahara');
-      $params['worksheet_email_komite']   = $this->input->post('worksheet_email_komite');
+      $params['worksheet_nama_kepsek']    = sanitizeStrict($this->input->post('worksheet_nama_kepsek'));
+      $params['worksheet_nama_bendahara'] = sanitizeStrict($this->input->post('worksheet_nama_bendahara'));
+      $params['worksheet_nama_komite']    = sanitizeStrict($this->input->post('worksheet_nama_komite'));
+      $params['worksheet_nip_kepsek']     = sanitizeStrict($this->input->post('worksheet_nip_kepsek'));
+      $params['worksheet_nip_bendahara']  = sanitizeStrict($this->input->post('worksheet_nip_bendahara'));
+      $params['worksheet_email_komite']   = sanitizeStrict($this->input->post('worksheet_email_komite'));
       // $params['worksheet_nominal']        = $this->input->post('worksheet_nominal');
       $params['worksheet_status']         = $this->input->post('worksheet_status');
 

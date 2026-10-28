@@ -35,23 +35,23 @@ class Banking_set extends CI_Controller
     if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
       $params['student_nis']    = $f['r'];
       $student_nis = $f['r'];
+
+
+      $siswa = $this->Student_model->get(array('student_nis' => $student_nis));
+      $siswaID = $siswa['student_id'];
+      $majors_siswa = $siswa['majors_majors_id'] ?? 0;
+
+      $data['siswa'] = $this->Student_model->get_student(array('student_id' => $siswa['student_id'], 'group' => TRUE));
+
+      $data['history']    = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'order_by' => 'desc'));
+      $data['setor']      = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'code' => '1'));
+      $data['tarik']      = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'code' => '2'));
+
+      $sum = $this->db->query("SELECT SUM(banking_debit) AS sumDeb, SUM(banking_kredit) AS sumKrd FROM banking WHERE banking_student_id = '$siswaID'")->row_array();
+
+      $data['sumDebit']   = $sum['sumDeb'];
+      $data['sumKredit']  = $sum['sumKrd'];
     }
-
-
-    $siswa = $this->Student_model->get(array('student_nis' => $student_nis));
-    $siswaID = $siswa['student_id'];
-    $majors_siswa = $siswa['majors_majors_id'] ?? 0;
-
-    $data['siswa'] = $this->Student_model->get_student(array('student_id' => $siswa['student_id'], 'group' => TRUE));
-
-    $data['history']    = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'order_by' => 'desc'));
-    $data['setor']      = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'code' => '1'));
-    $data['tarik']      = $this->Banking_model->get(array('student_id' => $siswa['student_id'], 'code' => '2'));
-
-    $sum = $this->db->query("SELECT SUM(banking_debit) AS sumDeb, SUM(banking_kredit) AS sumKrd FROM banking WHERE banking_student_id = '$siswaID'")->row_array();
-
-    $data['sumDebit']   = $sum['sumDeb'];
-    $data['sumKredit']  = $sum['sumKrd'];
 
     // $data['akun_kas']   = $this->db->query("SELECT * FROM account WHERE account_category != 0 AND account_code LIKE '1-%' AND account_description LIKE 'Kas%' AND account_majors_id = $majors_siswa")->result_array();
 
@@ -74,13 +74,13 @@ class Banking_set extends CI_Controller
       $period = $this->input->post('debit_period_id');
       $nis    = $this->input->post('debit_student_nis');
 
-      $params['banking_date'] = $this->input->post('debit_date');
-      $params['banking_debit'] = $this->input->post('debit_val');
+      $params['banking_date'] = sanitizeStrict($this->input->post('debit_date'));
+      $params['banking_debit'] = sanitizeStrict($this->input->post('debit_val'));
       $params['banking_kredit'] = '0';
-      $params['banking_note'] = $this->input->post('debit_note');
-      $params['banking_code'] = $this->input->post('debit_code');
-      $params['banking_student_id'] = $this->input->post('debit_student_id');
-      $params['banking_period_id'] = $this->input->post('debit_period_id');
+      $params['banking_note'] = sanitizeStrict($this->input->post('debit_note'));
+      $params['banking_code'] = sanitizeStrict($this->input->post('debit_code'));
+      $params['banking_student_id'] = sanitizeStrict($this->input->post('debit_student_id'));
+      $params['banking_period_id'] = sanitizeStrict($this->input->post('debit_period_id'));
       $params['user_user_id'] = $this->session->userdata('uid');
 
       $this->Banking_model->add($params);
@@ -125,8 +125,47 @@ class Banking_set extends CI_Controller
 
 
       if (isset($student['student_parent_phone']) and $student['student_parent_phone'] != '+62') {
+        // $params_msg['pesan'] = 'Setoran Tabungan ananda ' . $student['student_full_name'] . ' kelas ' . $student['class_name'] . ' unit ' . $student['majors_school_name'] . ' sudah kami terima.' . "\n\n" .
+        // 'Berikut Bukti Transaksi Tabungan nya.' . "\n\n" . ' Download Bukti : ' . base_url() . 'banking/cetakBukti?r=' . base64_encode($nis) . '&d=' . base64_encode($params['banking_date']);
+
         $params_msg['pesan'] = 'Setoran Tabungan ananda ' . $student['student_full_name'] . ' kelas ' . $student['class_name'] . ' unit ' . $student['majors_school_name'] . ' sudah kami terima.' . "\n\n" .
-          'Berikut Bukti Transaksi Tabungan nya.' . "\n\n" . ' Download Bukti : ' . base_url() . 'banking/cetakBukti?r=' . base64_encode($nis) . '&d=' . base64_encode($params['banking_date']);
+          'Berikut Bukti Transaksi Tabungan nya.';
+
+
+
+        $template_query = $this->db->get_where('templates', array('location' => 'BANKING_IN'));
+
+        $check_template         = $template_query->num_rows();
+
+        if ($check_template > 0) {
+          $get_template = $template_query->row_array();
+
+          $data = [
+            'STUDENT_NIS' => $student['student_nis'],
+            'STUDENT_FULL_NAME' => $student['student_full_name'],
+            'EMPLOYEE_NIP' => '',
+            'EMPLOYEE_NAME' => '',
+            'POSITION_NAME' => '',
+            'CLASS_NAME' => $student['class_name'],
+            'MAJORS_SCHOOL_NAME' => $student['majors_school_name'],
+            'MAJORS_SHORT_NAME' => $student['majors_short_name'],
+            'NOMINAL' => '',
+            'TRX_DATE' => '',
+            'NOREF' => '',
+            'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
+            'YEAR' => date('Y')
+          ];
+
+          $template = $get_template['content'];
+
+          $debit_template = parse_template($template, $data, false);
+
+          $debit_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $debit_template);
+        }
+
+        $params_msg['pesan'] = $debit_template;
+
+        $params_msg['pesan'] .= "\n\n" . ' Download Bukti : ' . base_url() . 'banking/cetakBukti?r=' . base64_encode($nis) . '&d=' . base64_encode($params['banking_date']);
 
         $params_msg['no_wa']                = $student['student_parent_phone'];
         $params_msg['status_kirim']         = 'PENDING';
@@ -155,28 +194,6 @@ class Banking_set extends CI_Controller
             --------------------------------*/
         send_telegram($telegram_id, $psn);
       }
-
-       $this->load->helper('notiftele');
-      $today_trx = date('Y-m-d');
-      $seq_query = $this->db->query("SELECT COUNT(*) as total FROM banking WHERE banking_date = '$today_trx'")->row();
-      $urut = str_pad($seq_query->total, 2, '0', STR_PAD_LEFT);
-      $noref_tele = 'TB' . $nis . date('Ymd', strtotime($today_trx)) . $urut;
-
-      $payload_tele = [
-          'topik'  => 'tabungan',
-          'pesan'  => 'Setoran tabungan siswa atas nama ' . $student['student_full_name'],
-          'posisi' => 'debit',
-          'jumlah' => (int)$params['banking_debit'],
-          'detail' => [
-              'tanggal' => $params['banking_date'],
-              'no_ref'  => $noref_tele,
-              'nama'    => $student['student_full_name'],
-              'nis'     => $nis,
-              'kelas'   => $student['class_name'],
-              'unit'    => $student['majors_short_name']
-          ]
-      ];
-      create_log($payload_tele);
     }
     $this->session->set_flashdata('success', ' Tambah Setoran Berhasil');
     redirect('manage/banking?r=' . $nis);
@@ -190,10 +207,10 @@ class Banking_set extends CI_Controller
 
     if ($_POST == TRUE) {
       $is_confirmed = $this->input->post('confirm') == 1;
-      $nis = $this->input->post('kredit_student_nis');
-      $period = $this->input->post('kredit_period_id');
-      $student_id = $this->input->post('kredit_student_id');
-      $nominal = $this->input->post('kredit_val');
+      $nis = sanitizeStrict($this->input->post('kredit_student_nis'));
+      $period = sanitizeStrict($this->input->post('kredit_period_id'));
+      $student_id = sanitizeStrict($this->input->post('kredit_student_id'));
+      $nominal = sanitizeStrict($this->input->post('kredit_val'));
 
       // Cek limit
       $limit = 0;
@@ -231,7 +248,7 @@ class Banking_set extends CI_Controller
       $totalTrs = $banking->totalTransaksi + $nominal;
 
       if ($limit > 0) {
-        if (!$is_confirmed && ($nominal > $limit || $totalTrs > $limit)) {
+        if (!$is_confirmed && $limit > 0 && ($nominal > $limit || $totalTrs > $limit)) {
           // Minta konfirmasi dulu
           return $this->output
             ->set_content_type('application/json')
@@ -244,10 +261,10 @@ class Banking_set extends CI_Controller
 
       // Proses penarikan
       $params = [
-        'banking_date'       => $this->input->post('kredit_date'),
+        'banking_date'       => sanitizeStrict($this->input->post('kredit_date')),
         'banking_debit'      => 0,
         'banking_kredit'     => $nominal,
-        'banking_note'       => $this->input->post('kredit_note'),
+        'banking_note'       => sanitizeStrict($this->input->post('kredit_note')),
         'banking_code'       => '2',
         'banking_student_id' => $student_id,
         'banking_period_id'  => $period,
@@ -261,29 +278,62 @@ class Banking_set extends CI_Controller
       $this->Banking_model->add($params);
 
       $student = $this->db->query("SELECT student_id, student_full_name, majors_short_name, majors_id, majors_school_name, class_name,  student_parent_phone, student_id_telegram FROM student JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE student.student_nis = '$nis'")->row_array();
+      $wa_key             = $this->Setting_model->get(array('name' => 'setting_wa_key'));
+      $setting_whatsapp   = $this->Setting_model->get(array('id' => 92));
+      $set_key       = $wa_key['setting_value'];
+      $set_wa        = $setting_whatsapp['setting_value'];
 
-      $this->load->helper('notiftele');
-      
-      $today_trx = date('Y-m-d');
-      $seq_query = $this->db->query("SELECT COUNT(*) as total FROM banking WHERE banking_date = '$today_trx'")->row();
-      $urut = str_pad($seq_query->total, 2, '0', STR_PAD_LEFT);
-      $noref_tele = 'TB' . $nis . date('Ymd', strtotime($today_trx)) . $urut;
+      if (isset($student['student_parent_phone']) and $student['student_parent_phone'] != '+62') {
 
-      $payload_tele = [
-          'topik'  => 'tabungan',
-          'pesan'  => 'Tarik tabungan siswa atas nama ' . $student['student_full_name'],
-          'posisi' => 'kredit',
-          'jumlah' => (int)$nominal,
-          'detail' => [
-              'tanggal' => $params['banking_date'],
-              'no_ref'  => $noref_tele,
-              'nama'    => $student['student_full_name'],
-              'nis'     => $nis,
-              'kelas'   => $student['class_name'],
-              'unit'    => $student['majors_short_name']
-          ]
-      ];
-      create_log($payload_tele);
+        $kredit_template = 'Penarikan Tabungan ananda ' . $student['student_full_name'] . ' kelas ' . $student['class_name'] . ' unit ' . $student['majors_school_name'] . ' sudah diproses.';
+
+        $template_query = $this->db->get_where('templates', array('location' => 'BANKING_OUT'));
+
+        $check_template         = $template_query->num_rows();
+
+        if ($check_template > 0) {
+          $get_template = $template_query->row_array();
+
+          $data = [
+            'STUDENT_NIS' => $student['student_nis'],
+            'STUDENT_FULL_NAME' => $student['student_full_name'],
+            'EMPLOYEE_NIP' => '',
+            'EMPLOYEE_NAME' => '',
+            'POSITION_NAME' => '',
+            'CLASS_NAME' => $student['class_name'],
+            'MAJORS_SCHOOL_NAME' => $student['majors_school_name'],
+            'MAJORS_SHORT_NAME' => $student['majors_short_name'],
+            'NOMINAL' => '',
+            'TRX_DATE' => '',
+            'NOREF' => '',
+            'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
+            'YEAR' => date('Y')
+          ];
+
+          $template = $get_template['content'];
+
+          $kredit_template = parse_template($template, $data, false);
+
+          $kredit_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $kredit_template);
+        }
+
+        $params_msg['pesan'] = $kredit_template;
+
+        $params_msg['pesan'] .= "\n\n" . ' Download Bukti : ' . base_url() . 'banking/cetakBukti?r=' . base64_encode($nis) . '&d=' . base64_encode($params['banking_date']);
+
+        $params_msg['no_wa']                = $student['student_parent_phone'];
+        $params_msg['status_kirim']         = 'PENDING';
+        // $params_msg['id_funding']           = $noref;
+        $params_msg['created_by']           = $user_id = $this->session->userdata('uid');
+        $params_msg['created_date']         = date("Y-m-d H:i:s");
+
+        $this->Log_trx_model->send_pesan($params_msg);
+
+        $no_wa = $student['student_parent_phone'];
+        $psn = $params_msg['pesan'];
+
+        send_whatsapp($no_wa, $psn, $set_key, $set_wa);
+      }
 
       return $this->output
         ->set_content_type('application/json')
@@ -446,7 +496,7 @@ class Banking_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0755, TRUE);
+      mkdir($config['upload_path'], 0777, TRUE);
     }
     $this->upload->initialize($config);
 
