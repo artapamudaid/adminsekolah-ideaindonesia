@@ -46,6 +46,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * @author		EllisLab Dev Team
  * @link
  */
+#[\AllowDynamicProperties]
 class CI_Cache extends CI_Driver_Library {
 
 	/**
@@ -61,6 +62,16 @@ class CI_Cache extends CI_Driver_Library {
 		'redis',
 		'wincache'
 	);
+
+	/**
+	 * Explicit driver properties to avoid dynamic property deprecation in PHP 8.2+
+	 */
+	public $dummy;
+	public $file;
+	public $apc;
+	public $memcached;
+	public $redis;
+	public $wincache;
 
 	/**
 	 * Path of cache files (if file-based cache)
