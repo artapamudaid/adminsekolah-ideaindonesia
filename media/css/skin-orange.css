@@ -1,0 +1,311 @@
+/*
+ * Skin: Orange Modern
+ * Main/Primary Color: #E77831
+ * Author: Antigravity
+ * Description: Modern, polished Orange skin for AdminLTE with refined typography, sleek sidebar, and subtle gradients.
+ */
+
+:root {
+  --primary-orange: #E77831;
+  --primary-orange-hover: #d4651e;
+  --primary-orange-dark: #be5412;
+  --primary-orange-light: #fdf3ec;
+  --primary-orange-subtle: rgba(231, 120, 49, 0.12);
+  --primary-orange-shadow: rgba(231, 120, 49, 0.3);
+  --sidebar-bg: #1e2429;
+  --sidebar-sub-bg: #161b1e;
+  --sidebar-hover-bg: #262d33;
+}
+
+/* ==========================================================================
+   Header & Navbar
+   ========================================================================== */
+.skin-orange .main-header .navbar {
+  background: linear-gradient(135deg, #E77831 0%, #db6b24 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: none;
+}
+
+.skin-orange .main-header .navbar .nav > li > a {
+  color: #ffffff;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.skin-orange .main-header .navbar .nav > li > a:hover,
+.skin-orange .main-header .navbar .nav > li > a:active,
+.skin-orange .main-header .navbar .nav > li > a:focus,
+.skin-orange .main-header .navbar .nav .open > a,
+.skin-orange .main-header .navbar .nav .open > a:hover,
+.skin-orange .main-header .navbar .nav .open > a:focus,
+.skin-orange .main-header .navbar .nav > .active > a {
+  background: rgba(0, 0, 0, 0.12);
+  color: #ffffff;
+}
+
+.skin-orange .main-header .navbar .sidebar-toggle {
+  color: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.skin-orange .main-header .navbar .sidebar-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+}
+
+@media (max-width: 767px) {
+  .skin-orange .main-header .navbar .dropdown-menu li.divider {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  .skin-orange .main-header .navbar .dropdown-menu li a {
+    color: #ffffff;
+  }
+  .skin-orange .main-header .navbar .dropdown-menu li a:hover {
+    background: #cb5e1b;
+  }
+}
+
+.skin-orange .main-header .logo {
+  background-color: #cb5e1b;
+  color: #ffffff;
+  border-bottom: 0 solid transparent;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: background-color 0.2s ease;
+}
+
+.skin-orange .main-header .logo:hover {
+  background-color: #be5412;
+}
+
+.skin-orange .main-header li.user-header {
+  background: linear-gradient(135deg, #E77831 0%, #cb5e1b 100%);
+  color: #ffffff;
+}
+
+.skin-orange .content-header {
+  background: transparent;
+  padding: 15px 15px 5px 15px;
+}
+
+.skin-orange .content-header > h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #2c3e50;
+  letter-spacing: -0.2px;
+}
+
+/* ==========================================================================
+   Sidebar & Navigation
+   ========================================================================== */
+.skin-orange .wrapper,
+.skin-orange .main-sidebar,
+.skin-orange .left-side {
+  background-color: var(--sidebar-bg);
+}
+
+.skin-orange .user-panel > .info,
+.skin-orange .user-panel > .info > a {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.skin-orange .sidebar-menu > li.header {
+  color: #7b8b98;
+  background: #181d21;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+  padding: 12px 25px 8px 15px;
+}
+
+.skin-orange .sidebar-menu > li > a {
+  border-left: 3px solid transparent;
+  color: #b3c1cc;
+  font-weight: 500;
+  padding: 12px 15px 12px 15px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skin-orange .sidebar-menu > li:hover > a,
+.skin-orange .sidebar-menu > li.menu-open > a {
+  color: #ffffff;
+  background: var(--sidebar-hover-bg);
+}
+
+.skin-orange .sidebar-menu > li.active > a {
+  color: #ffffff;
+  background: linear-gradient(90deg, rgba(231, 120, 49, 0.22) 0%, rgba(231, 120, 49, 0.04) 100%);
+  border-left-color: #E77831;
+  font-weight: 600;
+}
+
+.skin-orange .sidebar-menu > li.active > a > i {
+  color: #E77831;
+}
+
+.skin-orange .sidebar-menu > li > .treeview-menu {
+  margin: 0;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  background: var(--sidebar-sub-bg);
+}
+
+.skin-orange .sidebar a {
+  color: #b3c1cc;
+}
+
+.skin-orange .sidebar a:hover {
+  text-decoration: none;
+}
+
+.skin-orange .sidebar-menu .treeview-menu > li > a {
+  color: #94a3af;
+  font-size: 13px;
+  padding: 8px 10px 8px 20px;
+  transition: all 0.2s ease;
+}
+
+.skin-orange .sidebar-menu .treeview-menu > li.active > a,
+.skin-orange .sidebar-menu .treeview-menu > li > a:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.skin-orange .sidebar-menu .treeview-menu > li.active > a {
+  color: #E77831;
+  font-weight: 600;
+}
+
+.skin-orange .sidebar-menu .treeview-menu > li.active > a > i {
+  color: #E77831;
+}
+
+/* Sidebar Search Form */
+.skin-orange .sidebar-form {
+  border-radius: 6px;
+  border: 1px solid #2d3840;
+  margin: 10px 15px;
+  overflow: hidden;
+}
+
+.skin-orange .sidebar-form input[type="text"],
+.skin-orange .sidebar-form .btn {
+  box-shadow: none;
+  background-color: #252e35;
+  border: 1px solid transparent;
+  height: 36px;
+  color: #ffffff;
+}
+
+.skin-orange .sidebar-form input[type="text"]::placeholder {
+  color: #788896;
+}
+
+.skin-orange .sidebar-form input[type="text"]:focus,
+.skin-orange .sidebar-form input[type="text"]:focus + .input-group-btn .btn {
+  background-color: #2e3942;
+  color: #ffffff;
+}
+
+.skin-orange.layout-top-nav .main-header > .logo {
+  background-color: #E77831;
+  color: #ffffff;
+  border-bottom: 0 solid transparent;
+}
+
+.skin-orange.layout-top-nav .main-header > .logo:hover {
+  background-color: #d4651e;
+}
+
+/* ==========================================================================
+   Modern UI Accents (Buttons, Badges, Tabs, Boxes, Controls)
+   ========================================================================== */
+.skin-orange .btn-primary {
+  background-color: #E77831;
+  border-color: #E77831;
+  color: #ffffff;
+  font-weight: 500;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(231, 120, 49, 0.25);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skin-orange .btn-primary:hover,
+.skin-orange .btn-primary:active,
+.skin-orange .btn-primary:focus,
+.skin-orange .btn-primary.active {
+  background-color: #d4651e !important;
+  border-color: #cb5e1b !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(231, 120, 49, 0.35);
+  transform: translateY(-1px);
+}
+
+.skin-orange .box.box-primary {
+  border-top-color: #E77831;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.skin-orange .box-header.with-border {
+  border-bottom: 1px solid #f0f2f5;
+  padding: 12px 15px;
+}
+
+.skin-orange .box-title {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.skin-orange .label-primary,
+.skin-orange .badge-primary {
+  background-color: #E77831 !important;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+.skin-orange .nav-tabs-custom > .nav-tabs > li.active {
+  border-top-color: #E77831;
+}
+
+.skin-orange .pagination > .active > a,
+.skin-orange .pagination > .active > a:focus,
+.skin-orange .pagination > .active > a:hover,
+.skin-orange .pagination > .active > span,
+.skin-orange .pagination > .active > span:focus,
+.skin-orange .pagination > .active > span:hover {
+  background-color: #E77831;
+  border-color: #E77831;
+  color: #ffffff;
+}
+
+.skin-orange .form-control:focus {
+  border-color: #E77831;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(231, 120, 49, 0.18);
+}
+
+/* Modern Notification Badge in Top Navbar */
+.skin-orange .navbar-nav > .notifications-menu > .dropdown-menu > li.header,
+.skin-orange .navbar-nav > .messages-menu > .dropdown-menu > li.header,
+.skin-orange .navbar-nav > .tasks-menu > .dropdown-menu > li.header {
+  background-color: #fcf8f5;
+  color: #444444;
+  border-bottom: 1px solid #f1e4dc;
+  font-weight: 600;
+}
+
+.skin-orange .badge-notif,
+.skin-orange .label.label-warning {
+  background-color: #E77831 !important;
+}
+
+/* Subtle modern card styling */
+.skin-orange .box {
+  border-radius: 6px;
+  border-top-width: 3px;
+  margin-bottom: 20px;
+}
