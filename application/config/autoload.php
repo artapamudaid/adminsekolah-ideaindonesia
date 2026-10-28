@@ -79,7 +79,7 @@ $autoload['libraries'] = array('database', 'session', 'curl', 'user_agent');
 |	$autoload['drivers'] = array('cache' => 'cch');
 |
 */
-$autoload['drivers'] = array();
+$autoload['drivers'] = array('cache');
 
 /*
 | -------------------------------------------------------------------
@@ -89,7 +89,7 @@ $autoload['drivers'] = array();
 |
 |	$autoload['helper'] = array('url', 'file');
 */
-$autoload['helper'] = array('url', 'text', 'inflector', 'form', 'security', 'arc');
+$autoload['helper'] = array('url', 'text', 'inflector', 'form', 'security', 'arc', 'template_wa', 'cache_version');
 
 /*
 | -------------------------------------------------------------------
