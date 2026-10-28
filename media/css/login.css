@@ -39,7 +39,7 @@ body, html {
 }
 
 .box {
-    background-color: #2A8DBB;
+    background-color: #E77831;
     top: 0;
     left: 0;
     min-height: 650px;
@@ -59,11 +59,11 @@ body, html {
     border-radius: 0px;
     background-color: #fff;
     border-color: #fff;
-    color: #2A8DBB;
+    color: #E77831;
     width: 100px;
 }
 .btn-login:hover{
-    background-color: #2A8DBB;
+    background-color: #E77831;
     border-color: #fff;
     color: #fff;
     transition: 0.5s;
