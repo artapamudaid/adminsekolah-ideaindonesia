@@ -1,0 +1,29 @@
+services:
+  web:
+    image: ideaindonesia:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: "host"
+    restart: unless-stopped
+    environment:
+      - SERVER_NAME=:${HTTP_PORT:-8001}
+      - APP_BASE_URL=${APP_BASE_URL:-}
+      - CI_ENV=${CI_ENV:-development}
+
+      # Database connection configuration
+      - DB_HOST=${DB_HOST:-127.0.0.1}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USERNAME=${DB_USERNAME:-adminsekolah}
+      - DB_PASSWORD=${DB_PASSWORD:-adminsekolah_secret}
+      - DB_DATABASE=${DB_DATABASE:-adminsekolah_demo}
+    volumes:
+      - .:/app/public # Mount the current directory for live development
+      - app_uploads:/app/public/uploads
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
+  app_uploads:

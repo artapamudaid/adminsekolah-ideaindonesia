@@ -1,74 +1,10 @@
-<?php
-// MOD - 24082026
-$umajorsid = $this->session->userdata('umajorsid');
-// if ($umajorsid != 0) {
-//   $this->db->where('idMajors', $umajorsid);
-// }
-// $this->db->select("vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi ");
-// $this->db->group_by("vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod");
-// $notifTrx = $this->db->get('v_transaksi_tertunda vtt')->result_array();
-// $totalNotif = count($notifTrx);
-
-// MOD - 24082026- Reference demo-epesantren - implement caching
-$this->load->driver('cache', array('adapter' => 'file', 'backup' => 'file'));
-$cache_name = 'v_transaksi_tertunda_cache_opt_' . $umajorsid;
-$notifTrx = $this->cache->get($cache_name);
-
-if ($notifTrx === FALSE) {
-
-  $this->db->select('bl.bulan_noref AS noref, s.student_full_name AS nama, s.student_nis AS nis, py.period_period_id AS idPeriod, bl.bulan_bill AS penerimaan');
-  $this->db->from('bulan bl');
-  $this->db->join('student s', 's.student_id = bl.student_student_id');
-  $this->db->join('payment py', 'py.payment_id = bl.payment_payment_id');
-  $this->db->where('bl.bulan_status', 1);
-  $this->db->where('bl.bulan_bill > ', 0);
-  $this->db->where('bl.bulan_noref IS NOT NULL', NULL, FALSE);
-  $this->db->where('NOT EXISTS (SELECT 1 FROM kas ks WHERE ks.kas_noref = bl.bulan_noref)', NULL, FALSE);
-  $this->db->where('NOT EXISTS (SELECT 1 FROM jurnal_umum ju WHERE ju.noref = bl.bulan_noref)', NULL, FALSE);
-
-  if ($umajorsid != 0) {
-    $this->db->where('s.majors_majors_id', $umajorsid);
-  }
-
-  $query1 = $this->db->get_compiled_select();
-
-  $this->db->select('bp.bebas_pay_noref AS noref, s.student_full_name AS nama, s.student_nis AS nis, py.period_period_id AS idPeriod, bp.bebas_pay_bill AS penerimaan');
-  $this->db->from('bebas_pay bp');
-  $this->db->join('bebas b', 'b.bebas_id = bp.bebas_bebas_id');
-  $this->db->join('student s', 's.student_id = b.student_student_id');
-  $this->db->join('payment py', 'py.payment_id = b.payment_payment_id');
-  $this->db->where('bp.bebas_pay_noref IS NOT NULL', NULL, FALSE);
-  $this->db->where('NOT EXISTS (SELECT 1 FROM kas ks WHERE ks.kas_noref = bp.bebas_pay_noref)', NULL, FALSE);
-  $this->db->where('NOT EXISTS (SELECT 1 FROM jurnal_umum ju WHERE ju.noref = bp.bebas_pay_noref)', NULL, FALSE);
-
-  if ($umajorsid != 0) {
-    $this->db->where('s.majors_majors_id', $umajorsid);
-  }
-
-  $query2 = $this->db->get_compiled_select();
-
-  $this->db->select('noref, nama, nis, idPeriod, SUM(penerimaan) AS totalTransaksi');
-  $this->db->from("($query1 UNION ALL $query2) AS vtt");
-  $this->db->group_by(array('nama', 'nis', 'idPeriod'));
-
-  $notifTrx = $this->db->get()->result_array();
-
-  // Cache for 5 minutes (300 seconds)
-  $this->cache->save($cache_name, $notifTrx, 300);
-}
-
-$totalNotif = count($notifTrx);
-?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>
-    <?php echo $this->config->item('app_name') ?>
-    <?php echo isset($title) ? ' | ' . $title : null; ?>
-  </title>
+  <title><?php echo $this->config->item('app_name') ?> <?php echo isset($title) ? ' | ' . $title : null; ?></title>
   <link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>">
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
@@ -93,6 +29,7 @@ $totalNotif = count($notifTrx);
   <link rel="stylesheet" href="<?php echo media_url() ?>DataTables/css/jquery.dataTables.css">
 
   <link href="<?php echo base_url('/media/js/fullcalendar/fullcalendar.css'); ?>" rel="stylesheet">
+  <link rel="stylesheet" href="<?= base_url('/assets/chat/css/style.css') ?>">
 
   <script src="<?php echo media_url() ?>js/jquery.min.js"></script>
   <script src="<?php echo media_url() ?>js/dateFormat.js"></script>
@@ -109,8 +46,7 @@ $totalNotif = count($notifTrx);
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
-  <script type="text/javascript"
-    src="https://emn178.github.io/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+  <script type="text/javascript" src="https://emn178.github.io/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
 </head>
 
 <style>
@@ -224,28 +160,16 @@ $totalNotif = count($notifTrx);
       <a href="<?php site_url('manage') ?>" class="logo">
         <!-- mini logo for sidebar mini 50x50 pixels -->
         <?php if (!empty(logo())) { ?>
-          <span class="logo-mini"><img src="<?php echo upload_url('school/' . logo()) ?>"
-              style="height: 40px; margin-top: 5px; margin-left:5px;" class="pull-left"></span>
-        <?php
-        } else { ?>
-          <span class="logo-mini"><img src="<?php echo media_url('img/logo.svg') ?>"
-              style="height: 40px; margin-top: 5px; margin-left:5px;" class="pull-left"></span>
-        <?php
-        } ?>
+          <span class="logo-mini"><img src="<?php echo upload_url('school/' . logo()) ?>" style="height: 40px; margin-top: 5px; margin-left:5px;" class="pull-left"></span>
+        <?php } else { ?>
+          <span class="logo-mini"><img src="<?php echo media_url('img/logo.svg') ?>" style="height: 40px; margin-top: 5px; margin-left:5px;" class="pull-left"></span>
+        <?php } ?>
         <?php if (!empty(logo())) { ?>
           <!-- logo for regular state and mobile devices -->
-          <span class="logo-lg pull-left"><img src="<?php echo upload_url('school/' . logo()) ?>"
-              style="height: 40px; margin-top: 5px;" class="pull-left"><b>&nbsp;
-              <?php echo $this->config->item('app_name') ?>
-            </b></span>
-        <?php
-        } else { ?>
-          <span class="logo-lg pull-left"><img src="<?php echo media_url('img/logo.svg') ?>"
-              style="height: 40px; margin-top: 5px;" class="pull-left"><b>&nbsp;
-              <?php echo $this->config->item('app_name') ?>
-            </b></span>
-        <?php
-        } ?>
+          <span class="logo-lg pull-left"><img src="<?php echo upload_url('school/' . logo()) ?>" style="height: 40px; margin-top: 5px;" class="pull-left"><b>&nbsp;<?php echo $this->config->item('app_name') ?></b></span>
+        <?php } else { ?>
+          <span class="logo-lg pull-left"><img src="<?php echo media_url('img/logo.svg') ?>" style="height: 40px; margin-top: 5px;" class="pull-left"><b>&nbsp;<?php echo $this->config->item('app_name') ?></b></span>
+        <?php } ?>
       </a>
 
       <!-- Header Navbar: style can be found in header.less -->
@@ -277,55 +201,39 @@ $totalNotif = count($notifTrx);
         <span class="logo-lg pull-left">
           <!--&nbsp&nbsp&nbsp&nbsp-->
           <font size="2" color="white">
-            <b>Admin
-              <?php echo $resultName->name; ?>
-            </b>
+            <b>Admin <?php echo $resultName->name; ?></b>
           </font><br>
-          <font size="1" color="white">
-            <?php echo $resultAddress->address . ' ' . $resultDistrict->district . ' - ' . $resultCity->city . ', Telp. ' . $resultPhone->phone ?>
+          <font size="1" color="white"><?php echo $resultAddress->address . ' ' . $resultDistrict->district . ' - ' . $resultCity->city . ', Telp. ' . $resultPhone->phone ?>
             <!--Jl. Cendrawasih EE 17 Ngasem - Kediri, Telp. 08123585833-->
           </font>
         </span>
         <div class="navbar-custom-menu">
           <ul class="nav navbar-nav">
             <!-- Messages: style can be found in dropdown.less-->
-            <!-- Language Switcher -->
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <i class="fa fa-globe"></i> ID/EN
-              </a>
-              <ul class="dropdown-menu" style="width: auto; min-width: 120px;">
-                <li><a href="<?php echo site_url('manage/change_language/id') ?>"><b>ID</b> - Indonesia</a></li>
-                <li><a href="<?php echo site_url('manage/change_language/en') ?>"><b>EN</b> - English</a></li>
-              </ul>
-            </li>
-
+            <?php
+            $notifTrx     = $this->db->query(
+              "SELECT vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi
+                                    FROM v_transaksi_tertunda vtt 
+                                    GROUP BY vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod"
+            )->result_array();
+            $totalNotif = count($notifTrx);
+            ?>
             <li class="dropdown dropdown-notif user user-menu">
-              <?php if ($totalNotif > 0): ?>
-                <a href="#" class="dropdown-toggle bell-icon has-notification" data-toggle="dropdown">
-                  <i class="fa fa-bell" aria-hidden="true"></i>
-                  <div class="badge-2">
-                    <?php echo $totalNotif; ?>
-                  </div>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-notif" id="notificationDropdown">
-                  <li class="notification-header">Pembayaran Belum Tersimpan</li>
-                  <?php foreach ($notifTrx as $nTrx) { ?>
-                    <li class="notification-item">
-                      <span>
-                        <?php echo $nTrx['nama'] ?>
-                      </span>
-                      <a href="<?php echo base_url('manage/payout?n=') . $nTrx['idPeriod'] . '&r=' . $nTrx['nis'] ?>"
-                        class="notification-link">Detail</a>
-                    </li>
-                  <?php
-                  } ?>
-                </ul>
-              <?php else: ?>
-                <a href="javascript:void(0)" class="dropdown-toggle bell-icon has-notification">
-                  <i class="fa fa-bell" aria-hidden="true"></i>
-                </a>
-              <?php endif; ?>
+              <a href="#" class="dropdown-toggle bell-icon has-notification" data-toggle="dropdown">
+                <i class="fa fa-bell" aria-hidden="true"></i>
+                <?php if ($totalNotif > 0) { ?>
+                  <div class="badge-2"><?php echo $totalNotif; ?></div>
+                <?php } ?>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-notif" id="notificationDropdown">
+                <li class="notification-header">Pembayaran Belum Tersimpan</li>
+                <?php foreach ($notifTrx as $nTrx) { ?>
+                  <li class="notification-item">
+                    <span><?php echo $nTrx['nama'] ?></span>
+                    <a href="<?php echo base_url('manage/payout?n=') . $nTrx['idPeriod'] . '&r=' . $nTrx['nis'] ?>" class="notification-link">Detail</a>
+                  </li>
+                <?php } ?>
+              </ul>
             </li>
 
 
@@ -333,37 +241,25 @@ $totalNotif = count($notifTrx);
             <li class="dropdown user user-menu">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 <?php if ($this->session->userdata('user_image') != null) { ?>
-                  <img src="<?php echo upload_url() . '/users/' . $this->session->userdata('user_image'); ?>"
-                    class="user-image">
-                <?php
-                } else { ?>
+                  <img src="<?php echo upload_url() . '/users/' . $this->session->userdata('user_image'); ?>" class="user-image">
+                <?php } else { ?>
                   <img src="<?php echo media_url() ?>img/user.png" class="user-image">
-                <?php
-                } ?>
-                <span class="hidden-xs">
-                  <?php echo ucfirst($this->session->userdata('ufullname')); ?>
-                </span>
+                <?php } ?>
+                <span class="hidden-xs"><?php echo ucfirst($this->session->userdata('ufullname')); ?></span>
               </a>
               <ul class="dropdown-menu">
                 <!-- User image -->
                 <li class="user-header">
                   <?php if ($this->session->userdata('user_image') != null) { ?>
-                    <img src="<?php echo upload_url() . '/users/' . $this->session->userdata('user_image'); ?>"
-                      class="img-circle">
-                  <?php
-                  } else { ?>
+                    <img src="<?php echo upload_url() . '/users/' . $this->session->userdata('user_image'); ?>" class="img-circle">
+                  <?php } else { ?>
                     <img src="<?php echo media_url() ?>img/user.png" class="img-circle">
-                  <?php
-                  } ?>
+                  <?php } ?>
 
                   <p>
                     <?php echo ucfirst($this->session->userdata('ufullname')); ?>
-                    <small>
-                      <?php echo ucfirst($this->session->userdata('urolename')); ?>
-                    </small>
-                    <small>
-                      <?php echo $this->session->userdata('uemail'); ?>
-                    </small>
+                    <small><?php echo ucfirst($this->session->userdata('urolename')); ?></small>
+                    <small><?php echo $this->session->userdata('uemail'); ?></small>
                   </p>
                 </li>
                 <!-- Menu Footer-->
@@ -372,8 +268,7 @@ $totalNotif = count($notifTrx);
                     <a href="<?php echo site_url('manage/profile') ?>" class="btn btn-default btn-flat">Profile</a>
                   </div>
                   <div class="pull-right">
-                    <a href="<?php echo site_url('manage/auth/logout?location=' . htmlspecialchars($_SERVER['REQUEST_URI'])) ?>"
-                      class="btn btn-default btn-flat">Sign out</a>
+                    <a href="<?php echo site_url('manage/auth/logout_pengganti_db_baru?location=' . htmlspecialchars($_SERVER['REQUEST_URI'])) ?>" class="btn btn-default btn-flat">Sign out</a>
                   </div>
                 </li>
               </ul>
@@ -394,6 +289,61 @@ $totalNotif = count($notifTrx);
     <?php isset($main) ? $this->load->view($main) : null; ?>
     <!-- Content Wrapper. Contains page content -->
 
+
+    <div class="widget-button" id="widget-toggle">
+      💬
+      <div class="notif-badge" id="notif-badge">0</div>
+    </div>
+
+    <div class="widget-container" id="widget-container">
+
+      <div id="file-preview-modal" class="file-preview-modal">
+        <div class="preview-header">
+          <span style="cursor: pointer;" id="btn-cancel-file">✖ Batal</span>
+          <span style="margin-left: auto;">Pratinjau File</span>
+        </div>
+        <div class="preview-body" id="preview-content"></div>
+        <div class="preview-footer">
+          <input type="text" id="file-caption" placeholder="Tambah keterangan (caption)...">
+          <button class="btn-send" id="btn-send-file">➤</button>
+        </div>
+      </div>
+
+      <div class="widget-header">
+        <h4>Halo Indoweb</h4>
+        <div class="header-actions">
+          <button class="btn-logout" id="btn-logout">Keluar</button>
+          <button class="widget-close" id="widget-close">×</button>
+        </div>
+      </div>
+
+      <div class="widget-login" id="widget-login-view">
+        <h3 style="text-align: center; margin-top: 0; color: #333;">Selamat Datang 👋</h3>
+        <p style="text-align: center; font-size: 14px; color: #666;">Masukkan username dan password akun halo.indoweb.id Anda memulai percakapan.</p>
+        <form id="form-login">
+          <input type="text" id="login-username" placeholder="Username/Email di halo.indoweb.id" required>
+          <input type="password" id="login-password" placeholder="Password di halo.indoweb.id" required>
+          <button type="submit" id="btn-login">Mulai Chat</button>
+        </form>
+      </div>
+
+      <div id="widget-chat-view" style="display: none; height: calc(100% - 60px); flex-direction: column;">
+
+        <div class="widget-messages" id="widget-messages"></div>
+
+        <form id="form-chat" class="widget-input-area">
+          <input type="file" id="widget-file" style="display: none;" accept=".png,.jpg,.jpeg,.pdf,.docx">
+          <label for="widget-file" class="icon-btn" id="btn-attach" title="Lampirkan File">📎</label>
+
+          <button type="button" class="icon-btn" id="btn-emoji" title="Emoji">😀</button>
+
+          <input type="text" id="widget-input-msg" placeholder="Ketik pesan..." autocomplete="off">
+
+          <button type="submit" class="btn-send">➤</button>
+        </form>
+
+      </div>
+    </div>
 
     <!-- /.content-wrapper -->
     <footer class="main-footer">
@@ -416,7 +366,7 @@ $totalNotif = count($notifTrx);
     <script src="<?php echo media_url() ?>js/bootstrap.min.js"></script>
     <script src="<?php echo media_url() ?>js/moment.min.js"></script>
 
-    <!-- <script src="<?php echo media_url() ?>js/fullcalendar.min.js"></script> -->
+    <script src="<?php echo media_url() ?>js/fullcalendar.min.js"></script>
 
 
     <!-- daterangepicker -->
@@ -429,7 +379,6 @@ $totalNotif = count($notifTrx);
     <script src="<?php echo media_url() ?>js/adminlte.min.js"></script>
     <!-- Notyfy JS -->
     <script src="<?php echo media_url() ?>js/jquery.toast.js"></script>
-    <script src="<?php echo media_url() ?>js/loadingoverlay.min.js"></script>
 
     <!-- select2 -->
     <link href="<?php echo media_url() ?>select2_css/select2.min.css" rel="stylesheet" />
@@ -452,11 +401,6 @@ $totalNotif = count($notifTrx);
         autoclose: true,
         todayHighlight: true
       });
-
-      $('#multidate').datepicker({
-        multidate: true,
-        format: "yyyy-mm-dd"
-      });
     </script>
 
     <?php if ($this->session->flashdata('success')) { ?>
@@ -473,8 +417,7 @@ $totalNotif = count($notifTrx);
           })
         });
       </script>
-    <?php
-    } ?>
+    <?php } ?>
 
     <?php if ($this->session->flashdata('failed')) { ?>
       <script>
@@ -490,8 +433,7 @@ $totalNotif = count($notifTrx);
           })
         });
       </script>
-    <?php
-    } ?>
+    <?php } ?>
 
 
     <script>
@@ -521,82 +463,6 @@ $totalNotif = count($notifTrx);
       $(document).ready(function() {
         $('[data-toggle="tooltip"]').tooltip();
       });
-    </script>
-    <script>
-      function toastNotifikasi(status, message, title) {
-        let loaderBg;
-
-        switch (status) {
-          case 'success':
-            loaderBg = '#28a745';
-            break;
-          case 'error':
-            loaderBg = '#dc3545';
-            break;
-          case 'warning':
-            loaderBg = '#ffc107';
-            break;
-          case 'info':
-            loaderBg = '#17a2b8';
-            break;
-          default:
-            loaderBg = '#9EC600';
-        }
-
-        $.toast({
-          heading: title,
-          text: message,
-          icon: status,
-          loader: true,
-          loaderBg: loaderBg,
-          position: 'top-right',
-          hideAfter: 3500,
-          stack: 6,
-        });
-      }
-
-      function handleAjaxError(jqXHR, textStatus) {
-        // console.log("Error details:", jqXHR, textStatus, errorThrown);
-        if (jqXHR.status === 0) {
-          toastNotifikasi("error", 'Tidak ada koneksi. Periksa jaringan Anda.!', 'Error');
-        } else if (jqXHR.status == 404) {
-          toastNotifikasi("error", 'Halaman yang diminta tidak ditemukan.!', 'Error');
-        } else if (jqXHR.status == 500) {
-          toastNotifikasi("error", 'Kesalahan server internal.!', 'Error');
-        } else if (textStatus === "parsererror") {
-          toastNotifikasi("error", 'Kesalahan parsing JSON.!', 'Error');
-        } else if (textStatus === "timeout") {
-          toastNotifikasi("error", 'Waktu request habis.!', 'Error');
-        } else if (textStatus === "abort") {
-          toastNotifikasi("error", 'Request dibatalkan.!', 'Error');
-        } else {
-          toastNotifikasi("error", 'Kesalahan tidak diketahui: ' + jqXHR.responseText, 'Error');
-        }
-      }
-
-      function loadingOverlay() {
-        var loadingOverlayCustom = $("<div>", {
-          "css": {
-            "display": "flex",
-            "flex-direction": "column",
-            "text-align": "center",
-          },
-          "html": `
-						<div>
-						<i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i>
-						<span class="sr-only">Loading...</span>
-						</div>
-						<div style="font-size:16px; margin-top:5px">
-						<span>Mohon Tunggu...</span>
-						</div>
-						`,
-        });
-
-        $.LoadingOverlay("show", {
-          image: "",
-          custom: loadingOverlayCustom
-        });
-      }
     </script>
 
     <script>
@@ -646,34 +512,45 @@ $totalNotif = count($notifTrx);
     </script>
 
     <script>
-      $(function() {
-        let suspend_show = <?= isset($this->suspend_info['show']) ? json_encode($this->suspend_info['show']) : false; ?>;
-        let suspend_location = <?= isset($this->suspend_info['location']) ? json_encode($this->suspend_info['location']) : '"content-wrapper"'; ?>;
-        if (suspend_show) {
-          let suspendUI = <?= isset($this->suspend_info['ui']) ? json_encode($this->suspend_info['ui']) : '""'; ?>;
-          if (suspend_location === 'navbar') {
-            $(".navbar-custom-menu .navbar-nav").prepend(suspendUI);
-          } else {
-            if ($(".content-wrapper section.content").length) {
-              $(".content-wrapper section.content").first().prepend(suspendUI);
-            } else {
-              $(".content-wrapper").prepend(suspendUI);
-            }
-          }
-        }
+      function pilih_paket() {
+        var paket = $("#package").val();
 
+        $.ajax({
+          url: '<?= base_url() . 'manage/setting/change_package'; ?>',
+          type: 'POST',
+          data: {
+            'paket': paket,
+          },
+          success: function(msg) {
+            window.location.href = '<?= base_url() . 'manage'; ?>';
+          },
+          error: function(msg) {
+            alert('msg');
+          }
+
+        });
+        e.preventDefault();
+      }
+    </script>
+
+    <script>
+      $(function() {
         // Password reminder
         let pwd_reminder_show = <?= isset($this->password_reminder_info['show']) ? json_encode($this->password_reminder_info['show']) : 'false'; ?>;
         if (pwd_reminder_show) {
           let pwdReminderUI = <?= isset($this->password_reminder_info['ui']) ? json_encode($this->password_reminder_info['ui']) : '""'; ?>;
-          if ($(".content-wrapper section.content").length) {
-            $(".content-wrapper section.content").first().prepend(pwdReminderUI);
-          } else {
-            $(".content-wrapper").prepend(pwdReminderUI);
-          }
+          $(".content-wrapper").prepend(pwdReminderUI);
         }
       });
     </script>
+
+    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3" preload="auto"></audio>
+
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@2.12.1/dist/index.min.js"></script>
+    <script src="<?= base_url('assets/chat/js/script.js?v=' . filemtime(FCPATH . 'assets/chat/js/script.js')) ?>"></script>
+
 </body>
 
 </html>

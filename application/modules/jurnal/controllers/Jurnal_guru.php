@@ -191,6 +191,12 @@ class Jurnal_guru extends CI_Controller
 
             $materi_id = $this->db->insert_id();
 
+            $jumlah_siswa_masuk = 0;
+            $jumlah_siswa_sakit = 0;
+            $jumlah_siswa_izin  = 0;
+            $jumlah_siswa_alpha = 0;
+            $siswa_tidak_masuk  = [];
+
             for ($i = 0; $i < count($student); $i++) {
                 for ($j = 0; $j < count($schedule); $j++) {
                     $schedule_id = $schedule[$j];
@@ -212,6 +218,54 @@ class Jurnal_guru extends CI_Controller
 
                     $this->db->insert('presensi_pelajaran', $data);
                 }
+
+                if ($status == 'H') {
+                    $jumlah_siswa_masuk++;
+                } else {
+                    $student_info = $this->db->query("SELECT student_full_name FROM student WHERE student_id = '$student_id'")->row_array();
+                    $nama_siswa = $student_info ? $student_info['student_full_name'] : 'Unknown';
+                    if ($status == 'S') {
+                        $jumlah_siswa_sakit++;
+                        $siswa_tidak_masuk[] = ['nama' => $nama_siswa, 'keterangan' => 'sakit'];
+                    } elseif ($status == 'I') {
+                        $jumlah_siswa_izin++;
+                        $siswa_tidak_masuk[] = ['nama' => $nama_siswa, 'keterangan' => 'izin'];
+                    } elseif ($status == 'A') {
+                        $jumlah_siswa_alpha++;
+                        $siswa_tidak_masuk[] = ['nama' => $nama_siswa, 'keterangan' => 'alpha'];
+                    }
+                }
+            }
+
+            $this->load->helper('notiftele');
+            $employee = $this->db->query("SELECT employee_name, employee_nip, majors.majors_short_name as unit, position.position_name as jabatan 
+                                          FROM employee 
+                                          LEFT JOIN majors ON majors.majors_id = employee.employee_majors_id 
+                                          LEFT JOIN position ON position.position_id = employee.employee_position_id 
+                                          WHERE employee_id = '$teacher_id'")->row_array();
+            
+            $class_info = $this->db->query("SELECT class_name FROM class WHERE class_id = '$class_id'")->row_array();
+            $lesson_info = $this->db->query("SELECT lesson_name FROM lesson WHERE lesson_id = '$lesson_id'")->row_array();
+
+            if ($employee && $class_info && $lesson_info) {
+                $payload_tele = [
+                    'topik'  => 'jurnal_mengajar',
+                    'pesan'  => 'Jurnal: Mengajar ' . $lesson_info['lesson_name'] . ' Kelas ' . $class_info['class_name'] . ' (Materi ' . $materi . ') pada ' . date('H:i:s'),
+                    'detail' => [
+                        'tanggal' => date('Y-m-d', strtotime($date)),
+                        'nama'    => $employee['employee_name'],
+                        'nip'     => $employee['employee_nip'] ?? '',
+                        'unit'    => $employee['unit'] ?? '',
+                        'kelas'   => $class_info['class_name'],
+                        'jabatan' => $employee['jabatan'] ?? '',
+                        'jumlah_siswa_masuk' => $jumlah_siswa_masuk,
+                        'jumlah_siswa_sakit' => $jumlah_siswa_sakit,
+                        'jumlah_siswa_izin'  => $jumlah_siswa_izin,
+                        'jumlah_siswa_alpha' => $jumlah_siswa_alpha,
+                        'siswa_tidak_masuk'  => $siswa_tidak_masuk
+                    ]
+                ];
+                create_log($payload_tele);
             }
 
             $cnt = count($schedule);

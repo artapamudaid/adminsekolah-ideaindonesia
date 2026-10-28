@@ -10,19 +10,6 @@ if (!defined('BASEPATH'))
     
         function get($params = array())
         {
-            $cache_key = get_session_cache_key('position', $params);
-            try {
-                if (!isset($this->cache)) {
-                    $this->load->driver('cache', array('adapter' => 'file'));
-                }
-                $cached = $this->cache->get($cache_key);
-                if ($cached !== FALSE) {
-                    return $cached;
-                }
-            } catch (\Throwable $e) {
-                log_message('error', 'Cache read error in Position_model::get: ' . $e->getMessage());
-            }
-
             if(isset($params['id']))
             {
                 $this->db->where('position_id', $params['id']);
@@ -73,39 +60,16 @@ if (!defined('BASEPATH'))
     
             if(isset($params['id']))
             {
-                $result = $res->row_array();
+                return $res->row_array();
             }
             else
             {
-                $result = $res->result_array();
+                return $res->result_array();
             }
-
-            try {
-                if (isset($this->cache)) {
-                    $this->cache->save($cache_key, $result, CACHE_TTL);
-                }
-            } catch (\Throwable $e) {
-                log_message('error', 'Cache write error in Position_model::get: ' . $e->getMessage());
-            }
-
-            return $result;
         }
 
         function get_position($params = array())
         {
-            $cache_key = get_session_cache_key('position_raw', $params);
-            try {
-                if (!isset($this->cache)) {
-                    $this->load->driver('cache', array('adapter' => 'file'));
-                }
-                $cached = $this->cache->get($cache_key);
-                if ($cached !== FALSE) {
-                    return $cached;
-                }
-            } catch (\Throwable $e) {
-                log_message('error', 'Cache read error in Position_model::get_position: ' . $e->getMessage());
-            }
-
             if(isset($params['id']))
             {
                 $this->db->where('position_id', $params['id']);
@@ -151,22 +115,12 @@ if (!defined('BASEPATH'))
     
             if(isset($params['id']))
             {
-                $result = $res->row_array();
+                return $res->row_array();
             }
             else
             {
-                $result = $res->result_array();
+                return $res->result_array();
             }
-
-            try {
-                if (isset($this->cache)) {
-                    $this->cache->save($cache_key, $result, CACHE_TTL);
-                }
-            } catch (\Throwable $e) {
-                log_message('error', 'Cache write error in Position_model::get_position: ' . $e->getMessage());
-            }
-
-            return $result;
         }
         
         function add($data = array()) {
@@ -197,8 +151,6 @@ if (!defined('BASEPATH'))
         }
 
         $status = $this->db->affected_rows();
-        bump_cache_version('position');
-        bump_cache_version('position_raw');
         return ($status == 0) ? FALSE : $id;
     }
     
@@ -206,7 +158,5 @@ if (!defined('BASEPATH'))
     function delete($id) {
         $this->db->where('position_id', $id);
         $this->db->delete('position');
-        bump_cache_version('position');
-        bump_cache_version('position_raw');
     }
 }

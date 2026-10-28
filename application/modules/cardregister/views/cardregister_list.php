@@ -92,6 +92,10 @@
 		$('#mydata').dataTable();
 
 		function show_data() {
+			function escapeHtml(value) {
+				return $('<div>').text(value == null ? '' : value).html();
+			}
+
 			$.ajax({
 				type: 'ajax',
 				url: '<?php echo site_url('manage/cardregister/get_data') ?>',
@@ -102,7 +106,7 @@
 					var i;
 					for (i = 0; i < data.length; i++) {
 						if (data[i].rfid !== undefined && data[i].rfid !== null) {
-							var rfid = data[i].rfid;
+							var rfid = escapeHtml(data[i].rfid);
 						} else {
 							var rfid = '-';
 						}
@@ -111,15 +115,19 @@
 						} else {
 							var pin = 'Belum Di-SET';
 						}
+						var nis = escapeHtml(data[i].student_nis);
+						var fullName = escapeHtml(data[i].student_full_name);
+						var majors = escapeHtml(data[i].majors_short_name);
+						var className = escapeHtml(data[i].class_name);
 						html += '<tr>' +
-							'<td>' + data[i].student_nis + '</td>' +
-							'<td>' + data[i].student_full_name + '</td>' +
-							'<td>' + data[i].majors_short_name + '</td>' +
-							'<td>' + data[i].class_name + '</td>' +
+							'<td>' + nis + '</td>' +
+							'<td>' + fullName + '</td>' +
+							'<td>' + majors + '</td>' +
+							'<td>' + className + '</td>' +
 							'<td>' + rfid + '</td>' +
 							'<td>' + pin + '</td>' +
 							'<td style="text-align:center;">' +
-							'<a href="javascript:void(0);" class="btn btn-info btn-sm set_pin" data-nis="' + data[i].student_nis + '" data-rfid="' + data[i].rfid + '">Set RFID</a>' + ' ' +
+							'<a href="javascript:void(0);" class="btn btn-info btn-sm set_pin" data-nis="' + nis + '" data-rfid="' + rfid + '">Set RFID</a>' + ' ' +
 							'</td>' +
 							'</tr>';
 					}
@@ -143,45 +151,22 @@
 			var nis = $('#nis').val();
 			var rfid = $('#rfid').val();
 			var pin = $('#pin').val();
-
-			if (!nis) {
-				toastNotifikasi("error", "NIS harus diisi", "Error");
-				return;
-			}
-
-			if (!rfid || rfid.length != 10) {
-				toastNotifikasi("error", "RFID harus 10 karakter angka.", "Error");
-				return;
-			}
-
-			if (!pin || pin.length != 6) {
-				toastNotifikasi("error", "PIN harus 6 karakter angka.", "Error");
-				return;
-			}
-			let payload = {
-				nis,
-				rfid,
-				pin
-			};
 			$.ajax({
 				type: "POST",
 				url: "<?php echo site_url('manage/cardregister/set_data') ?>",
 				dataType: "JSON",
-				data: payload,
-				success: function(response) {
-					toastNotifikasi(
-						(response.status == false ? "error" : "success"),
-						response.message,
-						(response.status == false ? "Error" : "Success")
-					);
-
-					if (response && response.status == true) {
-						$('[name="nis"]').val("");
-						$('[name="rfid"]').val("");
-						$('[name="pin"]').val("");
-						$('#Modal_Set').modal('hide');
-						show_data();
-					}
+				data: {
+					nis: nis,
+					rfid: rfid,
+					pin: pin
+				},
+				success: function(data) {
+					$('[name="nis"]').val("");
+					$('[name="rfid"]').val("");
+					$('[name="pin"]').val("");
+					$('#Modal_Set').modal('hide');
+					alert('Set PIN Berhasil');
+					show_data();
 				}
 			});
 			return false;

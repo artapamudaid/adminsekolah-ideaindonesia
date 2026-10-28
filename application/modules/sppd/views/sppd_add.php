@@ -17,8 +17,9 @@ if (isset($sppd)) {
 	$inputMataanggaranValue 	= $sppd['mata_anggaran'];
 	$inputDasarsuratValue 		= $sppd['dasar_surat'];
 	$inputKeteranganValue 		= $sppd['keterangan'];
+	
 } else {
-
+	
 	$inputNosppdValue 			= set_value('no_sppd');
 	$inputDeskripsiValue 		= set_value('deskripsi');
 	$inputPerintahidValue 		= set_value('perintah_id');
@@ -38,7 +39,7 @@ if (isset($sppd)) {
 ?>
 <script type="text/javascript" src="<?php echo media_url('js/jquery-migrate-3.0.0.min.js') ?>"></script>
 
-<div class="content-wrapper">
+<div class="content-wrapper"> 
 	<!-- Content Header (Page header) -->
 	<section class="content-header">
 		<h1>
@@ -66,9 +67,9 @@ if (isset($sppd)) {
 							<input type="hidden" name="id_sppd" value="<?php echo $sppd['id_sppd']; ?>">
 							<input type="hidden" name="id_users" value="<?php echo $this->session->userdata('uroleid'); ?>">
 						<?php } ?>
-
+						
 						<input type="hidden" name="id_users" value="<?php echo $this->session->userdata('uroleid'); ?>">
-
+						
 						<div class="form-group">
 							<label>Kode Surat<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
 							<input name="no_sppd" type="text" class="form-control" value="<?php echo $no_sppd; ?>" readonly='' placeholder="Kode Surat">
@@ -76,10 +77,10 @@ if (isset($sppd)) {
 						<div class="form-group">
 							<label>Pejabat Pemberi Perintah Tugas <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
 							<select required="" name="perintah_id" class="form-control">
-								<option value="">-Pilih Pemberi Tugas-</option>
-								<?php foreach ($emp_petugas as $row) { ?>
-									<option value="<?php echo $row['employee_id']; ?>" <?php echo ($inputPerintahidValue == $row['employee_id']) ? 'selected' : '' ?>><?php echo $row['employee_name'] ?></option>
-								<?php } ?>
+							    <option value="">-Pilih Pemberi Tugas-</option>
+							    <?php foreach($emp_petugas as $row){?>
+							        <option value="<?php echo $row['employee_id']; ?>" <?php echo ($inputPerintahidValue == $row['employee_id']) ? 'selected' : '' ?>><?php echo $row['employee_name'] ?></option>
+							    <?php } ?>
 							</select>
 						</div>
 						<div class="form-group">
@@ -109,25 +110,25 @@ if (isset($sppd)) {
 						<div class="form-group">
 							<label>Pejabat yang diberi Tugas<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
 							<select required="" name="diperintah_id" class="form-control">
-								<option value="">-Pilih Pejabat yang diberi Tugas-</option>
-								<?php foreach ($emp_petugas as $row) { ?>
-									<option value="<?php echo $row['employee_id']; ?>" <?php echo ($inputDiperintahidValue == $row['employee_id']) ? 'selected' : '' ?>><?php echo $row['employee_name'] ?></option>
-								<?php } ?>
+							    <option value="">-Pilih Pejabat yang diberi Tugas-</option>
+							    <?php foreach($emp_petugas as $row){?>
+							        <option value="<?php echo $row['employee_id']; ?>" <?php echo ($inputDiperintahidValue == $row['employee_id']) ? 'selected' : '' ?>><?php echo $row['employee_name'] ?></option>
+							    <?php } ?>
 							</select>
 						</div>
 						<div class="form-group">
 							<div id="p_scents_pengikut">
 								<p>
-									<label>Pengikut<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-									<select required="" name="pengikut_id[]" class="form-control">
-										<option value="">-Pilih Pengikut-</option>
-										<?php foreach ($emp_petugas as $row) { ?>
-											<option value="<?php echo $row['employee_id']; ?>"><?php echo $row['employee_name'] ?></option>
-										<?php } ?>
-									</select>
+								<label>Pengikut<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
+								<select required="" name="pengikut_id[]" class="form-control">
+									<option value="">-Pilih Pengikut-</option>
+									<?php foreach($emp_petugas as $row){?>
+										<option value="<?php echo $row['employee_id']; ?>" ><?php echo $row['employee_name'] ?></option>
+									<?php } ?>
+								</select>
 								</p>
 							</div>
-							<h6><a href="#" class="btn btn-xs btn-success" id="addScnt_pengikut"><i class="fa fa-plus"></i><b> Tambah Baris</b></a></h6>
+							<h6 ><a href="#" class="btn btn-xs btn-success" id="addScnt_pengikut"><i class="fa fa-plus"></i><b> Tambah Baris</b></a></h6>
 						</div>
 						<div class="form-group">
 							<label>Instansi (Pembebanan Anggaran)<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
@@ -145,8 +146,8 @@ if (isset($sppd)) {
 							<label>Keterangan<small data-toggle="tooltip" title="Wajib diisi">*</small></label>
 							<input name="keterangan" type="text" class="form-control" value="<?php echo $inputKeteranganValue ?>" placeholder="Keterangan">
 						</div>
-
-
+						
+						
 						<p class="text-muted">*) Kolom wajib diisi.</p>
 					</div>
 					<!-- /.box-body -->
@@ -173,43 +174,22 @@ if (isset($sppd)) {
 	});
 </script>
 <script>
-	$(function() {
-		var scntDiv = $('#p_scents_pengikut');
-		var i = $('#p_scents_pengikut p').length + 1;
+$(function() {
+	var scntDiv = $('#p_scents_pengikut');
+	var i = $('#p_scents_pengikut p').size() + 1;
 
-		// ambil data dari PHP dan ubah ke format JSON aman
-		var emp_petugas = <?php echo json_encode($emp_petugas); ?>;
-
-		$("#addScnt_pengikut").click(function() {
-			// buat elemen baru menggunakan template literal agar lebih mudah dibaca
-			let html = `
-            <p>
-                <label>Pengikut
-                    <small data-toggle="tooltip" title="Wajib diisi">*</small>
-                </label>
-                <select required name="pengikut_id[]" class="form-control">
-                    <option value="">-Pilih Pengikut-</option>
-                    ${emp_petugas.map(row => 
-                        `<option value="${row.employee_id}">${row.employee_name}</option>`
-                    ).join('')}
-                </select>
-                <a href="#" class="btn btn-xs btn-danger remScnt_satuan">Hapus Baris</a>
-            </p>
-        `;
-
-			$(html).appendTo(scntDiv);
-			i++;
-			return false;
-		});
-
-		// hapus baris pengikut
-		$(document).on("click", ".remScnt_satuan", function(e) {
-			e.preventDefault();
-			if (i > 2) {
-				$(this).closest('p').remove();
-				i--;
-			}
-			return false;
-		});
+	$("#addScnt_pengikut").click(function() {
+		$('<p><label>Pengikut<small data-toggle="tooltip" title="Wajib diisi">*</small></label><select required="" name="pengikut_id[]" class="form-control"><option value="">-Pilih Pengikut-</option><?php foreach($emp_petugas as $row){?><option value="<?php echo $row['employee_id']; ?>" ><?php echo $row['employee_name'] ?></option><?php } ?></select><a href="#" class="btn btn-xs btn-danger remScnt_satuan">Hapus Baris</a></p>').appendTo(scntDiv);
+		i++;
+		return false;
 	});
+
+	$(document).on("click", ".remScnt_satuan", function() {
+		if (i > 2) {
+			$(this).parents('p').remove();
+			i--;
+		}
+		return false;
+	});
+});
 </script>

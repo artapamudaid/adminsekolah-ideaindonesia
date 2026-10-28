@@ -14,11 +14,6 @@ class Employees_model extends CI_Model
     // Get From Databases
     function get($params = array())
     {
-        $cache_key = 'employee_get_' . md5(json_encode($params)) . '_' . get_cache_version('employee');
-        $cached_data = $this->cache->get($cache_key);
-        if ($cached_data !== FALSE) {
-            return $cached_data;
-        }
 
         if (isset($params['id'])) {
             $this->db->where('employee.employee_id', $params['id']);
@@ -97,24 +92,15 @@ class Employees_model extends CI_Model
         $res = $this->db->get('employee');
 
         if (isset($params['id'])) {
-            $result = $res->row_array();
+            return $res->row_array();
         } else if (isset($params['employee_nip'])) {
-            $result = $res->row_array();
+            return $res->row_array();
         } else {
-            $result = $res->result_array();
+            return $res->result_array();
         }
-
-        $this->cache->save($cache_key, $result, CACHE_TTL);
-        return $result;
     }
 
-    function get_employee($params = array())
-    {
-        $cache_key = 'employee_get_employee_' . md5(json_encode($params)) . '_' . get_cache_version('employee');
-        $cached_data = $this->cache->get($cache_key);
-        if ($cached_data !== FALSE) {
-            return $cached_data;
-        }
+    function get_employee($params = array()) {
 
         if (isset($params['id'])) {
             $this->db->where('employee.employee_id', $params['id']);
@@ -127,7 +113,8 @@ class Employees_model extends CI_Model
             $this->db->where_in('employee.employee_id', $params['employee_id']);
         }
 
-        if (isset($params['employee_search'])) {
+        if(isset($params['employee_search']))
+        {
             $this->db->where('employee_nip', $params['employee_search']);
             $this->db->or_like('employee_name', $params['employee_search']);
         }
@@ -176,7 +163,7 @@ class Employees_model extends CI_Model
         if (isset($params['position_code'])) {
             $this->db->where('position.position_code', $params['position_code']);
         }
-
+        
         if (isset($params['limit'])) {
             if (!isset($params['offset'])) {
                 $params['offset'] = NULL;
@@ -191,7 +178,7 @@ class Employees_model extends CI_Model
             $this->db->order_by('employee_nip', 'asc');
         }
 
-        $this->db->select('employee.employee_id, employee_nip, employee_name, employee_password, employee_email, employee_gender, employee_phone, employee_address, employee_born_place, employee_born_date, employee_photo, employee_status, employee_strata, employee.employee_majors_id, employee_position_id, employee_start, employee_end, employee_category, employee_input_date, employee_last_update, employee_is_wali');
+        $this->db->select('employee.employee_id, employee_nip, employee_name, employee_password, employee_email, employee_gender, employee_phone, employee_address, employee_born_place, employee_born_date, employee_photo, employee_status, employee_strata, employee.employee_majors_id, employee_position_id, employee_start, employee_end, employee_category, employee_input_date, employee_last_update');
         $this->db->select("position_id, position_code, position_name, IF(`majors_short_name` IS NULL,'Laiinnya',`majors_short_name`) as majors_short_name, majors_name, `position_majors_id`, IF(`majors_id` IS NULL,'99',`majors_id`) as majors_id");
         $this->db->select('employee.employee_position_id, position.position_id, position.position_code, position_name, majors_status');
         $this->db->join('position', 'position.position_id = employee.employee_position_id', 'left');
@@ -200,15 +187,13 @@ class Employees_model extends CI_Model
         $res = $this->db->get('employee');
 
         if (isset($params['id'])) {
-            $result = $res->row_array();
+            return $res->row_array();
         } else if (isset($params['employee_nip'])) {
-            $result = $res->row_array();
+            return $res->row_array();
         } else {
-            $result = $res->result_array();
+            return $res->result_array();
         }
 
-        $this->cache->save($cache_key, $result, CACHE_TTL);
-        return $result;
     }
 
     function add($data = array())
@@ -308,14 +293,12 @@ class Employees_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
-        bump_cache_version('employee');
         return ($status == 0) ? FALSE : $id;
     }
     function delete($id)
     {
         $this->db->where('employee_id', $id);
         $this->db->delete('employee');
-        bump_cache_version('employee');
     }
     /*
     public function is_exist($field, $value)

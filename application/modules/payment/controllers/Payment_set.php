@@ -105,61 +105,25 @@ class Payment_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('payment_id')) {
-        $id = sanitizeStrict($this->input->post('payment_id'));
-        $params['payment_id'] = $id;
+        $params['payment_id'] = $this->input->post('payment_id');
       } else {
         $params['payment_input_date'] = date('Y-m-d H:i:s');
       }
 
-      $paymentType = sanitizeStrict($this->input->post('payment_type'));
-      $paymentMode = sanitizeStrict($this->input->post('payment_mode'));
-      $paymentIsBatch = sanitizeStrict($this->input->post('payment_is_batch'));
-      $paymentPeriod = sanitizeStrict($this->input->post('period_id'));
-      $paymentPosId = sanitizeStrict($this->input->post('pos_id'));
-
-      $colWhere = [
-        'OR' => [
-          [
-            'payment_type' => $paymentType,
-            'payment_mode' => $paymentMode,
-            'payment_is_batch' => $paymentIsBatch,
-            'period_period_id' => $paymentPeriod,
-            'pos_pos_id' => $paymentPosId
-          ],
-          [
-            'period_period_id' => $paymentPeriod,
-            'pos_pos_id' => $paymentPosId,
-          ]
-        ]
-      ];
-
-      if (!empty($id)) {
-        $colWhere["payment_id <>"] = $id;
-      }
-
-      if ($this->General_model->checkDataExists('payment', $colWhere)) {
-        $this->session->set_flashdata('failed', "Jenis Pembayaran sudah ada.");
-        if (!is_null($id)) {
-          redirect('manage/payment/edit/' . $id);
-        } else {
-          redirect('manage/payment/add');
-        }
-      }
-
-      // $type = $this->input->post('payment_type');
+      $type = $this->input->post('payment_type');
       $params['payment_last_update'] = date('Y-m-d H:i:s');
-      $params['payment_type'] = $paymentType;
+      $params['payment_type'] = $this->input->post('payment_type');
 
       if ($params['payment_type'] == 'BEBAS') {
         $params['payment_mode'] = 'TETAP';
         $params['payment_is_batch'] = '0';
       } else {
-        $params['payment_mode'] = $paymentMode;
-        $params['payment_is_batch'] = $paymentIsBatch;
+        $params['payment_mode'] = $this->input->post('payment_mode');
+        $params['payment_is_batch'] = $this->input->post('payment_is_batch');
       }
 
-      $params['period_id'] = $paymentPeriod;
-      $params['pos_id'] = $paymentPosId;
+      $params['period_id'] = $this->input->post('period_id');
+      $params['pos_id'] = $this->input->post('pos_id');
 
       $status = $this->Payment_model->add($params);
       $paramsupdate['payment_id'] = $status;
@@ -369,8 +333,6 @@ class Payment_set extends CI_Controller
         for ($i = 0; $i < $cpt; $i++) {
           if ($title[$i] == '0') {
             $param['bulan_status'] = '1';
-          } else {
-            $param['bulan_status'] = '0';
           }
           $param['bulan_bill'] = $title[$i];
           $param['month_id'] = $month[$i];
@@ -434,8 +396,6 @@ class Payment_set extends CI_Controller
 
             if ($title[$i] == '0') {
               $param['bulan_status'] = '1';
-            } else {
-              $param['bulan_status'] = '0';
             }
 
             $param['bulan_bill'] = $title[$i];
@@ -501,8 +461,6 @@ class Payment_set extends CI_Controller
           for ($i = 0; $i < $cpt; $i++) {
             if ($title[$i] == '0') {
               $param['bulan_status'] = '1';
-            } else {
-              $param['bulan_status'] = '0';
             }
 
             $param['bulan_bill'] = $title[$i];
@@ -552,8 +510,6 @@ class Payment_set extends CI_Controller
       for ($i = 0; $i < $cpt; $i++) {
         if ($title[$i] == '0') {
           $param['bulan_status'] = '1';
-        } else {
-          $param['bulan_status'] = '0';
         }
         $param['bulan_id'] = $bulan_id[$i];
         $param['bulan_bill'] = $title[$i];
@@ -991,7 +947,7 @@ class Payment_set extends CI_Controller
   // Delete to database
   public function delete($id = NULL)
   {
-    if ($this->session->userdata('uroleid') != SUPERUSER && $this->session->userdata('uroleid') != 3) {
+    if ($this->session->userdata('uroleid') != SUPERUSER) {
       redirect('manage');
     }
     if ($_POST) {

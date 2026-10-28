@@ -243,7 +243,7 @@ if ($tahun == 0) {
                     <div class="">
                       <div class="col-md-12">
                         <label class="control-label">Status Notifikasi WA</label>
-                        <input type="text" value="<?php echo (@$setting_status_wa['setting_value'] == 0 ? 'Free/Gratis' : 'Berbayar') ?>" class="form-control" readonly>
+                        <input type="text" value="<?php echo ($setting_status_wa['setting_value'] == 0 ? 'Free/Gratis' : 'Berbayar') ?>" class="form-control" readonly>
                       </div>
                     </div>
                   </div>
@@ -253,6 +253,56 @@ if ($tahun == 0) {
                       <div class="col-md-12">
                         <label class="control-label">Notifikasi WA</label>
                         <input type="text" value="<?php echo ucwords($setting_notif['setting_value']) ?>" class="form-control" readonly>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="">
+                      <div class="col-md-12">
+                        <label class="control-label">Status Pengiriman Tagihan</label>
+                        <select name="scheduler_status" class="form-control" required>
+                          <option value="N" <?php echo ($scheduler_status['setting_value'] == 'N' ? 'selected' : '') ?>>Tidak</option>
+                          <option value="Y" <?php echo ($scheduler_status['setting_value'] == 'Y' ? 'selected' : '') ?>>Ya</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="">
+                      <div class="col-md-12">
+                        <label class="control-label">Tanggal Pengiriman Tagihan</label>
+                        <select name="scheduler_date" class="form-control" required>
+                          <?php for ($i = 1; $i <= 28; $i++) : ?>
+                            <option value="<?php echo $i; ?>" <?php echo (($scheduler_date['setting_value'] ?? '') == $i) ? 'selected' : ''; ?>><?php echo $i; ?></option>
+                          <?php endfor; ?>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="">
+                      <div class="col-md-12">
+                        <label class="control-label">Jam Pengiriman Tagihan</label>
+                        <select name="scheduler_time" class="form-control" required>
+                          <?php
+                          $times = ['08:00', '09:00', '10:00', '11:00', '12:00'];
+                          foreach ($times as $time) : ?>
+                            <option value="<?php echo $time; ?>" <?php echo (($scheduler_time['setting_value'] ?? '') == $time) ? 'selected' : ''; ?>><?php echo $time; ?></option>
+                          <?php endforeach; ?>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="">
+                      <div class="col-md-12">
+                        <label class="control-label">Domain</label>
+                        <input type="url" placeholder="https://app.adminsekolah.net/" name="scheduler_domain" value="<?php echo $scheduler_domain['setting_value'] ?>" class="form-control" required>
+                        <small>Contoh: https://app.adminsekolah.net/</small>
                       </div>
                     </div>
                   </div>

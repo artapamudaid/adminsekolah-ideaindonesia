@@ -46,7 +46,7 @@ if (isset($gaji_setting)) {
 
 						<div class="form-group">
 							<label>Nama Setting Penggajian <small data-toggle="tooltip" title="Wajib diisi">*</small></label>
-							<input name="default_gaji_name" type="text" class="form-control" value="<?php echo $inputDefNameValue.' '. $inputMajorsNameValue ?>" placeholder="Isi Nama Unit Sekolah">
+							<input name="default_gaji_name" type="hidden" class="form-control" value="<?php echo $inputDefNameValue.' '. $inputMajorsNameValue ?>" placeholder="Isi Nama Unit Sekolah">
 						</div>
 
 						<div class="form-group">

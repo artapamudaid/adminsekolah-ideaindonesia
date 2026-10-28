@@ -51,7 +51,6 @@
 							<form action="<?php echo site_url('manage/student/multiple'); ?>" method="post" id="lulus">
 								<input type="hidden" name="majors_id" value="<?php echo (isset($f['m'])) ? $f['m'] : '' ?>">
 								<input type="hidden" name="action" value="pass">
-								<input type="hidden" name="from_class" value="<?php echo isset($f['pr']) ? $f['pr'] : '' ?>" readonly>
 								<thead>
 									<tr>
 										<th><input type="checkbox" id="selectall" value="checkbox" name="checkbox"></th>
@@ -78,7 +77,7 @@
 													<td>
 														<?php
 														$bulan = $this->db->query("SELECT COUNT(bulan_id) as c_bulan FROM bulan WHERE student_student_id = '" . $row['student_id'] . "' AND bulan_status = 0")->row_array();
-														$bebas = $this->db->query("SELECT COUNT(bebas_id) as c_bebas FROM bebas WHERE student_student_id = '" . $row['student_id'] . "' AND (bebas_bill - bebas_diskon - bebas_total_pay) > 0")->row_array();
+														$bebas = $this->db->query("SELECT COUNT(bebas_id) as c_bebas FROM bebas WHERE student_student_id = '" . $row['student_id'] . "' AND (bebas_bill - bebas_diskon - bebas_total_pay) = 0")->row_array();
 														?>
 														<label class="label <?php echo ($bulan['c_bulan'] == 0 and $bebas['c_bebas'] == 0) ? 'label-success' : 'label-danger' ?>"><?php echo ($bulan['c_bulan'] == 0 and $bebas['c_bebas'] == 0) ? 'Lunas' : 'Belum Lunas' ?></label>
 													</td>
@@ -129,8 +128,6 @@
 						<table class="table table-hover table-bordered table-responsive">
 							<form action="<?php echo site_url('manage/student/multiple'); ?>" method="post" id="kembali">
 								<input type="hidden" name="action" value="notpass">
-								<input type="hidden" placeholder="majors_id" name="majors_id" value="<?php echo (isset($f['m'])) ? $f['m'] : '' ?>" readonly>
-								<input type="hidden" name="from_class" value="<?php echo isset($f['pr']) ? $f['pr'] : '' ?>" readonly>
 								<tr>
 									<th><input type="checkbox" id="selectall2" value="checkbox" name="checkbox"></th>
 									<th>No</th>

@@ -1,9 +1,21 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class ModelLaporan extends CI_Model {
+class ModelLaporan extends CI_Model
+{
 
-	public function getAsetWujud($id_lokasi,$tahun_perolehan)
+	public function getTahunPerolehan()
+	{
+		$this->db->distinct();
+		$this->db->select('tahun_perolehan');
+		$this->db->from('barang');
+		$this->db->order_by('tahun_perolehan', 'ASC'); // urutkan biar rapi
+
+		$query = $this->db->get();
+		return $query->result_array();
+	}
+
+	public function getAsetWujud($id_lokasi, $tahun_perolehan)
 	{
 		$this->db->select('*');
 		$this->db->from('asets a');
@@ -13,10 +25,10 @@ class ModelLaporan extends CI_Model {
 		$this->db->where('id_lokasi', $id_lokasi);
 		$this->db->where('tahun_perolehan', $tahun_perolehan);
 		$query = $this->db->get();
-		return $query->result_array(); 
+		return $query->result_array();
 	}
 
-	public function getAsetWujudExcel($id_lokasi,$tahun_perolehan)
+	public function getAsetWujudExcel($id_lokasi, $tahun_perolehan)
 	{
 		$this->db->select('*');
 		$this->db->from('asets a');
@@ -26,10 +38,10 @@ class ModelLaporan extends CI_Model {
 		$this->db->where('id_lokasi', $id_lokasi);
 		$this->db->where('tahun_perolehan', $tahun_perolehan);
 		$query = $this->db->get();
-		return $query->result(); 
+		return $query->result();
 	}
 
-	public function getAsetDihapuskan($id_lokasi,$tahun_perolehan)
+	public function getAsetDihapuskan($id_lokasi, $tahun_perolehan)
 	{
 		$this->db->select('*');
 		$this->db->from('penghapusan a');
@@ -38,10 +50,10 @@ class ModelLaporan extends CI_Model {
 		$this->db->where('id_lokasi', $id_lokasi);
 		$this->db->where('tahun_perolehan', $tahun_perolehan);
 		$query = $this->db->get();
-		return $query->result_array(); 
+		return $query->result_array();
 	}
 
-	public function getAsetDihapuskanExcel($id_lokasi,$tahun_perolehan)
+	public function getAsetDihapuskanExcel($id_lokasi, $tahun_perolehan)
 	{
 		$this->db->select('*');
 		$this->db->from('penghapusan a');
@@ -50,10 +62,10 @@ class ModelLaporan extends CI_Model {
 		$this->db->where('id_lokasi', $id_lokasi);
 		$this->db->where('tahun_perolehan', $tahun_perolehan);
 		$query = $this->db->get();
-		return $query->result(); 
+		return $query->result();
 	}
 
-	public function getAsetQr($id_lokasi,$tahun_perolehan)
+	public function getAsetQr($id_lokasi, $tahun_perolehan)
 	{
 		$this->db->select('*');
 		$this->db->from('asets a');
@@ -64,7 +76,7 @@ class ModelLaporan extends CI_Model {
 		$this->db->where('tahun_perolehan', $tahun_perolehan);
 		$this->db->where('qr_code !=', NULL);
 		$query = $this->db->get();
-		return $query->result_array(); 
+		return $query->result_array();
 	}
 
 	public function getLokasi()
@@ -82,7 +94,7 @@ class ModelLaporan extends CI_Model {
 		return $query->row_array();
 	}
 
-	public function getPengadaan($id_lokasi,$tahun_pengadaan)
+	public function getPengadaan($id_lokasi, $tahun_pengadaan)
 	{
 		$this->db->select('*');
 		$this->db->from('pengadaan');
@@ -93,7 +105,7 @@ class ModelLaporan extends CI_Model {
 		return $res->result_array();
 	}
 
-	public function getPengadaanExcel($id_lokasi,$tahun_pengadaan)
+	public function getPengadaanExcel($id_lokasi, $tahun_pengadaan)
 	{
 		$this->db->select('*');
 		$this->db->from('pengadaan');
@@ -102,7 +114,6 @@ class ModelLaporan extends CI_Model {
 		$res = $this->db->get();
 		return $res->result();
 	}
-
 }
 
 /* End of file ModelLaporan.php */

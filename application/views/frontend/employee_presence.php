@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -17,44 +18,42 @@
     <script src="<?php echo media_url() ?>/js/jquery.min.js"></script>
     <style>
         input[type="text"] {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
+			padding: 8px 12px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			margin-bottom: 20px;
+		}
         .form-tabs {
             margin-top: 30px;
             margin-bottom: 0 !important;
             flex-wrap: wrap;
         }
-
         .form-group {
             margin-bottom: 20px;
         }
 
-        .form-group #rfid,
-        .form-group #jenis-absen {
+        .form-group #rfid, .form-group #jenis-absen {
             margin-top: 6px;
         }
 
-        #area-foto img {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            margin-bottom: 10px;
-        }
+		#area-foto img {
+			width: 200px;
+			height: 200px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 2px solid #fff;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+			margin-bottom: 10px;
+		}
 
         #foto-pegawai {
-            visibility: hidden;
-        }
+			visibility: hidden;
+		}
 
-        #foto-pegawai.show {
-            visibility: visible;
-        }
+		#foto-pegawai.show {
+			visibility: visible;
+		}
+
     </style>
 </head>
 
@@ -87,7 +86,7 @@
             </div>
         </div>
 
-        <!-- Datetime -->
+         <!-- Datetime -->
         <div class="presence-datetime">
             <div class="date-display" id="date-display"></div>
             <div class="time-display" id="time-display"></div>
@@ -109,17 +108,10 @@
     <script>
         function updateDateTime() {
             const now = new Date();
-            const options = {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            };
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('date-display').textContent = now.toLocaleDateString('id-ID', options);
             document.getElementById('time-display').textContent = now.toLocaleTimeString('id-ID', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
             });
         }
         setInterval(updateDateTime, 1000);
@@ -128,7 +120,7 @@
 
     <?php if ($this->session->flashdata('success')): ?>
         <script>
-            $(document).ready(function() {
+            $(document).ready(function () {
                 $.toast({
                     heading: 'Berhasil',
                     text: '<?php echo $this->session->flashdata('success') ?>',
@@ -144,7 +136,7 @@
 
     <?php if ($this->session->flashdata('failed')): ?>
         <script>
-            $(document).ready(function() {
+            $(document).ready(function () {
                 $.toast({
                     heading: 'Gagal',
                     text: '<?php echo $this->session->flashdata('failed') ?>',

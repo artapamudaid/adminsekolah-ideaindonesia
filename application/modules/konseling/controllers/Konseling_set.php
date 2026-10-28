@@ -40,6 +40,8 @@ class Konseling_set extends CI_Controller
       $siswa = $this->Student_model->get(array('student_nis' => $f['r']));
       $siswaID = $siswa['student_id'];
 
+      $data['periodActive'] = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
+
       $data['siswa'] = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
 
       $data['konseling']      = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'PELANGGARAN', 'order_by' => 'konseling_id'));
@@ -51,7 +53,6 @@ class Konseling_set extends CI_Controller
       $data['konsultasi']      = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'KONSULTASI', 'order_by' => 'konseling_id'));
     }
 
-    $data['periodActive'] = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
 
     $data['kategori_pelanggaran']  = $this->Konseling_model->kategori_pelanggaran();
     $data['kategori_prestasi']     = $this->Konseling_model->kategori_prestasi();
@@ -169,12 +170,17 @@ class Konseling_set extends CI_Controller
     $config['upload_path'] = $directory;
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
 
     $config['allowed_types'] = 'jpg|jpeg|png|pdf|doc|docx';
     $config['max_size'] = '1024';
+    $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
     $config['file_name'] = $fileName;
+    $config["file_ext_tolower"] = TRUE;
+    $config["remove_spaces"] = TRUE;
+    $config["detect_mime"] = TRUE;
+    $config["mod_mime_fix"] = TRUE;
     $this->upload->initialize($config);
 
     if (!$this->upload->do_upload($name)) {
@@ -390,7 +396,7 @@ class Konseling_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
     $this->upload->initialize($config);
 

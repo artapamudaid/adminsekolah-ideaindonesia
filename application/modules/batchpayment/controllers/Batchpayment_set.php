@@ -54,55 +54,22 @@ class Batchpayment_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $name     = sanitizeStrict($_POST['name']);
-      $majors   = sanitizeStrict($_POST['bp_majors_id']);
-      $period   = sanitizeStrict($_POST['bp_period_id']);
+      $name     = $_POST['name'];
+      $majors   = $_POST['bp_majors_id'];
+      $period   = $_POST['bp_period_id'];
 
       $q = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$majors'")->row_array();
 
-      $cpt = count($name);
-
-      $added = 0;
-      $skipped = 0;
+      $cpt = count($_POST['name']);
       for ($i = 0; $i < $cpt; $i++) {
-        if (empty($period) || empty($majors) || empty($name[$i])) {
-          $skipped++;
-          continue;
-        }
-
-        $nameBp = $name[$i] . ' ' . $q['majors_short_name'];
-        $colWhere = ["name" => $nameBp, "bp_majors_id" => $majors, "bp_period_id" => $period];
-        if ($this->General_model->checkDataExists('batchpayment', $colWhere)) {
-          $skipped++;
-          continue;
-        }
-
         $params['bp_majors_id']   = $majors;
         $params['bp_period_id']   = $period;
-        $params['name']           = $nameBp;
+        $params['name']           = $name[$i] . ' ' . $q['majors_short_name'];
 
-        $insert = $this->Batchpayment_model->add($params);
-        if (!$insert) {
-          $skipped++;
-          continue;
-        }
-        $added++;
+        $this->Batchpayment_model->add($params);
       }
-
-      if ($added > 1) {
-        $msg = "$added Paket Pembayaran berhasil ditambahkan";
-      } elseif ($added == 1) {
-        $msg = "1 Paket Pembayaran berhasil ditambahkan";
-      } else {
-        $msg = "Tidak ada yang ditambahkan";
-      }
-
-      if ($skipped > 0) {
-        $msg .= "<br>($skipped Paket Pembayaran dilewati)";
-      }
-
-      $this->session->set_flashdata('success', $msg);
     }
+    $this->session->set_flashdata('success', ' Tambah Paket Pembayaran Berhasil');
     redirect('manage/batchpayment');
   }
 
@@ -118,25 +85,12 @@ class Batchpayment_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('id')) {
-        $id = sanitizeStrict($this->input->post('id'));
-        $params['id'] = $id;
+        $params['id'] = $this->input->post('id');
       }
 
-      $nameBp = sanitizeStrict($this->input->post('name'));
-      $majors = sanitizeStrict($this->input->post('bp_majors_id'));
-      $period = sanitizeStrict($this->input->post('bp_period_id'));
-      $colWhere = ["name" => $nameBp, "bp_majors_id" => $majors, "bp_period_id" => $period];
-      if (!empty($id)) {
-        $colWhere["id <>"] = $id;
-      }
-      if ($this->General_model->checkDataExists('batchpayment', $colWhere)) {
-        $this->session->set_flashdata('failed', "Data sudah ada.");
-        redirect('manage/batchpayment/edit/' . $id);
-      }
-
-      $params['name'] = $nameBp;
-      $params['bp_majors_id'] = $majors;
-      $params['bp_period_id'] = $period;
+      $params['name'] = $this->input->post('name');
+      $params['bp_majors_id'] = $this->input->post('bp_majors_id');
+      $params['bp_period_id'] = $this->input->post('bp_period_id');
 
       $status = $this->Batchpayment_model->add($params);
 

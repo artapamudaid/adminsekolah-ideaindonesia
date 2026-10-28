@@ -104,12 +104,7 @@ header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
             $terlambat = $this->db->query("select id from data_absensi where id_pegawai='$idp' and (tanggal between '$tgl_awal' and '$tgl_akhir') and statushadir='Terlambat'");
             $terlambat=$terlambat->num_rows();
 
-            if (intval($hadir) > 0) {
-				$score = round(((intval($hadir) - intval($terlambat)) / intval($hadir)) * 100, 2);
-			} else {
-				$score = 0; // or another default value
-			}
-
+            $score= round(((intval($hadir) - intval($terlambat)) / intval($hadir)) * 100,2);
 
             if(is_nan($score)){
               $score=0;

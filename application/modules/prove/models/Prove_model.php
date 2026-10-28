@@ -3,106 +3,17 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-class Prove_model extends CI_Model {
+class Prove_model extends CI_Model
+{
 
-    function __construct() {
+    function __construct()
+    {
         parent::__construct();
     }
 
-    function count_all($data = array()) {
-        $this->db->from('prove');
-        $this->db->join('student', 'student.student_id = prove.prove_student_id');
-        $this->db->join('class', 'class.class_id = student.class_class_id');
-        $this->db->join('majors', 'majors.majors_id = student.majors_majors_id');
-
-        if (!empty($data['search'])) {
-            $search = $data['search'];
-            $this->db->group_start();
-            $this->db->like('student_nis', $search);
-            $this->db->or_like('student_full_name', $search);
-            $this->db->or_like('class_name', $search);
-            $this->db->or_like('majors_short_name', $search);
-            $this->db->or_like('prove_note', $search);
-            $this->db->group_end();
-        }
-
-        if (isset($data['class_id']) && !empty($data['class_id']) && $data['class_id'] != 'all') {
-            $this->db->where('student.class_class_id', $data['class_id']);
-        }
-
-        if (isset($data['majors_id']) && !empty($data['majors_id']) && $data['majors_id'] != 'all') {
-            $this->db->where('student.majors_majors_id', $data['majors_id']);
-        }
-
-        if (isset($data['status']) && $data['status'] !== '' && $data['status'] !== 'all') {
-            $this->db->where('prove.prove_status', $data['status']);
-        }
-
-        if ($this->session->userdata('umajorsid') != '0') {
-            $this->db->where('student.majors_majors_id', $this->session->userdata('umajorsid'));
-        }
-
-        $this->db->where('majors_status', '1');
-
-        return $this->db->count_all_results();
-    }
-
-    function list_prove($limit = NULL, $start = NULL, $search = NULL, $data = array()) {
-        $this->db->select('prove.prove_id, prove.prove_date, prove.prove_img, prove.prove_note, prove.prove_status');
-        $this->db->select('student.student_id, student_nis, student_nisn, student_full_name');
-        $this->db->select('class.class_id, student.class_class_id, class.class_name');
-        $this->db->select('student.majors_majors_id, majors_id, majors_name, majors_short_name');
-
-        $this->db->from('prove');
-        $this->db->join('student', 'student.student_id = prove.prove_student_id');
-        $this->db->join('class', 'class.class_id = student.class_class_id');
-        $this->db->join('majors', 'majors.majors_id = student.majors_majors_id');
-
-        if (!empty($search)) {
-            $this->db->group_start();
-            $this->db->like('student_nis', $search);
-            $this->db->or_like('student_full_name', $search);
-            $this->db->or_like('class_name', $search);
-            $this->db->or_like('majors_short_name', $search);
-            $this->db->or_like('prove_note', $search);
-            $this->db->group_end();
-        }
-
-        if (isset($data['class_id']) && !empty($data['class_id']) && $data['class_id'] != 'all') {
-            $this->db->where('student.class_class_id', $data['class_id']);
-        }
-
-        if (isset($data['majors_id']) && !empty($data['majors_id']) && $data['majors_id'] != 'all') {
-            $this->db->where('student.majors_majors_id', $data['majors_id']);
-        }
-
-        if (isset($data['status']) && $data['status'] !== '' && $data['status'] !== 'all') {
-            $this->db->where('prove.prove_status', $data['status']);
-        }
-
-        if ($this->session->userdata('umajorsid') != '0') {
-            $this->db->where('student.majors_majors_id', $this->session->userdata('umajorsid'));
-        }
-
-        $this->db->where('majors_status', '1');
-
-        if (isset($data['order_column']) && isset($data['order_dir'])) {
-            if (!empty($data['order_column']) && !empty($data['order_dir'])) {
-                $this->db->order_by($data['order_column'], $data['order_dir']);
-            }
-        } else {
-            $this->db->order_by('prove_date', 'desc');
-        }
-
-        if ($limit !== NULL && $start !== NULL) {
-            $this->db->limit($limit, $start);
-        }
-
-        $query = $this->db->get();
-        return $query->result_array();
-    }
     // Get From Databases
-    function get($params = array()) {
+    function get($params = array())
+    {
 
         if (isset($params['id'])) {
             $this->db->where('prove.prove_id', $params['id']);
@@ -113,9 +24,9 @@ class Prove_model extends CI_Model {
         }
 
         if (isset($params['status'])) {
-            $this->db->where('student.student_status', $params['status']);
+            $this->db->where('prove.prove_status', $params['status']);
         } else {
-            $this->db->where('student.student_status', '1');
+            $this->db->where('prove.prove_status', '1');
         }
 
         if (isset($params['class_id'])) {
@@ -125,17 +36,14 @@ class Prove_model extends CI_Model {
         if (isset($params['majors_id'])) {
             $this->db->where('student.majors_majors_id', $params['majors_id']);
         }
-        
-        if($this->session->userdata('umajorsid') != '0')
-        {
+
+        if ($this->session->userdata('umajorsid') != '0') {
             $this->db->where('majors_id', $this->session->userdata('umajorsid'));
         }
 
-        if(isset($params['group']))
-        {
+        if (isset($params['group'])) {
 
-            $this->db->group_by('student.class_class_id'); 
-
+            $this->db->group_by('student.class_class_id');
         }
 
 
@@ -152,14 +60,14 @@ class Prove_model extends CI_Model {
         } else {
             $this->db->order_by('prove_date', 'desc');
         }
-        
+
         $this->db->where('majors_status', '1');
 
         $this->db->select('prove.prove_id, prove.prove_date, prove.prove_img, prove.prove_note, prove.prove_status');
         $this->db->select('student.student_id, student_nis, student_nisn, student_password, student_gender, student_parent_phone, student_full_name, student_img');
         $this->db->select('class.class_id, student.class_class_id, class.class_name, class.majors_majors_id');
         $this->db->select('student.majors_majors_id, majors_id, majors_name, majors_short_name, majors_school_name, majors_status');
-        
+
         $this->db->join('student', 'student.student_id = prove.prove_student_id');
         $this->db->join('class', 'class.class_id = student.class_class_id');
         $this->db->join('majors', 'majors.majors_id = student.majors_majors_id');
@@ -173,11 +81,11 @@ class Prove_model extends CI_Model {
         } else {
             return $res->result_array();
         }
-
     }
-    
-    
-    function get_student($params = array()) {
+
+
+    function get_student($params = array())
+    {
 
         if (isset($params['id'])) {
             $this->db->where('prove.prove_id', $params['id']);
@@ -201,11 +109,9 @@ class Prove_model extends CI_Model {
             $this->db->where('student.majors_majors_id', $params['majors_id']);
         }
 
-        if(isset($params['group']))
-        {
+        if (isset($params['group'])) {
 
-            $this->db->group_by('student.class_class_id'); 
-
+            $this->db->group_by('student.class_class_id');
         }
 
 
@@ -222,14 +128,14 @@ class Prove_model extends CI_Model {
         } else {
             $this->db->order_by('prove_date', 'desc');
         }
-        
+
         $this->db->where('majors_status', '1');
 
         $this->db->select('prove.prove_id, prove.prove_date, prove.prove_img, prove.prove_note, prove.prove_status');
         $this->db->select('student.student_id, student_nis, student_nisn, student_password, student_gender, student_parent_phone, student_full_name, student_img');
         $this->db->select('class.class_id, student.class_class_id, class.class_name, class.majors_majors_id');
         $this->db->select('student.majors_majors_id, majors_id, majors_name, majors_short_name, majors_school_name, majors_status');
-        
+
         $this->db->join('student', 'student.student_id = prove.prove_student_id');
         $this->db->join('class', 'class.class_id = student.class_class_id');
         $this->db->join('majors', 'majors.majors_id = student.majors_majors_id');
@@ -243,10 +149,10 @@ class Prove_model extends CI_Model {
         } else {
             return $res->result_array();
         }
-
     }
 
-    function add($data = array()) {
+    function add($data = array())
+    {
 
         if (isset($data['prove_note'])) {
             $this->db->set('prove_note', $data['prove_note']);
@@ -283,7 +189,7 @@ class Prove_model extends CI_Model {
 
     public function is_exist($field, $value)
     {
-        $this->db->where($field, $value);        
+        $this->db->where($field, $value);
 
         return $this->db->count_all_results('student') > 0 ? TRUE : FALSE;
     }

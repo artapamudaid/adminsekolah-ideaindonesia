@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') OR exit('No direct script access allowed');
 
 /*
 | -------------------------------------------------------------------
@@ -89,7 +89,7 @@ $autoload['drivers'] = array();
 |
 |	$autoload['helper'] = array('url', 'file');
 */
-$autoload['helper'] = array('url', 'text', 'inflector', 'form', 'security', 'arc', 'template_wa', 'cache_version');
+$autoload['helper'] = array('url', 'text', 'inflector', 'form', 'security', 'arc');
 
 /*
 | -------------------------------------------------------------------
@@ -132,6 +132,4 @@ $autoload['language'] = array();
 |
 |	$autoload['model'] = array('first_model' => 'first');
 */
-$autoload['model'] = array(
-    'General_model',
-);
+$autoload['model'] = array();

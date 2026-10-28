@@ -7,7 +7,12 @@
           <div class="col-sm-6">
             <h1 class="m-0 text-dark">Statistik</h1>
           </div><!-- /.col -->
-
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="<?= base_url('home') ?>">Home</a></li>
+              <li class="breadcrumb-item active">Statistik</li>
+            </ol>
+          </div><!-- /.col -->
         </div><!-- /.row -->
       </div><!-- /.container-fluid -->
     </div>
@@ -20,12 +25,17 @@
           <div class="col-md-6">
 
             <!-- PIE CHART -->
-            <div class="box box-primary">
-              <div class="box-header">
-                <h3 class="box-title">Aset berdasarkan Kondisi</h3>
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">Aset berdasarkan Kondisi</h3>
 
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fa fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fa fa-times"></i></button>
+                </div>
               </div>
-              <div class="box-body">
+              <div class="card-body">
                 <canvas id="pieChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
               </div>
               <!-- /.card-body -->
@@ -36,12 +46,17 @@
           <!-- /.col (LEFT) -->
           <div class="col-md-6">
             <!-- PIE CHART -->
-            <div class="box box-primary">
-              <div class="box-header">
+            <div class="card card-primary">
+              <div class="card-header">
                 <h3 class="card-title">Aset berdasarkan Jenis</h3>
 
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fa fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fa fa-times"></i></button>
+                </div>
               </div>
-              <div class="box-body">
+              <div class="card-body">
                 <canvas id="pieJenis" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
               </div>
               <!-- /.card-body -->
@@ -52,11 +67,17 @@
         </div>
         <div class="row">
           <div class="col-md-12">
-            <div class="box box-primary">
-              <div class="box-header">
-                <h3 class="box-title">Aset berdasarkan Kategori</h3>
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">Aset berdasarkan Kategori</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fa fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fa fa-times"></i></button>
+                </div>
               </div>
-              <div class="box-body">
+              <div class="card-body">
                 <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
               </div>
               <!-- /.card-body -->

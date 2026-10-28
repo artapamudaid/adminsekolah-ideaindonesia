@@ -3,11 +3,9 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-class Auth_student extends CI_Controller
-{
+class Auth_student extends CI_Controller {
 
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct();
         $this->load->model('student/Student_model');
         $this->load->model('setting/Setting_model');
@@ -15,15 +13,13 @@ class Auth_student extends CI_Controller
         $this->load->helper('string');
     }
 
-    function index()
-    {
+    function index() {
         redirect('student/auth/login');
     }
 
-    function login()
-    {
+    function login() {
         if ($this->session->userdata('logged_student')) {
-            redirect('student');
+            redirect('student/anakhebat');
         }
         if ($this->input->post('location')) {
             $location = $this->input->post('location');
@@ -32,7 +28,8 @@ class Auth_student extends CI_Controller
         }
         $this->form_validation->set_rules('nis', 'NIS', 'trim|required');
         $this->form_validation->set_rules('password', 'Password', 'trim|required');
-        if ($_POST and $this->form_validation->run() == TRUE) {
+        
+        if ($_POST AND $this->form_validation->run() == TRUE) {
             $nis = $this->input->post('nis', TRUE);
             $password = $this->input->post('password', TRUE);
 
@@ -47,7 +44,7 @@ class Auth_student extends CI_Controller
                 if ($location != '') {
                     header("Location:" . htmlspecialchars($location));
                 } else {
-                    redirect('student');
+                    redirect('student/anakhebat');
                 }
             } else {
                 if ($location != '') {
@@ -59,19 +56,26 @@ class Auth_student extends CI_Controller
                 }
             }
         } else {
-            $data['setting_school'] = $this->Setting_model->get(array('id' => 1));
-            $data['setting_logo'] = $this->Setting_model->get(array('id' => SCHOOL_LOGO));
+            $data['setting_school'] = $this->Setting_model->get(array('id'=>1));
+            $data['setting_logo'] = $this->Setting_model->get(array('id'=>SCHOOL_LOGO));
+            $url_pengumuman = 'https://api.epesantren.co.id/api/pengumuman-web-as?token=e6df5137d38410fbd27ab211d56a16c3';
 
-            // NOTE: Check RFID Subscription
-            $data['is_rfid_subscription'] = table_exists_cached('cards');
-            $data['is_rfid_subscription_employee'] = table_exists_cached('employee_cards');
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url_pengumuman);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $pengumuman = json_decode($response, true);
+            $data['pengumuman'] = $pengumuman['data'] ?? [];
+
             $this->load->view('student/login', $data);
         }
     }
 
     // Logout Processing
-    function logout()
-    {
+    function logout() {
         $this->session->unset_userdata('logged_student');
         $this->session->unset_userdata('uid_student');
         $this->session->unset_userdata('unis_student');
@@ -86,4 +90,5 @@ class Auth_student extends CI_Controller
         }
         redirect('student/auth/login');
     }
+
 }

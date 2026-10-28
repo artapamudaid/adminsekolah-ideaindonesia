@@ -276,7 +276,7 @@
                                 Tanggal <span class="required">*</span> <br />
                                 <div class="input-group date " data-date="" data-date-format="yyyy-mm-dd">
                                     <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-                                    <input class="form-control" type="text" name="tanggal" id="tanggal_edit" readonly="readonly" placeholder="Tanggal">
+                                    <input class="form-control" type="text" name="tanggal" id="tanggal_edit" readonly="readonly" placeholder="Tanggal" value="<?php echo date('Y-m-d'); ?>">
                                 </div>
                             </div>
                         </div>
@@ -460,7 +460,6 @@
     });
 
     $("#FormulirTambah").submit(function(e) {
-        e.preventDefault();
         PNotify.removeAll();
         $('.help-block').hide();
         $('.form-group').removeClass('has-error');
@@ -524,7 +523,6 @@
     }
 
     $("#FormulirHapus").submit(function(e) {
-        e.preventDefault();
         PNotify.removeAll();
         $("#submitformHapus").attr("disabled", true).html('Loading ...');
         let form = $('#FormulirHapus')[0];
@@ -640,7 +638,7 @@
                 $(".modal-content").removeClass("loadingform");
                 $.each(response.datarows, function(i, item) {
                     $("#sekolah_id_edit").val(item.sekolah_id);
-                    $("#tanggal_edit").val(item.tanggal);
+                    $("#tanggal_edit").val(item.tanggal_ymd);
                     $("#keterangan_lainnya_edit").val(item.keterangan_lainnya);
                     $("#keterangan_edit").val(item.keterangan);
                 });
@@ -697,7 +695,6 @@
     }
 
     $("#FormulirEdit").submit(function(e) {
-        e.preventDefault();
         PNotify.removeAll();
         $('.help-block').hide();
         $('.form-group').removeClass('has-error');

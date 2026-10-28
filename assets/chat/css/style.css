@@ -1,0 +1,125 @@
+/* =========================================
+    CSS WIDGET (FINAL + DATE/TIME)
+    ========================================= */
+* { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+.widget-button {
+    position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+    background-color: #07455e; color: white; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 9990; transition: transform 0.2s;
+}
+.widget-button:hover { transform: scale(1.05); }
+
+.notif-badge {
+    position: absolute; top: -5px; right: -5px;
+    background-color: #ff3b30; color: white;
+    font-family: Arial, sans-serif; font-size: 12px; font-weight: bold;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 9991; display: none;
+}
+
+.widget-container {
+    position: fixed; bottom: 90px; right: 20px; 
+    width: 380px; height: 600px; max-height: 80vh;
+    background: #fff; border-radius: 12px; 
+    box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+    display: none; flex-direction: column; overflow: hidden; z-index: 9998;
+}
+
+.widget-header {
+    background: #07445e; color: white; padding: 0 15px; height: 60px;
+    display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+}
+.widget-header h4 { margin: 0; font-size: 16px; font-weight: 600; }
+.header-actions { display: flex; align-items: center; }
+.widget-close { cursor: pointer; font-size: 24px; background: none; border: none; color: white; padding: 0 0 0 10px; }
+
+.btn-logout {
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); 
+    color: white; font-size: 11px; padding: 5px 10px; border-radius: 15px;
+    cursor: pointer; display: none; transition: 0.2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.4); }
+
+.widget-login { padding: 30px 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.widget-login input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; }
+.widget-login button { width: 100%; padding: 12px; background: #07475e; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+/* AREA CHAT */
+.widget-messages { 
+    flex: 1; padding: 15px; overflow-y: auto; background: #ece5dd; 
+    display: flex; flex-direction: column; 
+}
+
+/* DATE SEPARATOR (Gaya WhatsApp) */
+.date-separator {
+    text-align: center; margin: 15px 0 10px 0;
+}
+.date-separator span {
+    background: #e1f2fb; color: #555; padding: 5px 12px;
+    border-radius: 10px; font-size: 11px; font-weight: 600;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+}
+
+/* PESAN BUBBLE */
+.msg-bubble { 
+    max-width: 85%; min-width: 80px; padding: 6px 10px; margin-bottom: 8px; 
+    border-radius: 8px; font-size: 14px; line-height: 1.4; color: #303030; 
+    position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    display: flex; flex-direction: column; /* Flex agar jam bisa di bawah */
+}
+.msg-user { background: #c6e1f8; align-self: flex-end; border-bottom-right-radius: 0; }
+.msg-cs { background: #ffffff; align-self: flex-start; border-bottom-left-radius: 0; }
+
+.msg-content { word-wrap: break-word; }
+
+/* WAKTU PESAN (Pojok kanan bawah) */
+.msg-time {
+    font-size: 10px; color: rgba(0,0,0,0.45);
+    align-self: flex-end; margin-top: 2px; margin-bottom: -2px;
+}
+
+.widget-input-area {
+    padding: 8px; background: #f0f0f0; display: flex; align-items: center; 
+    border-top: 1px solid #ddd; min-height: 60px;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+.widget-input-area input[type="text"] {
+    flex: 1; min-width: 0; padding: 10px 12px; border: none; border-radius: 20px; 
+    outline: none; margin: 0 5px; font-size: 16px;
+}
+.icon-btn { cursor: pointer; font-size: 24px; color: #555; background: none; border: none; padding: 5px; flex-shrink: 0; }
+
+.btn-send {
+    background: #07475e; color: white; border: none; border-radius: 50%; 
+    width: 40px; height: 40px; flex-shrink: 0;
+    cursor: pointer; display: flex; justify-content: center; align-items: center; 
+    font-size: 18px; margin-left: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.file-preview-modal {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #e9edef; z-index: 9999; display: none; flex-direction: column;
+}
+.preview-header { height: 50px; background: #005e80; color: white; display: flex; align-items: center; padding: 0 15px; }
+.preview-body { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column; }
+.preview-body img { max-width: 100%; max-height: 60vh; border-radius: 8px; }
+.preview-footer { padding: 15px; background: #fff; display: flex; align-items: center; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
+.preview-footer input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; margin-right: 10px; font-size: 16px; }
+
+@media only screen and (max-width: 480px) {
+    .widget-container {
+        width: 100% !important; height: 100% !important;
+        bottom: 0 !important; right: 0 !important;
+        border-radius: 0 !important; max-height: none !important;
+    }
+    .widget-header { height: 55px; }
+    .widget-input-area { padding: 5px 8px; }
+    .icon-btn { font-size: 22px; padding: 5px; }
+    .widget-input-area input[type="text"] { padding: 10px; }
+    .file-preview-modal { position: fixed; z-index: 10000; }
+}

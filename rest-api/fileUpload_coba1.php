@@ -4,11 +4,13 @@
 
 // include('../config/config.php');
 include_once('fungsi/tanggal.php');
+require_once __DIR__ . '/upload_security.php';
+require_upload_token();
 
-$db_host='localhost';
-$db_user='adminsek_userdemo';
-$db_pass='PzKyeml8k3)^';
-$db_name='adminsek_demo';
+$db_host=getenv('DB_HOST') ?: 'localhost';
+$db_user=getenv('DB_USERNAME') ?: '';
+$db_pass=getenv('DB_PASSWORD') ?: '';
+$db_name=getenv('DB_DATABASE') ?: '';
 $koneksi = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 
 // date_default_timezone_set('Asia/Jakarta');
@@ -38,8 +40,8 @@ function GetValue($tablename, $column, $where) {
     // $id_pegawai = '110';
     // $kode_sekolah = 2203007;
 
-    $id_pegawai = isset($_REQUEST['id_pegawai']) ? $_REQUEST['id_pegawai'] : '';
-    $kode_sekolah = isset($_REQUEST['kode_sekolah']) ? $_REQUEST['kode_sekolah'] : '';
+    $id_pegawai = isset($_REQUEST['id_pegawai']) ? preg_replace('/[^0-9]/', '', $_REQUEST['id_pegawai']) : '';
+    $kode_sekolah = isset($_REQUEST['kode_sekolah']) ? preg_replace('/[^A-Za-z0-9_-]/', '', $_REQUEST['kode_sekolah']) : '';
     
     $database = GetValue("sekolahs","db","kode_sekolah='$kode_sekolah'").".";
     $folder = GetValue("sekolahs","folder","kode_sekolah='$kode_sekolah'");
@@ -78,18 +80,23 @@ function GetValue($tablename, $column, $where) {
     $response['time'] = $time;
     
 	$status = "SUKSES_UPLOAD";
+    $safeFileName = 'no_image.jpeg';
 	
     if (isset($_FILES['image']['name'])) {
-        $target_path = $target_path . $id_pegawai."_".basename($_FILES['image']['name']);
-        $response['file_name'] = $id_pegawai."_".basename($_FILES['image']['name']);
+        $safeFileName = safe_uploaded_image_name('image', $id_pegawai);
+        $safeFolder = preg_replace('/[^A-Za-z0-9_\/.-]/', '', $folder);
+        $target_path = $target_path . $safeFileName;
+        $response['file_name'] = $safeFileName;
      
         try {
             // File successfully uploaded
             $response['message'] = 'File uploaded successfully!';
             $response['error'] = false;
-            $response['file_path'] = $file_upload_url . $id_pegawai."_".basename($_FILES['image']['name']);
+            $response['file_path'] = $file_upload_url . $safeFileName;
             // Throws exception incase file is not being moved
-            $move_upload="../../$folder/uploads/absensi/". $id_pegawai."_".basename($_FILES['image']['name']);
+            $uploadDir = __DIR__ . "/../../$safeFolder/uploads/absensi";
+            ensure_upload_directory($uploadDir);
+            $move_upload = $uploadDir . '/' . $safeFileName;
             if (!move_uploaded_file($_FILES['image']['tmp_name'], $move_upload)) {
                 // make error flag true
                 $response['error'] = true;
@@ -239,7 +246,7 @@ function GetValue($tablename, $column, $where) {
             // $file_path = $img;
             // if ($status == "GAGAL_UPLOAD3") $file_path = null;
             
-            $file_path = $file_upload_url . $id_pegawai."_".basename($_FILES['image']['name']);
+            $file_path = $file_upload_url . $safeFileName;
             if ($status == "GAGAL_UPLOAD3") $file_path = "../uploads/absensi/no_image.jpg";
 
             $id_pegawai     = $id_pegawai;
@@ -366,7 +373,7 @@ function GetValue($tablename, $column, $where) {
             // $file_path = $img;
             // if ($status == "GAGAL_UPLOAD3") $file_path = null;
             
-            $file_path = $file_upload_url . $id_pegawai."_".basename($_FILES['image']['name']);
+            $file_path = $file_upload_url . $safeFileName;
             if ($status == "GAGAL_UPLOAD3") $file_path = "../uploads/absensi/no_image.jpg";
 
             $id_pegawai     = $id_pegawai;  
@@ -414,7 +421,7 @@ function GetValue($tablename, $column, $where) {
     $file_path      = $img;
     if ($status == "GAGAL_UPLOAD3") $file_path = null;
     
-    $file_path = $file_upload_url . $id_pegawai."_".basename($_FILES['image']['name']);
+    $file_path = $file_upload_url . $safeFileName;
     if ($status == "GAGAL_UPLOAD3") $file_path = "../uploads/absensi/no_image.jpg";
 
     $id_pegawai = $id_pegawai;  

@@ -259,7 +259,7 @@ class Alumni_set extends CI_Controller
         }
       }
 
-      $alumni_parent_phone = sanitizeStrict($this->input->post('alumni_parent_phone'));
+      $alumni_parent_phone = $this->input->post('alumni_parent_phone');
 
       $alumni_parent_phone = str_replace(" ", "", $alumni_parent_phone);
       $alumni_parent_phone = str_replace("(", "", $alumni_parent_phone);
@@ -280,19 +280,19 @@ class Alumni_set extends CI_Controller
         }
       }
 
-      $params['alumni_nis'] = sanitizeStrict($this->input->post('alumni_nis'));
-      $params['alumni_nisn'] = sanitizeStrict($this->input->post('alumni_nisn'));
-      $params['alumni_gender'] = sanitizeStrict($this->input->post('alumni_gender'));
-      $params['alumni_kelas'] = sanitizeStrict($this->input->post('alumni_kelas'));
-      $params['alumni_unit'] = sanitizeStrict($this->input->post('alumni_unit'));
-      $params['alumni_tahun_id'] = sanitizeStrict($this->input->post('alumni_tahun_id'));
+      $params['alumni_nis'] = $this->input->post('alumni_nis');
+      $params['alumni_nisn'] = $this->input->post('alumni_nisn');
+      $params['alumni_gender'] = $this->input->post('alumni_gender');
+      $params['alumni_kelas'] = $this->input->post('alumni_kelas');
+      $params['alumni_unit'] = $this->input->post('alumni_unit');
+      $params['alumni_tahun_id'] = $this->input->post('alumni_tahun_id');
       $params['alumni_last_update'] = date('Y-m-d H:i:s');
-      $params['alumni_full_name'] = sanitizeStrict($this->input->post('alumni_full_name'));
-      $params['alumni_born_place'] = sanitizeStrict($this->input->post('alumni_born_place'));
-      $params['alumni_born_date'] = sanitizeStrict($this->input->post('alumni_born_date'));
-      $params['alumni_address'] = sanitizeStrict($this->input->post('alumni_address'));
-      $params['alumni_name_of_mother'] = sanitizeStrict($this->input->post('alumni_name_of_mother'));
-      $params['alumni_name_of_father'] = sanitizeStrict($this->input->post('alumni_name_of_father'));
+      $params['alumni_full_name'] = $this->input->post('alumni_full_name');
+      $params['alumni_born_place'] = $this->input->post('alumni_born_place');
+      $params['alumni_born_date'] = $this->input->post('alumni_born_date');
+      $params['alumni_address'] = $this->input->post('alumni_address');
+      $params['alumni_name_of_mother'] = $this->input->post('alumni_name_of_mother');
+      $params['alumni_name_of_father'] = $this->input->post('alumni_name_of_father');
       $params['alumni_parent_phone'] = $hp;
       $status = $this->Alumni_model->add($params);
 
@@ -409,12 +409,17 @@ class Alumni_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
 
     $config['allowed_types'] = 'gif|jpg|jpeg|png';
     $config['max_size'] = '1024';
+    $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
     $config['file_name'] = $fileName;
+    $config["file_ext_tolower"] = TRUE;
+    $config["remove_spaces"] = TRUE;
+    $config["detect_mime"] = TRUE;
+    $config["mod_mime_fix"] = TRUE;
     $this->upload->initialize($config);
 
     if (!$this->upload->do_upload($name)) {
@@ -441,24 +446,23 @@ class Alumni_set extends CI_Controller
     $default = "123456";
     $this->load->library('excel');
     if (isset($_FILES["file"]["name"])) {
-      $path = $_FILES["file"]["tmp_name"];
-      $object = PHPExcel_IOFactory::load($path);
+      $object = $this->load_excel_import('file', 'manage/alumni/import_alumni');
+      $data = array();
       foreach ($object->getWorksheetIterator() as $worksheet) {
         $highestRow = $worksheet->getHighestRow();
         $highestColumn = $worksheet->getHighestColumn();
         for ($row = 3; $row <= $highestRow; $row++) {
-          $alumni_nis             = $worksheet->getCellByColumnAndRow(0, $row)->getValue();
-          $alumni_full_name       = $worksheet->getCellByColumnAndRow(1, $row)->getValue();
-          $alumni_kelas           = $worksheet->getCellByColumnAndRow(2, $row)->getValue();
-          $alumni_unit            = $worksheet->getCellByColumnAndRow(3, $row)->getValue();
-          $alumni_tahun_id        = $worksheet->getCellByColumnAndRow(4, $row)->getValue();
-          $alumni_name_of_father  = $worksheet->getCellByColumnAndRow(5, $row)->getValue();
-          $alumni_name_of_mother  = $worksheet->getCellByColumnAndRow(6, $row)->getValue();
-          $alumni_parent_phone    = $worksheet->getCellByColumnAndRow(7, $row)->getValue();
-          $alumni_address         = $worksheet->getCellByColumnAndRow(8, $row)->getValue();
+          $alumni_nis             = trim((string) $worksheet->getCellByColumnAndRow(0, $row)->getValue());
+          $alumni_full_name       = trim((string) $worksheet->getCellByColumnAndRow(1, $row)->getValue());
+          $alumni_kelas           = trim((string) $worksheet->getCellByColumnAndRow(2, $row)->getValue());
+          $alumni_unit            = trim((string) $worksheet->getCellByColumnAndRow(3, $row)->getValue());
+          $alumni_tahun_id        = trim((string) $worksheet->getCellByColumnAndRow(4, $row)->getValue());
+          $alumni_name_of_father  = trim((string) $worksheet->getCellByColumnAndRow(5, $row)->getValue());
+          $alumni_name_of_mother  = trim((string) $worksheet->getCellByColumnAndRow(6, $row)->getValue());
+          $alumni_parent_phone    = trim((string) $worksheet->getCellByColumnAndRow(7, $row)->getValue());
+          $alumni_address         = trim((string) $worksheet->getCellByColumnAndRow(8, $row)->getValue());
 
-          $q = $this->db->query("SELECT COUNT(alumni_nis) as nisNum FROM alumni WHERE alumni_nis = '$alumni_nis'")->row_array();
-          $nisNum = $q['nisNum'];
+          $nisNum = $this->db->where('alumni_nis', $alumni_nis)->count_all_results('alumni');
 
           if (empty($alumni_nis) || $nisNum != 0) {
             $this->session->set_flashdata('failed', 'Duplikasi No. Induk Alumni');
@@ -499,7 +503,9 @@ class Alumni_set extends CI_Controller
         }
       }
 
-      $this->db->insert_batch('alumni', $data);
+      if (!empty($data)) {
+        $this->db->insert_batch('alumni', $data);
+      }
       $this->session->set_flashdata('success', 'Import Data Alumni Berhasil');
       redirect('manage/alumni');
     }
@@ -509,15 +515,14 @@ class Alumni_set extends CI_Controller
   {
     $this->load->library('excel');
     if (isset($_FILES["file"]["name"])) {
-      $path = $_FILES["file"]["tmp_name"];
-      $object = PHPExcel_IOFactory::load($path);
+      $object = $this->load_excel_import('file', 'manage/alumni');
+      $data = array();
       foreach ($object->getWorksheetIterator() as $worksheet) {
         $highestRow = $worksheet->getHighestRow();
         $highestColumn = $worksheet->getHighestColumn();
         for ($row = 3; $row <= $highestRow; $row++) {
-          $alumni_nis = $worksheet->getCellByColumnAndRow(0, $row)->getValue();
-          $alumni_full_name = $worksheet->getCellByColumnAndRow(1, $row)->getValue();
-          $alumni_madin = $worksheet->getCellByColumnAndRow(2, $row)->getValue();
+          $alumni_nis = trim((string) $worksheet->getCellByColumnAndRow(0, $row)->getValue());
+          $alumni_madin = trim((string) $worksheet->getCellByColumnAndRow(2, $row)->getValue());
           $data[] = array(
             'alumni_nis'    =>  $alumni_nis,
             'alumni_madin'    =>  $alumni_madin,
@@ -525,7 +530,9 @@ class Alumni_set extends CI_Controller
         }
       }
 
-      $this->db->update_batch('alumni', $data, 'alumni_nis');
+      if (!empty($data)) {
+        $this->db->update_batch('alumni', $data, 'alumni_nis');
+      }
       $this->session->set_flashdata('success', 'Update Data Alumni Berhasil');
       redirect('manage/alumni');
     }
@@ -631,19 +638,17 @@ class Alumni_set extends CI_Controller
   {
     $this->load->library('excel');
     if (isset($_FILES["file"]["name"])) {
-      $path = $_FILES["file"]["tmp_name"];
-      $object = PHPExcel_IOFactory::load($path);
+      $object = $this->load_excel_import('file', 'manage/alumni/update_whatsapp');
+      $data = array();
       foreach ($object->getWorksheetIterator() as $worksheet) {
         $highestRow = $worksheet->getHighestRow();
         $highestColumn = $worksheet->getHighestColumn();
         for ($row = 3; $row <= $highestRow; $row++) {
-          $alumni_nis            = $worksheet->getCellByColumnAndRow(0, $row)->getValue();
-          $alumni_majors         = $worksheet->getCellByColumnAndRow(2, $row)->getValue();
-          $alumni_class          = $worksheet->getCellByColumnAndRow(3, $row)->getValue();
-          $alumni_address        = $worksheet->getCellByColumnAndRow(4, $row)->getValue();
-          $alumni_name_of_father = $worksheet->getCellByColumnAndRow(5, $row)->getValue();
-          $alumni_name_of_mother = $worksheet->getCellByColumnAndRow(6, $row)->getValue();
-          $alumni_parent_phone   = $worksheet->getCellByColumnAndRow(7, $row)->getValue();
+          $alumni_nis            = trim((string) $worksheet->getCellByColumnAndRow(0, $row)->getValue());
+          $alumni_address        = trim((string) $worksheet->getCellByColumnAndRow(4, $row)->getValue());
+          $alumni_name_of_father = trim((string) $worksheet->getCellByColumnAndRow(5, $row)->getValue());
+          $alumni_name_of_mother = trim((string) $worksheet->getCellByColumnAndRow(6, $row)->getValue());
+          $alumni_parent_phone   = trim((string) $worksheet->getCellByColumnAndRow(7, $row)->getValue());
 
           $alumni_nis            = str_replace("'", "", $alumni_nis);
           $alumni_parent_phone   = str_replace("'", "", $alumni_parent_phone);
@@ -679,7 +684,9 @@ class Alumni_set extends CI_Controller
         }
       }
 
-      $this->db->update_batch('alumni', $data, 'alumni_nis');
+      if (!empty($data)) {
+        $this->db->update_batch('alumni', $data, 'alumni_nis');
+      }
       $this->session->set_flashdata('success', 'Update No. Whatsapp Ortu Alumni Berhasil');
       redirect('manage/alumni');
     }
@@ -692,6 +699,24 @@ class Alumni_set extends CI_Controller
 
     $this->load->helper('download');
     force_download($name, $data);
+  }
+
+  private function load_excel_import($field, $redirect)
+  {
+    if (
+      empty($_FILES[$field]['name']) ||
+      $_FILES[$field]['error'] !== UPLOAD_ERR_OK ||
+      !in_array(strtolower(pathinfo($_FILES[$field]['name'], PATHINFO_EXTENSION)), array('xls', 'xlsx'), TRUE) ||
+      $_FILES[$field]['size'] > 5 * 1024 * 1024 ||
+      !is_uploaded_file($_FILES[$field]['tmp_name'])
+    ) {
+      $this->session->set_flashdata('failed', 'File import alumni harus .xls/.xlsx dan maksimal 5MB.');
+      redirect($redirect);
+    }
+
+    $reader = PHPExcel_IOFactory::createReaderForFile($_FILES[$field]['tmp_name']);
+    $reader->setReadDataOnly(TRUE);
+    return $reader->load($_FILES[$field]['tmp_name']);
   }
 
 
@@ -726,7 +751,7 @@ class Alumni_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
     $this->upload->initialize($config);
 

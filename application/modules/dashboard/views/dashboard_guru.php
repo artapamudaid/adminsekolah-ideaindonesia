@@ -91,7 +91,7 @@
                                 ?>
                                     <tr>
                                         <td style="text-align: center;">
-                                          <?= $jd['jam_pelajaran_name']?>
+                                            <?= $jd['jam_pelajaran_name'] . ' (' . $jd['jam_pelajaran_start'] . ' - ' . $jd['jam_pelajaran_end'] . ')' ?>
                                         </td>
                                         <td style="text-align: center;">
                                             <?= $jd['class_name'] ?>

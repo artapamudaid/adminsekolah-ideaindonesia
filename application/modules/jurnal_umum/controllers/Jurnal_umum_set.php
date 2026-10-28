@@ -136,8 +136,6 @@ class Jurnal_umum_set extends CI_Controller
         $kode_akun = $this->input->post("kode_akun");
         $debet = $this->input->post("debet");
         $kredit = $this->input->post("kredit");
-        $tanggal = $post['tanggal'];
-
         if ($kode_akun != TRUE) {
             $error2['fail'] = "Mohon Pilih Akun";
             $validasi_tambahan = 1;
@@ -151,11 +149,6 @@ class Jurnal_umum_set extends CI_Controller
             }
             if ($debet_total != $kredit_total) {
                 $error2['fail'] = "debit dan redit tidak balance";
-                $validasi_tambahan = 1;
-            }
-
-            if (!$tanggal && empty($tanggal)) {
-                $error2['fail'] = 'Mohon Pilih Tanggal';
                 $validasi_tambahan = 1;
             }
         }
@@ -253,8 +246,6 @@ class Jurnal_umum_set extends CI_Controller
         $kode_akun = $this->input->post("kode_akun");
         $debet = $this->input->post("debet");
         $kredit = $this->input->post("kredit");
-        $tanggal = $post['tanggal'];
-
         if ($kode_akun != TRUE) {
             $error2['fail'] = "Mohon Pilih Akun";
             $validasi_tambahan = 1;
@@ -268,11 +259,6 @@ class Jurnal_umum_set extends CI_Controller
             }
             if ($debet_total != $kredit_total) {
                 $error2['fail'] = "debit dan redit tidak balance";
-                $validasi_tambahan = 1;
-            }
-
-            if (!$tanggal && empty($tanggal)) {
-                $error2['fail'] = 'Mohon Pilih Tanggal';
                 $validasi_tambahan = 1;
             }
         }

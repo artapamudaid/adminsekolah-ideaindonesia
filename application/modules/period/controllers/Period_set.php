@@ -55,21 +55,17 @@ class Period_set extends CI_Controller
   {
     $this->load->library('form_validation');
     $this->form_validation->set_rules('period_start', 'Tahun Ajaran', 'trim|required|xss_clean');
-    $this->form_validation->set_rules('period_status', 'Status', 'trim|required|xss_clean');
+    //$this->form_validation->set_rules('period_status', 'Status', 'trim|required|xss_clean');
 
     $this->form_validation->set_error_delimiters('<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>', '</div>');
     $data['operation'] = is_null($id) ? 'Tambah' : 'Sunting';
 
     if ($_POST and $this->form_validation->run() == TRUE) {
 
-      $start = sanitizeStrict($this->input->post('period_start'));
-      $period_status = sanitizeStrict($this->input->post('period_status'));
-
       if ($this->input->post('period_id')) {
-        $id = sanitizeStrict($this->input->post('period_id'));
-        $params['period_id'] = $id;
+        $params['period_id'] = $this->input->post('period_id');
       } else {
-
+        $start = $this->input->post('period_start');
         $cekPeriod = $this->db->query(
           "SELECT * 
               FROM period
@@ -82,18 +78,13 @@ class Period_set extends CI_Controller
         }
       }
 
-      $params['period_start'] = $start;
-      $params['period_end'] = sanitizeStrict($this->input->post('period_end'));
-      $params['period_status'] = $period_status;
+      $params['period_start'] = $this->input->post('period_start');
+      $params['period_end'] = $this->input->post('period_end');
+      $params['period_status'] = 0;
 
       $status = $this->Period_model->add($params);
       $paramsupdate['period_id'] = $status;
       $this->Period_model->add($paramsupdate);
-
-      if ($params['period_status'] == 1) {
-        $this->db->where('period_id !=', $status);
-        $this->db->update('period', ['period_status' => 0]);
-      }
 
       // activity log
       $this->Logs_model->add(
@@ -106,8 +97,8 @@ class Period_set extends CI_Controller
         )
       );
 
-      if (!$this->input->post('period_id') and $this->input->post('generate_payment')) {
-        $generatePayment = sanitizeStrict($this->input->post('generate_payment'));
+      if ($this->input->post('generate_payment')) {
+        $generatePayment = $this->input->post('generate_payment');
         if ($generatePayment == 'YA') {
           $pos = $this->Pos_model->get();
 

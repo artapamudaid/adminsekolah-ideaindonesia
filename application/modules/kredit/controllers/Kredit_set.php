@@ -54,128 +54,11 @@ class Kredit_set extends CI_Controller
 
 		//$data['account'] = $this->db->query("SELECT * FROM account WHERE account_note = '2' AND account_category = '2'")->result_array();
 
-		$data['param'] = $params;
 		$data['title'] = 'Kas Keluar';
 		$data['main'] = 'kredit/kredit_list';
 		$this->load->view('manage/layout', $data);
 	}
 
-	public function list_kredit()
-	{
-		$ds         = $this->input->post('ds');
-		$de         = $this->input->post('de');
-		$majors_id  = $this->input->post('majors');
-
-		$data = array();
-
-		// Date start
-		if (isset($ds) && !empty($ds) && $ds != '') {
-			$data['date_start'] = $ds;
-		}
-
-		if (isset($de) && !empty($de) && $ds != '') {
-			$data['date_end'] = $de;
-		}
-
-		if (isset($majors_id) && !empty($majors_id) && $majors_id != 'all') {
-			$data['majors_id'] = $majors_id;
-		}
-
-		$param = $_POST['param'];
-
-		$draw 	= $_REQUEST['draw'];
-		$length = $_REQUEST['length'];
-		$start 	= $_REQUEST['start'];
-		$search = $_REQUEST['search']["value"];
-
-		if ($search != "") {
-			$data['search'] = $search;
-		}
-
-		// Menangani sorting
-		$order_column_index = $_REQUEST['order'][0]['column']; // Index kolom yang diklik
-		$order_dir = $_REQUEST['order'][0]['dir']; // Arah sorting (asc/desc)
-		$data['order_dir'] = $order_dir;
-
-		$columns = ['kredit_date', 'kredit_kas_noref', 'accDesc', 'account_description', 'kredit_desc', 'kredit_value', 'kredit_tax', 'kredit_item', 'kredit_value', 'kredit_date'];
-
-		// Pastikan index yang dikirimkan oleh DataTables sesuai dengan daftar kolom yang kita punya
-		$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tanggal';
-		$data['order_column'] = $order_column;
-
-		$output 				= array();
-		$output['draw']   		= $draw;
-		$output['recordsTotal'] = $output['recordsFiltered'] = 0;
-		$output['data'] 		= array();
-
-		$totalTrx = $this->Kredit_model->count_trx($data);
-
-		if ($totalTrx) {
-			$list_kredit = $this->Kredit_model->list_kredit($length, $start, $search, $data);
-
-			$output['recordsTotal'] = $output['recordsFiltered'] = $totalTrx['totalBaris'];
-
-			$detaKredit = array();
-
-			foreach ($list_kredit->result() as $r) {
-				$row = array();
-
-				$row[] = pretty_date($r->kredit_date, 'Y-m-d', false);
-				$row[] = $r->kredit_kas_noref;
-				$row[] = '[' . $r->accDesc . ']';
-				$row[] = $r->account_code . ' - ' . $r->account_description;
-				$row[] = $r->kredit_desc;
-				$row[] = 'Rp. ' . number_format($r->kredit_value, 0, ',', '.');
-				$row[] = $r->kredit_tax . ' %';
-				$row[] = $r->kredit_item;
-				$row[] = 'Rp. ' . number_format(
-					$r->kredit_value + ($r->kredit_value * ($r->kredit_tax / 100)),
-					0,
-					',',
-					'.'
-				);
-
-				// Tombol edit hanya ditampilkan jika noref tidak diawali JKTF
-				$buttonEdit = '';
-
-				if (strncmp($r->kredit_kas_noref, 'JKTF', 4) !== 0) {
-					$buttonEdit = '
-						<a href="' . site_url('manage/kredit/edit/' . $r->kredit_id) . '"
-							class="btn btn-xs btn-warning"
-							data-toggle="tooltip"
-							title="Edit">
-							<i class="fa fa-edit"></i>
-						</a>
-					';
-				}
-
-				$row[] = '
-					<a href="' . site_url('manage/kredit/cetakTrx/' . $r->kredit_kas_noref) . '"
-						class="btn btn-xs btn-default"
-						data-toggle="tooltip"
-						title="Cetak Tranksaksi"
-						target="_blank">
-						<i class="fa fa-print"></i>
-					</a>
-
-            		' . $buttonEdit . '
-
-					<a class="btn btn-xs btn-danger btnDellKredit"
-						data-kredit="' . $r->kredit_id . '"
-						data-noref="' . $r->kredit_kas_noref . '"
-						data-gaji="' . $r->kredit_gaji_id . '">
-						<i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i>
-					</a>
-				';
-
-				$detaKredit[] = $row;
-			}
-
-			$output['data'] = $detaKredit;
-		}
-
-		echo json_encode($output);
-	}
 
 	public function trx()
 	{
@@ -396,6 +279,48 @@ class Kredit_set extends CI_Controller
 
 		$this->db->query("DELETE a FROM kas a INNER JOIN kas b WHERE a.kas_id > b.kas_id AND a.kas_noref = b.kas_noref AND DATE(b.kas_input_date)=CURDATE();");
 
+
+		$this->load->helper('notiftele');
+		$major_info = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '" . $params['kas_majors_id'] . "'")->row_array();
+
+		$rincian_trx = [];
+		$temps = $this->db->query("SELECT kredit.kredit_desc as nama, kredit.kredit_value as jumlah, account.account_code as kode FROM kredit LEFT JOIN account ON account.account_id = kredit.kredit_account_id WHERE kredit.kredit_kas_noref='".$params['kas_noref']."'")->result_array();
+		foreach ($temps as $temp) {
+			$nama_item = $temp['nama'] ? $temp['nama'] : 'Pengeluaran';
+			if (!empty($temp['kode'])) {
+				$nama_item = '[' . $temp['kode'] . '] ' . $nama_item;
+			}
+			$rincian_trx[] = [
+				'nama'   => $nama_item,
+				'jumlah' => (int)$temp['jumlah']
+			];
+		}
+
+		if (empty($rincian_trx)) {
+			$rincian_trx[] = [
+				'nama'   => $params['kas_note'] ? $params['kas_note'] : 'Pengeluaran Kas',
+				'jumlah' => (int)$params['kas_kredit']
+			];
+		}
+
+		$acc_info = $this->db->query("SELECT account_code, account_description FROM account WHERE account_id = '" . $params['kas_account_id'] . "'")->row_array();
+		$acc_str = $acc_info ? ' [' . $acc_info['account_code'] . ' ' . $acc_info['account_description'] . ']' : '';
+
+		$payload_tele = [
+			'topik'  => 'kas_keluar',
+			'pesan'  => 'Pengeluaran Dana Kas: ' . $params['kas_note'] . $acc_str,
+			'posisi' => 'kredit',
+			'jumlah' => (int)$params['kas_kredit'],
+			'detail' => [
+				'tanggal' => $params['kas_date'],
+				'no_ref'  => $params['kas_noref'],
+				'nama'    => 'Pengeluaran Kas',
+				'unit'    => $major_info['majors_short_name'] ?? '',
+				'rincian' => $rincian_trx
+			]
+		];
+		create_log($payload_tele);
+
 		echo json_encode($data);
 	}
 
@@ -407,12 +332,17 @@ class Kredit_set extends CI_Controller
 
 		/* create directory if not exist */
 		if (!is_dir($config['upload_path'])) {
-			mkdir($config['upload_path'], 0777, TRUE);
+			mkdir($config['upload_path'], 0755, TRUE);
 		}
 
 		$config['allowed_types'] = 'gif|jpg|jpeg|png';
 		$config['max_size'] = '1024';
-		$config['file_name'] = $fileName;
+		$fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
+    $config['file_name'] = $fileName;
+    $config["file_ext_tolower"] = TRUE;
+    $config["remove_spaces"] = TRUE;
+    $config["detect_mime"] = TRUE;
+    $config["mod_mime_fix"] = TRUE;
 		$this->upload->initialize($config);
 
 		if (!$this->upload->upload_reciept($name)) {
@@ -433,12 +363,17 @@ class Kredit_set extends CI_Controller
 
 		/* create directory if not exist */
 		if (!is_dir($config['upload_path'])) {
-			mkdir($config['upload_path'], 0777, TRUE);
+			mkdir($config['upload_path'], 0755, TRUE);
 		}
 
 		$config['allowed_types'] = 'gif|jpg|jpeg|png';
 		$config['max_size'] = '1024';
-		$config['file_name'] = $fileName;
+		$fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
+    $config['file_name'] = $fileName;
+    $config["file_ext_tolower"] = TRUE;
+    $config["remove_spaces"] = TRUE;
+    $config["detect_mime"] = TRUE;
+    $config["mod_mime_fix"] = TRUE;
 		$this->upload->initialize($config);
 
 		if (!$this->upload->upload_tax_reciept($name)) {
@@ -572,48 +507,9 @@ class Kredit_set extends CI_Controller
 			$params['kredit_last_update'] = date('Y-m-d H:i:s');
 			$params['user_user_id'] = $this->session->userdata('uid');
 
-			$akunLama = '';
-			$kodeAkunLama = '';
-			$kreditValueLama = '';
-			if (!empty($params['kredit_id'])) {
-				$idKredit = $params['kredit_id'];
-				$dataKredit =  $this->db->query("SELECT kredit.kredit_account_id ,account.account_code, kredit.kredit_value FROM kredit JOIN account ON account.account_id = kredit.kredit_account_id WHERE kredit_id = '$idKredit'")->row();
-
-				$akunLama        = $dataKredit->kredit_account_id;
-				$kodeAkunLama    = $dataKredit->account_code;
-				$kreditValueLama = $dataKredit->kredit_value;
-			}
-
 			$status = $this->Kredit_model->add($params);
 			$paramsupdate['kredit_id'] = $status;
 			$this->Kredit_model->add($paramsupdate);
-
-			if (($akunLama != $params['kredit_account_id']) or ($kreditValueLama != $params['kredit_value'])) {
-				$idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
-
-				$data = array();
-
-				if ($akunLama != $params['kredit_account_id']) {
-					$idAkunBaru = $params['kredit_account_id'];
-					$kodeBaru = $this->db->query("SELECT account_code FROM account WHERE account_id = '$idAkunBaru'")->row()->account_code;
-					$data['kode_baru'] = $kodeBaru;
-				}
-
-				if ($kreditValueLama != $params['kredit_value']) {
-					$data['value_baru'] = $params['kredit_value'];
-
-					// Update Total Kas
-					$total = $this->db->query("SELECT SUM(kredit_value) as sumKredit FROM kredit WHERE kredit_kas_noref = '$noref'")->row_array();
-					$this->db->query("UPDATE kas SET kas_kredit = '" . $total['sumKredit'] . "' WHERE kas_noref = '$noref'");
-
-					// Update Total Jurnal Kas
-					$kodeKas  = $this->input->post('kode_kas');
-					$this->Kredit_model->update_detail_jurnal_kas($idJurnal, $kodeKas, $total['sumKredit']);
-				}
-
-				// Update Jurnal Akun
-				$this->Kredit_model->update_detail_jurnal_akun($idJurnal, $kodeAkunLama, $data);
-			}
 
 			$this->Logs_model->add_trx(
 				array(
@@ -629,6 +525,10 @@ class Kredit_set extends CI_Controller
 				)
 			);
 
+			$total = $this->db->query("SELECT SUM(kredit_value) as sumKredit FROM kredit WHERE kredit_kas_noref = '$noref'")->row_array();
+
+			$this->db->query("UPDATE kas SET kas_kredit = '" . $total['sumKredit'] . "' WHERE kas_noref = '$noref'");
+
 			$this->session->set_flashdata('success', $data['operation'] . ' Kas Keluar berhasil');
 			redirect('manage/kredit');
 		} else {
@@ -638,14 +538,12 @@ class Kredit_set extends CI_Controller
 
 			// Edit mode
 			if (!is_null($id)) {
-				// $q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN kredit ON kredit.kredit_account_id = account.account_id WHERE account.account_category = '2' AND kredit.kredit_id = '$id' AND account.account_code LIKE '5%' ORDER BY account.account_code ASC")->row_array();
-				$q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN kredit ON kredit.kredit_account_id = account.account_id WHERE  kredit.kredit_id = '$id'  ORDER BY account.account_code ASC")->row_array();
+				$q = $this->db->query("SELECT account_majors_id AS id FROM account JOIN kredit ON kredit.kredit_account_id = account.account_id WHERE account.account_category = '2' AND kredit.kredit_id = '$id' AND account.account_code LIKE '5%' ORDER BY account.account_code ASC")->row_array();
 				$majors_id  = $q['id'];
 				$data['m']  = $q['id'];
 				$data['majors'] = $this->Student_model->get_majors();
 				$data['kredit'] = $this->Kredit_model->get(array('id' => $id));
-				// $data['account'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majors_id' AND account_code LIKE '5%' ORDER BY account_code ASC")->result_array();
-				$data['account'] = $this->db->query("SELECT * FROM account WHERE account_majors_id = '$majors_id' ORDER BY account_code ASC")->result_array();
+				$data['account'] = $this->db->query("SELECT * FROM account WHERE account_category = '2' AND account_majors_id = '$majors_id' AND account_code LIKE '5%' ORDER BY account_code ASC")->result_array();
 				$data['tax'] = $this->Tax_model->get();
 				$data['item'] = $this->Item_model->get(array('majors_id' => $majors_id));
 			}
@@ -660,18 +558,7 @@ class Kredit_set extends CI_Controller
 	{
 		if ($_POST) {
 
-			$id = $this->input->post('delKredit');
-
-			$kredit = $this->db->query(
-				"SELECT kredit_kas_noref, kredit_desc, kredit_value, akun.account_code AS kodeAkun, kas.account_code AS kodeKas
-				FROM kredit 
-				JOIN account akun ON akun.account_id = kredit.kredit_account_id
-                JOIN account kas  ON kas.account_id = kredit.kredit_kas_account_id
-				WHERE kredit_id = '$id'"
-			)->row_array();
-
-			$kodeAkun   = $kredit['kodeAkun'];
-			$kodeKas    = $kredit['kodeKas'];
+			$kredit = $this->db->query("SELECT kredit_kas_noref, kredit_desc, kredit_value FROM kredit WHERE kredit_id = '$id'")->row_array();
 
 			$this->Logs_model->add_trx(
 				array(
@@ -702,20 +589,7 @@ class Kredit_set extends CI_Controller
 			$cek  = $this->db->query("SELECT COUNT(kredit_id) AS nums FROM kredit WHERE kredit_kas_noref = '$noref'")->row_array();
 			if ($cek['nums'] == '0') {
 				$this->db->query("DELETE FROM kas WHERE kas_noref = '$noref'");
-				$idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
-
-				// Delete Jurnal
-				$this->db->query("DELETE FROM jurnal_umum WHERE noref = '$noref'");
-				$this->db->query("DELETE FROM jurnal_umum_detail WHERE id_jurnal = '$idJurnal'");
-			} else {
-				$idJurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row()->id;
-				// Delete Akun Jurnal
-				$this->db->query("DELETE FROM jurnal_umum_detail WHERE id_jurnal = '$idJurnal' AND account_code = '$kodeAkun'");
-
-				// Update total Jurnal
-				$this->Kredit_model->update_detail_jurnal_kas($idJurnal, $kodeKas, $total['sumKredit']);
 			}
-
 			// activity log
 			$this->load->model('logs/Logs_model');
 			$this->Logs_model->add(
@@ -727,28 +601,6 @@ class Kredit_set extends CI_Controller
 					'log_info' => 'ID:' . $id . ';Title:' . $this->input->post('delName')
 				)
 			);
-
-			// cek apakah ini termasuk trasnfer kas???
-			$tf = $this->db->query(
-				"SELECT lt1.log_tf_balance_id AS balance_id, debit.debit_id, debit.debit_kas_noref AS debitNoref, a.account_code AS debitMasuk, b.account_code AS debitKeluar, a.account_majors_id AS debitMajors
-					FROM log_tf lt1
-					JOIN log_tf lt2 ON lt2.log_tf_balance_id = lt1.log_tf_balance_id AND lt2.log_tf_debit_id IS NOT NULL
-					JOIN debit ON debit.debit_id = lt2.log_tf_debit_id
-					JOIN account a ON a.account_id = debit.debit_kas_account_id
-					JOIN account b ON b.account_id = debit.debit_account_id
-					WHERE lt1.log_tf_kredit_id = ?",
-				array($id)
-			)->row_array();
-
-			if (!empty($tf) && !empty($tf['balance_id'])) {
-				$debitNoref  = $tf['debitNoref'];
-				$debitId  = $tf['debit_id'];
-
-				$this->db->query("DELETE FROM debit WHERE debit_id = '$debitId'");
-				$this->db->query("DELETE FROM kas WHERE kas_noref = '$debitNoref'");
-				$this->db->query("DELETE FROM jurnal_umum WHERE noref = '$debitNoref'");
-			}
-
 			$this->session->set_flashdata('success', 'Hapus Kas Keluar berhasil');
 			redirect('manage/kredit');
 		} elseif (!$_POST) {
@@ -805,7 +657,7 @@ class Kredit_set extends CI_Controller
 
 		/* create directory if not exist */
 		if (!is_dir($config['upload_path'])) {
-			mkdir($config['upload_path'], 0777, TRUE);
+			mkdir($config['upload_path'], 0755, TRUE);
 		}
 		$this->upload->initialize($config);
 

@@ -41,12 +41,12 @@ class Pulang_set extends CI_Controller
       $siswaID = $siswa['student_id'];
     }
 
-    $data['siswa'] = $this->Student_model->get(array('student_id' => @$siswa['student_id'], 'group' => TRUE));
+    $data['siswa'] = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
 
     $data['periodActive'] = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
     $data['period']       = $this->Period_model->get($params);
-    $data['pulang']         = $this->Pulang_model->get(array('period_id' => $periodID, 'student_id' => @$siswa['student_id'], 'order_by' => 'pulang_id'));
-    $data['pulangSum']      = $this->Pulang_model->get_sum(array('period_id' => $periodID, 'student_id' => @$siswa['student_id']));
+    $data['pulang']         = $this->Pulang_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'order_by' => 'pulang_id'));
+    $data['pulangSum']      = $this->Pulang_model->get_sum(array('period_id' => $periodID, 'student_id' => $siswa['student_id']));
 
     $data['majors']     = $this->Student_model->get_majors();
 
@@ -137,8 +137,6 @@ class Pulang_set extends CI_Controller
     $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
-    $data['setting_website']        = $this->Setting_model->get(array('id' => 91));
     //$tanggal = date_create($f['d']);
     //$dformat = date_format($tanggal,'dmYHis');
     //$this->barcode2('TAHFIDZ'.$siswa['student_nis'], '');
@@ -154,7 +152,7 @@ class Pulang_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
     $this->upload->initialize($config);
 
@@ -350,8 +348,7 @@ class Pulang_set extends CI_Controller
     $this->load->model('student/Student_model');
     $this->load->model('setting/Setting_model');
 
-    $pulang   = $this->db->query("SELECT student_nis, student_full_name, class_name, pulang_id, pulang_date, pulang_days, pulang_note FROM pulang JOIN student ON student.student_id = pulang.pulang_student_id JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE pulang_id = '$id'")->row_array();
-    $data['pulang'] =  $pulang;
+    $data['pulang']   = $this->db->query("SELECT student_nis, student_full_name, class_name, pulang_id, pulang_date, pulang_days, pulang_note FROM pulang JOIN student ON student.student_id = pulang.pulang_student_id JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE pulang_id = '$id'")->row_array();
 
     $data['majors']  = $this->Student_model->get_majors();
     $data['unit']    = $this->Student_model->get_unit(array('status' => 1));
@@ -363,10 +360,8 @@ class Pulang_set extends CI_Controller
     $data['setting_school']         = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address']        = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone']          = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
-    $data['setting_website']        = $this->Setting_model->get(array('id' => 91));
 
     $html = $this->load->view('pulang/pulang_pdf', $data, TRUE);
-    $data = pdf_create($html, 'Izin_Pulang_' . $pulang['student_full_name'] . '_' . date('Y-m-d'), TRUE, 'A4', TRUE);
+    $data = pdf_create($html, 'Pulang_Keluar_' . $siswa['student_full_name'] . '_' . date('Y-m-d'), TRUE, 'A4', TRUE);
   }
 }

@@ -5,10 +5,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$db_host='localhost';
-$db_user='adminsek_userdemo';
-$db_pass='PzKyeml8k3)^';
-$db_name='adminsek_demo';
+$db_host=getenv('DB_HOST') ?: 'localhost';
+$db_user=getenv('DB_USERNAME') ?: '';
+$db_pass=getenv('DB_PASSWORD') ?: '';
+$db_name=getenv('DB_DATABASE') ?: '';
 $koneksi = mysqli_connect($db_host, $db_user, $db_pass, $db_name)  or die ('Unable to execute query. '. mysqli_error($koneksi));
 
 // Check connection

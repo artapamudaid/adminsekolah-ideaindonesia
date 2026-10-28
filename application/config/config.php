@@ -23,41 +23,25 @@ defined('BASEPATH') or exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$is_https = false;
+$app_base_url = getenv('APP_BASE_URL') ?: getenv('BASE_URL');
 
-if (
-    isset($_SERVER['HTTPS']) &&
-    ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == '1')
-) {
-    $is_https = true;
-}
-
-if (
-    isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
-    $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https'
-) {
-    $is_https = true;
-}
-
-$config['base_url'] = ($is_https ? 'https' : 'http')
-    . '://' . $_SERVER['HTTP_HOST']
-    . str_replace(
-        basename($_SERVER['SCRIPT_NAME']),
-        '',
-        $_SERVER['SCRIPT_NAME']
-    );
-
-if (ENVIRONMENT === 'development') {
-    // ninetale.my.id
-    $config['turnstile'] = FALSE;
-    $config['turnstile_site_key']   = '0x4AAAAAACwDnlzvjsnFhhGy';
-    $config['turnstile_secret_key'] = '0x4AAAAAACwDnrJD61eNs7Gj1wuWvzWn3b4';
+if (!empty($app_base_url)) {
+	$config['base_url'] = rtrim($app_base_url, '/') . '/';
 } else {
-    // adminsekolah.net
-    $config['turnstile'] = TRUE;
-    $config['turnstile_site_key']   = '0x4AAAAAACrlalzyG7pflMkD';
-    $config['turnstile_secret_key'] = '0x4AAAAAACrlam4eSTElsIJOM1R5fBnNWfg';
+	$config['base_url'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https" : "http");
+	$config['base_url'] .= "://" . $_SERVER['HTTP_HOST'];
+	$config['base_url'] .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 }
+
+if (!empty(getenv('ANAKHEBAT_URL'))) {
+    $config['anakhebat_url'] = getenv('ANAKHEBAT_URL');
+} elseif (ENVIRONMENT !== 'development') {
+    $config['anakhebat_url'] = 'https://gerakankebiasaan.adminsekolah.net';
+} else {
+    $config['anakhebat_url'] = 'http://anakhebat.test';
+}
+
+$config['kantin_url'] = getenv('KANTIN_URL') ?: "https://kantin.epesantren.co.id";
 
 /*
 |--------------------------------------------------------------------------
@@ -134,7 +118,7 @@ $config['charset'] = 'UTF-8';
 | setting this variable to TRUE (boolean).  See the user guide for details.
 |
 */
-$config['enable_hooks'] = TRUE;
+$config['enable_hooks'] = FALSE;
 
 /*
 |--------------------------------------------------------------------------
@@ -257,7 +241,7 @@ $config['allow_get_array'] = TRUE;
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 0;
+$config['log_threshold'] = 4;
 
 /*
 |--------------------------------------------------------------------------
@@ -327,8 +311,7 @@ $config['error_views_path'] = '';
 | application/cache/ directory.  Use a full server path with trailing slash.
 |
 */
-$config['cache_path'] = APPPATH . 'cache/';
-
+$config['cache_path'] = '';
 
 /*
 |--------------------------------------------------------------------------
@@ -412,12 +395,10 @@ $config['encryption_key'] = 'asnet';
 | except for 'cookie_prefix' and 'cookie_httponly', which are ignored here.
 |
 */
-// $config['sess_driver'] = 'files';
-$config['sess_driver'] = 'database';
+$config['sess_driver'] = 'files';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_expiration'] = 7200;
-// $config['sess_save_path'] = BASEPATH . 'sessions';
-$config['sess_save_path'] = 'ci_sessions';
+$config['sess_save_path'] = BASEPATH . 'sessions';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
 $config['sess_regenerate_destroy'] = FALSE;

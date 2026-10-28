@@ -54,50 +54,18 @@ class Holiday_set extends CI_Controller
 	{
 		if ($_POST == TRUE) {
 			$input = $_POST['date'];
+			echo $input;
 			$date = explode(',', $input);
 			$cpt = count($date);
-
-			$added = 0;
-			$skipped = 0;
 			for ($i = 0; $i < $cpt; $i++) {
-				if (empty($date[$i])) {
-					$skipped++;
-					continue;
-				}
-
-				$colWhere = ['date' => $date[$i]];
-				if ($this->General_model->checkDataExists('holiday', $colWhere)) {
-					$skipped++;
-					continue;
-				}
-
 				$params['year'] = pretty_date($date[$i], 'Y', false);
 				$params['date'] = $date[$i];
 				$params['info'] = 'Hari Libur';
 
-				$insert = $this->Holiday_model->add($params);
-				if (!$insert) {
-					$skipped++;
-					continue;
-				}
-
-				$added++;
+				$this->Holiday_model->add($params);
 			}
-
-			if ($added > 1) {
-				$msg = "$added data berhasil ditambahkan";
-			} elseif ($added == 1) {
-				$msg = "1 data berhasil ditambahkan";
-			} else {
-				$msg = "Tidak ada yang ditambahkan";
-			}
-
-			if ($skipped > 0) {
-				$msg .= "<br>($skipped data dilewati)";
-			}
-
-			$this->session->set_flashdata('success', $msg);
 		}
+		$this->session->set_flashdata('success', ' Tambah Hari Libur Berhasil');
 		redirect('manage/holiday');
 	}
 

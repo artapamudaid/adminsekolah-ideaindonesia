@@ -214,13 +214,13 @@ class Setting_model extends CI_Model
 
         if (isset($param['setting_package'])) {
             $this->db->set('setting_value', $param['setting_package']);
-            $this->db->where('setting_name', 'setting_package');
+            $this->db->where('setting_id', 100);
             $this->db->update('setting');
         }
 
         if (isset($param['setting_date'])) {
             $this->db->set('setting_value', $param['setting_date']);
-            $this->db->where('setting_name', 'setting_date');
+            $this->db->where('setting_id', 101);
             $this->db->update('setting');
         }
 
@@ -233,6 +233,30 @@ class Setting_model extends CI_Model
         if (isset($param['limit_tabungan'])) {
             $this->db->set('setting_value', $param['limit_tabungan']);
             $this->db->where('setting_id', 209);
+            $this->db->update('setting');
+        }
+
+        if (isset($param['scheduler_status'])) {
+            $this->db->set('setting_value', $param['scheduler_status']);
+            $this->db->where('setting_id', 400);
+            $this->db->update('setting');
+        }
+
+        if (isset($param['scheduler_date'])) {
+            $this->db->set('setting_value', $param['scheduler_date']);
+            $this->db->where('setting_id', 401);
+            $this->db->update('setting');
+        }
+
+        if (isset($param['scheduler_time'])) {
+            $this->db->set('setting_value', $param['scheduler_time']);
+            $this->db->where('setting_id', 402);
+            $this->db->update('setting');
+        }
+
+        if (isset($param['scheduler_domain'])) {
+            $this->db->set('setting_value', $param['scheduler_domain']);
+            $this->db->where('setting_id', 403);
             $this->db->update('setting');
         }
     }

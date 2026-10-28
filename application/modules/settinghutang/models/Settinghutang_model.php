@@ -1,4 +1,4 @@
-<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (! defined('BASEPATH')) exit('No direct script access allowed');
 
 
 class Settinghutang_model extends CI_Model
@@ -14,7 +14,7 @@ class Settinghutang_model extends CI_Model
 
         $query = $this->db->query("SELECT MAX(RIGHT(hutang_noref,2)) AS no_max FROM hutang WHERE DATE(hutang_input_date)=CURDATE() AND hutang_noref LIKE '$like%'")->row();
 
-        if (count((array)$query) > 0) {
+        if ($query > 0) {
             $tmp = ((int)$query->no_max) + 1;
             $noref = sprintf("%02s", $tmp);
         } else {
@@ -113,14 +113,13 @@ class Settinghutang_model extends CI_Model
 
         $this->db->select('settinghutang.settinghutang_id, settinghutang_input_date, settinghutang_last_update');
         $this->db->select('majors_id, majors_short_name');
-        $this->db->select('settinghutang_poshutang_id, poshutang_name, poshutang_description, poshutang_account_id');
+        $this->db->select('settinghutang_poshutang_id, poshutang_name, poshutang_description');
         $this->db->select('settinghutang_period_id, period.period_start, period.period_end, period.period_status');
 
         $this->db->join('period', 'period.period_id = settinghutang.settinghutang_period_id', 'left');
         $this->db->join('poshutang', 'poshutang.poshutang_id = settinghutang.settinghutang_poshutang_id', 'left');
         $this->db->join('account', 'account.account_id = poshutang.poshutang_account_id', 'left');
         $this->db->join('majors', 'majors.majors_id = account.account_majors_id', 'left');
-
         $res = $this->db->get('settinghutang');
 
         if (isset($params['id'])) {

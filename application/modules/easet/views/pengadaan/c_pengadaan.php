@@ -34,20 +34,24 @@
             <div class="card-body">
               <?php
               $no = 1;
-              $arr = array();
-
+              $ranking = [];
               foreach ($nilai as $row) {
+
                 $spek = ($row['nilai_spek'] / $maxspek['maks_spek']);
                 $kual = ($row['nilai_kualitas'] / $maxkual['maks_kualitas']);
-                $hrg = ($row['harga'] / $minharga['min_harga']);
-                $nilai = round(($spek * 0.3) + ($kual * 0.3) + ($hrg * 0.4), 3);
+                $hrg  = ($minharga['min_harga'] / $row['harga']); // cost benefit dibalik!
 
-                $arr[] = '<b>' . $row['nama_aset'] . '</b>';
+                $nilai_saw = round(($spek * 0.3) + ($kual * 0.3) + ($hrg * 0.4), 3);
+
+                $ranking[$row['nama_aset']] = $nilai_saw;
               }
 
-              $output = max($arr);
+              arsort($ranking);
 
-              echo "<p>Berdasarkan hasil perhitungan, maka pemilihan aset terbaik untuk pengadaan  adalah " . $output;
+              $nama_terbaik  = key($ranking);
+              $nilai_terbaik = current($ranking);
+
+              echo "<p>Berdasarkan hasil perhitungan, maka pemilihan aset terbaik untuk pengadaan  adalah <b>" . $nama_terbaik . "</b>";
               ?>
             </div>
             <!-- /.card-body -->
@@ -56,7 +60,7 @@
         <div class="col-md-6">
           <div class="card card-primary box box-primary">
             <div class="card-header">
-              <h3 class="card-title">Rekomendasi Jumlah Pengadaan</h3>
+              <h3 class="card-title">Informasi Kerusakan Aset</h3>
             </div>
             <!-- /.card-header -->
             <div class="card-body">

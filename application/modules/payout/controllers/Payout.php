@@ -38,12 +38,6 @@ class Payout extends CI_Controller
       $siswa = $this->Student_model->get_student(array('student_nis' => base64_decode($f['r'])));
     }
 
-    if (empty($siswa)) {
-      $this->session->set_flashdata('error', 'Data Siswa Tidak Ditemukan');
-      redirect('manage/payout');
-      exit;
-    }
-
     if (isset($f['f']) && !empty($f['f']) && $f['f'] != '') {
       $kas['noref']      = base64_decode($f['f']);
       $param['noref']    = base64_decode($f['f']);
@@ -112,9 +106,6 @@ class Payout extends CI_Controller
     $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
-    $data['setting_website']        = $this->Setting_model->get(array('id' => 91));
-
     $tanggal = date_create(base64_decode($f['d']));
     $dformat = date_format($tanggal, 'dmYHis');
 
@@ -249,7 +240,7 @@ class Payout extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
     $this->upload->initialize($config);
 

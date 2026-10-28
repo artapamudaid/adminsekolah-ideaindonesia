@@ -3,17 +3,14 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-class Rekap_presensi_model extends CI_Model
-{
+class Rekap_presensi_model extends CI_Model {
 
-    function __construct()
-    {
+    function __construct() {
         parent::__construct();
     }
 
     // Get From Databases
-    function get($params = array())
-    {
+    function get($params = array()) {
 
         if (isset($params['id'])) {
             $this->db->where('data_absensi.id', $params['id']);
@@ -27,18 +24,22 @@ class Rekap_presensi_model extends CI_Model
             $this->db->where('data_absensi.id_pegawai', $params['employee_id']);
         }
 
-        if (isset($params['rekap_presensi_search'])) {
+        if(isset($params['rekap_presensi_search']))
+        {
             $this->db->where('employee.employee_name', $params['rekap_presensi_search']);
         }
 
-        if (isset($params['tgl_awal']) || isset($params['tgl_akhir'])) {
+        if(isset($params['tgl_awal']) || isset($params['tgl_akhir']))
+        {
             $this->db->where('data_absensi.tanggal >=', $params['tgl_awal']);
             $this->db->where('data_absensi.tanggal <=', $params['tgl_akhir']);
         }
 
-        if (isset($params['group'])) {
+        if(isset($params['group']))
+        {
 
-            $this->db->group_by($params['group']);
+            $this->db->group_by($params['group']); 
+
         }
 
 
@@ -66,10 +67,10 @@ class Rekap_presensi_model extends CI_Model
         } else {
             return $res->result_array();
         }
+
     }
 
-    function get_rekap($params = array())
-    {
+    function get_rekap($params = array()) {
 
         if (isset($params['id'])) {
             $this->db->where('data_absensi.id', $params['id']);
@@ -83,18 +84,22 @@ class Rekap_presensi_model extends CI_Model
             $this->db->where('data_absensi.id_pegawai', $params['employee_id']);
         }
 
-        if (isset($params['rekap_presensi_search'])) {
+        if(isset($params['rekap_presensi_search']))
+        {
             $this->db->where('employee.employee_name', $params['rekap_presensi_search']);
         }
 
-        if (isset($params['tgl_awal']) || isset($params['tgl_akhir'])) {
+        if(isset($params['tgl_awal']) || isset($params['tgl_akhir']))
+        {
             $this->db->where('data_absensi.tanggal >=', $params['tgl_awal']);
             $this->db->where('data_absensi.tanggal <=', $params['tgl_akhir']);
         }
 
-        if (isset($params['group'])) {
+        if(isset($params['group']))
+        {
 
-            $this->db->group_by($params['group']);
+            $this->db->group_by($params['group']); 
+
         }
 
 
@@ -122,60 +127,11 @@ class Rekap_presensi_model extends CI_Model
         } else {
             return $res->result_array();
         }
-    }
 
-    public function get_absensi_bulan($majors_id, $tgl_awal, $tgl_akhir)
-    {
-        $this->db->select('id_pegawai,tanggal,jenis_absen,time,statushadir');
-        $this->db->where('tanggal >=', $tgl_awal);
-        $this->db->where('tanggal <=', $tgl_akhir);
-
-        if ($majors_id) {
-            $this->db->join('employee', 'employee.employee_id=data_absensi.id_pegawai');
-            $this->db->where('employee.employee_majors_id', $majors_id);
-        }
-
-        $res = $this->db->get('data_absensi')->result_array();
-
-        $out = [];
-
-        foreach ($res as $r) {
-            $out[$r['id_pegawai']][$r['tanggal']][$r['jenis_absen']] = $r;
-        }
-
-        return $out;
-    }
-
-    public function get_rekap_counter($majors_id, $tgl_awal, $tgl_akhir)
-    {
-        $this->db->select("
-        id_pegawai,
-        SUM(jenis_absen='DATANG') hadir,
-        SUM(jenis_absen IN('SAKIT','IJIN','LAIN-LAIN')) ijin,
-        SUM(statushadir='Terlambat') terlambat
-    ");
-        $this->db->where('tanggal >=', $tgl_awal);
-        $this->db->where('tanggal <=', $tgl_akhir);
-        $this->db->group_by('id_pegawai');
-
-        if ($majors_id) {
-            $this->db->join('employee', 'employee.employee_id=data_absensi.id_pegawai');
-            $this->db->where('employee.employee_majors_id', $majors_id);
-        }
-
-        $q = $this->db->get('data_absensi')->result_array();
-
-        $out = [];
-        foreach ($q as $r) {
-            $out[$r['id_pegawai']] = $r;
-        }
-
-        return $out;
     }
 
     // Get From Databases
-    function rekap($params = array())
-    {
+    function rekap($params = array()) {
 
         if (isset($params['id'])) {
             $this->db->where('employee.employee_id', $params['id']);
@@ -203,10 +159,10 @@ class Rekap_presensi_model extends CI_Model
         } else {
             return $res->result_array();
         }
+
     }
 
-    public function rekap_kehadiran($params = array())
-    {
+    public function rekap_kehadiran($params = array()){
         if (isset($params['id'])) {
             $this->db->where('employee.employee_id', $params['id']);
         }
@@ -234,28 +190,23 @@ class Rekap_presensi_model extends CI_Model
             return $res->result_array();
         }
     }
-
+    
     // public function delete($id)
     // {
     //     $this->db->delete('data_absensi', ['id' => $id]);
     // }
-
-    function hapus($id = null)
-    {
-        $this->db->where('id', $id);
+    
+    function hapus($id=null){
+        $this->db->where('id',$id);
         $this->db->delete('data_absensi');
     }
-
+    
     function get_dashboard($params = array())
     {
 
         if (isset($params['tgl_awal']) || isset($params['tgl_akhir'])) {
             $this->db->where('data_absensi.tanggal >=', $params['tgl_awal']);
             $this->db->where('data_absensi.tanggal <=', $params['tgl_akhir']);
-        }
-
-        if (isset($params['majors_id'])) {
-            $this->db->where('employee.employee_majors_id =', $params['majors_id']);
         }
 
         $this->db->where('jenis_absen', 'DATANG');
@@ -275,4 +226,6 @@ class Rekap_presensi_model extends CI_Model
             return $res->result_array();
         }
     }
+
+
 }

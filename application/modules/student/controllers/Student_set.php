@@ -2,12 +2,8 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class Student_set extends CI_Controller
 {
@@ -74,9 +70,14 @@ class Student_set extends CI_Controller
 
   function get_nis()
   {
-    $id_majors   = $this->input->post('id_majors');
+    $id_majors = (int) $this->input->post('id_majors');
 
-    $NisValue = $this->db->query("SELECT MAX(student_nis) as nis FROM student WHERE majors_majors_id = '$id_majors' AND student_status = '1'")->row_array();
+    $NisValue = $this->db
+      ->select('MAX(student_nis) as nis')
+      ->where('majors_majors_id', $id_majors)
+      ->where('student_status', '1')
+      ->get('student')
+      ->row_array();
     $nis = $NisValue['nis'] + 1;
 
     echo '<div class="form-group">
@@ -87,8 +88,8 @@ class Student_set extends CI_Controller
 
   function class_searching()
   {
-    $id_majors = $this->input->post('id_majors');
-    $dataKelas  = $this->db->query("SELECT * FROM class WHERE majors_majors_id = '$id_majors' ORDER BY class_name ASC")->result_array();
+    $id_majors = (int) $this->input->post('id_majors');
+    $dataKelas = $this->db->where('majors_majors_id', $id_majors)->order_by('class_name', 'ASC')->get('class')->result_array();
 
     echo '<select style="width: 200px;" id="c" name="c" class="form-control" required>
     			<option value="">--- Pilih Kelas ---</option>
@@ -106,8 +107,8 @@ class Student_set extends CI_Controller
 
   function cari_kelas()
   {
-    $id_majors   = $this->input->post('id_majors');
-    $dataKelas  = $this->db->query("SELECT * FROM class WHERE majors_majors_id = '$id_majors' ORDER BY class_name ASC")->result_array();
+    $id_majors = (int) $this->input->post('id_majors');
+    $dataKelas = $this->db->where('majors_majors_id', $id_majors)->order_by('class_name', 'ASC')->get('class')->result_array();
 
     echo '<select class="form-control" name="pr" id="pr" onchange="this.form.submit()">
 				<option value="">-- Pilih Kelas  --</option>';
@@ -125,8 +126,8 @@ class Student_set extends CI_Controller
 
   function cari_ke_kelas()
   {
-    $id_majors   = $this->input->post('id_majors');
-    $dataKelas  = $this->db->query("SELECT * FROM class WHERE majors_majors_id = '$id_majors' ORDER BY class_name ASC")->result_array();
+    $id_majors = (int) $this->input->post('id_majors');
+    $dataKelas = $this->db->where('majors_majors_id', $id_majors)->order_by('class_name', 'ASC')->get('class')->result_array();
 
     echo '<select class="form-control" name="c_id" id="c_id" onchange="ambil()">
     			<option value="">-- Ke Kelas  --</option>';
@@ -154,8 +155,8 @@ class Student_set extends CI_Controller
 
   function get_kelas()
   {
-    $id_majors   = $this->input->post('id_majors');
-    $dataKelas  = $this->db->query("SELECT * FROM class WHERE majors_majors_id = '$id_majors' ORDER BY class_name ASC")->result_array();
+    $id_majors = (int) $this->input->post('id_majors');
+    $dataKelas = $this->db->where('majors_majors_id', $id_majors)->order_by('class_name', 'ASC')->get('class')->result_array();
 
     echo '<div class="form-group"> 
 			<label >Kelas *</label>
@@ -181,21 +182,7 @@ class Student_set extends CI_Controller
     $this->load->library('form_validation');
 
     if (!$this->input->post('student_id')) {
-      $this->form_validation->set_rules(
-        'student_nis',
-        'NIS',
-        'trim|required|xss_clean|is_unique[student.student_nis]',
-        [
-          'required'   => '%s wajib diisi.',
-          'is_unique'  => '%s sudah terdaftar, gunakan yang lain.',
-        ]
-      );
-    } else {
-      $this->form_validation->set_rules(
-        'student_nis',
-        'NIS',
-        'trim|required|xss_clean|callback_check_nis_unique'
-      );
+      $this->form_validation->set_rules('student_nis', 'NIS', 'trim|required|xss_clean|is_unique[student.student_nis]');
     }
     $this->form_validation->set_rules('class_class_id', 'Kelas', 'trim|required|xss_clean');
     $this->form_validation->set_rules('student_full_name', 'Nama lengkap', 'trim|required|xss_clean');
@@ -217,7 +204,7 @@ class Student_set extends CI_Controller
         }
       }
 
-      $student_parent_phone = sanitizeStrict($this->input->post('student_parent_phone'));
+      $student_parent_phone = $this->input->post('student_parent_phone');
 
       $student_parent_phone = str_replace(" ", "", $student_parent_phone);
       $student_parent_phone = str_replace("(", "", $student_parent_phone);
@@ -238,46 +225,22 @@ class Student_set extends CI_Controller
         }
       }
 
-      $studentNis = sanitizeStrict($this->input->post('student_nis'));
-      $studentNisn = sanitizeStrict($this->input->post('student_nisn'));
-      $studentFullName = sanitizeStrict($this->input->post('student_full_name'));
-      $studentAddress = sanitizeStrict($this->input->post('student_address'));
-      $studentClassId = sanitizeStrict($this->input->post('class_class_id'));
-      $studentMajorsId = sanitizeStrict($this->input->post('majors_majors_id'));
-
-      $redirectUrl = 'student/student_set/add';
-      $colWhere = array(
-        'student_nis' => $studentNis,
-        'class_class_id' => $studentClassId,
-        'majors_majors_id' => $studentMajorsId
-      );
-      if ($id != NULL) {
-        $colWhere['student_id !='] = $id;
-        $redirectUrl = 'student/student_set/edit/' . $id;
-      }
-
-      if ($this->General_model->checkDataExists("student", $colWhere)) {
-        $this->session->set_flashdata('error', 'Data sudah ada');
-        redirect($redirectUrl);
-        exit;
-      }
-
-      $params['student_nis'] = $studentNis;
-      $params['student_nisn'] = $studentNisn;
-      $params['student_gender'] = sanitizeStrict($this->input->post('student_gender'));
-      $params['student_phone'] = sanitizeStrict($this->input->post('student_phone'));
-      $params['student_hobby'] = sanitizeStrict($this->input->post('student_hobby'));
-      $params['class_class_id'] = sanitizeStrict($this->input->post('class_class_id'));
-      $params['majors_majors_id'] = sanitizeStrict($this->input->post('majors_majors_id'));
+      $params['student_nis'] = $this->input->post('student_nis');
+      $params['student_nisn'] = $this->input->post('student_nisn');
+      $params['student_gender'] = $this->input->post('student_gender');
+      $params['student_phone'] = $this->input->post('student_phone');
+      $params['student_hobby'] = $this->input->post('student_hobby');
+      $params['class_class_id'] = $this->input->post('class_class_id');
+      $params['majors_majors_id'] = $this->input->post('majors_majors_id');
       $params['student_last_update'] = date('Y-m-d H:i:s');
-      $params['student_full_name'] = $studentFullName;
-      $params['student_born_place'] = sanitizeStrict($this->input->post('student_born_place'));
-      $params['student_born_date'] = sanitizeStrict($this->input->post('student_born_date'));
-      $params['student_address'] = $studentAddress;
-      $params['student_name_of_mother'] = sanitizeStrict($this->input->post('student_name_of_mother'));
-      $params['student_name_of_father'] = sanitizeStrict($this->input->post('student_name_of_father'));
+      $params['student_full_name'] = $this->input->post('student_full_name');
+      $params['student_born_place'] = $this->input->post('student_born_place');
+      $params['student_born_date'] = $this->input->post('student_born_date');
+      $params['student_address'] = $this->input->post('student_address');
+      $params['student_name_of_mother'] = $this->input->post('student_name_of_mother');
+      $params['student_name_of_father'] = $this->input->post('student_name_of_father');
       $params['student_parent_phone'] = $hp;
-      $params['student_status'] = sanitizeStrict($this->input->post('student_status'));
+      $params['student_status'] = $this->input->post('student_status');
       $status = $this->Student_model->add($params);
 
       if (!empty($_FILES['student_img']['name'])) {
@@ -302,8 +265,8 @@ class Student_set extends CI_Controller
       $this->session->set_flashdata('success', $data['operation'] . ' Siswa Berhasil');
       redirect('manage/student');
     } else {
-      if ($this->input->post('student_id')) {
-        redirect('manage/student/edit/' . $this->input->post('student_id'));
+	      if ($this->input->post('student_id')) {
+	        redirect('manage/student/edit/' . (int) $this->input->post('student_id'));
       }
 
       // Edit mode
@@ -314,8 +277,8 @@ class Student_set extends CI_Controller
         } else {
           $data['student'] = $object;
         }
-        $id_unit = $object['majors_majors_id'];
-        $data['class'] = $this->db->query("SELECT * FROM class WHERE class.majors_majors_id = '$id_unit'")->result_array();
+	        $id_unit = (int) $object['majors_majors_id'];
+	        $data['class'] = $this->db->where('majors_majors_id', $id_unit)->get('class')->result_array();
       }
       $data['setting_level'] = $this->Setting_model->get(array('id' => 7));
       $data['majors'] = $this->Student_model->get_majors();
@@ -325,34 +288,14 @@ class Student_set extends CI_Controller
     }
   }
 
-  public function check_nis_unique($nis)
-  {
-    $id = $this->input->post('student_id'); // ID dari form, bisa kosong kalau tambah
-
-    $this->db->where('student_nis', $nis);
-    if ($id) {
-      $this->db->where('student_id !=', $id); // hindari baris milik diri sendiri
-    }
-
-    $query = $this->db->get('student');
-
-    if ($query->num_rows() > 0) {
-      $this->form_validation->set_message('check_nis_unique', 'NIS sudah digunakan oleh siswa lain.');
-      return FALSE;
-    }
-
-    return TRUE;
-  }
-
   // View data detail
   public function view($id = NULL)
   {
-    $data['student'] = $this->Student_model->get(array('id' => $id));
-
-    $dataPeriod = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
+	    $data['student'] = $this->Student_model->get(array('id' => (int) $id));
+	    $siswa = $data['student'];
+	
+	    $dataPeriod = $this->db->select('period_id')->where('period_status', '1')->get('period')->row_array();
     $periodID = $dataPeriod['period_id'];
-
-    $siswa = $data['student'];
 
     $data['konseling']      = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'PELANGGARAN', 'order_by' => 'konseling_id'));
     $data['prestasi_siswa'] = $this->Konseling_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'mode' => 'PRESTASI', 'order_by' => 'konseling_id'));
@@ -422,12 +365,17 @@ class Student_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
 
     $config['allowed_types'] = 'xls|xlsx|csv';
     $config['max_size'] = '10240';
+    $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
     $config['file_name'] = $fileName;
+    $config["file_ext_tolower"] = TRUE;
+    $config["remove_spaces"] = TRUE;
+    $config["detect_mime"] = TRUE;
+    $config["mod_mime_fix"] = TRUE;
     $this->upload->initialize($config);
 
     if (!$this->upload->do_upload($name)) {
@@ -449,12 +397,17 @@ class Student_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
 
     $config['allowed_types'] = 'gif|jpg|jpeg|png';
     $config['max_size'] = '1024';
+    $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
     $config['file_name'] = $fileName;
+    $config["file_ext_tolower"] = TRUE;
+    $config["remove_spaces"] = TRUE;
+    $config["detect_mime"] = TRUE;
+    $config["mod_mime_fix"] = TRUE;
     $this->upload->initialize($config);
 
     if (!$this->upload->do_upload($name)) {
@@ -522,368 +475,136 @@ class Student_set extends CI_Controller
     $this->load->view('manage/layout', $data);
   }
 
-  public function do_import_old()
+  public function old_do_import()
   {
-    $pass_default = '123456';
-
-    if (isset($_FILES["file"]["name"])) {
-      $file = $this->do_upload_xls($name = 'file', $fileName = base64_encode('imstud' . date('ymdHis')));
-
-      if ($file) {
-        $path = FCPATH . 'uploads/xls_tmp/';
-        $pathFile = $path . $file;
-
-        ini_set('memory_limit', '1024M'); // Alokasikan memory sementara untuk baca file excel
-
-        $fileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($pathFile);
-        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($fileType);
-        $reader->setReadDataOnly(true); // Baca data saja tanpa style untuk menghemat memory
-        $spreadsheet = $reader->load($pathFile);
-        $worksheet = $spreadsheet->getActiveSheet();
-
-        //Ambil semua NIS dari DB sekali saja
-        $existingNis = $this->db->select('student_nis')->get('student')->result_array();
-        $existingNis = array_flip(array_column($existingNis, 'student_nis'));
-
-        $numrow = 1;
-        $imported = 0;
-        $duplicated = 0;
-
-        foreach ($worksheet->getRowIterator() as $rowObj) {
-          $cellIterator = $rowObj->getCellIterator();
-          $cellIterator->setIterateOnlyExistingCells(false);
-
-          $row = [];
-          foreach ($cellIterator as $cell) {
-            $row[$cell->getColumn()] = $cell->getValue();
-          }
-
-          $student_nis          = isset($row['A']) ? trim($row['A']) : ''; // required
-          $student_nisn         = isset($row['B']) ? trim($row['B']) : '';
-          $student_full_name    = isset($row['C']) ? trim($row['C']) : ''; // required
-          $class_class_id       = isset($row['D']) ? (int)trim($row['D']) : 0;
-          $majors_majors_id     = isset($row['E']) ? (int)trim($row['E']) : 0;
-          $student_parent_phone = isset($row['F']) ? trim($row['F']) : '';
-          $gender               = isset($row['G']) ? trim($row['G']) : '';
-          $tempat_lahir         = isset($row['H']) ? trim($row['H']) : '';
-          $tgl_lahir            = isset($row['I']) ? trim($row['I']) : '';
-
-          // Konversi nilai tgl lahir jika formatnya numerical serial excel
-          if (is_numeric($tgl_lahir) && !empty($tgl_lahir)) {
-            try {
-              $tgl_lahir = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tgl_lahir)->format('Y-m-d');
-            } catch (\Exception $e) {
-            }
-          }
-
-          $hobi                 = isset($row['J']) ? trim($row['J']) : '';
-          $student_phone        = isset($row['K']) ? trim($row['K']) : '';
-          $alamat               = isset($row['L']) ? trim($row['L']) : '';
-          $ayah                 = isset($row['M']) ? trim($row['M']) : '';
-          $ibu                  = isset($row['N']) ? trim($row['N']) : '';
-
-          if ($numrow > 2) {
-            // Validasi awal
-            if (
-              empty($student_nis) ||
-              empty($student_full_name) ||
-              $class_class_id === 0 ||
-              $majors_majors_id === 0
-            ) {
-              $numrow++;
-              continue;
-            }
-
-            // Cek duplikat via array_flip (lebih cepat daripada query per row)
-            if (isset($existingNis[$student_nis])) {
-              $duplicated++;
-              $numrow++;
-              continue;
-            }
-
-            $timestamp = date('Y-m-d H:i:s');
-
-            $data = [
-              'student_nis'        => trim($student_nis),
-              'student_full_name'  => $student_full_name,
-              'student_password'   => md5($pass_default), // bisa ganti password_hash
-              'class_class_id'     => $class_class_id,
-              'majors_majors_id'   => $majors_majors_id,
-              'student_input_date' => $timestamp,
-              'student_last_update' => $timestamp
-            ];
-
-            if (!empty($student_parent_phone)) {
-              $hp = $this->phone_to_wa($student_parent_phone);
-              $data['student_parent_phone'] = str_replace("'", "", $hp);
-            }
-            if (!empty($student_nisn)) {
-              $data['student_nisn'] = str_replace("'", "", $student_nisn);
-            }
-            if (!empty($gender)) {
-              $data['student_gender'] = $gender;
-            }
-            if (!empty($tempat_lahir)) {
-              $data['student_born_place'] = $tempat_lahir;
-            }
-            if (!empty($tgl_lahir)) {
-              $data['student_born_date'] = $tgl_lahir;
-            }
-            if (!empty($student_phone)) {
-              $data['student_phone'] = $this->phone_to_wa($student_phone);
-            }
-            if (!empty($hobi)) {
-              $data['student_hobby'] = $hobi;
-            }
-            if (!empty($alamat)) {
-              $data['student_address'] = $alamat;
-            }
-            if (!empty($ayah)) {
-              $data['student_name_of_father'] = $ayah;
-            }
-            if (!empty($ibu)) {
-              $data['student_name_of_mother'] = $ibu;
-            }
-
-            // Insert ke DB
-            $this->db->insert('student', $data);
-
-            // Tambahkan ke daftar existing supaya row selanjutnya tahu
-            $existingNis[$student_nis] = true;
-
-            $imported++;
-          }
-          $numrow++;
-        }
-
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
-
-        unlink($pathFile);
-
-        // Flash message akumulatif
-        $this->session->set_flashdata(
-          'success',
-          "$imported siswa berhasil diimport, $duplicated duplikat diabaikan."
-        );
-      }
-    }
-    redirect('manage/student');
+    redirect('manage/student/import_student');
   }
 
   public function do_import()
   {
-    // 1. Validasi keberadaan file
-    if (!isset($_FILES['file']['name']) || $_FILES['file']['name'] === '') {
-      $this->session->set_flashdata('failed', 'Tidak ada file yang diunggah.');
-      redirect('manage/student/import_student');
-      return;
-    }
-
-    // 1b. Validasi ekstensi
-    $fileExt = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
-    if (!in_array($fileExt, ['xls', 'xlsx'])) {
-      $this->session->set_flashdata('failed', 'Format file tidak valid. Hanya .xls dan .xlsx yang diperbolehkan.');
-      redirect('manage/student/import_student');
-      return;
-    }
-
-    $file = $this->do_upload_xls($name = 'file', $fileName = base64_encode('imstud' . date('ymdHis')));
-    if (!$file) {
-      $this->session->set_flashdata('failed', 'Gagal mengupload file.');
-      redirect('manage/student/import_student');
-      return;
-    }
-
-    $pathFile = FCPATH . 'uploads/xls_tmp/' . $file;
-    $reader = IOFactory::createReader('Xlsx');
-    $reader->setReadDataOnly(true);
-    $spreadsheet = $reader->load($pathFile);
-    $sheet    = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
-
-    // 2. Validasi struktur kolom (baris ke-1 sebagai header)
-    $expectedHeaders = ['A' => 'NIS SISWA', 'B' => 'NISN SISWA', 'C' => 'NAMA SISWA', 'D' => 'ID KELAS', 'E' => 'ID UNIT'];
-    $headerRow       = isset($sheet[1]) ? $sheet[1] : [];
-    foreach ($expectedHeaders as $col => $expected) {
-      $actual = isset($headerRow[$col]) ? trim($headerRow[$col]) : '';
-      if (strcasecmp($actual, $expected) !== 0) {
-        unlink($pathFile);
-        $this->session->set_flashdata('failed', "Template tidak sesuai. Kolom $col harus '$expected', ditemukan '$actual'. Gunakan template resmi.");
-        redirect('manage/student/import_student');
-        return;
-      }
-    }
-
-    // Kumpulkan semua NIS dari file excel untuk membatasi query (menghindari memory limit)
-    $uploaded_nis = [];
-    $nr = 1;
-    foreach ($sheet as $row) {
-      if ($nr <= 2) {
-        $nr++;
-        continue;
-      }
-      $nis = isset($row['A']) ? trim($row['A']) : '';
-      if ($nis !== '') {
-        $uploaded_nis[] = str_replace("'", '', $nis);
-      }
-      $nr++;
-    }
-    $uploaded_nis = array_unique($uploaded_nis);
-
-    // Pre-load data existing NIS berdasarkan yang ada di excel saja
-    $existingNis = [];
-    if (!empty($uploaded_nis)) {
-      $chunks = array_chunk($uploaded_nis, 1000);
-      foreach ($chunks as $chunk) {
-        $this->db->select('student_nis');
-        $this->db->from('student');
-        $this->db->where_in('student_nis', $chunk);
-        $res = $this->db->get()->result_array();
-        foreach ($res as $r) {
-          $existingNis[$r['student_nis']] = true;
-        }
-      }
-    }
-
-    $allMajors = [];
-    foreach ($this->db->select('majors_id, sekolah_id')->where('majors_status', 1)->get('majors')->result_array() as $m) {
-      $allMajors[(int) $m['majors_id']] = $m;
-    }
-
-    $allClasses = [];
-    foreach ($this->db->select('class_id')->get('class')->result_array() as $c) {
-      $allClasses[(int) $c['class_id']] = true;
-    }
     $pass_default = '123456';
-    $numrow       = 1;
-    $valid_data   = [];
-    $error_rows   = [];
 
-    foreach ($sheet as $row) {
-      if ($numrow <= 2) {
-        $numrow++;
-        continue;
-      } // skip header rows
+    if (isset($_FILES["file"]["name"])) {
 
-      $student_nis          = isset($row['A']) ? trim($row['A']) : '';
-      $student_nisn         = isset($row['B']) ? trim($row['B']) : '';
-      $student_full_name    = isset($row['C']) ? trim($row['C']) : '';
-      $kelas_id             = isset($row['D']) ? trim($row['D']) : '';
-      $unit_id              = isset($row['E']) ? trim($row['E']) : '';
-      $student_parent_phone = isset($row['F']) ? trim($row['F']) : '';
-      $gender               = isset($row['G']) ? trim($row['G']) : '';
-      $tempat_lahir         = isset($row['H']) ? trim($row['H']) : '';
-      $tgl_lahir            = isset($row['I']) ? trim($row['I']) : '';
-      $hobi                 = isset($row['J']) ? trim($row['J']) : '';
-      $student_phone        = isset($row['K']) ? trim($row['K']) : '';
-      $alamat               = isset($row['L']) ? trim($row['L']) : '';
-      $ayah                 = isset($row['M']) ? trim($row['M']) : '';
-      $ibu                  = isset($row['N']) ? trim($row['N']) : '';
+      $file = $this->do_upload_xls($name = 'file', $fileName = base64_encode('imstud' . date('ymdHis')));
 
-      // Skip baris benar-benar kosong
-      if ($student_nis === '' && $student_full_name === '' && $kelas_id === '' && $unit_id === '') {
-        $numrow++;
-        continue;
-      }
+      if ($file) {
 
-      $errors = [];
+        $path = FCPATH . 'uploads/xls_tmp/';
+        $pathFile = $path . $file;
 
-      // 3. Validasi field wajib
-      if ($student_nis === '')       $errors[] = 'NIS kosong';
-      if ($student_full_name === '') $errors[] = 'Nama Lengkap kosong';
-      if ($unit_id === '')           $errors[] = 'ID Unit kosong';
-      if ($kelas_id === '')          $errors[] = 'ID Kelas kosong';
+	        $extension = strtolower(pathinfo($pathFile, PATHINFO_EXTENSION));
+	        if ($extension === 'xls') {
+	          $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+	        } elseif ($extension === 'xlsx') {
+	          $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+	        } elseif ($extension === 'csv') {
+	          $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+	        } else {
+	          $this->session->set_flashdata('failed', 'File import siswa tidak valid');
+	          redirect('manage/student');
+	        }
+	        $spreadsheet = $reader->load($pathFile);
+        $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+        $numrow = 1;
+        foreach ($sheet as $row) {
 
-      // 4. Validasi relasi FK (lookup by ID)
-      $majors_id = 0;
-      $class_id  = 0;
-      $sekolah_id = '';
-      if ($unit_id !== '') {
-        $unitKey = (int) $unit_id;
-        if (isset($allMajors[$unitKey])) {
-          $majors_id = $unitKey;
-          $sekolah_id = $allMajors[$unitKey]['sekolah_id'];
-        } else {
-          $errors[] = "ID Unit '$unit_id' tidak ditemukan di database";
+          $student_nis            = $row['A']; //required
+          $student_nisn           = $row['B'];
+          $student_full_name      = $row['C']; //required
+          $class_class_id         = $row['D']; //required
+          $majors_majors_id       = $row['E']; //required
+          $student_parent_phone   = $row['F'];
+          $gender                 = $row['G'];
+          $tempat_lahir           = $row['H'];
+          $tgl_lahir              = $row['I'];
+          $hobi                   = $row['J'];
+          $student_phone          = $row['K'];
+          $alamat                 = $row['L'];
+          $ayah                   = $row['M'];
+          $ibu                    = $row['N'];
+
+          if ($numrow > 2) {
+            if (
+              empty($student_nis) ||
+              empty($student_full_name) ||
+              empty($class_class_id) ||
+              empty($majors_majors_id)
+            ) {
+              continue;
+            }
+	            $q = $this->db
+	              ->select('COUNT(student_nis) as nisNum')
+	              ->where('student_nis', $student_nis)
+	              ->get('student')
+	              ->row_array();
+
+            $nisNum = $q['nisNum'];
+
+            if (empty($student_nis) || $nisNum > 0) {
+              $this->session->set_flashdata('failed', 'Duplikasi No. Induk Siswa');
+            } else {
+
+              $timestamp = date('Y-m-d H:i:s');
+
+              $data = array(
+                'student_nis'             =>  $student_nis,
+                'student_full_name'       =>  $student_full_name,
+                'student_password'        =>  md5($pass_default),
+                'class_class_id'          =>  $class_class_id,
+                'majors_majors_id'        =>  $majors_majors_id,
+                'student_input_date'      => $timestamp,
+                'student_last_update'      => $timestamp
+              );
+
+              if (!empty($student_parent_phone)) {
+                $hp = $this->phone_to_wa($student_parent_phone);
+                $data['student_parent_phone'] = str_replace("'", "", $hp);
+              }
+
+              if (!empty($student_nisn)) {
+                $data['student_nisn'] = str_replace("'", "", $student_nisn);
+              }
+              if (!empty($gender)) {
+                $data['student_gender'] = $gender;
+              }
+              if (!empty($tempat_lahir)) {
+                $data['student_born_place'] = $tempat_lahir;
+              }
+              if (!empty($tgl_lahir)) {
+                $data['student_born_date'] = $tgl_lahir;
+              }
+              if (!empty($student_phone)) {
+                $data['student_phone'] = $this->phone_to_wa($student_phone);
+              }
+              if (!empty($hobi)) {
+                $data['student_hobby'] = $hobi;
+              }
+              if (!empty($alamat)) {
+                $data['student_address'] = $alamat;
+              }
+              if (!empty($ayah)) {
+                $data['student_name_of_father'] = $ayah;
+              }
+              if (!empty($ibu)) {
+                $data['student_name_of_mother'] = $ibu;
+              }
+
+              $this->db->insert('student', $data);
+
+
+              $this->session->set_flashdata('success', 'Import Data Santri Berhasil');
+            }
+          }
+          $numrow++;
         }
-      }
-      if ($kelas_id !== '') {
-        $kelasKey = (int) $kelas_id;
-        if (isset($allClasses[$kelasKey])) {
-          $class_id = $kelasKey;
-        } else {
-          $errors[] = "ID Kelas '$kelas_id' tidak ditemukan di database";
-        }
-      }
 
-      // 5. Validasi duplikat NIS ke database
-      if ($student_nis !== '' && isset($existingNis[$student_nis])) {
-        $errors[] = "NIS '$student_nis' sudah terdaftar di database";
-      }
-
-      if (!empty($errors)) {
-        $error_rows[] = ['baris' => $numrow, 'nis' => $student_nis, 'nama' => $student_full_name, 'keterangan' => implode('; ', $errors)];
-        $numrow++;
-        continue;
-      }
-
-      $timestamp = date('Y-m-d H:i:s');
-      $data = [
-        'student_nis'            => str_replace("'", '', $student_nis),
-        'student_full_name'      => $student_full_name,
-        'student_password'       => md5($pass_default),
-        'class_class_id'         => $class_id,
-        'majors_majors_id'       => $majors_id,
-        'student_input_date'     => $timestamp,
-        'student_last_update'    => $timestamp,
-        'student_nisn'           => $student_nisn !== '' ? str_replace("'", '', $student_nisn) : null,
-        'student_parent_phone'   => $student_parent_phone !== '' ? str_replace("'", '', $this->phone_to_wa($student_parent_phone)) : '',
-        'student_gender'         => $gender !== '' ? $gender : '',
-        'student_born_place'     => $tempat_lahir !== '' ? $tempat_lahir : '',
-        'student_born_date'      => $tgl_lahir !== '' ? $tgl_lahir : null,
-        'student_hobby'          => $hobi !== '' ? $hobi : '',
-        'student_phone'          => $student_phone !== '' ? str_replace("'", '', $this->phone_to_wa($student_phone)) : '',
-        'student_address'        => $alamat !== '' ? $alamat : '',
-        'student_name_of_father' => $ayah !== '' ? $ayah : '',
-        'student_name_of_mother' => $ibu !== '' ? $ibu : '',
-        'sekolah_id'             => $sekolah_id,
-      ];
-
-      $valid_data[] = $data;
-      // Tandai agar baris berikutnya tidak duplikat dalam file yang sama
-      $existingNis[$student_nis] = true;
-
-      $numrow++;
-    }
-
-    unlink($pathFile);
-
-    // 6. Insert batch & pelaporan
-    $imported = 0;
-    if (!empty($valid_data)) {
-      $this->db->insert_batch('student', $valid_data);
-      $imported = count($valid_data);
-    }
-
-    if ($imported > 0) {
-      $msg = "$imported siswa berhasil diimport.";
-      if (!empty($error_rows)) {
-        $msg .= ' Namun ada ' . count($error_rows) . ' baris gagal karena error.';
-      }
-      $this->session->set_flashdata('success', $msg);
-    } else {
-      if (!empty($error_rows)) {
-        $this->session->set_flashdata('failed', 'Tidak ada siswa yang diimport. Terdapat error pada file Excel.');
-      } else {
-        $this->session->set_flashdata('failed', 'Tidak ada data valid yang ditemukan untuk diimport.');
+	        if (is_file($pathFile) && strpos(realpath($pathFile), realpath($path)) === 0) {
+	          unlink($pathFile);
+	        }
       }
     }
-
-    if (!empty($error_rows)) {
-      $this->session->set_flashdata('import_error_rows', $error_rows);
-    }
-
-    redirect('manage/student/import_student');
+    redirect('manage/student');
   }
 
   public function import()
@@ -956,7 +677,6 @@ class Student_set extends CI_Controller
     $student_parent_phone = str_replace("(", "", $student_parent_phone);
     $student_parent_phone = str_replace(")", "", $student_parent_phone);
     $student_parent_phone = str_replace(".", "", $student_parent_phone);
-    $student_parent_phone = str_replace("-", "", $student_parent_phone);
 
     if (!preg_match('/[^+0-9]/', trim($student_parent_phone))) {
       if (substr(trim($student_parent_phone), 0, 1) == '+') {
@@ -989,20 +709,28 @@ class Student_set extends CI_Controller
   {
     $params = array();
 
-    $id_majors = $this->input->post('xls_majors');
-    $id_kelas  = $this->input->post('xls_class');
+	    $id_majors = (int) $this->input->post('xls_majors');
+	    $id_kelas  = $this->input->post('xls_class', TRUE);
 
     $params['majors_id'] = $id_majors;
 
-    if ($id_kelas != 'all') {
-      $params['class_id']  = $id_kelas;
-      $data['kelas']   = $this->db->query("SELECT class_name FROM class WHERE class_id = '$id_kelas'")->row_array();
-    } else {
-      $data['kelas']   = array('class_name' => 'Semua Kelas');
-    }
-
-    $data['student'] = $this->Student_model->get($params);
-    $data['majors']  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$id_majors'")->row_array();
+	    if ($id_kelas != 'all') {
+	      $params['class_id']  = (int) $id_kelas;
+	      $data['kelas'] = $this->db
+	        ->select('class_name')
+	        ->where('class_id', (int) $id_kelas)
+	        ->get('class')
+	        ->row_array();
+	    } else {
+	      $data['kelas']   = array('class_name' => 'Semua Kelas');
+	    }
+	
+	    $data['student'] = $this->Student_model->get($params);
+	    $data['majors'] = $this->db
+	      ->select('majors_short_name')
+	      ->where('majors_id', $id_majors)
+	      ->get('majors')
+	      ->row_array();
 
     $this->load->view('student/whatsapp_student', $data);
   }
@@ -1017,36 +745,37 @@ class Student_set extends CI_Controller
         $path = FCPATH . 'uploads/xls_tmp/';
         $pathFile = $path . $file;
 
-        ini_set('memory_limit', '1024M'); // Alokasikan memori sementara
-        $fileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($pathFile);
-        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($fileType);
-        $reader->setReadDataOnly(true); // Baca data tanpa style format
-        $spreadsheet = $reader->load($pathFile);
-        $worksheet = $spreadsheet->getActiveSheet();
-
+	        $extension = strtolower(pathinfo($pathFile, PATHINFO_EXTENSION));
+	        if ($extension === 'xls') {
+	          $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+	        } elseif ($extension === 'xlsx') {
+	          $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+	        } elseif ($extension === 'csv') {
+	          $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+	        } else {
+	          $this->session->set_flashdata('failed', 'File update nomor whatsapp tidak valid');
+	          redirect('manage/student');
+	        }
+	        $spreadsheet = $reader->load($pathFile);
+        $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
         $numrow = 1;
+        foreach ($sheet as $row) {
 
-        foreach ($worksheet->getRowIterator() as $rowObj) {
-          $cellIterator = $rowObj->getCellIterator();
-          $cellIterator->setIterateOnlyExistingCells(false);
-
-          $row = [];
-          foreach ($cellIterator as $cell) {
-            $row[$cell->getColumn()] = $cell->getValue();
-          }
-
-          $student_nis            = isset($row['A']) ? trim($row['A']) : '';
-          $student_address        = isset($row['E']) ? trim($row['E']) : '';
-          $student_name_of_father = isset($row['F']) ? trim($row['F']) : '';
-          $student_name_of_mother = isset($row['G']) ? trim($row['G']) : '';
-          $student_parent_phone   = isset($row['H']) ? trim($row['H']) : '';
+          $student_nis            = $row['A'];
+          $student_address        = $row['E'];
+          $student_name_of_father = $row['F'];
+          $student_name_of_mother = $row['G'];
+          $student_parent_phone   = $row['H'];
 
           if ($numrow > 2) {
 
             $student_nis = str_replace("'", "", $student_nis);
 
-            $q = $this->db->query("SELECT COUNT(student_nis) as nisNum FROM student
-          WHERE student_nis = '$student_nis'")->row_array();
+	            $q = $this->db
+	              ->select('COUNT(student_nis) as nisNum')
+	              ->where('student_nis', $student_nis)
+	              ->get('student')
+	              ->row_array();
 
             $nisNum = $q['nisNum'];
 
@@ -1074,10 +803,9 @@ class Student_set extends CI_Controller
           $numrow++;
         }
 
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
-
-        unlink($pathFile);
+	        if (is_file($pathFile) && strpos(realpath($pathFile), realpath($path)) === 0) {
+	          unlink($pathFile);
+	        }
 
         $this->session->set_flashdata('success', 'Update No. Whatsapp Ortu Siswa Berhasil');
       }
@@ -1118,217 +846,11 @@ class Student_set extends CI_Controller
 
   public function download()
   {
-    while (ob_get_level()) {
-      ob_end_clean();
-    }
+    $data = file_get_contents("./media/template_excel/Template_Data_Siswa.xlsx");
+    $name = 'Template_Data_Siswa.xlsx';
 
-    // Buat spreadsheet baru
-    $spreadsheet = new Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-    $sheet->setTitle('Template Siswa');
-
-    /*
-    |--------------------------------------------------------------------------
-    | HEADER KOLOM (sesuaikan dengan kebutuhan import Anda)
-    |--------------------------------------------------------------------------
-    */
-    $headers = [
-      'A1' => 'NIS SISWA',
-      'B1' => 'NISN SISWA',
-      'C1' => 'NAMA SISWA',
-      'D1' => 'ID KELAS',
-      'E1' => 'ID UNIT',
-      'F1' => 'NO. WA ORTU',
-      'G1' => 'JENIS KELAMIN',
-      'H1' => 'TEMPAT LAHIR',
-      'I1' => 'TANGGAL LAHIR',
-      'J1' => 'HOBI',
-      'K1' => 'NO. HP SISWA',
-      'L1' => 'ALAMAT',
-      'M1' => 'NAMA AYAH',
-      'N1' => 'NAMA IBU',
-    ];
-
-    foreach ($headers as $cell => $text) {
-      $sheet->setCellValue($cell, $text);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | STYLE HEADER
-    |--------------------------------------------------------------------------
-    */
-    $sheet->getStyle('A1:N1')->getFont()->setBold(true);
-    $sheet->getStyle('A1:N1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-    $sheet->getRowDimension(1)->setRowHeight(25);
-
-    /*
-    |--------------------------------------------------------------------------
-    | STYLE HEADER (ROW 1)
-    |--------------------------------------------------------------------------
-    */
-    $sheet->getStyle('A1:N1')->applyFromArray([
-      'font' => [
-        'bold'  => true,
-        'color' => ['rgb' => 'FFFFFF'],
-      ],
-      'fill' => [
-        'fillType'   => Fill::FILL_SOLID,
-        'startColor' => ['rgb' => '000000'],
-      ],
-      'alignment' => [
-        'horizontal' => Alignment::HORIZONTAL_CENTER,
-        'vertical'   => Alignment::VERTICAL_CENTER,
-      ],
-    ]);
-
-
-    // Auto width kolom
-    foreach (range('A', 'N') as $col) {
-      $sheet->getColumnDimension($col)->setAutoSize(true);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | KETERANGAN
-    |--------------------------------------------------------------------------
-    */
-    $sheet->setCellValue('A2', 'wajib diisi');
-    $sheet->setCellValue('B2', 'tidak wajib diisi');
-    $sheet->setCellValue('C2', 'wajib diisi');
-    $sheet->setCellValue('D2', 'wajib diisi');
-    $sheet->setCellValue('E2', 'wajib diisi');
-    $sheet->setCellValue('F2', 'tidak wajib diisi');
-    $sheet->setCellValue('G2', 'tidak wajib diisi');
-    $sheet->setCellValue('H2', 'tidak wajib diisi');
-    $sheet->setCellValue('I2', 'tidak wajib diisi');
-    $sheet->setCellValue('J2', 'tidak wajib diisi');
-    $sheet->setCellValue('K2', 'tidak wajib diisi');
-    $sheet->setCellValue('L2', 'tidak wajib diisi');
-    $sheet->setCellValue('M2', 'tidak wajib diisi');
-    $sheet->setCellValue('N2', 'tidak wajib diisi');
-
-    /*
-    |--------------------------------------------------------------------------
-    | STYLE KETERANGAN (ROW 2)
-    |--------------------------------------------------------------------------
-    */
-    for ($col = 'A'; $col <= 'N'; $col++) {
-      $value = strtolower(trim($sheet->getCell($col . '2')->getValue()));
-
-      // WAJIB DIISI → KUNING
-      if ($value === 'wajib diisi') {
-        $sheet->getStyle($col . '2')->applyFromArray([
-          'font' => [
-            'color' => ['rgb' => '000000'],
-          ],
-          'fill' => [
-            'fillType'   => Fill::FILL_SOLID,
-            'startColor' => ['rgb' => 'FFD966'], // kuning
-          ],
-          'alignment' => [
-            'horizontal' => Alignment::HORIZONTAL_CENTER,
-            'vertical'   => Alignment::VERTICAL_CENTER,
-          ],
-        ]);
-      }
-
-      // TIDAK WAJIB DIISI → HIJAU
-      if ($value === 'tidak wajib diisi') {
-        $sheet->getStyle($col . '2')->applyFromArray([
-          'font' => [
-            'color' => ['rgb' => 'FFFFFF'],
-          ],
-          'fill' => [
-            'fillType'   => Fill::FILL_SOLID,
-            'startColor' => ['rgb' => '00B050'], // hijau
-          ],
-          'alignment' => [
-            'horizontal' => Alignment::HORIZONTAL_CENTER,
-            'vertical'   => Alignment::VERTICAL_CENTER,
-          ],
-        ]);
-      }
-    }
-
-    // Freez header row F3
-    $sheet->freezePane('F3');
-
-    /*
-    |--------------------------------------------------------------------------
-    | CONTOH DATA (ROW 3)
-    |--------------------------------------------------------------------------
-    */
-    $randomNIS = date('Ymd') . rand(00, 99);
-    $randomNISN = date('Ymd') . rand(00, 99);
-    $randomBirthDate = date('Y-m-d', strtotime('-10 years')); // Contoh tanggal lahir 10 tahun yang lalu
-
-    $sheet->setCellValue('A3', $randomNIS);      // NIS SANTRI (TEXT)
-    $sheet->setCellValue('B3', $randomNISN);     // NISN SANTRI (TEXT)
-    $sheet->setCellValue('C3', 'DITA LENI RIZKIA');   // NAMA (TEXT)
-    $sheet->setCellValue('D3', 1);               // ID KELAS (INTEGER)
-    $sheet->setCellValue('E3', 1);               // ID UNIT (INTEGER)
-    $sheet->setCellValue('F3', "08123456789");   // NO WA Ortu
-    $sheet->setCellValue('G3', "P");             // JENIS KELAMIN
-    $sheet->setCellValue('H3', 'Bandung');       // TEMPAT LAHIR
-    $sheet->setCellValue('I3', $randomBirthDate); // TANGGAL LAHIR (yyyy-mm-dd)
-    $sheet->setCellValue('J3', 'Membaca');  // HOBI 
-    $sheet->setCellValue('K3', '085123456789');  // NO. HP SISWA
-    $sheet->setCellValue('L3', 'Jl. Jayabaya');  // ALAMAT
-    $sheet->setCellValue('M3', 'Budi Santoso');  // NAMA AYAH
-    $sheet->setCellValue('N3', 'Siti Aminah');   // NAMA IBU
-
-    // Tentukan batas baris (misal sampai 1000 baris)
-    $maxRow = 1000;
-
-    // Semua kolom default TEXT
-    $sheet->getStyle("A3:N{$maxRow}")
-      ->getNumberFormat()
-      ->setFormatCode(NumberFormat::FORMAT_TEXT);
-
-    // ID KELAS
-    $sheet->getStyle("D3:D{$maxRow}")
-      ->getNumberFormat()
-      ->setFormatCode(NumberFormat::FORMAT_NUMBER);
-
-    // ID UNIT
-    $sheet->getStyle("E3:E{$maxRow}")
-      ->getNumberFormat()
-      ->setFormatCode(NumberFormat::FORMAT_NUMBER);
-
-    // TANGGAL LAHIR → yyyy-mm-dd
-    $sheet->getStyle("I3:I{$maxRow}")
-      ->getNumberFormat()
-      ->setFormatCode('yyyy-mm-dd');
-
-    $columnsForVTopHCenter = ['A', 'B', 'D', 'E', 'G', 'I'];
-
-    foreach ($columnsForVTopHCenter as $column) {
-      $sheet->getStyle("{$column}3:{$column}{$maxRow}")
-        ->getAlignment()
-        ->setVertical(Alignment::VERTICAL_TOP)
-        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | OUTPUT FILE (DOWNLOAD)
-    |--------------------------------------------------------------------------
-    */
-    $filename = 'Template_Data_Siswa.xlsx';
-
-    // Header download
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    header('Cache-Control: max-age=0');
-    header('Cache-Control: max-age=1');
-    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // cache lama
-    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-    header('Pragma: public');
-
-    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-    $writer->save('php://output');
-    exit;
+    $this->load->helper('download');
+    force_download($name, $data);
   }
 
   public function pass($offset = NULL)
@@ -1338,11 +860,11 @@ class Student_set extends CI_Controller
     $params = array();
     // Nip
     if (isset($f['pr']) && !empty($f['pr']) && $f['pr'] != '') {
-      $params['class_id'] = $f['pr'];
-    }
-    if (isset($f['m']) && !empty($f['m']) && $f['m'] != '') {
-      $id = $f['m'];
-      $data['class']        = $this->db->query("SELECT * FROM class WHERE majors_majors_id = '$id' ORDER BY class_name ASC")->result_array();
+	      $params['class_id'] = (int) $f['pr'];
+	    }
+	    if (isset($f['m']) && !empty($f['m']) && $f['m'] != '') {
+	      $id = (int) $f['m'];
+	      $data['class'] = $this->db->where('majors_majors_id', $id)->order_by('class_name', 'ASC')->get('class')->result_array();
     }
 
     $paramsPage = $params;
@@ -1368,11 +890,11 @@ class Student_set extends CI_Controller
     $params = array();
     // Nip
     if (isset($f['pr']) && !empty($f['pr']) && $f['pr'] != '') {
-      $params['class_id'] = $f['pr'];
-    }
-    if (isset($f['m']) && !empty($f['m']) && $f['m'] != '') {
-      $id = $f['m'];
-      $data['class']        = $this->db->query("SELECT * FROM class WHERE majors_majors_id = '$id' ORDER BY class_name ASC")->result_array();
+	      $params['class_id'] = (int) $f['pr'];
+	    }
+	    if (isset($f['m']) && !empty($f['m']) && $f['m'] != '') {
+	      $id = (int) $f['m'];
+	      $data['class'] = $this->db->where('majors_majors_id', $id)->order_by('class_name', 'ASC')->get('class')->result_array();
     }
 
     $params['status'] = 1;
@@ -1394,28 +916,18 @@ class Student_set extends CI_Controller
 
   function multiple()
   {
-    $action         = $this->input->post('action');
-    $period         = $this->db->query("SELECT period_id AS id FROM period WHERE period_status = 1")->row_array();
-    $periodActive   = $period['id'];
+	    $action = $this->input->post('action', TRUE);
+	    $period = $this->db->select('period_id AS id')->where('period_status', 1)->get('period')->row_array();
+	    $periodActive = (int) $period['id'];
 
-    $print = array();
-    $idcard = array();
-    if ($action == "pass") {
-      $pass   = $this->input->post('msg');
-      $majors = sanitizeStrict($this->input->post('majors_id'));
-      $asalKelas = sanitizeStrict($this->input->post('from_class'));
-      if (!is_array($pass) || empty($pass)) {
-        $this->session->set_flashdata('failed', 'Kenaikan kelas gagal. Tidak ada siswa yang dipilih untuk kenaikan kelas.');
-        if ($majors != '' && $asalKelas != '') {
-          redirect('manage/student/pass?m=' . $majors . '&pr=' . $asalKelas);
-        } else {
-          redirect('manage/student/pass');
-        }
-      }
-
-      $msn    = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$majors'")->row_array();
-      $like   = $msn['majors_short_name'] . ' Kelas Alumni';
-      $cek    = $this->db->query("SELECT count(class_id) c_class FROM class WHERE class_name = '$like'")->row_array();
+	    $print = array();
+	    $idcard = array();
+	    if ($action == "pass") {
+	      $majors = (int) $this->input->post('majors_id');
+	      $pass = array_map('intval', (array) $this->input->post('msg'));
+	      $msn = $this->db->select('majors_short_name')->where('majors_id', $majors)->get('majors')->row_array();
+	      $like   = $msn['majors_short_name'] . ' Kelas Alumni';
+	      $cek = $this->db->select('COUNT(class_id) c_class')->where('class_name', $like)->get('class')->row_array();
 
       if ($cek['c_class'] == 0) {
         $params = array(
@@ -1424,93 +936,43 @@ class Student_set extends CI_Controller
         );
 
         $this->db->insert('class', $params);
-      }
-
-      for ($i = 0; $i < count($pass); $i++) {
-        $bebas = $this->db->query("SELECT SUM(bebas_bill - bebas_diskon - bebas_total_pay) as tagihan FROM bebas WHERE student_student_id = '$pass[$i]'")->row_array();
-        $bulan = $this->db->query("SELECT COUNT(bulan_status) as tagihan FROM bulan WHERE bulan_status = 0 AND student_student_id = '$pass[$i]'")->row_array();
-
-        if ($bebas['tagihan'] == 0 && $bulan['tagihan'] == 0) {
-          $this->Student_model->add(array('student_id' => $pass[$i], 'student_status' => 0, 'student_last_update' => date('Y-m-d H:i:s')));
-
-          $this->db->query("INSERT INTO alumni
-                                (alumni_nis, alumni_nisn, alumni_full_name, alumni_gender, alumni_born_place, alumni_born_date, alumni_img, alumni_phone, alumni_hobby, alumni_address, alumni_name_of_mother, alumni_name_of_father, alumni_parent_phone, alumni_unit, alumni_kelas, alumni_tahun_id) 
-                            SELECT 
-                                student_nis, student_nisn, student_full_name, student_gender, student_born_place, student_born_date, student_img, student_phone, student_hobby, student_address, student_name_of_mother, student_name_of_father, student_parent_phone, majors_majors_id, class_class_id, '$periodActive'
-                                FROM student
-                                WHERE student_id = '$pass[$i]'");
-          $this->session->set_flashdata('success', 'Proses Lulus berhasil');
-        } else {
-          $alumni = $this->db->query("SELECT class_id FROM class WHERE class_name = '$like'")->row_array();
-
-          $this->db->query("UPDATE student SET class_class_id = '" . $alumni['class_id'] . "' WHERE student_id = '" . $pass[$i] . "'");
+	      }
+	
+	      for ($i = 0; $i < count($pass); $i++) {
+	        $studentId = (int) $pass[$i];
+	        $bebas = $this->db->select('SUM(bebas_bill - bebas_diskon - bebas_total_pay) as tagihan', FALSE)->where('student_student_id', $studentId)->get('bebas')->row_array();
+	        $bulan = $this->db->select('COUNT(bulan_status) as tagihan')->where('bulan_status', 0)->where('student_student_id', $studentId)->get('bulan')->row_array();
+	
+	        if ($bebas['tagihan'] == 0 && $bulan['tagihan'] == 0) {
+	          $this->Student_model->add(array('student_id' => $studentId, 'student_status' => 0, 'student_last_update' => date('Y-m-d H:i:s')));
+	
+	          $this->db->query("INSERT INTO alumni
+	                                (alumni_nis, alumni_nisn, alumni_full_name, alumni_gender, alumni_born_place, alumni_born_date, alumni_img, alumni_phone, alumni_hobby, alumni_address, alumni_name_of_mother, alumni_name_of_father, alumni_parent_phone, alumni_unit, alumni_kelas, alumni_tahun_id) 
+	                            SELECT 
+	                                student_nis, student_nisn, student_full_name, student_gender, student_born_place, student_born_date, student_img, student_phone, student_hobby, student_address, student_name_of_mother, student_name_of_father, student_parent_phone, majors_majors_id, class_class_id, ?
+	                                FROM student
+	                                WHERE student_id = ?", array($periodActive, $studentId));
+	          $this->session->set_flashdata('success', 'Proses Lulus berhasil');
+	        } else {
+	          $alumni = $this->db->select('class_id')->where('class_name', $like)->get('class')->row_array();
+	
+	          $this->db->where('student_id', $studentId)->update('student', array('class_class_id' => (int) $alumni['class_id']));
 
           $this->session->set_flashdata('failed', 'Siswa yang masih memiliki tunggakan dipindahkan ke kelas ' . $like);
         }
       }
-
-      if ($majors != '' && $asalKelas != '') {
-        redirect('manage/student/pass?m=' . $majors . '&pr=' . $asalKelas);
-      } else {
-        redirect('manage/student/pass');
+      redirect('manage/student/pass');
+	    } elseif ($action == "notpass") {
+	      $notpass = array_map('intval', (array) $this->input->post('msg'));
+	      for ($i = 0; $i < count($notpass); $i++) {
+	        $this->Student_model->add(array('student_id' => $notpass[$i], 'student_status' => 1, 'student_last_update' => date('Y-m-d H:i:s')));
+        $this->session->set_flashdata('success', 'Proses Kembali berhasil');
       }
-    } elseif ($action == "notpass") {
-      $notpass = $this->input->post('msg');
-      $asalUnit = sanitizeStrict($this->input->post('majors_id'));
-      $asalKelas = sanitizeStrict($this->input->post('from_class'));
-      if (!is_array($notpass) || empty($notpass)) {
-        $this->session->set_flashdata('failed', 'Pembatalan kelulusan gagal. Tidak ada siswa yang dipilih.');
-        redirect('manage/student/pass');
-      }
-
-      for ($i = 0; $i < count($notpass); $i++) {
-        // $this->Student_model->add(array('student_id' => $notpass[$i], 'student_status' => 1, 'student_last_update' => date('Y-m-d H:i:s')));
-        // $this->session->set_flashdata('success', 'Proses Kembali berhasil');
-
-        $students = $this->Student_model->get_student(array('student_id' => $notpass[$i]));
-        if ($students) {
-          foreach ($students as $value) {
-            $nis = $value['student_nis'];
-            $nisn = $value['student_nisn'];
-
-            $this->db->where(['alumni_nis' => $nis, 'alumni_nisn' => $nisn]);
-            $this->db->delete('alumni');
-          }
-
-          $this->Student_model->add(array('student_id' => $notpass[$i], 'student_status' => 1, 'student_last_update' => date('Y-m-d H:i:s')));
-          $this->session->set_flashdata('success', 'Proses Kembali berhasil');
-        } else {
-          $this->session->set_flashdata('failed', 'Data alumni tidak ditemukan. Pembatalan kelulusan gagal.');
-        }
-      }
-
-      if ($asalUnit != '' && $asalKelas != '') {
-        redirect('manage/student/pass?m=' . $asalUnit . '&pr=' . $asalKelas);
-      } else {
-        redirect('manage/student/pass');
-      }
-    } elseif ($action == "upgrade") {
-      $asalUnit = $this->input->post('from_unit');
-      $asalKelas = $this->input->post('from_class');
-      $upgrade = $this->input->post('msg');
-      $majors   = $this->input->post('m_id');
-      $kelas   = $this->input->post('class_id');
-
-      if (!is_array($upgrade) || empty($upgrade)) {
-        $this->session->set_flashdata('failed', 'Kenaikan kelas gagal. Tidak ada siswa yang dipilih untuk kenaikan kelas.');
-        redirect('manage/student/upgrade?m=' . $asalUnit . '&pr=' . $asalKelas);
-      }
-
-      if ($asalUnit == $majors && $asalKelas == $kelas) {
-        $this->session->set_flashdata('failed', 'Kenaikan kelas gagal. Kelas tujuan tidak boleh sama dengan kelas asal.');
-        redirect('manage/student/upgrade?m=' . $asalUnit . '&pr=' . $asalKelas);
-      }
-
-      if ($kelas == null || $kelas == '') {
-        $this->session->set_flashdata('failed', 'Kenaikan kelas gagal. Kelas tujuan tidak boleh kosong.');
-        redirect('manage/student/upgrade?m=' . $asalUnit . '&pr=' . $asalKelas);
-      }
-
+      redirect('manage/student/pass');
+	    } elseif ($action == "upgrade") {
+	      $upgrade = array_map('intval', (array) $this->input->post('msg'));
+	      $majors = (int) $this->input->post('m_id');
+	      $kelas = (int) $this->input->post('class_id');
       //echo $kelas.'<br>';
       for ($i = 0; $i < count($upgrade); $i++) {
         //echo $upgrade[$i];
@@ -1518,9 +980,9 @@ class Student_set extends CI_Controller
         $this->session->set_flashdata('success', 'Proses Kenaikan Kelas berhasil');
       }
       redirect('manage/student/upgrade?m=' . $majors . '&pr=' . $kelas);
-    } elseif ($action == "printPdf") {
-      $this->load->helper(array('dompdf'));
-      $idcard = $this->input->post('msg');
+	    } elseif ($action == "printPdf") {
+	      $this->load->helper(array('dompdf'));
+	      $idcard = array_map('intval', (array) $this->input->post('msg'));
       for ($i = 0; $i < count($idcard); $i++) {
         $print[] = $idcard[$i];
       }
@@ -1589,7 +1051,7 @@ class Student_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
     $this->upload->initialize($config);
 
@@ -1650,8 +1112,8 @@ class Student_set extends CI_Controller
 
   public function get_mclass()
   {
-    $id_majors = $this->input->post('id_majors');
-    $dataKelas  = $this->db->query("SELECT * FROM class WHERE majors_majors_id = '$id_majors' ORDER BY class_name ASC")->result_array();
+    $id_majors = (int) $this->input->post('id_majors');
+    $dataKelas = $this->db->where('majors_majors_id', $id_majors)->order_by('class_name', 'ASC')->get('class')->result_array();
 
     echo '<select required="" name="modal_class" id="modal_class" class="form-control">';
     echo '<option value="">-Pilih Kelas-</option>';
@@ -1664,8 +1126,8 @@ class Student_set extends CI_Controller
   public function get_xls_class()
   {
 
-    $id_majors = $this->input->post('id_majors');
-    $dataKelas  = $this->db->query("SELECT * FROM class WHERE majors_majors_id = '$id_majors' ORDER BY class_name ASC")->result_array();
+    $id_majors = (int) $this->input->post('id_majors');
+    $dataKelas = $this->db->where('majors_majors_id', $id_majors)->order_by('class_name', 'ASC')->get('class')->result_array();
 
     echo '<select required="" name="xls_class" id="xls_class" class="form-control">';
     echo '<option value="">-Pilih Kelas-</option>
@@ -1678,32 +1140,21 @@ class Student_set extends CI_Controller
 
   public function print_students()
   {
-    $this->load->library('html2pdflib');
+    ob_start();
 
     $params = array();
 
-    $id_majors = $this->input->post('modal_majors');
-    $id_kelas  = $this->input->post('modal_class');
+    $id_majors = (int) $this->input->post('modal_majors');
+    $id_kelas = (int) $this->input->post('modal_class');
 
-    $this->db->select('majors_short_name, majors_name');
-    $this->db->where('majors_id', $id_majors);
-    $majors_data = $this->db->get('majors')->row_array();
-    $data['majors'] = $majors_data;
-    $majors = $majors_data;
-
-    if ($id_kelas != 'all') {
-      $params['class_id']  = $id_kelas;
-      $this->db->select('class_name');
-      $this->db->where('class_id', $id_kelas);
-      $kelas_data = $this->db->get('class')->row_array();
-      $data['kelas'] = $kelas_data;
-      $kelas = $kelas_data;
-    } else {
-      $data['kelas']   = array('class_name' => 'Semua Kelas');
-      $kelas           = array('class_name' => 'Semua Kelas');
-    }
+    $params['majors_id'] = $id_majors;
+    $params['class_id']  = $id_kelas;
 
     $data['student'] = $this->Student_model->get($params);
+    $data['majors'] = $this->db->select('majors_short_name')->where('majors_id', $id_majors)->get('majors')->row_array();
+    $data['kelas'] = $this->db->select('class_name')->where('class_id', $id_kelas)->get('class')->row_array();
+    $majors = $data['majors'];
+    $kelas = $data['kelas'];
 
     $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
     $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
@@ -1713,35 +1164,36 @@ class Student_set extends CI_Controller
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
-    $filename = 'Data Siswa ' . $majors['majors_name'] . ' Kelas ' . $kelas['class_name'];
+    $filename = 'Data_Siswa_' . $majors . '_Kelas_' . $kelas . '.pdf';
+    $this->load->view('student/print_students', $data);
 
-    $html = $this->load->view('student/print_students', $data, TRUE);
+    $html = ob_get_contents();
+    ob_end_clean();
 
-    $paper = 'A4';
-    $orientation = 'l';
-    $download = FALSE;
-
-    $this->html2pdflib->generate($html, $filename, $download, $paper, $orientation);
+    require_once('./assets/html2pdf/html2pdf.class.php');
+    $pdf = new HTML2PDF('l', 'A4', 'en');
+    $pdf->WriteHTML($html);
+    $pdf->Output($filename);
   }
 
   public function excel_students()
   {
     $params = array();
 
-    $id_majors = $this->input->post('xls_majors');
-    $id_kelas  = $this->input->post('xls_class');
+    $id_majors = (int) $this->input->post('xls_majors');
+    $id_kelas = $this->input->post('xls_class', TRUE);
 
     $params['majors_id'] = $id_majors;
 
     if ($id_kelas != 'all') {
-      $params['class_id']  = $id_kelas;
-      $data['kelas']   = $this->db->query("SELECT class_name FROM class WHERE class_id = '$id_kelas'")->row_array();
+      $params['class_id'] = (int) $id_kelas;
+      $data['kelas'] = $this->db->select('class_name')->where('class_id', (int) $id_kelas)->get('class')->row_array();
     } else {
       $data['kelas']   = array('class_name' => 'Semua Kelas');
     }
 
     $data['student'] = $this->Student_model->get($params);
-    $data['majors']  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$id_majors'")->row_array();
+    $data['majors'] = $this->db->select('majors_short_name')->where('majors_id', $id_majors)->get('majors')->row_array();
 
     $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
     $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
@@ -1752,52 +1204,5 @@ class Student_set extends CI_Controller
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
     $this->load->view('student/excel_students', $data);
-  }
-
-  function datatablesSiswa()
-  {
-    $draw = $_REQUEST['draw'];
-    $length = $_REQUEST['length'];
-    $start = $_REQUEST['start'];
-    $search = $_REQUEST['search']["value"];
-
-    // Menangani sorting
-    $order_column_index = $_REQUEST['order'][0]['column']; // Index kolom yang diklik
-    $order_dir = $_REQUEST['order'][0]['dir']; // Arah sorting (asc/desc)
-    $data['order_dir'] = $order_dir;
-
-    $columns = ['student_nis', 'student_full_name', 'madin_name', 'class_name', 'student_full_name'];
-
-    // Pastikan index yang dikirimkan oleh DataTables sesuai dengan daftar kolom yang kita punya
-    $order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'student_nis';
-    $data['order_column'] = $order_column;
-
-    $totalBaris = $this->Student_model->count_all($search, array('status' => '1'));
-    $output = array();
-    $output['draw']   = $draw;
-    $output['recordsTotal'] = $output['recordsFiltered'] = $totalBaris;
-    $output['data'] = array();
-
-    if ($search != "") {
-      $query = $this->Student_model->list_siswa($length, $start, $search, $data);
-    } else {
-      $query = $this->Student_model->list_siswa($length, $start, $search, $data);
-    }
-
-    $nomor_urut = $start + 1;
-    foreach ($query->result_array() as $dt) {
-      $output['data'][] = array(
-        // $nomor_urut,
-        $dt['student_nis'],
-        $dt['student_full_name'],
-        $dt['majors_short_name'],
-        $dt['class_name'],
-        '<button type="button" class="btn btn-primary btn-xs" onclick="ambil_data(' . $dt['student_nis'] . ')">Pilih</button>'
-
-      );
-      $nomor_urut++;
-    }
-
-    echo json_encode($output);
   }
 }

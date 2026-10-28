@@ -13,49 +13,98 @@ class Employees_detail_model extends CI_Model
 
     function get_education($x)
     {
-        $data = $this->db->query("SELECT d.* FROM employee_education d JOIN employee e ON d.education_employee_id = e.employee_id WHERE e.employee_id = '$x' ORDER BY education_start ASC")->result_array();
+        $data = $this->db
+            ->select('d.*')
+            ->from('employee_education d')
+            ->join('employee e', 'd.education_employee_id = e.employee_id')
+            ->where('e.employee_id', (int) $x)
+            ->order_by('education_start', 'ASC')
+            ->get()
+            ->result_array();
 
         return $data;
     }
 
     function get_dokumen($x)
     {
-        $data = $this->db->query("SELECT d.* FROM dokumen d JOIN employee e ON d.dokumen_employee_id = e.employee_id WHERE e.employee_id = '$x' ORDER BY dokumen_id ASC")->result_array();
+        $data = $this->db
+            ->select('d.*')
+            ->from('dokumen d')
+            ->join('employee e', 'd.dokumen_employee_id = e.employee_id')
+            ->where('e.employee_id', (int) $x)
+            ->order_by('dokumen_id', 'ASC')
+            ->get()
+            ->result_array();
 
         return $data;
     }
 
     function get_workshop($x)
     {
-        $data = $this->db->query("SELECT d.* FROM workshop_history d JOIN employee e ON d.workshop_employee_id = e.employee_id WHERE e.employee_id = '$x' ORDER BY workshop_start ASC")->result_array();
+        $data = $this->db
+            ->select('d.*')
+            ->from('workshop_history d')
+            ->join('employee e', 'd.workshop_employee_id = e.employee_id')
+            ->where('e.employee_id', (int) $x)
+            ->order_by('workshop_start', 'ASC')
+            ->get()
+            ->result_array();
 
         return $data;
     }
 
     function get_family($x)
     {
-        $data = $this->db->query("SELECT d.* FROM employee_fam d JOIN employee e ON d.fam_employee_id = e.employee_id WHERE e.employee_id = '$x' ORDER BY fam_desc ASC")->result_array();
+        $data = $this->db
+            ->select('d.*')
+            ->from('employee_fam d')
+            ->join('employee e', 'd.fam_employee_id = e.employee_id')
+            ->where('e.employee_id', (int) $x)
+            ->order_by('fam_desc', 'ASC')
+            ->get()
+            ->result_array();
 
         return $data;
     }
 
     function get_position($x)
     {
-        $data = $this->db->query("SELECT d.* FROM position_history d JOIN employee e ON d.poshistory_employee_id = e.employee_id WHERE e.employee_id = '$x' ORDER BY poshistory_start ASC")->result_array();
+        $data = $this->db
+            ->select('d.*')
+            ->from('position_history d')
+            ->join('employee e', 'd.poshistory_employee_id = e.employee_id')
+            ->where('e.employee_id', (int) $x)
+            ->order_by('poshistory_start', 'ASC')
+            ->get()
+            ->result_array();
 
         return $data;
     }
 
     function get_teaching($x)
     {
-        $data = $this->db->query("SELECT d.* FROM teaching_history d JOIN employee e ON d.teaching_employee_id = e.employee_id WHERE e.employee_id = '$x' ORDER BY teaching_start ASC")->result_array();
+        $data = $this->db
+            ->select('d.*')
+            ->from('teaching_history d')
+            ->join('employee e', 'd.teaching_employee_id = e.employee_id')
+            ->where('e.employee_id', (int) $x)
+            ->order_by('teaching_start', 'ASC')
+            ->get()
+            ->result_array();
 
         return $data;
     }
 
     function get_achievement($x)
     {
-        $data = $this->db->query("SELECT d.* FROM employee_achievement d JOIN employee e ON d.achievement_employee_id = e.employee_id WHERE e.employee_id = '$x' ORDER BY achievement_year ASC")->result_array();
+        $data = $this->db
+            ->select('d.*')
+            ->from('employee_achievement d')
+            ->join('employee e', 'd.achievement_employee_id = e.employee_id')
+            ->where('e.employee_id', (int) $x)
+            ->order_by('achievement_year', 'ASC')
+            ->get()
+            ->result_array();
 
         return $data;
     }

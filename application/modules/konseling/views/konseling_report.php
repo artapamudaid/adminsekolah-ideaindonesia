@@ -15,7 +15,7 @@
 			<div class="col-md-12">
 				<div class="box box-success">
 					<div class="box-header">
-						<?php echo form_open(current_url(), array('method' => 'get', 'id' => 'form-konseling')) ?>
+						<?php echo form_open(current_url(), array('method' => 'get')) ?>
 						<div class="row">
 							<div class="col-md-2">
 								<div class="form-group">
@@ -88,8 +88,7 @@
 
 							<div class="col-md-2">
 								<div style="margin-top:25px;">
-									<button type="button" class="btn btn-primary" id="btn-cari">Cari</button>
-									<button type="submit" class="btn btn-primary hidden">Cari</button>
+									<button type="submit" class="btn btn-primary">Cari</button>
 									<?php if ($q and !empty($konseling)) { ?>
 										<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/konseling/konseling_excel' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Excel</a>
 									<?php } ?>
@@ -205,26 +204,5 @@
 		$("#selectall2").change(function() {
 			$(".checkbox").prop('checked', $(this).prop("checked"));
 		});
-	});
-</script>
-
-<script>
-	$(function() {
-		$('#btn-cari').click(function() {
-			let tahun_ajaran = $('select[name="p"]').val();
-			let unit_sekolah = $('select[name="k"]').val();
-			let kelas = $('select[name="c"]').val();
-			let siswa = $('select[name="m"]').val();
-			if (tahun_ajaran == '' && unit_sekolah == '' && kelas == '' && siswa == '') {
-				toastNotifikasi('error', 'Pilih salah satu filter untuk melakukan pencarian data!', 'Gagal!');
-				return;
-			}
-
-			$('#btn-cari').addClass('disabled');
-			$('#btn-cari').html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
-
-			let form = $('#form-konseling');
-			form.submit();
-		})
 	});
 </script>

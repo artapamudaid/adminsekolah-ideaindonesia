@@ -1,0 +1,44 @@
+{
+	# Global options
+	frankenphp
+	order php_server before file_server
+}
+
+# The hostname/port to listen on
+{$SERVER_NAME::8001} {
+	# Web root path
+	root * /app/public
+
+	@cors_preflight {
+		method OPTIONS
+		header Origin *
+	}
+
+	@cors {
+		header Origin *
+	}
+
+	header @cors {
+		Access-Control-Allow-Origin "{http.request.header.Origin}"
+		Access-Control-Allow-Credentials "true"
+		Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN"
+		Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+		Access-Control-Max-Age "86400"
+		Vary "Origin"
+	}
+
+	respond @cors_preflight 204
+
+	# Enable compression
+	encode zstd br gzip
+
+	# Execute PHP files
+	php_server
+
+	# CodeIgniter routing rule:
+	# If the requested file or directory does not exist, send the request to index.php
+	try_files {path} {path}/ /index.php?{query}
+
+	# Serve static files directly
+	file_server
+}

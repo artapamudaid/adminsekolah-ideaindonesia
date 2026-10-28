@@ -41,12 +41,12 @@ class Izin_set extends CI_Controller
       $siswaID = $siswa['student_id'];
     }
 
-    $data['siswa'] = $this->Student_model->get(array('student_id' => @$siswa['student_id'], 'group' => TRUE));
+    $data['siswa'] = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
 
     $data['periodActive'] = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
     $data['period']       = $this->Period_model->get($params);
-    $data['izin']         = $this->Izin_model->get(array('period_id' => $periodID, 'student_id' => @$siswa['student_id'], 'order_by' => 'izin_id'));
-    $data['izinSum']      = $this->Izin_model->get_sum(array('period_id' => $periodID, 'student_id' => @$siswa['student_id']));
+    $data['izin']         = $this->Izin_model->get(array('period_id' => $periodID, 'student_id' => $siswa['student_id'], 'order_by' => 'izin_id'));
+    $data['izinSum']      = $this->Izin_model->get_sum(array('period_id' => $periodID, 'student_id' => $siswa['student_id']));
 
     $data['majors']     = $this->Student_model->get_majors();
 
@@ -73,7 +73,6 @@ class Izin_set extends CI_Controller
       $params['izin_student_id'] = $this->input->post('izin_student_id');
       $params['izin_period_id']  = $this->input->post('izin_period_id');
       $params['izin_user_id']    = $this->session->userdata('uid');
-      $params['izin_status']     = 'Disetujui';
 
       $this->Izin_model->add($params);
     }
@@ -143,9 +142,6 @@ class Izin_set extends CI_Controller
     $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
-    $data['setting_website']          = $this->Setting_model->get(array('id' => 91));
-
     //$tanggal = date_create($f['d']);
     //$dformat = date_format($tanggal,'dmYHis');
     //$this->barcode2('TAHFIDZ'.$siswa['student_nis'], '');
@@ -161,7 +157,7 @@ class Izin_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
     $this->upload->initialize($config);
 
@@ -357,8 +353,8 @@ class Izin_set extends CI_Controller
     $this->load->model('student/Student_model');
     $this->load->model('setting/Setting_model');
 
-    $izin  = $this->db->query("SELECT student_nis, student_full_name, class_name, majors_short_name, izin_id, izin_date, izin_time, izin_note FROM izin JOIN student ON student.student_id = izin.izin_student_id JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE izin_id = '$id'")->row_array();
-    $data['izin']   = $izin;
+    $data['izin']   = $this->db->query("SELECT student_nis, student_full_name, class_name, majors_short_name, izin_id, izin_date, izin_time, izin_note FROM izin JOIN student ON student.student_id = izin.izin_student_id JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE izin_id = '$id'")->row_array();
+    $siswa          = $this->db->query("SELECT student_nis, student_full_name, class_name, majors_short_name, izin_id, izin_date, izin_time FROM izin JOIN student ON student.student_id = izin.izin_student_id JOIN class ON class.class_id = student.class_class_id JOIN majors ON majors.majors_id = student.majors_majors_id WHERE izin_id = '$id'")->row_array();
 
     $data['majors']  = $this->Student_model->get_majors();
     $data['unit']    = $this->Student_model->get_unit(array('status' => 1));
@@ -370,10 +366,8 @@ class Izin_set extends CI_Controller
     $data['setting_school']         = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address']        = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone']          = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
-    $data['setting_website']          = $this->Setting_model->get(array('id' => 91));
 
     $html = $this->load->view('izin/izin_pdf', $data, TRUE);
-    $data = pdf_create_thermal($html, 'Izin_Keluar_' . $izin['student_full_name'] . '_' . date('Y-m-d'), TRUE, 'A4', TRUE);
+    $data = pdf_create_thermal($html, 'Izin_Keluar_' . $siswa['student_full_name'] . '_' . date('Y-m-d'), TRUE, 'A4', TRUE);
   }
 }

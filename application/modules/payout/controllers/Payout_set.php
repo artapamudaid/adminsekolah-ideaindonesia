@@ -86,17 +86,17 @@ class Payout_set extends CI_Controller
     $cashback['student_id']             = $siswa['student_id'];
     $logs['student_id']                 = $siswa['student_id'];
     $cashback['date']                   = date('Y-m-d');
-    $cashback['last_update']            = date('Y-m-d');
+    $cashback['bebas_pay_input_date']   = date('Y-m-d');
 
     $paramsPage = $params;
     $data['periodActive']   = $this->db->query("SELECT period_id FROM period WHERE period_status = '1'")->row_array();
     $data['period']         = $this->Period_model->get($params);
     $data['siswa']          = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
-    // $data['bulan']          = $this->Bulan_model->get(array('student_id' => $siswa['student_id']));
+    $data['bulan']          = $this->Bulan_model->get(array('student_id' => $siswa['student_id']));
     $data['bebasPay']       = $this->Bebas_model->get($pay);
-    // $data['free']           = $this->Bebas_pay_model->get($params);
-    // $data['bill']           = $this->Bulan_model->get_total($params);
-    // $data['month']          = $this->Bulan_model->get_total($cashback);
+    $data['free']           = $this->Bebas_pay_model->get($params);
+    $data['bill']           = $this->Bulan_model->get_total($params);
+    $data['month']          = $this->Bulan_model->get_total($cashback);
     $data['log']            = $this->Log_trx_model->get_history($logs);
     $data['trx']            = $this->Log_trx_model->get_trx($logs);
 
@@ -105,28 +105,31 @@ class Payout_set extends CI_Controller
     //Transaksi Yang belum disimpan / untuk migrasi
     $data['pending']        = $this->Payout_model->list_transaksi_tertunda($siswa['student_nis'], $data['noref']);
 
-    //Total Pembayaran Bulan  
-    $totalBayarBulan = $this->Bulan_model->get_total_bulan($cashback);
-    $data['cash'] = $totalBayarBulan;
+    // cashback
+    $data['cash'] = 0;
+    foreach ($data['month'] as $row) {
+      $data['cash'] += $row['total'];
+    }
 
-    //Total Pembayaran Bebas  
-    $totalBayarBebas = $this->Bebas_pay_model->get_total($cashback);
-    $data['cashb'] = $totalBayarBebas;
+    $data['cashb'] = 0;
+    foreach ($data['beb'] as $row) {
+      $data['cashb'] += $row['bebas_pay_bill'];
+    }
 
-    // $data['total'] = 0;
-    // foreach ($data['bill'] as $key) {
-    //   $data['total'] += $key['total'];
-    // }
+    $data['total'] = 0;
+    foreach ($data['bill'] as $key) {
+      $data['total'] += $key['total'];
+    }
 
-    // $data['pay'] = 0;
-    // foreach ($data['in'] as $row) {
-    //   $data['pay'] += $row['total'];
-    // }
+    $data['pay'] = 0;
+    foreach ($data['in'] as $row) {
+      $data['pay'] += $row['total'];
+    }
 
-    // $data['pay_bill'] = 0;
-    // foreach ($data['dom'] as $row) {
-    //   $data['pay_bill'] += $row['bebas_pay_bill'];
-    // }
+    $data['pay_bill'] = 0;
+    foreach ($data['dom'] as $row) {
+      $data['pay_bill'] += $row['bebas_pay_bill'];
+    }
 
 
 
@@ -212,20 +215,15 @@ class Payout_set extends CI_Controller
     $params = array();
     $pay = array();
 
-    $idPeriodBayar = 0;
-    $nisStudent = '';
-
     // Tahun Ajaran
     if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
       $params['period_id'] = $f['n'];
       $pay['period_id'] = $f['n'];
-      $idPeriodBayar = $f['n'];
     }
 
     // Siswa
     if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
       $params['student_nis'] = $f['r'];
-      $nisStudent = $f['r'];
       $siswa = $this->Student_model->get(array('student_nis' => $f['r']));
     }
 
@@ -234,27 +232,9 @@ class Payout_set extends CI_Controller
     $data['period'] = $this->Period_model->get($params);
     $data['siswa']  = $this->Student_model->get(array('student_id' => $siswa['student_id'], 'group' => TRUE));
     $data['bulan']  = $this->Bulan_model->get($pay);
-    // $data['bebas']  = $this->Bebas_model->get_bebas_with_last_payment($pay);
     $data['bebas']  = $this->Bebas_model->get($pay);
     $data['majors'] = $this->Student_model->get_majors();
     $data['unit']   = $this->Student_model->get_majors(array('status' => 1));
-
-    $dataBayar = $this->db->query(
-      "SELECT vlj.jenisBayar, vlj.keterangan, vlj.tanggal, vlj.penerimaan, vlj.namaKas, vlj.jenisTransaksi 
-        FROM v_laporan_jurnal vlj 
-        WHERE vlj.idPeriod = $idPeriodBayar AND vlj.nis = '$nisStudent' and vlj.jenisTransaksi = 'Bebas'"
-    )->result_array();
-
-    $listBayarBebas = [];
-    foreach ($dataBayar as $item) {
-      $kategori = $item['jenisBayar'];
-      if (!isset($groupedData[$kategori])) {
-        $groupedData[$kategori] = [];
-      }
-      $listBayarBebas[$kategori][] = $item;
-    }
-
-    $data['rincian_bebas'] = $listBayarBebas;
 
     $data['setting_nip_bendahara'] = $this->Setting_model->get(array('id' => 15));
     $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
@@ -369,17 +349,13 @@ class Payout_set extends CI_Controller
     $data['setting_school'] = $this->Setting_model->get(array('id' => SCHOOL_NAME));
     $data['setting_address'] = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
     $data['setting_phone'] = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-    $data['setting_email'] = $this->Setting_model->get(array('id' => 90));
-    $data['setting_email']          = $this->Setting_model->get(array('id' => 90));
-    $data['setting_website']        = $this->Setting_model->get(array('id' => 91));
-
     $tanggal = date_create($f['d']);
     $dformat = date_format($tanggal, 'dmYHis');
 
     $this->barcode2($bcode['kas_noref'], '');
 
     $data['huruf'] = number_to_words($data['sumpaket'] + $data['summonth'] + $data['sumbeb']);
-    $file_pdf = 'Cetak_Struk_' . $siswa['student_full_name'] . '_' . date('Y-m-d');
+    $file_pdf = 'Cetak_Struk_' . $siswa['student_full_name'] . '_' . base64_decode($f['d']);
 
     $paper = 'A4';
 
@@ -505,7 +481,7 @@ class Payout_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
     $this->upload->initialize($config);
 
@@ -679,7 +655,7 @@ class Payout_set extends CI_Controller
       $param['bebas_pay_desc']        = $this->input->post('bebas_pay_desc');
       $param['user_user_id']          = $this->session->userdata('uid');
       $param['bebas_pay_input_date']  = $this->input->post('bebas_pay_date');
-      $param['bebas_pay_last_update'] = date('Y-m-d H:i:s');
+      $param['bebas_pay_last_update'] = $this->input->post('bebas_pay_date');
 
       $data['bill'] = $this->Bebas_pay_model->get(array('bebas_id' => $this->input->post('bebas_id')));
       $data['bebas'] = $this->Bebas_model->get(array('payment_id' => $this->input->post('payment_payment_id'), 'student_nis' => $this->input->post('student_nis')));
@@ -1141,62 +1117,16 @@ class Payout_set extends CI_Controller
       $noref_enc              = base64_encode($noref);
       $date_enc               = base64_encode($today);
 
-      // $params_msg['pesan']    = 'Terima kasih, Pembayaran Sekolah ' . $student['majors_school_name'] . "\n\n" .
-      //   'Nama : ' . $student['student_full_name'] . "\n" .
-      //   'Kelas   : ' . $student['class_name'] .
-      //   "\n\n" . 'Telah kami terima Tanggal ' . $tanggal_ini . ' sejumlah ' . number_format($total) . ' Referensi ID : ' . $noref  . ' dengan rincian sebagia berikut: ' .
-      //   "\n";
-
-      $trx_date               = date("d-m-Y");
-      $today                  = date("Y-m-d");
-      $nis_enc                = base64_encode($student['student_nis']);
-      $noref_enc              = base64_encode($noref);
-      $date_enc               = base64_encode($today);
-
-      $nominal                = $total;
-
-      $payout_template = 'Terima kasih, Pembayaran Sekolah' . $student['majors_school_name'] . "\n\n" .
+      $params_msg['pesan']    = 'Terima kasih, Pembayaran Sekolah ' . $student['majors_school_name'] . "\n\n" .
         'Nama : ' . $student['student_full_name'] . "\n" .
         'Kelas   : ' . $student['class_name'] .
-        "\n\n" . 'Telah kami terima Tanggal ' . $trx_date . ' sejumlah ' . number_format($nominal) . ' Referensi ID : ' . $noref;
+        "\n\n" . 'Telah kami terima Tanggal ' . $tanggal_ini . ' sejumlah ' . number_format($total) . ' Referensi ID : ' . $noref  . ' dengan rincian sebagia berikut: ' .
+        "\n";
 
-      $template_query = $this->db->get_where('templates', array('location' => 'PAYOUT'));
-
-      $check_template         = $template_query->num_rows();
-
-      if ($check_template > 0) {
-        $get_template = $template_query->row_array();
-
-        $data = [
-          'STUDENT_NIS' => $student['student_nis'],
-          'STUDENT_FULL_NAME' => $student['student_full_name'],
-          'EMPLOYEE_NIP' => '',
-          'EMPLOYEE_NAME' => '',
-          'POSITION_NAME' => '',
-          'CLASS_NAME' => $student['class_name'],
-          'MAJORS_SCHOOL_NAME' => $student['majors_school_name'],
-          'MAJORS_SHORT_NAME' => $student['majors_short_name'],
-          'NOMINAL' => number_format($nominal, 0, ',', '.'),
-          'TRX_DATE' => $trx_date,
-          'NOREF' => $noref,
-          'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
-          'YEAR' => date('Y')
-        ];
-
-        $template = $get_template['content'];
-
-        $payout_template = parse_template($template, $data, false);
-
-        $payout_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $payout_template);
+      $i = 1;
+      foreach ($itemBayar as $value) {
+        $params_msg['pesan']    .= "\n" . $i++ . '. ' . $value['keterangan'];
       }
-
-      // $i = 1;
-      // foreach ($itemBayar as $value) {
-      //   $params_msg['pesan']    .= "\n" . $i++ . '. ' . $value['keterangan'];
-      // }
-
-      $params_msg['pesan']    = $payout_template;
-
 
       $params_msg['pesan']    .=  "\n\n" . 'Download kwitansi : ' . base_url() . 'payout/cetakBukti?r=' . $nis_enc . '&d=' . $date_enc .  '&f=' . $noref_enc . "\n\n" .
         'Nomor WA Sekolah : http://wa.me/' . $wa_center['setting_value'];
@@ -1214,6 +1144,62 @@ class Payout_set extends CI_Controller
 
       send_whatsapp($no_wa, $psn, $set_key, $set_wa);
     }
+
+    $rincian_bayar = [];
+    $bulans = $this->db->query("
+        SELECT b.month_name, p.pos_name, a.bulan_bill 
+        FROM bulan a 
+        JOIN payment pay ON a.payment_payment_id = pay.payment_id
+        JOIN pos p ON pay.pos_pos_id = p.pos_id
+        JOIN month b ON a.month_month_id = b.month_id
+        WHERE a.bulan_noref = '$noref' AND a.bulan_status = '1'
+    ")->result_array();
+
+    foreach ($bulans as $b) {
+        $rincian_bayar[] = [
+            'nama' => $b['pos_name'] . ' - ' . $b['month_name'],
+            'jumlah' => (int)$b['bulan_bill']
+        ];
+    }
+
+    $bebas = $this->db->query("
+        SELECT p.pos_name, a.bebas_pay_bill, a.bebas_pay_desc
+        FROM bebas_pay a
+        JOIN bebas b ON a.bebas_bebas_id = b.bebas_id
+        JOIN payment pay ON b.payment_payment_id = pay.payment_id
+        JOIN pos p ON pay.pos_pos_id = p.pos_id
+        WHERE a.bebas_pay_noref = '$noref'
+    ")->result_array();
+
+    foreach ($bebas as $b) {
+        $rincian_bayar[] = [
+            'nama' => $b['pos_name'] . ($b['bebas_pay_desc'] ? ' (' . $b['bebas_pay_desc'] . ')' : ''),
+            'jumlah' => (int)$b['bebas_pay_bill']
+        ];
+    }
+
+    $this->load->helper('notiftele');
+
+    $kas_account_id = $this->input->post('kas_account_id');
+    $acc_info = $this->db->query("SELECT account_code, account_description FROM account WHERE account_id = '$kas_account_id'")->row_array();
+    $acc_str = $acc_info ? ' [' . $acc_info['account_code'] . ' ' . $acc_info['account_description'] . ']' : '';
+
+    $payload_tele = [
+        'topik'  => 'pembayaran',
+        'pesan'  => 'Pembayaran atas nama ' . $student['student_full_name'] . $acc_str,
+        'posisi' => 'debit',
+        'jumlah' => (int)$total,
+        'detail' => [
+            'tanggal' => $tglKas,
+            'no_ref'  => $noref,
+            'nama'    => $student['student_full_name'],
+            'nis'     => $student['student_nis'],
+            'kelas'   => $student['class_name'],
+            'unit'    => $student['majors_short_name'],
+            'rincian' => $rincian_bayar
+        ]
+    ];
+    create_log($payload_tele);
 
     $this->session->set_flashdata('success', 'Pembayaran Berhasil Masuk Ke Kas');
   }
@@ -1545,7 +1531,7 @@ class Payout_set extends CI_Controller
           'bulan_account_id'    => $kas,
           'bulan_noref'         => $noref,
           'bulan_date_pay'      => $trx_date,
-          'bulan_last_update'   => date('Y-m-d H:i:s'),
+          'bulan_last_update'   => $trx_date,
           'bulan_status'        => 1,
           'user_user_id'        => $this->session->userdata('uid')
         );
@@ -1643,7 +1629,7 @@ class Payout_set extends CI_Controller
         'bulan_noref'         => $kas_noref,
         'bulan_bill'          => $data['value'],
         'bulan_date_pay'      => $payout_date,
-        'bulan_last_update'   => date('Y-m-d H:i:s'),
+        'bulan_last_update'   => $payout_date,
         'bulan_status'        => 1,
         'user_user_id'        => $this->session->userdata('uid')
       );
@@ -1714,7 +1700,7 @@ class Payout_set extends CI_Controller
         'bulan_noref'       => NULL,
         'bulan_status'      => 0,
         'bulan_date_pay'    => date('Y-m-d'),
-        'bulan_last_update' => date('Y-m-d H:i:s'),
+        'bulan_last_update' => date('Y-m-d'),
         'user_user_id'      => NULL
       );
 
@@ -1781,7 +1767,7 @@ class Payout_set extends CI_Controller
     $lastletter = $this->Letter_model->get(array('limit' => 1));
     $student = $this->Bulan_model->get(array('student_id' => $student_id, 'id' => $id));
 
-    if (empty($lastletter) || $lastletter['letter_year'] < date('Y')) {
+    if ($lastletter['letter_year'] < date('Y') or count($lastletter) == 0) {
       $this->Letter_model->add(array('letter_number' => '00001', 'letter_month' => date('m'), 'letter_year' => date('Y')));
       $nomor = sprintf('%05d', '00001');
       $nofull = date('Y') . date('m') . $nomor;
@@ -1806,7 +1792,7 @@ class Payout_set extends CI_Controller
       'bulan_noref'         => $kas_noref,
       'bulan_bill'          => $payout_value,
       'bulan_date_pay'      => $payout_date,
-      'bulan_last_update'   => date('Y-m-d H:i:s'),
+      'bulan_last_update'   => $payout_date,
       'bulan_status'        => 1,
       'user_user_id'        => $this->session->userdata('uid')
     );
@@ -1868,8 +1854,8 @@ class Payout_set extends CI_Controller
       'bulan_account_id'  => NULL,
       'bulan_noref'       => NULL,
       'bulan_status'      => 0,
-      'bulan_date_pay'    => NULL,
-      'bulan_last_update' => date('Y-m-d H:i:s'),
+      'bulan_date_pay'    => date('Y-m-d'),
+      'bulan_last_update' => date('Y-m-d'),
       'user_user_id'      => NULL
     );
 
@@ -1878,13 +1864,11 @@ class Payout_set extends CI_Controller
 
     //delete jurnal umum
     $id_jurnal = $this->db->query("SELECT id FROM jurnal_umum WHERE noref = '$noref'")->row_array();
-    if (!empty($id_jurnal)) {
-      $this->db->where('id_jurnal', $id_jurnal['id'])->delete("jurnal_umum_detail");
-      $this->db->where('id', $id_jurnal['id'])->delete("jurnal_umum");
-    }
+    $this->db->where('id_jurnal', $id_jurnal['id'])->delete("jurnal_umum_detail");
+    $this->db->where('id', $id_jurnal['id'])->delete("jurnal_umum");
 
     $kas = $this->db->query("SELECT kas_debit FROM kas WHERE kas_noref = '$noref'")->row_array();
-    $kasDebit = isset($kas['kas_debit']) ? $kas['kas_debit'] : 0;
+    $kasDebit = $kas['kas_debit'];
 
     $newKasDebit = $kasDebit - $bill;
 
@@ -2141,117 +2125,5 @@ class Payout_set extends CI_Controller
 		</div>';
       }
     }
-  }
-
-  public function generate_wa_message()
-  {
-    $period_id = sanitizeStrict($this->input->post('period_id'));
-    $student_nis = sanitizeStrict($this->input->post('student_nis'));
-    $trx_date = sanitizeStrict($this->input->post('trx_date'));
-    $noref = sanitizeStrict($this->input->post('no_ref'));
-
-    $student = $this->Student_model->get(array('student_nis' => $student_nis));
-    if (!$student) {
-      $response = [
-        'status' => 'error',
-        'message' => 'Data siswa tidak ditemukan',
-        'data' => null
-      ];
-      echo json_encode($response);
-      return;
-    }
-
-    $params = [
-      'noref' => $noref,
-      'period_id' => $period_id,
-      'date' => $trx_date,
-    ];
-
-    $kas = $this->Payout_model->get_kas($params);
-    if (!$kas) {
-      $response = [
-        'status' => 'error',
-        'message' => 'Data kas tidak ditemukan',
-        'data' => null
-      ];
-      echo json_encode($response);
-      return;
-    }
-    $kas = $kas[0];
-
-    $status_whatsapp        = $this->Setting_model->get(array('name' => 'setting_notif'));
-    $status                 = $status_whatsapp['setting_value'];
-
-    if ($status == 'active' and isset($student['student_parent_phone']) and $student['student_parent_phone'] != '+62') {
-
-      $wa_center              = $this->Setting_model->get(array('id' => 17));
-      $wa_key                 = $this->Setting_model->get(array('name' => 'setting_wa_key'));
-      $setting_whatsapp       = $this->Setting_model->get(array('id' => 92));
-      $set_key                = $wa_key['setting_value'];
-      $set_wa                 = $setting_whatsapp['setting_value'];
-
-      $tanggal_ini            = date("d-m-Y");
-      $today                  = date("Y-m-d");
-      $nis_enc                = base64_encode($student['student_nis']);
-      $noref_enc              = base64_encode($noref);
-      $date_enc               = base64_encode($today);
-
-      $today                  = date("Y-m-d");
-      $nis_enc                = base64_encode($student['student_nis']);
-      $noref_enc              = base64_encode($noref);
-      $date_enc               = base64_encode($today);
-
-      $nominal                = $kas['kas_debit'];
-
-      $template_query = $this->db->get_where('templates', array('location' => 'PAYOUT'));
-
-      $check_template         = $template_query->num_rows();
-
-      if ($check_template > 0) {
-        $get_template = $template_query->row_array();
-
-        $data = [
-          'STUDENT_NIS' => $student['student_nis'],
-          'STUDENT_FULL_NAME' => $student['student_full_name'],
-          'EMPLOYEE_NIP' => '',
-          'EMPLOYEE_NAME' => '',
-          'POSITION_NAME' => '',
-          'CLASS_NAME' => $student['class_name'],
-          'MAJORS_SCHOOL_NAME' => $student['majors_name'],
-          'MAJORS_SHORT_NAME' => $student['majors_short_name'],
-          'NOMINAL' => number_format($nominal, 0, ',', '.'),
-          'TRX_DATE' => $trx_date,
-          'NOREF' => $noref,
-          'MONTH_NAME' => pretty_date(date('Y-m-d'), 'F', false),
-          'YEAR' => date('Y')
-        ];
-
-        $template = $get_template['content'];
-
-        $payout_template = parse_template($template, $data, false);
-
-        $payout_template = str_replace(['\\n', '\\r'], ["\n", "\r"], $payout_template);
-      }
-
-      $params_msg['pesan']    = $payout_template;
-      $wa_center = str_replace(['+', ' '], '', $wa_center['setting_value']);
-
-      $params_msg['pesan']  .= "\n\n" . 'Download kwitansi : ' . base_url() . 'payout/cetakBukti?r=' . $nis_enc . '&d=' . $date_enc .  '&f=' . $noref_enc . "\n\n" .
-        'Nomor WA Pesantren : http://wa.me/' . $wa_center;
-
-      $psn = $params_msg['pesan'];
-      $psn = str_replace(['\\n', '\\r'], ["\n", "\r"], $psn);
-    }
-
-    $response = [
-      'status' => 'success',
-      'message' => 'Pesan WhatsApp berhasil dibuat',
-      'data' => [
-        'kas' => $kas,
-        'pesan_whatsapp' => $psn
-      ]
-    ];
-
-    echo json_encode($response);
   }
 }

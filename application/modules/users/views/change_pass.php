@@ -14,8 +14,7 @@
 			<div class="col-md-9">
 				<div class="box box-primary">
 					<!-- /.box-header -->
-					<div class="box-body">
-						<?php if (isset($user) && isset($user['user_password_last_update'])) { ?>
+					<div class="box-body"><?php if (isset($user) && isset($user['user_password_last_update'])) { ?>
 							<div class="alert alert-info alert-dismissible">
 								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 								<h4><i class="icon fa fa-info"></i> Info!</h4>

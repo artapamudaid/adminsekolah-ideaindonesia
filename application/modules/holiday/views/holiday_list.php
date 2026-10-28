@@ -95,7 +95,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <label>Tanggal</label>
-                                <input type="text" class="form-control" name="date" id="multidate" readonly>
+                                <input type="text" class="form-control" name="date" id="multidate">
                             </div>
                         </div>
                     </div>

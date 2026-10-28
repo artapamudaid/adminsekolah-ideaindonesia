@@ -13,19 +13,6 @@ class Semester_model extends CI_Model
 
     function get($params = array())
     {
-        $cache_key = get_session_cache_key('semester', $params);
-        try {
-            if (!isset($this->cache)) {
-                $this->load->driver('cache', array('adapter' => 'file'));
-            }
-            $cached = $this->cache->get($cache_key);
-            if ($cached !== FALSE) {
-                return $cached;
-            }
-        } catch (\Throwable $e) {
-            log_message('error', 'Cache read error in Semester_model::get: ' . $e->getMessage());
-        }
-
         if (isset($params['id'])) {
             $this->db->where('semester_id', $params['id']);
         }
@@ -61,20 +48,10 @@ class Semester_model extends CI_Model
         $res = $this->db->get('semester');
 
         if (isset($params['id'])) {
-            $result = $res->row_array();
+            return $res->row_array();
         } else {
-            $result = $res->result_array();
+            return $res->result_array();
         }
-
-        try {
-            if (isset($this->cache)) {
-                $this->cache->save($cache_key, $result, CACHE_TTL);
-            }
-        } catch (\Throwable $e) {
-            log_message('error', 'Cache write error in Semester_model::get: ' . $e->getMessage());
-        }
-
-        return $result;
     }
 
     function add($data = array())
@@ -110,7 +87,6 @@ class Semester_model extends CI_Model
             $id = $this->db->insert_id();
         }
         $status = $this->db->affected_rows();
-        bump_cache_version('semester');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -118,6 +94,5 @@ class Semester_model extends CI_Model
     {
         $this->db->where('semester_id', $id);
         $this->db->delete('semester');
-        bump_cache_version('semester');
     }
 }

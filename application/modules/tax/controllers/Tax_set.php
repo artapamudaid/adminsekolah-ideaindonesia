@@ -44,52 +44,17 @@ class Tax_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $taxName = sanitizeStrict($_POST['tax_name']);
-      $taxShort = sanitizeStrict($_POST['tax_number']);
-      $cpt = count($taxName);
-
-      $added = 0;
-      $skipped = 0;
+      $taxName = $_POST['tax_name'];
+      $taxShort = $_POST['tax_number'];
+      $cpt = count($_POST['tax_name']);
       for ($i = 0; $i < $cpt; $i++) {
-        if (empty($taxName[$i]) || empty($taxShort[$i])) {
-          $skipped++;
-          continue;
-        }
-
-        $colWhere = [
-          'tax_name' => $taxName[$i],
-          'tax_number' => $taxShort[$i],
-        ];
-
-        if ($this->General_model->checkDataExists('tax', $colWhere)) {
-          $skipped++;
-          continue;
-        }
         $params['tax_name'] = $taxName[$i];
         $params['tax_number'] = $taxShort[$i];
 
-        $insert = $this->Tax_model->add($params);
-        if (!$insert) {
-          $skipped++;
-          continue;
-        }
-        $added++;
+        $this->Tax_model->add($params);
       }
-
-      if ($added > 1) {
-        $msg = "$added Pajak berhasil ditambahkan";
-      } elseif ($added == 1) {
-        $msg = "1 Pajak berhasil ditambahkan";
-      } else {
-        $msg = "Tidak ada yang ditambahkan";
-      }
-
-      if ($skipped > 0) {
-        $msg .= "<br>($skipped Pajak dilewati)";
-      }
-
-      $this->session->set_flashdata('success', $msg);
     }
+    $this->session->set_flashdata('success', ' Tambah Pajak Berhasil');
     redirect('manage/tax');
   }
 
@@ -105,26 +70,10 @@ class Tax_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('tax_id')) {
-        $id = sanitizeStrict($this->input->post('tax_id'));
-        $params['tax_id'] = $id;
+        $params['tax_id'] = $this->input->post('tax_id');
       }
-
-      $taxName = sanitizeStrict($this->input->post('tax_name'));
-      $taxShort = sanitizeStrict($this->input->post('tax_number'));
-
-      $colWhere = [
-        'tax_name' => $taxName,
-        'tax_number' => $taxShort,
-      ];
-      if (!empty($id)) {
-        $colWhere['tax_id <>'] = $id;
-      }
-      if ($this->General_model->checkDataExists('tax', $colWhere)) {
-        $this->session->set_flashdata('failed', "Data sudah ada.");
-        redirect('manage/tax/edit/' . $id);
-      }
-      $params['tax_name'] = $taxName;
-      $params['tax_number'] = $taxShort;
+      $params['tax_name'] = $this->input->post('tax_name');
+      $params['tax_number'] = $this->input->post('tax_number');
       $status = $this->Tax_model->add($params);
 
 

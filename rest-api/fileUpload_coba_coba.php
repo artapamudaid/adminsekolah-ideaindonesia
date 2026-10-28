@@ -1,12 +1,14 @@
 <?php
 
 include('fungsi/tanggal.php');
+require_once __DIR__ . '/upload_security.php';
+require_upload_token();
 // include('../config/config.php');
 
-$db_host='localhost';
-$db_user='adminsek_userdemo';
-$db_pass='PzKyeml8k3)^';
-$db_name='adminsek_demo';
+$db_host=getenv('DB_HOST') ?: 'localhost';
+$db_user=getenv('DB_USERNAME') ?: '';
+$db_pass=getenv('DB_PASSWORD') ?: '';
+$db_name=getenv('DB_DATABASE') ?: '';
 $koneksi = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 
 date_default_timezone_set('Asia/Jakarta');
@@ -35,8 +37,8 @@ $server_ip = gethostbyname(gethostname());
 // final file url that is being uploaded
 $file_upload_url = $target_path;
 
-    $kode_sekolah = isset($_REQUEST['kode_sekolah']) ? $_REQUEST['kode_sekolah'] : '';
-    $id_pegawai = isset($_REQUEST['id_pegawai']) ? $_REQUEST['id_pegawai'] : '';
+    $kode_sekolah = isset($_REQUEST['kode_sekolah']) ? preg_replace('/[^A-Za-z0-9_-]/', '', $_REQUEST['kode_sekolah']) : '';
+    $id_pegawai = isset($_REQUEST['id_pegawai']) ? preg_replace('/[^0-9]/', '', $_REQUEST['id_pegawai']) : '';
     $type = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
 	$lokasi = isset($_REQUEST['lokasi']) ? $_REQUEST['lokasi'] : '';
     $longi = isset($_REQUEST['longi']) ? $_REQUEST['longi'] : '';
@@ -54,16 +56,20 @@ $file_upload_url = $target_path;
     $response['id_pegawai'] = $id_pegawai;
     $response['kode_sekolah'] = $kode_sekolah;
 	$status = "SUKSES_UPLOAD";
+    $safeFileName = 'no_image.jpeg';
     // echo json_encode($response);
  
  
 if (isset($_FILES['image']['name'])) {
-    $target_path = $target_path . $id_pegawai."_".basename($_FILES['image']['name']);
-    $response['file_name'] = $id_pegawai."_".basename($_FILES['image']['name']);
+    $safeFileName = safe_uploaded_image_name('image', $id_pegawai);
+    $target_path = $target_path . $safeFileName;
+    $response['file_name'] = $safeFileName;
  
     try {
         // Throws exception incase file is not being moved
-        $move_upload="../uploads/absensi/". $id_pegawai."_".basename($_FILES['image']['name']);
+        $uploadDir = __DIR__ . '/../uploads/absensi';
+        ensure_upload_directory($uploadDir);
+        $move_upload = $uploadDir . '/' . $safeFileName;
         if (!move_uploaded_file($_FILES['image']['tmp_name'], $move_upload)) {
             // make error flag true
             $response['error'] = true;
@@ -75,7 +81,7 @@ if (isset($_FILES['image']['name'])) {
         // File successfully uploaded
         $response['message'] = 'File uploaded successfully!';
         $response['error'] = false;
-        $response['file_path'] = $file_upload_url . $id_pegawai."_".basename($_FILES['image']['name']);
+        $response['file_path'] = $file_upload_url . $safeFileName;
     } catch (Exception $e) {
         // Exception occurred. Make error flag true
         $response['error'] = true;
@@ -276,7 +282,7 @@ $sql = "select employee.employee_id, employee_nip, employee_name, employee_passw
             // $file_path = $img;
             // if ($status == "GAGAL_UPLOAD3") $file_path = null;
             
-            $file_path = $file_upload_url . $id_pegawai."_".basename($_FILES['image']['name']);
+            $file_path = $file_upload_url . $safeFileName;
             if ($status == "GAGAL_UPLOAD3") $file_path = "../uploads/absensi/no_image.jpg";
 
             $id_pegawai     = $id_pegawai;  
@@ -387,7 +393,7 @@ $sql = "select employee.employee_id, employee_nip, employee_name, employee_passw
                 // $file_path = $img;
                 // if ($status == "GAGAL_UPLOAD3") $file_path = null;
                 
-                $file_path = $file_upload_url . $id_pegawai."_".basename($_FILES['image']['name']);
+                $file_path = $file_upload_url . $safeFileName;
                 if ($status == "GAGAL_UPLOAD3") $file_path = "../uploads/absensi/no_image.jpg";
 
                 $id_pegawai     = $id_pegawai;  
@@ -443,7 +449,7 @@ $sql = "select employee.employee_id, employee_nip, employee_name, employee_passw
         $file_path      = $img;
         if ($status == "GAGAL_UPLOAD3") $file_path = null;
         
-        $file_path = $file_upload_url . $id_pegawai."_".basename($_FILES['image']['name']);
+        $file_path = $file_upload_url . $safeFileName;
         if ($status == "GAGAL_UPLOAD3") $file_path = "../uploads/absensi/no_image.jpg";
 
         $id_pegawai = $id_pegawai;  

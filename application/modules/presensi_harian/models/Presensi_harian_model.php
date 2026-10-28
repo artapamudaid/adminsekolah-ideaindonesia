@@ -118,7 +118,6 @@ class Presensi_harian_model extends CI_Model
         );
         $this->db->where('s.class_class_id', $class_id);
         $this->db->where('presensi.idAbsen IS NULL');
-        $this->db->where('s.student_status = 1');
         $query = $this->db->get();
 
         return $query->result_array();

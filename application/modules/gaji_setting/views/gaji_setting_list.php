@@ -44,7 +44,7 @@
 											<td>
 												<a href="<?php echo site_url('manage/gaji_setting/edit/' . $row['default_gaji_id']) ?>" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a>
 												
-												<!-- <a href="#delModal<?php echo $row['default_gaji_id']; ?>" data-toggle="modal" class="btn btn-xs btn-danger"><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></a> -->
+												<a href="#delModal<?php echo $row['default_gaji_id']; ?>" data-toggle="modal" class="btn btn-xs btn-danger"><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></a>
 											</td>	
 										</tr>
 										<div class="modal modal-default fade" id="delModal<?php echo $row['default_gaji_id']; ?>">

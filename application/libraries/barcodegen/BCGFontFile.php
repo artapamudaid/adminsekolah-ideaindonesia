@@ -174,9 +174,24 @@ class BCGFontFile implements BCGFont {
      * @param int $y
      */
     public function draw($im, $x, $y) {
-        $drawingPosition = $this->getDrawingPosition($x, $y);
-        imagettftext($im, $this->size, $this->rotationAngle, $drawingPosition[0], $drawingPosition[1], $this->foregroundColor->allocate($im), $this->path, $this->text);
-    }
+    $drawingPosition = $this->getDrawingPosition($x, $y);
+
+    // Konversi eksplisit ke integer
+    $posX = (int) round($drawingPosition[0]);
+    $posY = (int) round($drawingPosition[1]);
+
+    imagettftext(
+        $im,
+        $this->size,
+        $this->rotationAngle,
+        $posX,
+        $posY,
+        $this->foregroundColor->allocate($im),
+        $this->path,
+        $this->text
+    );
+}
+
 
     private function getDrawingPosition($x, $y) {
         $dimension = $this->getDimension();

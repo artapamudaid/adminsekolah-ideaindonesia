@@ -50,7 +50,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 |		my-controller/my-method	-> my_controller/my_method
 */
 
-
 // Untuk guru
 $route['guru/auth'] = 'guru/auth_guru/login';
 $route['guru/([a-zA-Z_-]+)'] = '$1/$1_guru';
@@ -68,6 +67,15 @@ $route['guru'] = "dashboard/Dashboard_guru";
 $route['manage/auth'] = 'auth/auth_set/login';
 $route['manage/([a-zA-Z_-]+)'] = '$1/$1_set';
 $route['manage/auth/(:any)'] = 'auth/auth_set/$1';
+
+// Route Untuk eAset
+$route['manage/easet/(:any)'] = "easet/$1_easet/index";
+$route['manage/easet/(:any)/(:any)'] = "easet/$1_easet/$2";
+$route['manage/easet/(:any)/(:any)/(:any)'] = "easet/$1_easet/$2/$3";
+$route['manage/easet/(:any)/(:any)/(:num)/(:num)'] = "easet/$1_easet/$2/$3/$4";
+// $route['manage/easet/laporan/(:any)/(:any)/(:num)/(:num)'] = "easet/laporan_easet/$1/$2/$3/$4";
+// Route Untuk eAset
+
 $route['manage/([a-zA-Z_-]+)/(:any)'] = '$1/$1_set/$2';
 $route['manage/([a-zA-Z_-]+)/data_trx/(:any)'] = '$1/$1_set/data_trx/$2';
 $route['manage/([a-zA-Z_-]+)/cetakTrx/(:any)'] = '$1/$1_set/cetakTrx/$2';

@@ -67,30 +67,10 @@ class Presensi_khusus_set extends CI_Controller
         $params['created_date'] = date('Y-m-d H:i:s');
         $params['created_by'] = $this->session->userdata('uid');
       }
-
-      $tanggal = sanitizeStrict($this->input->post('tanggal'));
-      $idPegawai = sanitizeStrict($this->input->post('id_pegawai'));
-      $lokasiAbsen = sanitizeStrict($this->input->post('lokasi_absen'));
-
-      $colWhere = [
-        "tanggal" => $tanggal,
-        "id_pegawai" => $idPegawai,
-        "lokasi_absen" => $lokasiAbsen,
-      ];
-      if (!empty($id)) {
-        $colWhere["id != "] = $id;
-      }
-
-      if ($this->General_model->checkDataExists("absensi_khusus", $colWhere)) {
-        $this->session->set_flashdata('failed', ' Data sudah ada');
-        $redirectUrl = (!empty($id)) ? "manage/presensi_khusus/edit/$id" : "manage/presensi_khusus/add";
-        redirect($redirectUrl);
-      }
-
-      $params['tanggal'] = $tanggal;
-      $params['id_pegawai'] = $idPegawai;
-      $params['lokasi_absen'] = $lokasiAbsen;
-      $params['remark'] = sanitizeStrict($this->input->post('remark'));
+      $params['tanggal'] = $this->input->post('tanggal');
+      $params['id_pegawai'] = $this->input->post('id_pegawai');
+      $params['lokasi_absen'] = $this->input->post('lokasi_absen');
+      $params['remark'] = $this->input->post('remark');
       $status = $this->Presensi_khusus_model->add($params);
 
       // activity log

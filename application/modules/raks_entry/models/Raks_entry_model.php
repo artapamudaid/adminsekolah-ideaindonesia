@@ -92,8 +92,7 @@ class Raks_entry_model extends CI_Model
                 0 AS level, 
                 parent, 
                 proposal_status, 
-                approval_status,
-                kode_sort
+                approval_status
             FROM raks_entry
             WHERE parent = 0 AND majors_id = ? AND period_id = ?
 
@@ -106,8 +105,7 @@ class Raks_entry_model extends CI_Model
                 eh.level + 1, 
                 a.parent, 
                 a.proposal_status, 
-                a.approval_status,
-                a.kode_sort
+                a.approval_status
             FROM raks_entry a
             INNER JOIN entryHierarchy eh ON a.parent = eh.id
             WHERE a.majors_id = ? AND a.period_id = ?
@@ -116,57 +114,45 @@ class Raks_entry_model extends CI_Model
         recursiveTotal AS (
             SELECT 
                 entry_id, 
-                SUM(totalPrice) AS selfPrice
+                SUM(totalPrice) AS totalPrice
             FROM entry_detail
             GROUP BY entry_id
         ),
 
-        descendants AS (
+        aggregated AS (
             SELECT 
-                id AS parent_id, 
-                id AS descendant_id
-            FROM entryHierarchy
-
-            UNION ALL
-
-            SELECT 
-                d.parent_id, 
-                e.id AS descendant_id
-            FROM descendants d
-            JOIN entryHierarchy e ON e.parent = d.descendant_id
-        ),
-
-        totalPerParent AS (
-            SELECT 
-                d.parent_id,
-                SUM(COALESCE(rt.selfPrice, 0)) AS totalPrice
-            FROM descendants d
-            LEFT JOIN recursiveTotal rt ON rt.entry_id = d.descendant_id
-            GROUP BY d.parent_id
+                eh.*, 
+                COALESCE(rt.totalPrice, 0) AS selfPrice
+            FROM entryHierarchy eh
+            LEFT JOIN recursiveTotal rt ON rt.entry_id = eh.id
         )
 
         SELECT 
-            eh.id,
-            eh.kode,
-            eh.nama,
-            eh.level,
-            eh.parent,
-            eh.proposal_status,
-            eh.approval_status,
-            eh.kode_sort,
-            CONCAT(REPEAT('&nbsp;', eh.level * 2)) AS indented,
+            a.id,
+            a.kode,
+            a.nama,
+            a.level,
+            a.parent,
+            a.proposal_status,
+            a.approval_status,
+            CONCAT(REPEAT('&nbsp;', a.level * 2)) AS indented,
             CASE 
                 WHEN EXISTS (
-                    SELECT 1 FROM raks_entry e WHERE e.parent = eh.id
+                    SELECT 1 FROM raks_entry e WHERE e.parent = a.id
                 ) THEN 1 ELSE 0
             END AS has_child,
-            COALESCE(tp.totalPrice, 0) AS totalPrice
-        FROM entryHierarchy eh
-        LEFT JOIN totalPerParent tp ON tp.parent_id = eh.id
-        ORDER BY eh.kode_sort
+
+            (
+                SELECT SUM(x.selfPrice)
+                FROM aggregated x
+                WHERE x.id = a.id OR x.parent = a.id
+            ) AS totalPrice
+
+        FROM aggregated a
+        ORDER BY kode, level
     ";
 
-        // Parameter dikirim 4 kali sesuai kebutuhan di query
+        // Kirim parameter 4x sesuai query di atas
         $main_entry = $this->db->query($sql_main, array(
             $majors_id,
             $period_id,
@@ -177,19 +163,6 @@ class Raks_entry_model extends CI_Model
         return $main_entry;
     }
 
-    function get_total_anggaran($majors_id, $period_id)
-    {
-        $sql = "
-            SELECT SUM(ed.totalPrice) AS total_anggaran
-            FROM entry_detail ed
-            JOIN raks_entry re ON re.id = ed.entry_id
-            WHERE re.majors_id = ? AND re.period_id = ?
-        ";
-
-        $query = $this->db->query($sql, array($majors_id, $period_id));
-        $result = $query->row();
-        return $result ? (float) $result->total_anggaran : 0;
-    }
 
     function get_entry_status($majors_id, $period_id)
     {
@@ -240,10 +213,6 @@ class Raks_entry_model extends CI_Model
 
         if (isset($data['user'])) {
             $this->db->set('user_id', $data['user']);
-        }
-
-        if (isset($data['kode_sort'])) {
-            $this->db->set('kode_sort', $data['kode_sort']);
         }
 
         if (isset($data['id'])) {
@@ -379,13 +348,7 @@ class Raks_entry_model extends CI_Model
     function updateStatusDetail($id, $status)
     {
         $this->db->set('status', $status);
-
-        if (is_array($id)) {
-            $this->db->where_in('id', $id);
-        } else {
-            $this->db->where('id', $id);
-        }
-
+        $this->db->where('id', $id);
         $this->db->update('entry_detail');
     }
 

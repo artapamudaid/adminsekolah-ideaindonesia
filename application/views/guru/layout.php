@@ -116,7 +116,7 @@
                 <?php } else { ?>
                   <img src="<?php echo media_url() ?>img/user.png" class="user-image">
                 <?php } ?>
-                <span class="hidden-xs"><?php echo ucfirst((string)$this->session->userdata('ufullname_guru')); ?></span>
+                <span class="hidden-xs"><?php echo ucfirst($this->session->userdata('ufullname_guru')); ?></span>
               </a>
               <ul class="dropdown-menu">
                 <!-- User image -->

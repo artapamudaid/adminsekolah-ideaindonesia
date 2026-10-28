@@ -691,8 +691,6 @@ class Presensi_harian_set extends CI_Controller
     {
         if ($_POST == TRUE) {
 
-            $periodID     = $_POST['period_id'];
-            $monthID      = $_POST['month_id'];
             $studentID    = $_POST['student_id'];
             $classID      = $_POST['class_id'];
             $areaID       = $_POST['area_id'];
@@ -737,6 +735,34 @@ class Presensi_harian_set extends CI_Controller
                     // exit;
 
                     $this->Presensi_harian_model->addAbsensi($params);
+
+                    $this->load->helper('notiftele');
+                
+                    $student_info = $this->db->query("SELECT student_full_name, student_nis, class.class_name, majors.majors_short_name as unit 
+                                                    FROM student 
+                                                    LEFT JOIN class ON class.class_id = student.class_class_id 
+                                                    LEFT JOIN majors ON majors.majors_id = student.majors_majors_id 
+                                                    WHERE student_id = '$student_id'")->row_array();
+                                                    
+                    if ($student_info) {
+                        $status_str = 'Hadir';
+                        if ($status[0] == 'S') $status_str = 'Sakit';
+                        elseif ($status[0] == 'I') $status_str = 'Izin';
+                        elseif ($status[0] == 'A') $status_str = 'Alpha';
+                        
+                        $payload_tele = [
+                            'topik'  => 'presensi_siswa',
+                            'pesan'  => $student_info['student_full_name'] . ' (' . $student_info['class_name'] . ') ' . $status_str . ' pada ' . date('H:i:s'),
+                            'detail' => [
+                                'tanggal' => date('Y-m-d', strtotime($presensiDate)),
+                                'nama'    => $student_info['student_full_name'],
+                                'nis'     => $student_info['student_nis'] ?? '',
+                                'kelas'   => $student_info['class_name'] ?? '',
+                                'unit'    => $student_info['unit'] ?? ''
+                            ]
+                        ];
+                        create_log($payload_tele);
+                    }
                 }
             }
         }

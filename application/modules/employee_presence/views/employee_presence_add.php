@@ -18,13 +18,17 @@
                     </div>
                 </div>
 
-                <div class="image-container text-center mt-4">
+                <div class="image-container text-center mb-4">
                     <input type="hidden" id="lati" name="latitude">
                     <input type="hidden" id="longi" name="longitude">
-                    <div id="area-foto" style="display: flex; justify-content: center;">
-                        <img id="foto-pegawai" src="" alt="Foto Santri">
+                    <div id="area-foto" style="display: flex; justify-content: center; margin-bottom: 10px">
+                        <img id="foto-pegawai" src="" alt="Foto Pegawai">
                     </div>
                     <div id="message" style="padding-top: 5px;"></div>
+                </div>
+
+                <div class="attendance-info" id="attendance-info">
+                    <div id="attendance-detail"></div>
                 </div>
 
             </div>
@@ -37,17 +41,61 @@
         $('#rfid').focus();
     });
 
-    $('#rfid').keydown(function() {
-        var rfid = $('#rfid').val().trim();
+    function hideAllMessages() {
+        $('#error-message').removeClass('show');
+        $('#attendance-info').removeClass('show');
+        $('#area-foto').html('');
+        $('#message').fadeOut();
+    }
 
-        if (rfid === '') {
-            return;
-        }
+    function showLoading() {
+        hideAllMessages();
+        $('#loading-spinner').addClass('active');
+        $('#rfid').prop('disabled', true);
+    }
+
+    function hideLoading() {
+        $('#rfid').prop('disabled', false);
+        $('#rfid').focus();
+    }
+
+    function showSuccess(data, jenis_absen) {
+        const now = new Date();
+
+        const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const months = [
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ];
+
+        const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+        const timeStr = now.toLocaleTimeString('id-ID');
+        const attendanceHtml = `
+            <div>${data.keterangan}</div>
+            <div>${data.pesan}</div>
+            <div class="attendance-time">
+            📌 Jenis: <b>${jenis_absen}</b><br>
+                📅 ${dateStr}<br>
+                🕐 ${timeStr} WIB
+            </div>
+        `;
+
+        $('#attendance-info').html(attendanceHtml).addClass('show');
+    }
+
+    $('#rfid').keydown(function(e) {
+        if (e.keyCode !== 13) return;
+
+        var rfid = $('#rfid').val().trim();
+        if (rfid === '') return;
+
         if (rfid.length >= 10) {
-            // console.log(rfid);
             const jenis_absen = $("#jenis-absen").val();
             const longi = $("#longi").val();
             const lati = $("#lati").val();
+
+            showLoading();
 
             $.ajax({
                 url: "<?= base_url() . 'employee_presence/presence/' ?>",
@@ -59,46 +107,47 @@
                     latitude: lati
                 },
                 success: function(response) {
-                    // Cek output dari server di console
                     console.log(response);
 
                     try {
-                        var data = JSON.parse(response); // Parsing JSON
+                        var data = JSON.parse(response);
+
+                        hideLoading();
 
                         if (data.status === 'success') {
-                            if (data.foto == null || data.foto == '') {
-                                const fullName = data.nama;
-                                const firstInitial = fullName.trim()[0].toUpperCase();
-                                var avatar = '<span data-letters="' + firstInitial + '"></span>';
-                                $("#area-foto").html(avatar);
+
+                            // FOTO / AVATAR
+                            if (!data.foto) {
+                                const firstInitial = data.nama.trim()[0].toUpperCase();
+                                $("#area-foto").html(`<span data-letters="${firstInitial}"></span>`);
                             } else {
                                 const srcFoto = '<?= base_url('uploads/student/') ?>' + data.foto;
-                                var fotoSantri = '<img id="foto-pegawai" src="' + srcFoto + '" alt="Foto Santri">'
-                                $("#area-foto").html(fotoSantri);
-                                $('#foto-pegawai').attr('src', '<?= base_url('uploads/student/') ?>' + data.foto).addClass('show');
+                                $("#area-foto").html(`<img src="${srcFoto}" class="show">`);
                             }
 
-                            $('#message').html(data.keterangan + '<br>' + data.pesan).fadeIn();
+                            showSuccess(data, jenis_absen);
+
                             $("#rfid").val("");
-                            // alert(data.keterangan);
+
                         } else {
                             $("#area-foto").html('');
                             $('#message').fadeOut();
                             $("#rfid").val("");
 
                             alert(data.message);
-
                         }
+
                     } catch (e) {
+                        hideLoading();
                         console.error("Parsing JSON gagal: ", e);
                     }
                 },
                 error: function(xhr, status, error) {
+                    hideLoading();
                     console.error("AJAX Error: ", status, error);
                 }
             });
         }
-        // }, 100); //fungsi set timeout
     });
 </script>
 <script>

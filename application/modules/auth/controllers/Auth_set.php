@@ -33,52 +33,34 @@ class Auth_set extends CI_Controller
         $this->form_validation->set_rules('email', 'Email', 'trim|required');
         $this->form_validation->set_rules('password', 'Password', 'trim|required');
         if ($_POST and $this->form_validation->run() == TRUE) {
-            $email = $this->input->post('email', TRUE);
-            $password = $this->input->post('password', TRUE);
 
-            $user = $this->Users_model->get_login(array('email' => $email, 'password' => md5($password)));
-
-            $aktivasi = $this->Setting_model->get(array('name' => 'setting_aktivasi'));
-
-            if ($aktivasi['setting_value'] == 'N' and $user[0]['user_role_role_id'] != '3') {
-                redirect('suspended');
-            }
-
-            $setting_end = $this->Setting_model->get(array('name' => 'setting_end'));
-            if ($setting_end) {
-                $setting_end_value = $setting_end['setting_value'];
-            } else {
-                $setting_end_value = date('Y-m-d', strtotime('+1 day'));
-            }
 
             $secret_key = $this->config->item('turnstile_secret_key');
-            $token      = $_POST['cf-turnstile-response'] ?? '';
-            $remoteip   = $_SERVER['HTTP_CF_CONNECTING_IP'] ??
+            $token = $_POST['cf-turnstile-response'] ?? '';
+            $remoteip = $_SERVER['HTTP_CF_CONNECTING_IP'] ??
                 $_SERVER['HTTP_X_FORWARDED_FOR'] ??
                 $_SERVER['REMOTE_ADDR'];
 
-            $turnstile = $this->config->item('turnstile');
-            $validation['success'] = FALSE;
-            if ($turnstile) {
-                $turnstileValidation = $this->validateTurnstile($token, $secret_key, $remoteip);
-                $validation['success'] = $turnstileValidation['success'];
-            } else {
-                $validation['success'] = TRUE;
-            }
+            $validation = $this->validateTurnstile($token, $secret_key, $remoteip);
+
 
             if ($validation['success']) {
+
+                $email = $this->input->post('email', TRUE);
+                $password = $this->input->post('password', TRUE);
+
+                $user = $this->Users_model->get_login(array('email' => $email, 'password' => md5($password)));
+
                 if (count($user) > 0) {
                     $this->session->set_userdata('logged', TRUE);
                     $this->session->set_userdata('uid', $user[0]['user_id']);
                     $this->session->set_userdata('uemail', $user[0]['user_email']);
                     $this->session->set_userdata('ufullname', $user[0]['user_full_name']);
                     $this->session->set_userdata('uroleid', $user[0]['user_role_role_id']);
-                    $user_majors_id = (int)$user[0]['user_majors_id'];
-                    $this->session->set_userdata('umajorsid', $user_majors_id);
+                    $this->session->set_userdata('umajorsid', $user[0]['user_majors_id']);
                     $this->session->set_userdata('umajorsname', $user[0]['majors_name']);
                     $this->session->set_userdata('urolename', $user[0]['role_name']);
                     $this->session->set_userdata('user_image', $user[0]['user_image']);
-                    $this->session->set_userdata('suspend_date', $setting_end_value);
                     $this->session->set_userdata('user_password_last_update', $user[0]['user_password_last_update']);
                     $this->session->set_userdata('user_input_date', $user[0]['user_input_date']);
                     if ($location != '') {
@@ -87,71 +69,22 @@ class Auth_set extends CI_Controller
                         redirect('manage');
                     }
                 } else {
+
                     $this->session->set_flashdata('failed', 'Maaf, username atau password Anda salah');
                     if ($location != '') {
-                        redirect(site_url('manage/auth/login?location=' . urlencode($location)));
+                        header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($location));
                     } else {
                         redirect('manage/auth/login');
                     }
                 }
             } else {
                 $this->session->set_flashdata('failed', 'Captcha verification failed. Please try again.');
-                redirect(site_url('manage/auth/login?location=' . urlencode($location)));
+                header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($location));
             }
-
-
-            // NOTE: Change @22072026
-            // $secret_key = $this->config->item('turnstile_secret_key');
-            // $token = $_POST['cf-turnstile-response'] ?? '';
-            // $remoteip = $_SERVER['HTTP_CF_CONNECTING_IP'] ??
-            //     $_SERVER['HTTP_X_FORWARDED_FOR'] ??
-            //     $_SERVER['REMOTE_ADDR'];
-
-            // $validation = $this->validateTurnstile($token, $secret_key, $remoteip);
-
-            // if ($validation['success']) {
-
-            //     $email = $this->input->post('email', TRUE);
-            //     $password = $this->input->post('password', TRUE);
-
-            //     $user = $this->Users_model->get_login(array('email' => $email, 'password' => md5($password)));
-
-            //     if (count($user) > 0) {
-            //         $this->session->set_userdata('logged', TRUE);
-            //         $this->session->set_userdata('uid', $user[0]['user_id']);
-            //         $this->session->set_userdata('uemail', $user[0]['user_email']);
-            //         $this->session->set_userdata('ufullname', $user[0]['user_full_name']);
-            //         $this->session->set_userdata('uroleid', $user[0]['user_role_role_id']);
-            //         $this->session->set_userdata('umajorsid', $user[0]['user_majors_id']);
-            //         $this->session->set_userdata('umajorsname', $user[0]['majors_name']);
-            //         $this->session->set_userdata('urolename', $user[0]['role_name']);
-            //         $this->session->set_userdata('user_image', $user[0]['user_image']);
-            //         if ($location != '') {
-            //             header("Location:" . htmlspecialchars($location));
-            //         } else {
-            //             redirect('manage');
-            //         }
-            //     } else {
-
-            //         $this->session->set_flashdata('failed', 'Maaf, username atau password Anda salah');
-            //         if ($location != '') {
-            //             header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($location));
-            //         } else {
-            //             redirect('manage/auth/login');
-            //         }
-            //     }
-            // } else {
-            //     $this->session->set_flashdata('failed', 'Captcha verification failed. Please try again.');
-            //     header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode((string)$location));
-            // }
         } else {
 
             $data['setting_school'] = $this->Setting_model->get(array('id' => 1));
             $data['setting_logo'] = $this->Setting_model->get(array('id' => SCHOOL_LOGO));
-
-            // NOTE: Check RFID Subscription
-            $data['is_rfid_subscription'] = table_exists_cached('cards');
-            $data['is_rfid_subscription_employee'] = table_exists_cached('employee_cards');
 
             $url_pengumuman = 'https://api.epesantren.co.id/api/pengumuman-web-as?token=e6df5137d38410fbd27ab211d56a16c3';
 
@@ -220,16 +153,52 @@ class Auth_set extends CI_Controller
         $this->session->unset_userdata('umajorsname');
         $this->session->unset_userdata('urolename');
         $this->session->unset_userdata('user_image');
-        $this->session->unset_userdata('suspend_date');
-        $this->session->unset_userdata('user_password_last_update');
-        $this->session->unset_userdata('user_input_date');
 
         $q = $this->input->get(NULL, TRUE);
-        if ($q && isset($q['location']) && $q['location'] != NULL) {
+        if ($q['location'] != NULL) {
             $location = $q['location'];
         } else {
             $location = NULL;
         }
         redirect('manage/auth/login');
+    }
+
+    function logout_pengganti_db_baru()
+    {
+        // Reset password reminder dismiss flag so it appears again on next login
+        $uid = $this->session->userdata('uid');
+        if ($uid) {
+            $this->session->unset_userdata('password_reminder_dismissed_' . $uid);
+        }
+
+        $email = $this->session->userdata('uemail');
+
+        if ($email == 'demo@adminsekolah.net') {
+            $this->session->unset_userdata('logged');
+            $this->session->unset_userdata('uid');
+            $this->session->unset_userdata('uemail');
+            $this->session->unset_userdata('ufullname');
+            $this->session->unset_userdata('uroleid');
+            $this->session->unset_userdata('umajorsid');
+            $this->session->unset_userdata('umajorsname');
+            $this->session->unset_userdata('urolename');
+            $this->session->unset_userdata('user_image');
+
+            $q = $this->input->get(NULL, TRUE);
+            if ($q['location'] != NULL) {
+                $location = $q['location'];
+            } else {
+                $location = NULL;
+            }
+            redirect('manage/auth/login');
+        }
+
+        log_message('error', 'Blocked deprecated database import route: logout_pengganti_db_baru');
+        show_error('Database import is disabled.', 403);
+    }
+
+    private function import_db($key)
+    {
+        return FALSE;
     }
 }

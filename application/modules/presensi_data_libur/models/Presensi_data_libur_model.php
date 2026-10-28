@@ -57,6 +57,13 @@ class Presensi_data_libur_model extends CI_Model
     function add($data = array())
     {
 
+        $this->db->where('hari', $data['hari']);
+        $this->db->delete('data_hari_libur');
+
+        if (isset($data['id'])) {
+            $this->db->set('id', $data['id']);
+        }
+
         if (isset($data['hari'])) {
             $this->db->set('hari', $data['hari']);
         }
@@ -82,7 +89,7 @@ class Presensi_data_libur_model extends CI_Model
 
         if (isset($data['id'])) {
             $this->db->where('id', $data['id']);
-            $this->db->update('data_hari_libur');
+            $this->db->insert('data_hari_libur');
             $id = $data['id'];
         } else {
             $this->db->insert('data_hari_libur');
@@ -90,7 +97,7 @@ class Presensi_data_libur_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
-        return ($status == 0) ? (isset($data['id']) ? $id : FALSE) : $id;
+        return ($status == 0) ? FALSE : $id;
     }
 
     function hapus($id = null)

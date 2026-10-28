@@ -47,7 +47,7 @@ class Dashboard_guru extends CI_Controller
             )
         )->result_array();
 
-        $data['jadwal'] = $this->db->query("SELECT jam_pelajaran_name, class_name, schedule_id, lesson_name FROM schedule
+        $data['jadwal'] = $this->db->query("SELECT jam_pelajaran_name, class_name, schedule_id, lesson_name,jam_pelajaran_start,jam_pelajaran_end FROM schedule
                                             JOIN class ON class_id = schedule_class_id
                                             JOIN lesson ON lesson_id = schedule_lesson_id
                                             JOIN day ON day_id = schedule_day

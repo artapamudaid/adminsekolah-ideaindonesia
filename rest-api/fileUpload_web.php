@@ -1,8 +1,8 @@
 <?php
-$db_host='localhost';
-$db_user='adminsek_userdemo';
-$db_pass='PzKyeml8k3)^';
-$db_name='adminsek_demo';
+$db_host=getenv('DB_HOST') ?: 'localhost';
+$db_user=getenv('DB_USERNAME') ?: '';
+$db_pass=getenv('DB_PASSWORD') ?: '';
+$db_name=getenv('DB_DATABASE') ?: '';
 $koneksi = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 
 date_default_timezone_set('Asia/Jakarta');
@@ -25,6 +25,7 @@ $response = array();
 $file_upload_url = $target_path;
 
 $id_pegawai = isset($_REQUEST['id_pegawai']) ? $_REQUEST['id_pegawai'] : '';
+$id_pegawai = preg_replace('/[^0-9]/', '', $id_pegawai);
 $type = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
 $lokasi = isset($_REQUEST['lokasi']) ? $_REQUEST['lokasi'] : '';
 $longi = isset($_REQUEST['longi']) ? $_REQUEST['longi'] : '';

@@ -23,55 +23,19 @@ class Payment_model extends CI_Model
 
     function get_tagihan($id_periode, $id_majors)
     {
-        $cache_key = 'payment_tagihan_' . md5(json_encode(array($id_periode, $id_majors))) . '_' . get_cache_version('payment');
-        try {
-            if (!isset($this->cache)) {
-                $this->load->driver('cache', array('adapter' => 'file'));
-            }
-            $cached = $this->cache->get($cache_key);
-            if ($cached !== FALSE) {
-                return $cached;
-            }
-        } catch (\Throwable $e) {
-            log_message('error', 'Cache read error in Payment_model::get_tagihan: ' . $e->getMessage());
-        }
-
         $query = "SELECT * FROM `payment` JOIN period ON payment.period_period_id = period.period_id JOIN pos ON payment.pos_pos_id = pos.pos_id JOIN account ON account.account_id = pos.account_account_id JOIN majors ON majors.majors_id = account.account_majors_id WHERE payment.period_period_id = '$id_periode' AND majors.majors_id = '$id_majors' AND majors.majors_status = '1' ";
         $q = $this->db->query($query);
-        $data = NULL;
         if ($q->num_rows() > 0) {
             foreach ($q->result_array() as $row) {
                 $data[] = $row;
             }
+            return $data;
         }
-
-        try {
-            if (isset($this->cache)) {
-                $this->cache->save($cache_key, $data, CACHE_TTL);
-            }
-        } catch (\Throwable $e) {
-            log_message('error', 'Cache write error in Payment_model::get_tagihan: ' . $e->getMessage());
-        }
-
-        return $data;
     }
 
     // Get From Databases
     function get($params = array())
     {
-        $cache_key = get_session_cache_key('payment', $params);
-        try {
-            if (!isset($this->cache)) {
-                $this->load->driver('cache', array('adapter' => 'file'));
-            }
-            $cached = $this->cache->get($cache_key);
-            if ($cached !== FALSE) {
-                return $cached;
-            }
-        } catch (\Throwable $e) {
-            log_message('error', 'Cache read error in Payment_model::get: ' . $e->getMessage());
-        }
-
         if (isset($params['id'])) {
             $this->db->where('payment.payment_id', $params['id']);
         }
@@ -150,20 +114,10 @@ class Payment_model extends CI_Model
         $res = $this->db->get('payment');
 
         if (isset($params['id'])) {
-            $result = $res->row_array();
+            return $res->row_array();
         } else {
-            $result = $res->result_array();
+            return $res->result_array();
         }
-
-        try {
-            if (isset($this->cache)) {
-                $this->cache->save($cache_key, $result, CACHE_TTL);
-            }
-        } catch (\Throwable $e) {
-            log_message('error', 'Cache write error in Payment_model::get: ' . $e->getMessage());
-        }
-
-        return $result;
     }
 
     // Add and update to database
@@ -212,7 +166,6 @@ class Payment_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
-        bump_cache_version('payment');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -220,7 +173,6 @@ class Payment_model extends CI_Model
     function delete_all()
     {
         $this->db->truncate('payment');
-        bump_cache_version('payment');
     }
 
     // Delete to database
@@ -228,6 +180,5 @@ class Payment_model extends CI_Model
     {
         $this->db->where('payment_id', $id);
         $this->db->delete('payment');
-        bump_cache_version('payment');
     }
 }

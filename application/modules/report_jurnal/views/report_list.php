@@ -134,7 +134,7 @@
                                     <label>Laporan</label>
                                     <select class="form-control" name="r" id="laporan_id" required="">
                                         <option value="">- Pilih Laporan -</option>
-                                        <!-- <option value="presensi" <?= (isset($q['r']) && $q['r'] == 'presensi') ? 'selected' : '' ?>>Rekap Presensi</option> -->
+                                        <option value="presensi" <?= (isset($q['r']) && $q['r'] == 'presensi') ? 'selected' : '' ?>>Rekap Presensi</option>
                                         <option value="harian" <?= (isset($q['r']) && $q['r'] == 'harian') ? 'selected' : '' ?>>Rekap Nilai Harian</option>
                                         <option value="sumatif" <?= (isset($q['r']) && $q['r'] == 'sumatif') ? 'selected' : '' ?>>Rekap Nilai Sumatif</option>
                                         <option value="akhir" <?= (isset($q['r']) && $q['r'] == 'akhir') ? 'selected' : '' ?>>Draft Nilai Akhir</option>

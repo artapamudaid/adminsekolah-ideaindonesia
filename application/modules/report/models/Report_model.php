@@ -46,24 +46,6 @@ class Report_model extends CI_Model
             $this->db->where_in('idKas', $data['kas_account_id']);
         }
 
-        if (isset($data['namaKas'])) {
-            $this->db->like('namaKas', $data['namaKas']);
-        }
-
-        // Filter period_id hanya untuk Bulan dan Bebas, tapi tidak menghilangkan jenis lainnya
-        if (isset($data['period_id'])) {
-            $this->db->group_start();
-            // (jenisTransaksi IN ('Bulan','Bebas') AND idPeriod = X)
-            $this->db->group_start();
-            $this->db->where_in('jenisTransaksi', ['Bulan', 'Bebas']);
-            $this->db->where('idPeriod', $data['period_id']);
-            $this->db->group_end();
-
-            // OR (jenisTransaksi lainnya)
-            $this->db->or_where_not_in('jenisTransaksi', ['Bulan', 'Bebas']);
-            $this->db->group_end();
-        }
-
         $query = $this->db->get();
 
         // Memeriksa apakah query berhasil dan mengembalikan hasilnya
@@ -107,26 +89,6 @@ class Report_model extends CI_Model
         if (isset($data['kas_account_id'])) {
             $this->db->where_in('idKas', $data['kas_account_id']);
         }
-
-        if (isset($data['namaKas'])) {
-            $this->db->like('namaKas', $data['namaKas']);
-        }
-
-        // Filter period_id hanya untuk Bulan dan Bebas, tapi tidak menghilangkan jenis lainnya
-        if (isset($data['period_id'])) {
-            $this->db->group_start();
-            // (jenisTransaksi IN ('Bulan','Bebas') AND idPeriod = X)
-            $this->db->group_start();
-            $this->db->where_in('jenisTransaksi', ['Bulan', 'Bebas']);
-            $this->db->where('idPeriod', $data['period_id']);
-            $this->db->group_end();
-
-            // OR (jenisTransaksi lainnya)
-            // $this->db->or_where_not_in('jenisTransaksi', ['Bulan', 'Bebas']);
-            $this->db->group_end();
-        }
-
-        // $this->db->where_in('jenisTransaksi', ['Bulan', 'Bebas', 'Debit', 'Kredit']);
 
         $query = $this->db->get();
 
@@ -172,24 +134,6 @@ class Report_model extends CI_Model
             }
         }
 
-        if (isset($data['namaKas'])) {
-            $this->db->like('namaKas', $data['namaKas']);
-        }
-
-        // Filter period_id hanya untuk Bulan dan Bebas, tapi tidak menghilangkan jenis lainnya
-        if (isset($data['period_id'])) {
-            $this->db->group_start();
-            // (jenisTransaksi IN ('Bulan','Bebas') AND idPeriod = X)
-            $this->db->group_start();
-            $this->db->where_in('jenisTransaksi', ['Bulan', 'Bebas']);
-            $this->db->where('idPeriod', $data['period_id']);
-            $this->db->group_end();
-
-            // OR (jenisTransaksi lainnya)
-            $this->db->or_where_not_in('jenisTransaksi', ['Bulan', 'Bebas']);
-            $this->db->group_end();
-        }
-
         if (isset($data['order_column']) and isset($data['order_dir'])) {
             if (!empty($data['order_column']) and !empty($data['order_dir'])) {
                 $this->db->order_by($data['order_column'], $data['order_dir']);
@@ -217,24 +161,6 @@ class Report_model extends CI_Model
 
         if (isset($data['majors_id'])) {
             $this->db->where('idMajors', $data['majors_id']);
-        }
-
-        if (isset($data['namaKas'])) {
-            $this->db->like('namaKas', $data['namaKas']);
-        }
-
-        // Filter period_id hanya untuk Bulan dan Bebas, tapi tidak menghilangkan jenis lainnya
-        if (isset($data['period_id'])) {
-            $this->db->group_start();
-            // (jenisTransaksi IN ('Bulan','Bebas') AND idPeriod = X)
-            $this->db->group_start();
-            $this->db->where_in('jenisTransaksi', ['Bulan', 'Bebas']);
-            $this->db->where('idPeriod', $data['period_id']);
-            $this->db->group_end();
-
-            // OR (jenisTransaksi lainnya)
-            $this->db->or_where_not_in('jenisTransaksi', ['Bulan', 'Bebas']);
-            $this->db->group_end();
         }
 
         $this->db->group_by('akunBayar,jenisBayar');

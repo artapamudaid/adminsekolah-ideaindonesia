@@ -6,13 +6,13 @@ header("Expires: 0");
 ?>
 
 <table style='border-bottom: 1px solid #999999; padding-bottom: 10px; width: 190mm;'>
-    <tr valign='top'>
-        <td colspan="8" valign='middle'>
-            <div style='font-weight: bold; padding-bottom: 5px; font-size: 14pt;'><?php echo $setting_school['setting_value'] ?>
-            </div>
-            <span style='font-size: 8pt;'><?php echo $setting_address['setting_value'] ?>, Telp. <?php echo $setting_phone['setting_value'] ?></span>
-        </td>
-    </tr>
+<tr valign='top'>
+	<td colspan="8" valign='middle'>
+		<div style='font-weight: bold; padding-bottom: 5px; font-size: 14pt;'><?php echo $setting_school['setting_value'] ?>
+		</div>
+		<span style='font-size: 8pt;'><?php echo $setting_address['setting_value'] ?>, Telp. <?php echo $setting_phone['setting_value'] ?></span>
+	</td>
+</tr>
 </table>
 <br>
 <?php $pelajaran = $this->Lesson_model->get(array('id' => $q['l'])) ?>
@@ -25,53 +25,51 @@ header("Expires: 0");
     <tr>
         <td>Guru/Pengajar</td>
         <td>:</td>
-        <td><?php echo $pelajaran['employee_name'] ?></td>
+        <td><?php echo $pelajaran['lesson_teacher'] ?></td>
     </tr>
 </table>
 <br>
-<? php ?>
+<?php?>
 <table border="1">
     <thead>
-        <tr>
-            <th width='5' rowspan='2'>
-                <center>No.</center>
-            </th>
-            <th rowspan='2'>
-                <center>NIS</center>
-            </th>
-            <th rowspan='2'>
-                <center>Nama</center>
-            </th>
-            <th colspan='<?php echo $interval->format("%a") ?>'>
-                <center><?php echo $namaBulan . ' ' . $namaTahun ?></center>
-            </th>
-        </tr>
-        <tr>
-
-            <?php
-            foreach ($daterange as $dt) {
-                echo '<th>' . $dt->format("d") . '</th>';
-            }
-            ?>
-        </tr>
-    </thead>
-    <tbody>
+	<tr>
+		<th width='5' rowspan='2'><center>No.</center></th> 
+		<th rowspan='2'><center>NIS</center></th> 
+		<th rowspan='2'><center>Nama</center></th>
+		<th colspan='<?php echo $interval->format("%a")?>'><center><?php echo $namaBulan . ' ' . $namaTahun ?></center></th>
+	</tr>
+	<tr>
+	    
+    <?php
+        foreach ($daterange as $dt) {
+            echo '<th>'.$dt->format("d").'</th>';
+        }
+    ?>
+	</tr>
+	</thead>
+	<tbody>
+	<?php 
+	    $no = 1;
+	    foreach ($student as $row) :
+    ?>
+    <tr>
+					<td><?php echo $no++ ?></td>
+					<td><?php echo $row['student_nis']?></td> 
+					<td><?php echo $row['student_full_name']?></td>
         <?php
-        $no = 1;
-        foreach ($student as $row) :
+            foreach ($daterange as $dt) {
+                $date = $dt->format("Y-m-d");
+                $period_id = $q['p'];
+                $month_id = $q['m'];
+                $class_id = $q['c'];
+                $lesson_id = $q['l'];
+                $student_id = $row['student_id'];
+                
+                $presensi = $this->db->query("SELECT presensi_pelajaran_status FROM presensi_pelajaran WHERE presensi_pelajaran_date = '$date' AND presensi_pelajaran_period_id = '$period_id' AND presensi_pelajaran_month_id = '$month_id' AND presensi_pelajaran_class_id = '$class_id' AND presensi_pelajaran_lesson_id = '$lesson_id' AND presensi_pelajaran_student_id = '$student_id'")->row_array();
+                echo (isset($presensi['presensi_pelajaran_status'])) ? '<td>'.$presensi['presensi_pelajaran_status'].'</td>' : '<td>-</td>';
+            }
         ?>
-            <tr>
-                <td><?php echo $no++ ?></td>
-                <td><?php echo $row['student_nis'] ?></td>
-                <td><?php echo $row['student_full_name'] ?></td>
-                <?php foreach ($daterange as $dt):
-                    $date = $dt->format("Y-m-d");
-                    $student_id = $row['student_id'];
-                    $status = $presensiMap[$student_id][$date] ?? '-';
-                ?>
-                    <td><?= $status ?></td>
-                <?php endforeach; ?>
-            </tr>
-        <?php endforeach ?>
+				</tr>
+	<?php endforeach ?>
     </tbody>
 </table>

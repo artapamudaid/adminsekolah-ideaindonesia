@@ -11,70 +11,74 @@
 		</ol>
 	</section>
 	<section class="content">
-		<div class="row">
-			<div class="col-xs-12">
+		<div class="row"> 
+			<div class="col-xs-12"> 
 				<div class="box box-primary">
 					<div class="box-header with-border">
-						<h3 class="box-title">Jumlah - <?php echo $settinghutang['poshutang_name'] . ' - T.A ' . $settinghutang['period_start'] . '/' . $settinghutang['period_end']; ?></h3>
+						<h3 class="box-title">Jumlah - <?php echo $settinghutang['poshutang_name'].' - T.A '.$settinghutang['period_start'].'/'.$settinghutang['period_end']; ?></h3>
 					</div><!-- /.box-header -->
 					<div class="box-body">
-						<div class="form-group">
+						<div class="form-group">						
 							<label for="" class="col-sm-1 control-label">Tahun</label>
 							<div class="col-sm-2">
-								<input type="text" class="form-control" value="<?php echo $settinghutang['period_start'] . '/' . $settinghutang['period_end'] ?>" readonly="">
+								<input type="text" class="form-control" value="<?php echo $settinghutang['period_start'].'/'.$settinghutang['period_end'] ?>" readonly="">
 							</div>
 							<label for="" class="col-sm-1">Setting Hutang</label>
-							<div class="col-sm-2">
-								<a class="btn btn-primary btn-sm" href="<?php echo site_url('manage/settinghutang/add_settinghutang/' . $settinghutang['settinghutang_id']) ?>"><span class="glyphicon glyphicon-plus"></span> Kepada Kreditur</a>
-							</div>
-
-							<div class="col-sm-1">
-								<a class="btn btn-default btn-sm" href="<?php echo site_url('manage/settinghutang') ?>"><span class="glyphicon glyphicon-repeat"></span> Kembali</a>
-							</div>
+        					<div class="col-sm-2">
+        						<a class="btn btn-primary btn-sm" href="<?php echo site_url('manage/settinghutang/add_settinghutang/' . $settinghutang['settinghutang_id']) ?>"><span class="glyphicon glyphicon-plus"></span> Kepada Kreditur</a>
+        					</div>
+        					
+        					<div class="col-sm-1">
+        						<a class="btn btn-default btn-sm" href="<?php echo site_url('manage/settinghutang') ?>"><span class="glyphicon glyphicon-repeat"></span> Kembali</a>
+        					</div>
 						</div>
-					</div><!-- /.box-body -->
-				</div><!-- /.box -->
+				</div><!-- /.box-body -->
+			</div><!-- /.box -->
 
 				<div class="box box-primary">
 					<div class="box-body table-responsive">
 						<table id="dtable" class="table table-hover">
-							<thead>
-								<tr>
-									<th>No</th>
-									<th>No. Ref</th>
-									<th>Tanggal Hutang</th>
-									<th>Nama Kreditur</th>
-									<th>Jumlah Hutang</th>
-									<th>Aksi</th>
-								</tr>
+						    <thead>
+							<tr>
+								<th>No</th>
+								<th>No. Ref</th>
+								<th>Nama</th>
+								<th>Posisi</th>
+								<th>Hutang</th>
+								<th>Jumlah Angsuran</th>
+								<th>Angsuran</th>
+								<th>Aksi</th>
+							</tr>
 							</thead>
 							<tbody>
 								<?php
 								$i = 1;
-								foreach ($kreditur as $row) :
-								?>
+								foreach ($kreditur as $row):
+									?>
 									<tr>
 										<td><?php echo $i; ?></td>
 										<td><?php echo $row['hutang_noref']; ?></td>
-										<td style="text-align: center;"><?php echo pretty_date($row['hutang_date'], 'd-m-Y', false); ?></td>
-										<td><?php echo $row['hutang_kreditur']; ?></td>
-										<td><?php echo 'Rp. ' . number_format($row['hutang_bill'], 0, ',', '.') ?></td>
+										<td><?php echo $row['employee_name']; ?></td>
+										<td><?php echo $row['position_name']; ?></td>
+										<td><?php echo 'Rp. ' . number_format($row['hutang_bill'], 0, ',', '.') ?></td> 
+										<td><?php echo $row['hutang_cicil'].' Kali' ?></td> 
+										<td><?php echo 'Rp. ' . number_format($row['hutang_pay_bill'], 0, ',', '.') ?></td> 
 										<td>
-											<a href="<?php echo site_url('manage/settinghutang/edit_settinghutang/' . $row['hutang_settinghutang_id'] .  '/' . $row['hutang_id']) ?>" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Ubah Jumlah Hutang"><i class="fa fa-edit"></i></a>
-											<a href="<?php echo site_url('manage/settinghutang/delete_settinghutang/' . $row['hutang_settinghutang_id'] . '/' . $row['hutang_id']) ?>" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Hapus Hutang" onclick="return confirm('<?php echo 'Apakah anda akan menghapus hutang a.n ' . $row['hutang_kreditur'] . '?' ?>')"><i class="fa fa-trash"></i></a>
-										</td>
+										    <a href="<?php echo site_url('manage/settinghutang/edit_settinghutang/'. $row['hutang_settinghutang_id'].'/'.$row['hutang_employee_id'].'/'.$row['hutang_id']) ?>" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Ubah Jumlah Hutang"><i class="fa fa-edit"></i></a>
+											<a href="<?php echo site_url('manage/settinghutang/delete_settinghutang/'. $row['hutang_settinghutang_id'].'/'.$row['hutang_employee_id'].'/'.$row['hutang_id']) ?>" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Hapus Hutang" onclick="return confirm('<?php echo 'Apakah anda akan menghapus hutang a.n '.$row['employee_name'].'?' ?>')"><i class="fa fa-trash"></i></a>
+										</td>	
 									</tr>
-								<?php
+									<?php
 									$i++;
 								endforeach;
 								?>
-							</tbody>
-						</table>
-					</div>
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</div>
-	</section>
+	</div>		
+</section>
 </div>
 
 <div class="modal fade" id="deletePayhutang">
@@ -104,9 +108,10 @@
 
 
 <script>
+
 	function getId(id) {
 		$('#settinghutangID').val(id),
-			$('#employeeID').val(id)
+		$('#employeeID').val(id)
 
 	}
 </script>

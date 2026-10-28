@@ -8,16 +8,13 @@
           "email": "esekolahnet@gmail.com"
       }
   ],
-  "config": {
-      "platform": {
-          "php": "7.4.0"
-      }
-  },
   "require": {
       "php": ">=7.4",
       "dompdf/dompdf": "*",
       "spipu/html2pdf": "*",
-      "phpoffice/phpspreadsheet": "*"
+      "phpoffice/phpspreadsheet": "*",
+      "artapamudaid/secure-api-client": "^1.0",
+      "artapamudaid/gemini-helper": "*"
   },
   "license": "proprietary"
 }

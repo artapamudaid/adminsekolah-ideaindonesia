@@ -40,85 +40,54 @@ class Cardregister_set extends CI_Controller
 
   function get_data()
   {
-    $data = $this->db->query("SELECT student.student_nis, student.student_full_name,
-    majors.majors_short_name, class.class_name,
-    cards.rfid, cards.pin FROM student
-    JOIN majors ON majors.majors_id = student.majors_majors_id
-    JOIN class ON class.class_id = student.class_class_id
-    LEFT JOIN cards ON cards.nis = student.student_nis")->result();
+    $data = $this->db
+      ->select('student.student_nis, student.student_full_name, majors.majors_short_name, class.class_name, cards.rfid, cards.pin')
+      ->from('student')
+      ->join('majors', 'majors.majors_id = student.majors_majors_id')
+      ->join('class', 'class.class_id = student.class_class_id')
+      ->join('cards', 'cards.nis = student.student_nis', 'left')
+      ->get()
+      ->result();
 
     echo json_encode($data);
   }
 
   function set_data()
   {
-    $nis = sanitizeStrict($this->input->post('nis'));
-    $rfid = sanitizeStrict($this->input->post('rfid'));
-    $pin = sanitizeStrict($this->input->post('pin'));
+    $nis = preg_replace('/[^0-9A-Za-z_.-]/', '', (string) $this->input->post('nis', TRUE));
+    $rfid = preg_replace('/[^0-9A-Za-z_.-]/', '', (string) $this->input->post('rfid', TRUE));
+    $pin = (string) $this->input->post('pin', TRUE);
 
-    if (!ctype_digit($rfid) || strlen($rfid) != 10) {
-      echo json_encode([
-        'status' => false,
-        'message' => 'RFID harus berupa angka dan memiliki panjang 10 karakter.'
-      ]);
+    if ($nis === '' || $rfid === '' || $pin === '') {
+      echo json_encode(FALSE);
       return;
     }
 
-    $check_rfid = $this->db
-      ->where('rfid', $rfid)
-      ->where('nis !=', $nis)
-      ->get('cards')
-      ->num_rows();
+    $student = $this->db->where('nis', $nis)->get('cards')->result_array();
 
-    if ($check_rfid > 0) {
-      echo json_encode([
-        'status' => false,
-        'message' => 'RFID sudah digunakan oleh siswa lain.'
-      ]);
-      return;
-    }
+    if (count($student) > 0) {
 
-    if (!ctype_digit($pin) || strlen($pin) != 6) {
-      echo json_encode([
-        'status' => false,
-        'message' => 'PIN harus berupa angka dan memiliki panjang 6 karakter.'
-      ]);
-      return;
-    }
-
-    $student = $this->db->get_where('cards', ['nis' => $nis])->row_array();
-
-    if ($student) {
-
-      $payload = [
-        'rfid'       => $rfid,
-        'pin'        => md5($pin),
+      $data = array(
+        'rfid' => $rfid,
+        'pin' => md5($pin),
         'updated_at' => date('Y-m-d H:i:s')
-      ];
+      );
 
       $this->db->where('nis', $nis);
-      $this->db->update('cards', $payload);
-
-      echo json_encode([
-        'status' => true,
-        'message' => 'Data berhasil diperbarui.'
-      ]);
+      $data = $this->db->update('cards', $data);
     } else {
 
-      $payload = [
-        'nis'   => $nis,
-        'rfid'  => $rfid,
-        'pin'   => md5($pin),
+      $data = array(
+        'rfid' => $rfid,
+        'nis' => $nis,
+        'pin' => md5($pin),
         'status' => 1
-      ];
+      );
 
-      $this->db->insert('cards', $payload);
-
-      echo json_encode([
-        'status' => true,
-        'message' => 'Data berhasil disimpan.'
-      ]);
+      $data = $this->db->insert('cards', $data);
     }
+
+    echo json_encode($data);
   }
 
 
@@ -135,20 +104,21 @@ class Cardregister_set extends CI_Controller
   {
     $params = array();
 
-    $id_majors = $this->input->post('xls_majors');
-    $id_kelas  = $this->input->post('xls_class');
+    $id_majors = (int) $this->input->post('xls_majors', TRUE);
+    $id_kelas  = $this->input->post('xls_class', TRUE);
 
     $params['majors_id'] = $id_majors;
 
     if ($id_kelas != 'all') {
-      $params['class_id']  = $id_kelas;
-      $data['kelas']   = $this->db->query("SELECT class_name FROM class WHERE class_id = '$id_kelas'")->row_array();
+      $id_kelas = (int) $id_kelas;
+      $params['class_id'] = $id_kelas;
+      $data['kelas'] = $this->db->select('class_name')->where('class_id', $id_kelas)->get('class')->row_array();
     } else {
       $data['kelas']   = array('class_name' => 'Semua Kelas');
     }
 
     $data['student'] = $this->Student_model->get($params);
-    $data['majors']  = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$id_majors'")->row_array();
+    $data['majors'] = $this->db->select('majors_short_name')->where('majors_id', $id_majors)->get('majors')->row_array();
 
     $this->load->view('cardregister/cardregister_rfid', $data);
   }
@@ -157,8 +127,21 @@ class Cardregister_set extends CI_Controller
   {
     $this->load->library('excel');
     if (isset($_FILES["file"]["name"])) {
+      $ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
+      if (
+        $_FILES['file']['error'] !== UPLOAD_ERR_OK ||
+        $ext !== 'xls' ||
+        $_FILES['file']['size'] > 5 * 1024 * 1024 ||
+        !is_uploaded_file($_FILES['file']['tmp_name'])
+      ) {
+        $this->session->set_flashdata('failed', 'File RFID harus berformat .xls yang valid');
+        redirect('manage/cardregister/set_rfid');
+      }
+
       $path = $_FILES["file"]["tmp_name"];
-      $object = PHPExcel_IOFactory::load($path);
+      $reader = PHPExcel_IOFactory::createReader('Excel5');
+      $reader->setReadDataOnly(TRUE);
+      $object = $reader->load($path);
       foreach ($object->getWorksheetIterator() as $worksheet) {
         $highestRow = $worksheet->getHighestRow();
         $highestColumn = $worksheet->getHighestColumn();
@@ -166,12 +149,16 @@ class Cardregister_set extends CI_Controller
           $nis            = $worksheet->getCellByColumnAndRow(0, $row)->getValue();
           $rfid           = $worksheet->getCellByColumnAndRow(4, $row)->getValue();
 
-          $nis            = str_replace("'", "", $nis);
-          $rfid           = str_replace("'", "", $rfid);
+          $nis = preg_replace('/[^0-9A-Za-z_.-]/', '', str_replace("'", "", (string) $nis));
+          $rfid = preg_replace('/[^0-9A-Za-z_.-]/', '', str_replace("'", "", (string) $rfid));
 
-          $getRfid       = $this->db->query("SELECT rfid FROM cards WHERE nis = '$nis'")->result_array();
+          if ($nis === '' || $rfid === '') {
+            continue;
+          }
 
-          if (count($$getRfid) > 0) {
+          $getRfid = $this->db->select('rfid')->where('nis', $nis)->get('cards')->result_array();
+
+          if (count($getRfid) > 0) {
             $data = array(
               'rfid'        => $rfid
             );

@@ -120,6 +120,7 @@ class Bayarhutang_model extends CI_Model {
 	}
 	
 	function get_sum(){
+	    
 	    if(isset($params['id']))
 		{
 			$this->db->where('banking_id', $params['id']);

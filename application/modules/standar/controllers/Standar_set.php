@@ -52,51 +52,19 @@ class Standar_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $name     = sanitizeStrict($_POST['name']);
-      $majors   = sanitizeStrict($_POST['standar_majors_id']);
+      $name     = $_POST['name'];
+      $majors   = $_POST['standar_majors_id'];
 
-      $cpt = count($name);
-      $added = 0;
-      $skipped = 0;
+      $cpt = count($_POST['name']);
       for ($i = 0; $i < $cpt; $i++) {
-
-        if (empty($name[$i])) {
-          $skipped++;
-          continue;
-        }
-
-        $colWhere = ['name' => $name[$i], 'standar_majors_id' => $majors[$i]];
-        if ($this->General_model->checkDataExists("standar", $colWhere)) {
-          $skipped++;
-          continue;
-        }
         $params['standar_majors_id']   = $majors;
         $params['name']           = $name[$i];
 
-        $insert = $this->Standar_model->add($params);
-        if (!$insert) {
-          $skipped++;
-          continue;
-        }
-
-        $added++;
+        $this->Standar_model->add($params);
       }
-
-      if ($added > 1) {
-        $msg = "$added Program/Standar berhasil ditambahkan";
-      } elseif ($added == 1) {
-        $msg = "1 Program/Standar berhasil ditambahkan";
-      } else {
-        $msg = "Tidak ada yang ditambahkan";
-      }
-
-      if ($skipped > 0) {
-        $msg .= "<br>($skipped Program/Standar dilewati)";
-      }
-
-      $this->session->set_flashdata('success', $msg);
     }
 
+    $this->session->set_flashdata('success', ' Tambah Program/Standar Berhasil');
     redirect('manage/standar');
   }
 
@@ -112,29 +80,11 @@ class Standar_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('id')) {
-        $id = sanitizeStrict($this->input->post('id'));
-        $params['id'] = $id;
+        $params['id'] = $this->input->post('id');
       }
 
-      $name = sanitizeStrict($this->input->post('name'));
-      $standar_majors_id = sanitizeStrict($this->input->post('standar_majors_id'));
-
-      $colWhere = [
-        'name' => $name,
-        'standar_majors_id' => $standar_majors_id
-      ];
-
-      if (!empty($id)) {
-        $colWhere['id <>'] = $id;
-      }
-
-      if ($this->General_model->checkDataExists("standar", $colWhere)) {
-        $this->session->set_flashdata('failed', 'Data sudah ada');
-        redirect('manage/standar/edit/' . $id);
-      }
-
-      $params['name'] = $name;
-      $params['standar_majors_id'] = $standar_majors_id;
+      $params['name'] = $this->input->post('name');
+      $params['standar_majors_id'] = $this->input->post('standar_majors_id');
 
       $status = $this->Standar_model->add($params);
 
@@ -237,65 +187,26 @@ class Standar_set extends CI_Controller
 
   public function add_glob_item()
   {
-    $itemID = null;
+
     if ($_POST == TRUE) {
-      $itemID      = sanitizeStrict($_POST['standar_id']);
-      $itemKode    = sanitizeStrict($_POST['kode']);
-      $itemName    = sanitizeStrict($_POST['name']);
-      $itemAccount = sanitizeStrict($_POST['aktivitas_account_id']);
+      $itemID      = $_POST['standar_id'];
+      $itemKode    = $_POST['kode'];
+      $itemName    = $_POST['name'];
+      $itemAccount = $_POST['aktivitas_account_id'];
 
-      $cpt = count($itemKode);
-      $added = 0;
-      $skipped = 0;
+      $cpt = count($_POST['kode']);
       for ($i = 0; $i < $cpt; $i++) {
-
-        if (empty($itemKode[$i])) {
-          $skipped++;
-          continue;
-        }
-
-        $colWhere = [
-          'aktivitas_standar_id' => $itemID,
-          'aktivitas_kode' => $itemKode[$i],
-          'aktivitas_name' => $itemName[$i],
-          'aktivitas_account_id' => $itemAccount[$i]
-        ];
-
-        if ($this->General_model->checkDataExists("aktivitas", $colWhere)) {
-          $skipped++;
-          continue;
-        }
 
         $params['aktivitas_standar_id']  = $itemID;
         $params['aktivitas_kode']        = $itemKode[$i];
         $params['aktivitas_name']        = $itemName[$i];
         $params['aktivitas_account_id']  = $itemAccount[$i];
 
-        $insert = $this->Standar_model->add_item($params);
-        if (!$insert) {
-          $skipped++;
-          continue;
-        }
-
-        $added++;
+        $this->Standar_model->add_item($params);
       }
-
-      if ($added > 1) {
-        $msg = "$added Aktivitas berhasil ditambahkan";
-      } elseif ($added == 1) {
-        $msg = "1 Aktivitas berhasil ditambahkan";
-      } else {
-        $msg = "Tidak ada yang ditambahkan";
-      }
-
-      if ($skipped > 0) {
-        $msg .= "<br>($skipped Aktivitas dilewati)";
-      }
-
-      $this->session->set_flashdata('success', $msg);
-      $itemID = !empty($itemID) ? $itemID : sanitizeStrict($this->input->post('standar_id'));
     }
 
+    $this->session->set_flashdata('success', ' Tambah Item Pembayaran Berhasil');
     redirect('manage/standar/view_item/' . $itemID);
   }
 

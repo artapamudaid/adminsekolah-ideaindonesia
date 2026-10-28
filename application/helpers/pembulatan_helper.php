@@ -31,32 +31,3 @@ function _desimal($angka)
     $angka = str_replace(",", ".", $angka);
     return $angka;
 }
-
-/**
- * Format angka ke format Rupiah
- * Contoh: 1000000 => Rp 1.000.000
- */
-if (!function_exists('rp')) {
-    function rp($angka, $prefix = 'Rp ')
-    {
-        if ($angka === '' || $angka === null) return '';
-        return $prefix . number_format((float)$angka, 2, ',', '.');
-        // pakai 2 desimal biar konsisten dengan DECIMAL(30,2)
-    }
-}
-
-/**
- * Ubah titik desimal ke koma
- * Contoh: 1234.56 => 1234,56
- */
-if (!function_exists('ubahkoma')) {
-    function ubahkoma($angka)
-    {
-        if ($angka === '' || $angka === null) return '';
-
-        // pastikan ke float dulu agar aman
-        $angka = (float)$angka;
-        // Format dengan 2 desimal, ubah titik jadi koma
-        return number_format($angka, 2, ',', '');
-    }
-}

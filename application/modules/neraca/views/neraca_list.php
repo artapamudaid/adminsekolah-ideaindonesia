@@ -29,19 +29,11 @@
 									</select>
 								</div>
 							</div>
-							<!-- <div class="col-md-2">
-								<div class="form-group">
-									<div class="input-group date " data-date="" data-date-format="yyyy-mm-dd">
-										<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-										<input class="form-control" type="text" name="start" id="start" readonly="readonly" placeholder="Tanggal Awal">
-									</div>
-								</div>
-							</div> -->
 							<div class="col-md-2">
 								<div class="form-group">
 									<div class="input-group date " data-date="" data-date-format="yyyy-mm-dd">
 										<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
-										<input class="form-control" type="text" name="end" id="end" readonly="readonly" placeholder="Tanggal Akhir">
+										<input class="form-control" type="text" name="end" id="end" readonly="readonly" placeholder="Tanggal">
 									</div>
 								</div>
 							</div>
@@ -61,28 +53,14 @@
 
 <script>
 	function cari_data() {
-		//var start = $("#start").val();
 		var end = $("#end").val();
 		var majors_id = $("#majors_id").val();
-		if (!end) {
-			toastNotifikasi('error', 'Pilih Tanggal akhir dahulu!', 'Gagal!');
-			return;
-		}
-
-		if (!majors_id) {
-			toastNotifikasi('error', 'Pilih Unit Sekolah dahulu!', 'Gagal!');
-			return;
-		}
 		//alert(id_jurusan+id_kelas);
 		if (end != '' && majors_id != '') {
-			let btn = $('#btn-cari');
-			btn.attr('disabled', true);
-			btn.html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
 			$.ajax({
 				url: '<?php echo base_url(); ?>manage/neraca/get_neraca',
 				type: 'POST',
 				data: {
-					//'start': start,
 					'end': end,
 					'majors_id': majors_id,
 				},
@@ -91,10 +69,6 @@
 				},
 				error: function(msg) {
 					alert('msg');
-				},
-				complete: function() {
-					btn.attr('disabled', false);
-					btn.html('Filter');
 				}
 
 			});

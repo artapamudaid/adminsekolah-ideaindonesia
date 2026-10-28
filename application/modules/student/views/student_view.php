@@ -21,8 +21,8 @@
 						<div class="nav-tabs-custom">
 							<!-- TAB UTAMA -->
 							<ul class="nav nav-tabs">
-								<li class="<?php echo @$f['m'] == 0 ? 'active' : '' ?> tab-utama"> <a href="#detailSiswa" data-toggle="tab">Info Siswa</a></li>
-								<li class="<?php echo @$f['m'] == 1 ? 'active' : '' ?> tab-utama"><a href="#konseling" data-toggle="tab">Konseling</a></li>
+								<li class="<?php echo $f['m'] == 0 ? 'active' : '' ?> tab-utama"> <a href="#detailSiswa" data-toggle="tab">Info Siswa</a></li>
+								<li class="<?php echo $f['m'] == 1 ? 'active' : '' ?> tab-utama"><a href="#konseling" data-toggle="tab">Konseling</a></li>
 							</ul>
 
 							<div class="tab-content">
@@ -303,7 +303,6 @@
 			<div class="modal-footer">
 				<?php echo form_open('manage/student/delete/' . $student['student_id']); ?>
 				<input type="hidden" name="delName" value="<?php echo $student['student_full_name']; ?>">
-				<input type="hidden" name="student_id" value="<?php echo $student['student_id']; ?>">
 				<button type="button" class="btn btn-default pull-left" data-dismiss="modal"><span class="fa fa-close"></span> Batal</button>
 				<button type="submit" class="btn btn-danger"><span class="fa fa-check"></span> Hapus</button>
 				<?php echo form_close(); ?>

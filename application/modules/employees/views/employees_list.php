@@ -16,12 +16,27 @@
 				<div class="box">
 					<div class="box-header">
 						<?php if ($this->session->userdata('uroleid') != USER) { ?>
-							<a href="<?php echo site_url('manage/employees/add') ?>" class="btn btn-sm btn-success"><i class="fa fa-plus"></i> Tambah</a>
-							<a href="<?php echo site_url('manage/employees/import_employees') ?>" class="btn btn-sm btn-info"><i class="fa fa-upload"></i> Upload Pegawai</a>
-						<?php } ?>
-						<button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#printEmployee"><i class="fa fa-print"></i> Cetak</button>
-						<button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#xlsEmployee"><i class="fa fa-file-excel-o"></i> Export Xls</button>
+							<table>
+								<tr>
+									<td>
+										<a href="<?php echo site_url('manage/employees/add') ?>" class="btn btn-sm btn-success"><i class="fa fa-plus"></i> Tambah</a>
+									</td>
+									<td>
+										<a href="<?php echo site_url('manage/employees/import_employees') ?>" class="btn btn-sm btn-info"><i class="fa fa-upload"></i> Upload Pegawai</a>
+									<?php } ?>
+									</td>
+									<td>
+										<button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#printEmployee"><i class="fa fa-print"></i> Cetak</button>
+									</td>
+									<td>
+										<button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#xlsEmployee"><i class="fa fa-file-excel-o"></i> Export Xls</button>
+									</td>
+								</tr>
+							</table>
+
+
 					</div>
+
 
 					<?php echo form_open(current_url(), array('class' => 'form-horizontal', 'method' => 'get')) ?>
 					<div class="box-body table-responsive">

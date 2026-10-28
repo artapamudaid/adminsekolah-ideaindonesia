@@ -43,48 +43,15 @@ class Satuan_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $satuanName = sanitizeStrict($_POST['satuan_name']);
-      $cpt = count($satuanName);
-      $added = 0;
-      $skipped = 0;
+      $satuanName = $_POST['satuan_name'];
+      $cpt = count($_POST['satuan_name']);
       for ($i = 0; $i < $cpt; $i++) {
-
-        if (empty($satuanName[$i])) {
-          $skipped++;
-          continue;
-        }
-
-        $colWhere = ['satuan_name' => $satuanName[$i]];
-        if ($this->General_model->checkDataExists("satuan", $colWhere)) {
-          $skipped++;
-          continue;
-        }
-
         $params['satuan_name'] = $satuanName[$i];
 
-        $insert = $this->Satuan_model->add($params);
-        if (!$insert) {
-          $skipped++;
-          continue;
-        }
-
-        $added++;
+        $this->Satuan_model->add($params);
       }
-
-      if ($added > 1) {
-        $msg = "$added Satuan berhasil ditambahkan";
-      } elseif ($added == 1) {
-        $msg = "1 Satuan berhasil ditambahkan";
-      } else {
-        $msg = "Tidak ada yang ditambahkan";
-      }
-
-      if ($skipped > 0) {
-        $msg .= "<br>($skipped Satuan dilewati)";
-      }
-
-      $this->session->set_flashdata('success', $msg);
     }
+    $this->session->set_flashdata('success', ' Tambah Satuan Berhasil');
     redirect('manage/satuan');
   }
 
@@ -99,26 +66,10 @@ class Satuan_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('satuan_id')) {
-        $id = sanitizeStrict($this->input->post('satuan_id'));
-        $params['satuan_id'] = $id;
+        $params['satuan_id'] = $this->input->post('satuan_id');
       }
 
-      $satuanName = sanitizeStrict($this->input->post('satuan_name'));
-
-      $colWhere = [
-        'satuan_name' => $satuanName
-      ];
-
-      if (!empty($id)) {
-        $colWhere['satuan_id <>'] = $id;
-      }
-
-      if ($this->General_model->checkDataExists("satuan", $colWhere)) {
-        $this->session->set_flashdata('failed', 'Data sudah ada');
-        redirect('manage/satuan/edit/' . $id);
-      }
-
-      $params['satuan_name'] = $satuanName;
+      $params['satuan_name'] = $this->input->post('satuan_name');
 
       $status = $this->Satuan_model->add($params);
 

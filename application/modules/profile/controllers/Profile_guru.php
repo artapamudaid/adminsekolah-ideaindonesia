@@ -33,7 +33,7 @@ class Profile_guru extends CI_Controller
     $data['operation'] = 'Edit No. HP/Whatsapp';
 
     if ($_POST == TRUE) {
-      $phone = $this->input->post('employee_phone');
+      $phone = $this->input->post('employee_phone', TRUE);
 
       $phone = str_replace(" ", "", $phone);
       $phone = str_replace("(", "", $phone);
@@ -55,14 +55,14 @@ class Profile_guru extends CI_Controller
       $paramsupdate['employee_phone'] = $wa;
       // $status = $this->Employees_model->add($params);
 
-      $paramsupdate['employee_id'] = $this->input->post('employee_id');
+      $paramsupdate['employee_id'] = (int) $this->session->userdata('uid_guru');
       $this->Employees_model->add($paramsupdate);
 
       $this->session->set_flashdata('success', $data['operation'] . ' Guru Berhasil');
       redirect('guru/profile');
     } else {
       if ($this->input->post('employee_id')) {
-        redirect('guru/profile/edit/' . $this->input->post('employee_id'));
+        redirect('guru/profile/edit/' . (int) $this->session->userdata('uid_guru'));
       }
 
       // Edit mode
@@ -79,10 +79,10 @@ class Profile_guru extends CI_Controller
 
     if ($_POST == TRUE) {
 
-      $params['absensi'] = $this->input->post('absensi');
-      $params['harian'] = $this->input->post('harian');
-      $params['sumatif'] = $this->input->post('sumatif');
-      $params['empl_id'] = $this->session->userdata('uid_guru');
+      $params['absensi'] = (int) $this->input->post('absensi');
+      $params['harian'] = (int) $this->input->post('harian');
+      $params['sumatif'] = (int) $this->input->post('sumatif');
+      $params['empl_id'] = (int) $this->session->userdata('uid_guru');
 
 
       $total = $params['absensi'] + $params['harian'] + $params['sumatif'];
@@ -106,7 +106,7 @@ class Profile_guru extends CI_Controller
       redirect('guru/profile');
     } else {
       if ($this->input->post('employee_id')) {
-        redirect('guru/profile/edit_bobot/' . $this->input->post('empl_id'));
+        redirect('guru/profile/edit_bobot/' . (int) $this->session->userdata('uid_guru'));
       }
 
       // Edit mode

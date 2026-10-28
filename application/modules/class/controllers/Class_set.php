@@ -61,53 +61,17 @@ class Class_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $className = sanitizeStrict($_POST['class_name']);
-      $majorsMajorsId = sanitizeStrict($_POST['majors_majors_id']);
-      $cpt = count($className);
-      $added = 0;
-      $skipped = 0;
+      $className = $_POST['class_name'];
+      $majorsMajorsId = $_POST['majors_majors_id'];
+      $cpt = count($_POST['class_name']);
       for ($i = 0; $i < $cpt; $i++) {
-        if (empty($className[$i])) {
-          $skipped++;
-          continue;
-        }
-
-        $colWhere = [
-          'class_name' => $className[$i],
-          'majors_majors_id' => $majorsMajorsId,
-        ];
-        if ($this->General_model->checkDataExists("class", $colWhere)) {
-          $skipped++;
-          continue;
-        }
         $params['class_name'] = $className[$i];
         $params['majors_majors_id'] = $majorsMajorsId;
 
-
-
-        $insert = $this->Student_model->add_class($params);
-        if (!$insert) {
-          $skipped++;
-          continue;
-        }
-
-        $added++;
+        $this->Student_model->add_class($params);
       }
-
-      if ($added > 1) {
-        $msg = "$added data berhasil ditambahkan";
-      } elseif ($added == 1) {
-        $msg = "1 data berhasil ditambahkan";
-      } else {
-        $msg = "Tidak ada yang ditambahkan";
-      }
-
-      if ($skipped > 0) {
-        $msg .= "<br>($skipped data dilewati)";
-      }
-
-      $this->session->set_flashdata('success', $msg);
     }
+    $this->session->set_flashdata('success', ' Tambah Kelas Berhasil');
     redirect('manage/class');
   }
 
@@ -122,25 +86,10 @@ class Class_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('class_id')) {
-        $id = sanitizeStrict($this->input->post('class_id'));
-        $params['class_id'] = $id;
+        $params['class_id'] = $this->input->post('class_id');
       }
-      $className = sanitizeStrict($this->input->post('class_name'));
-      $majorsMajorsId = sanitizeStrict($this->input->post('majors_majors_id'));
-
-      $colWhere = [
-        'class_name' => $className,
-        'majors_majors_id' => $majorsMajorsId,
-        'class_id != ' => $id,
-      ];
-      if ($this->General_model->checkDataExists("class", $colWhere)) {
-        $this->session->set_flashdata('failed', 'Data sudah ada');
-        $redirectUrl = ($id) ? "manage/class/edit/$id" : "manage/class";
-        redirect($redirectUrl);
-      }
-
-      $params['class_name'] = $className;
-      $params['majors_majors_id'] = $majorsMajorsId;
+      $params['class_name'] = $this->input->post('class_name');
+      $params['majors_majors_id'] = $this->input->post('majors_majors_id');
       $status = $this->Student_model->add_class($params);
 
 

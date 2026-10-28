@@ -86,12 +86,16 @@ class Izin_guru_guru extends CI_Controller
             $config['upload_path'] = FCPATH . 'uploads/izin_guru/';
 
             if (!is_dir($config['upload_path'])) {
-                mkdir($config['upload_path'], 0777, TRUE);
+                mkdir($config['upload_path'], 0755, TRUE);
             }
 
             $config['allowed_types'] = 'jpg|jpeg|png|pdf';
             $config['max_size'] = 2048;
             $config['file_name'] = 'izin_guru_' . time();
+            $config['file_ext_tolower'] = TRUE;
+            $config['remove_spaces'] = TRUE;
+            $config['detect_mime'] = TRUE;
+            $config['mod_mime_fix'] = TRUE;
 
             $this->upload->initialize($config);
 

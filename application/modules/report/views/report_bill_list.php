@@ -15,7 +15,7 @@
 			<div class="col-md-12">
 				<div class="box box-success">
 					<div class="box-header">
-						<?php echo form_open(current_url(), array('method' => 'get', 'id' => 'form-report')) ?>
+						<?php echo form_open(current_url(), array('method' => 'get')) ?>
 						<div class="row">
 							<div class="col-md-3">
 								<div class="form-group">
@@ -56,8 +56,7 @@
 							</div>
 							<div class="col-md-3">
 								<div style="margin-top:25px;">
-									<button type="button" class="btn btn-primary" id="btn-cari"><i class="fa fa-filter"></i> Filter</button>
-									<button type="submit" class="btn btn-primary hidden">Filter</button>
+									<button type="submit" class="btn btn-primary">Filter</button>
 									<?php if ($q and !empty($py)) { ?>
 										<a class="btn btn-success" target="_blank" href="<?php echo site_url('manage/report/report_bill_detail' . '/?' . http_build_query($q)) ?>"><i class="fa fa-file-excel-o"></i> Export Excel</a>
 									<?php } ?>
@@ -66,7 +65,7 @@
 						</div>
 					</div>
 				</div>
-				<?php if ($q and (!empty($py) or !empty($bebas))) { ?>
+				<?php if ($q and !empty($py)) { ?>
 					<div class="box box-info">
 						<div class="box-body table-responsive">
 							<table id="dtable" class="table table-responsive table-hover table-bordered" style="white-space: nowrap;">
@@ -163,36 +162,6 @@
 	<!-- /.content -->
 </div>
 <script>
-	$(function() {
-
-		$('#btn-cari').on('click', function() {
-			let tahun_ajaran = $('select[name="p"]').val();
-			let unit_sekolah = $('select[name="k"]').val();
-			let kelas = $('select[name="c"]').val();
-
-			// if (!tahun_ajaran) {
-			// 	toastNotifikasi('error', 'Pilih Tahun Ajaran dahulu!', 'Gagal!');
-			// 	return;
-			// }
-
-			if (!unit_sekolah) {
-				toastNotifikasi('error', 'Pilih Unit Sekolah dahulu!', 'Gagal!');
-				return;
-			}
-
-			if (!kelas) {
-				toastNotifikasi('error', 'Pilih Kelas dahulu!', 'Gagal!');
-				return;
-			}
-
-			$('#btn-cari').addClass('disabled');
-			$('#btn-cari').html('<i class="fa fa-spinner fa-spin"></i> Memproses...');
-
-			let form = $('#form-report');
-			form.submit();
-		});
-	});
-
 	function get_kelas() {
 		var id_majors = $("#majors_id").val();
 		//alert(id_jurusan+id_kelas);

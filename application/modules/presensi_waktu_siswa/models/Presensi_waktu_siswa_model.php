@@ -3,17 +3,14 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-class Presensi_waktu_siswa_model extends CI_Model
-{
+class Presensi_waktu_siswa_model extends CI_Model {
 
-    function __construct()
-    {
+    function __construct() {
         parent::__construct();
     }
 
     // Get From Databases
-    function get($params = array())
-    {
+    function get($params = array()) {
 
         if (isset($params['data_waktu_id'])) {
             $this->db->where('data_waktu_id', $params['data_waktu_id']);
@@ -38,10 +35,10 @@ class Presensi_waktu_siswa_model extends CI_Model
         }
 
         $this->db->select('*');
-
-        $this->db->join('majors', 'majors.majors_id = data_waktu_siswa.data_waktu_majors_id', 'left');
-        $this->db->join('day', 'day.day_id = data_waktu_siswa.data_waktu_day_id', 'left');
-
+        
+        $this->db->join('majors', 'majors.majors_id = data_waktu.data_waktu_majors_id', 'left');
+        $this->db->join('day', 'day.day_id = data_waktu.data_waktu_day_id', 'left');
+        
         $res = $this->db->get('data_waktu_siswa');
 
         if (isset($params['data_waktu_id'])) {
@@ -49,10 +46,10 @@ class Presensi_waktu_siswa_model extends CI_Model
         } else {
             return $res->result_array();
         }
+
     }
 
-    function add($data = array())
-    {
+    function add($data = array()) {
 
         if (isset($data['data_waktu_id'])) {
             $this->db->set('data_waktu_id', $data['data_waktu_id']);
@@ -65,11 +62,11 @@ class Presensi_waktu_siswa_model extends CI_Model
         if (isset($data['data_waktu_day_id'])) {
             $this->db->set('data_waktu_day_id', $data['data_waktu_day_id']);
         }
-
+        
         if (isset($data['data_waktu_masuk'])) {
             $this->db->set('data_waktu_masuk', $data['data_waktu_masuk']);
         }
-
+        
         if (isset($data['data_waktu_pulang'])) {
             $this->db->set('data_waktu_pulang', $data['data_waktu_pulang']);
         }
@@ -87,9 +84,9 @@ class Presensi_waktu_siswa_model extends CI_Model
         return ($status == 0) ? FALSE : $id;
     }
 
-    function hapus($id = null)
-    {
-        $this->db->where('data_waktu_id', $id);
+    function hapus($id=null){
+        $this->db->where('data_waktu_id',$id);
         $this->db->delete('data_waktu_siswa');
     }
+
 }

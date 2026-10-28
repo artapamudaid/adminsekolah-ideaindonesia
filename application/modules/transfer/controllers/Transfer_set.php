@@ -3,8 +3,6 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx as xlsx;
-
 class Transfer_set extends CI_Controller
 {
 
@@ -47,7 +45,7 @@ class Transfer_set extends CI_Controller
                                                 WHERE account_category = '0' AND account_majors_id = '" . $f['n'] . "' AND account_code LIKE '1%' 
                                                 AND account_description LIKE '%Aktiva%' ORDER BY account_code ASC) ORDER BY account_code ASC")->result_array();
 
-            $data['acc']    = $this->db->query("SELECT account_id, account_code, account_majors_id FROM account JOIN majors ON account.account_majors_id = majors.majors_id
+            $data['acc']    = $this->db->query("SELECT account_id, account_majors_id FROM account JOIN majors ON account.account_majors_id = majors.majors_id
                                                 WHERE account_category = '2' AND account_code LIKE '5%' AND account_description LIKE '%Kirim Setoran%' 
                                                 AND account_majors_id = '" . $f['n'] . "'")->row_array();
         }
@@ -96,93 +94,6 @@ class Transfer_set extends CI_Controller
 				</span>';
     }
 
-    private function jurnal_debit($data_debit = array()): bool
-    {
-
-        $jurnal_umum = array(
-            'sekolah_id' => $data_debit['debit_majors_id'],
-            'keterangan' => $data_debit['debit_note'],
-            'noref'      => $data_debit['debit_noref'],
-            'tanggal'    => $data_debit['debit_date'],
-            'pencatatan' => 'auto',
-            'waktu_update' => date('Y-m-d H:i:s'),
-            'keterangan_lainnya' => '-'
-        );
-
-        $this->db->insert('jurnal_umum', $jurnal_umum);
-
-        $jurum = $this->db->query("SELECT MAX(id) AS last_id FROM jurnal_umum")->row_array();
-        $lastJurum = $jurum['last_id'];
-
-        $dataKas = array(
-            'id_jurnal' => $lastJurum,
-            'account_code' => $data_debit['debit_akun_kas'],
-            'debet' => $data_debit['debit_value'],
-            'kredit' => 0,
-        );
-
-        $insertKas = $this->db->insert('jurnal_umum_detail', $dataKas);
-
-        $dataDebit = array(
-            'id_jurnal' => $lastJurum,
-            'account_code' => $data_debit['debit_akun'],
-            'debet' => 0,
-            'kredit' => $data_debit['debit_value'],
-        );
-
-        $insertDebit = $this->db->insert('jurnal_umum_detail', $dataDebit);
-
-        $status = FALSE;
-
-        if ($insertKas && $insertDebit) {
-            $status = TRUE;
-        }
-        return $status;
-    }
-
-    private function jurnal_kredit($data_kredit = array()): bool
-    {
-        $jurnal_umum = array(
-            'sekolah_id' => $data_kredit['kredit_majors_id'],
-            'keterangan' => $data_kredit['kredit_note'],
-            'noref'      => $data_kredit['kredit_noref'],
-            'tanggal'    => $data_kredit['kredit_date'],
-            'pencatatan' => 'auto',
-            'waktu_update' => date('Y-m-d H:i:s'),
-            'keterangan_lainnya' => '-'
-        );
-
-        $this->db->insert('jurnal_umum', $jurnal_umum);
-
-        $jurum = $this->db->query("SELECT MAX(id) AS last_id FROM jurnal_umum")->row_array();
-        $lastJurum = $jurum['last_id'];
-
-        $dataKredit = array(
-            'id_jurnal' => $lastJurum,
-            'account_code' => $data_kredit['kredit_akun'],
-            'debet' => $data_kredit['kredit_value'],
-            'kredit' => 0,
-        );
-
-        $insertKredit = $this->db->insert('jurnal_umum_detail', $dataKredit);
-
-        $dataKas = array(
-            'id_jurnal' => $lastJurum,
-            'account_code' => $data_kredit['kredit_akun_kas'],
-            'debet' => 0,
-            'kredit' => $data_kredit['kredit_value'],
-        );
-
-        $insertKas = $this->db->insert('jurnal_umum_detail', $dataKas);
-
-        $status = FALSE;
-
-        if ($insertKas && $insertKredit) {
-            $status = TRUE;
-        }
-        return $status;
-    }
-
     function transfer_process()
     {
         $this->db->trans_begin();
@@ -227,37 +138,36 @@ class Transfer_set extends CI_Controller
             $id_bulan = '6';
         }
 
-        $accountFrom         = $this->db->query("SELECT account_majors_id, majors_short_name, account_code, account_description FROM account
+        //$unit
+        $accountFrom         = $this->db->query("SELECT account_majors_id, majors_short_name, account_description FROM account
                                                 JOIN majors ON majors.majors_id = account.account_majors_id
                                                 WHERE account.account_id = '$kredit_kas'")->row_array();
 
-        $accountTo             = $this->db->query("SELECT account_majors_id, majors_short_name, account_code, account_description FROM account
+        //$majors
+        $accountTo             = $this->db->query("SELECT account_majors_id, majors_short_name, account_description FROM account
                                                 JOIN majors ON majors.majors_id = account.account_majors_id
                                                 WHERE account_id = '$debit_kas'")->row_array();
 
-        $account            = $this->db->query("SELECT account_id, account_code FROM account 
+        $account            = $this->db->query("SELECT account_id FROM account 
                                                 JOIN majors ON account.account_majors_id = majors.majors_id
                                                 WHERE account_category = '2' AND account_code LIKE '4%' AND account_description LIKE '%Terima Setoran%' 
                                                 AND account_majors_id = '" . $accountTo['account_majors_id'] . "'")->row_array();
 
-        $debit_account_id       = $account['account_id'];
-        $debit_account_code     = $account['account_code'];
-
-        $akun_kredit = $this->db->get_where('account', array('account_id' => $kredit_account_id))->row_array();
-
-        $kredit_account_code = $akun_kredit['account_code'];
+        $debit_account_id   = $account['account_id'];
 
         //Transfer Balance
-        $likeTransfer           = date('dmy');
-        $tmpTransfer            = $this->Transfer_model->get_noref($likeTransfer);
+        $likeTransfer       = date('dmy');
+        $tmpTransfer        = $this->Transfer_model->get_noref($likeTransfer);
 
-        $likeKredit             = 'JKTF' . $accountFrom['majors_short_name'] . date('dmy');
-        $tmpKredit              = $this->Kredit_trx_model->get_noref($accountFrom['account_majors_id'], $likeKredit);
-        $norefKredit            = 'JKTF' . $accountFrom['majors_short_name'] . $tmpKredit;
+        //$majorsKredit       = $this->Student_model->get_majors(array('id'=>$unit['account_majors_id']));
+        $likeKredit         = 'JK' . $accountFrom['majors_short_name'] . date('dmy');
+        $tmpKredit          = $this->Kredit_trx_model->get_noref($accountFrom['account_majors_id'], $likeKredit);
+        $norefKredit        = 'JK' . $accountFrom['majors_short_name'] . $tmpKredit;
 
-        $likeDebit              = 'JMTF' . $accountTo['majors_short_name'] . date('dmy');
-        $tmpDebit               = $this->Debit_trx_model->get_noref($accountTo['account_majors_id'], $likeDebit);
-        $norefDebit             = 'JMTF' . $accountTo['majors_short_name'] . $tmpDebit;
+        //$majorsDebit       = $this->Student_model->get_majors(array('id'=>$majors['account_majors_id']));
+        $likeDebit         = 'JM' . $accountTo['majors_short_name'] . date('dmy');
+        $tmpDebit          = $this->Debit_trx_model->get_noref($accountTo['account_majors_id'], $likeDebit);
+        $norefDebit        = 'JM' . $accountTo['majors_short_name'] . $tmpDebit;
 
         //Transfer Kas Keluar (Kredit)
         $paramkredit['kredit_kas_noref']      = $norefKredit;
@@ -279,8 +189,8 @@ class Transfer_set extends CI_Controller
         $paramskaskredit['kas_note']          = 'Transfer Kas dari Sumber Akun ' . $accountFrom['account_description'] . ' ke akun Tujuan ' . $accountTo['account_description'];
         $paramskaskredit['kas_kredit']        = $kredit_val;
         $paramskaskredit['kas_category']      = '2';
-        $paramskaskredit['kas_user_id']       = $this->session->userdata('uid');
-        $paramskaskredit['kas_input_date']    = date('Y-m-d');
+        $paramskaskredit['kas_user_id']       = $user_id = $this->session->userdata('uid');
+        $paramskaskredit['kas_input_date']    = $kredit_date;
 
 
         //Transfer Kas Masuk (Debit)
@@ -303,79 +213,49 @@ class Transfer_set extends CI_Controller
         $paramskasdebit['kas_note']           = 'Terima Transfer Kas dari Sumber akun ' . $accountFrom['account_description'] . ' ke akun Tujuan ' . $accountTo['account_description'];
         $paramskasdebit['kas_debit']          = $kredit_val;
         $paramskasdebit['kas_category']       = '1';
-        $paramskasdebit['kas_user_id']        = $this->session->userdata('uid');
-        $paramskasdebit['kas_input_date']     = date('Y-m-d');
+        $paramskasdebit['kas_user_id']        = $user_id = $this->session->userdata('uid');
+        $paramskasdebit['kas_input_date']     = $kredit_date;
 
-        $idKredit = $this->Kredit_model->add($paramkredit);
+        $this->Kredit_model->add($paramkredit);
         $this->Transfer_model->save_kas($paramskaskredit);
-        $idDebit = $this->Debit_model->add($paramdebit);
+        $this->Debit_model->add($paramdebit);
         $this->Transfer_model->save_kas($paramskasdebit);
 
-        // $kredit = $this->db->query("SELECT kredit_id FROM kredit WHERE kredit_kas_noref = '$norefKredit'")->row_array();
-        // $debit  = $this->db->query("SELECT debit_id FROM debit WHERE debit_kas_noref = '$norefDebit'")->row_array();
+        $kredit = $this->db->query("SELECT kredit_id FROM kredit WHERE kredit_kas_noref = '$norefKredit'")->row_array();
+        $debit  = $this->db->query("SELECT debit_id FROM debit WHERE debit_kas_noref = '$norefDebit'")->row_array();
 
         //Log Transfer Kas Keluar (Kredit)
-        $paramstfkredit['log_tf_kredit_id']   = $idKredit;
+        $paramstfkredit['log_tf_kredit_id']   = $kredit['kredit_id'];
         $paramstfkredit['log_tf_date']        = $kredit_date;
         $paramstfkredit['log_tf_account_id']  = $kredit_kas;
         $paramstfkredit['log_tf_balance_id']  = $tmpTransfer;
         $paramstfkredit['log_tf_majors_id']   = $accountFrom['account_majors_id'];
-        $paramstfkredit['log_tf_note']        = 'Transfer Kas ke akun ' . $accountTo['account_description'] . ' Sebesar ' . $kredit_val . " [" . $this->input->post('transfer_detail') . "]";
-        $paramstfkredit['log_tf_user_id']     = $this->session->userdata('uid');
+        $paramstfkredit['log_tf_note']        = 'Transfer Kas ke akun ' . $accountTo['account_description'] . ' Sebesar ' . $kredit_val . $this->input->post('transfer_detail');
+        $paramstfkredit['log_tf_user_id']     = $user_id = $this->session->userdata('uid');
         $paramstfkredit['log_tf_last_update'] = date('Y-m-d H:i:s');
         $paramstfkredit['log_tf_last_update'] = date('Y-m-d H:i:s');
 
         //Log Transfer Kas Masuk (Debit)
-        $paramstfdebit['log_tf_debit_id']    = $idDebit;
+        $paramstfdebit['log_tf_debit_id']    = $debit['debit_id'];
         $paramstfdebit['log_tf_date']        = $kredit_date;
         $paramstfdebit['log_tf_account_id']  = $debit_kas;
         $paramstfdebit['log_tf_balance_id']  = $tmpTransfer;
         $paramstfdebit['log_tf_majors_id']   = $accountTo['account_majors_id'];
-        $paramstfdebit['log_tf_note']        = 'Terima Transfer Kas dari akun ' . $accountFrom['account_description'] . ' Sebesar ' . $kredit_val . " [" . $this->input->post('transfer_detail') . "]";
-        $paramstfdebit['log_tf_user_id']     = $this->session->userdata('uid');
+        $paramstfdebit['log_tf_note']        = 'Terima Transfer Kas dari akun ' . $accountFrom['account_description'] . ' Sebesar ' . $kredit_val . $this->input->post('transfer_detail');
+        $paramstfdebit['log_tf_user_id']     = $user_id = $this->session->userdata('uid');
         $paramstfdebit['log_tf_last_update'] = date('Y-m-d H:i:s');
         $paramstfdebit['log_tf_last_update'] = date('Y-m-d H:i:s');
 
         $this->Transfer_model->save_log_tf($paramstfkredit);
         $this->Transfer_model->save_log_tf($paramstfdebit);
 
-        $data_debit = array(
-            'debit_majors_id'   => $paramskasdebit['kas_majors_id'],
-            'debit_note'        => $paramskasdebit['kas_note'],
-            'debit_noref'       => $paramskasdebit['kas_noref'],
-            'debit_date'        => $paramskasdebit['kas_date'],
-            'debit_akun'        => $debit_account_code,
-            'debit_akun_kas'    => $accountTo['account_code'],
-            'debit_value'       => $kredit_val
-        );
-
-        $data_kredit = array(
-            'kredit_majors_id'  => $paramskaskredit['kas_majors_id'],
-            'kredit_note'       => $paramskaskredit['kas_note'],
-            'kredit_noref'      => $paramskaskredit['kas_noref'],
-            'kredit_date'       => $paramskaskredit['kas_date'],
-            'kredit_date'       => $paramskasdebit['kas_date'],
-            'kredit_akun'       => $kredit_account_code,
-            'kredit_akun_kas'   => $accountFrom['account_code'],
-            'kredit_value'      => $kredit_val
-        );
-
-        $jurnal_debit = $this->jurnal_debit($data_debit);
-        $jurnal_kredit = $this->jurnal_kredit($data_kredit);
-
-
-        if ($jurnal_debit === TRUE && $jurnal_kredit === TRUE) {
-            if ($this->db->trans_status() === FALSE) {
-                $this->db->trans_rollback();
-                $this->session->set_flashdata('failed', 'Transfer Kas Gagal');
-            } else {
-                $this->db->trans_commit();
-                $this->session->set_flashdata('success', 'Transfer Kas Berhasil');
-            }
-        } else {
+        if ($this->db->trans_status() === FALSE) {
             $this->db->trans_rollback();
-            $this->session->set_flashdata('failed', 'Transfer Kas Gagal');
+        } else {
+            $this->db->trans_commit();
         }
+
+        $this->session->set_flashdata('success', 'Transfer Kas Berhasil Dilakukan');
 
         redirect('manage/transfer?n=' . $accountFrom['account_majors_id'] . '&r=' . $kredit_kas);
     }
@@ -536,162 +416,7 @@ class Transfer_set extends CI_Controller
         $data['setting_address']        = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
         $data['setting_phone']          = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
 
-        $html = $this->load->view('transfer/transfer_mutasi', $data, TRUE);
+        $html = $this->load->view('transfer/transfer_mutasi', $data, true);
         $data = pdf_create($html, 'Mutasi ' . $akun['account_description'] . ' [' . $unit['majors_short_name'] . ']', TRUE, 'A4', TRUE);
-    }
-
-    function export_mutasi()
-    {
-        $f = $this->input->get(NULL, TRUE);
-
-        $data['f']  = $f;
-        $id_unit    = null;
-        $id_akun    = null;
-        $params     = array();
-
-        if (isset($f['n']) && !empty($f['n']) && $f['n'] != '' && $f['n'] != '0') {
-            $params['majors_id']     = $f['n'];
-            $id_unit                 = $f['n'];
-        }
-
-        if (isset($f['r']) && !empty($f['r']) && $f['r'] != '') {
-            $params['account_id']    = $f['r'];
-            $id_akun                 = $f['r'];
-        }
-
-        $data['history']    = $this->Transfer_model->get($params);
-
-        $unit       = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = $id_unit")->row_array();
-        $akun       = $this->db->query("SELECT account_description FROM account WHERE account_id = $id_akun")->row_array();
-
-        $data['unit'] = $unit['majors_short_name'];
-        $data['akun'] = $akun['account_description'];
-
-        $data['setting_nip_bendahara']  = $this->Setting_model->get(array('id' => 15));
-        $data['setting_nama_bendahara'] = $this->Setting_model->get(array('id' => 16));
-        $data['setting_city']           = $this->Setting_model->get(array('id' => SCHOOL_CITY));
-        $data['setting_district']       = $this->Setting_model->get(array('id' => SCHOOL_DISTRICT));
-        $data['setting_school']         = $this->Setting_model->get(array('id' => SCHOOL_NAME));
-        $data['setting_address']        = $this->Setting_model->get(array('id' => SCHOOL_ADRESS));
-        $data['setting_phone']          = $this->Setting_model->get(array('id' => SCHOOL_PHONE));
-
-        // $html = $this->load->view('transfer/transfer_mutasi', $data, TRUE);
-        $this->load->view('transfer/excel_mutasi', $data);
-    }
-
-    function readKasTransferExcel($filepath)
-    {
-        $reader = new Xlsx();
-        $spreadsheet = $reader->load($filepath);
-        $sheet = $spreadsheet->getActiveSheet();
-
-        $rows = [];
-        $highestRow = $sheet->getHighestDataRow();
-
-        // Mulai dari baris 2 (jika baris 1 adalah header)
-        for ($row = 2; $row <= $highestRow; $row++) {
-            $kredit_id         = $sheet->getCell('A' . $row)->getValue();
-            $kredit_date       = $sheet->getCell('B' . $row)->getFormattedValue(); // gunakan getFormattedValue untuk tanggal
-            $kredit_value      = $sheet->getCell('C' . $row)->getValue();
-            $kredit_kas_noref  = $sheet->getCell('D' . $row)->getValue();
-
-            $debit_id          = $sheet->getCell('F' . $row)->getValue();
-            $debit_date        = $sheet->getCell('G' . $row)->getFormattedValue();
-            $debit_value       = $sheet->getCell('H' . $row)->getValue();
-            $debit_kas_noref   = $sheet->getCell('I' . $row)->getValue();
-
-            $rows[] = [
-                'kredit_id'        => $kredit_id,
-                'kredit_date'      => $kredit_date,
-                'kredit_value'     => $kredit_value,
-                'kredit_kas_noref' => $kredit_kas_noref,
-                'debit_id'         => $debit_id,
-                'debit_date'       => $debit_date,
-                'debit_value'      => $debit_value,
-                'debit_kas_noref'  => $debit_kas_noref
-            ];
-        }
-
-        return $rows;
-    }
-
-    function data_excel()
-    {
-        try {
-            $data = $this->readKasTransferExcel('./media/template_excel/yayasan_smk.xlsx');
-            $prefix = '080725'; // Format DDMMYY
-            $counter = 229;
-
-            foreach ($data as $row) {
-                $newNoRef = $prefix . str_pad($counter, 4, '0', STR_PAD_LEFT);
-
-                $idK    = $row['kredit_id'];
-                $tglK   = $row['kredit_date'];
-                $valueK = $row['kredit_value'];
-
-                $idD    = $row['debit_id'];
-                $tglD   = $row['debit_date'];
-                $valueD = $row['debit_value'];
-
-                // Query ke log_tf berdasarkan nilai dan tanggal
-                $queryK = $this->db->query("
-                    SELECT log_tf_id, log_tf_note 
-                    FROM log_tf 
-                    WHERE log_tf_note LIKE ? 
-                    AND log_tf_date = ? 
-                    AND log_tf_kredit_id IS NOT NULL
-                    ORDER BY log_tf_id DESC 
-                    LIMIT 1
-                ", ['%' . $valueK . '%', $tglK]);
-
-                $logK = $queryK->row_array(); // Ambil 1 hasil
-                if ($logK) {
-                    $idlog = $logK['log_tf_id'];
-
-                    // Update log_tf: kredit_id dari Excel, balance_id dari newNoRef
-                    $this->db->query("
-                        UPDATE log_tf 
-                        SET 
-                            log_tf_kredit_id = ?, 
-                            log_tf_balance_id = ? 
-                        WHERE log_tf_id = ?
-                    ", [$idK, $newNoRef, $idlog]);
-                }
-
-                echo "Nomor TF : {$newNoRef}<br>";
-                echo "Kredit Noref: {$row['kredit_kas_noref']}, Nominal: {$row['kredit_value']}<br>";
-                echo "LOG ID: {$logK['log_tf_id']}, LOG NOTE: {$logK['log_tf_note']}<br>";
-
-                $queryD = $this->db->query("
-                    SELECT log_tf_id, log_tf_note 
-                    FROM log_tf 
-                    WHERE log_tf_note LIKE ? 
-                    AND log_tf_date = ? 
-                    AND log_tf_debit_id IS NOT NULL 
-                    ORDER BY log_tf_id DESC 
-                    LIMIT 1
-                ", ['%' . $valueD . '%', $tglD]);
-
-                $logD = $queryD->row_array(); // Ambil 1 hasil
-                if ($logD) {
-                    $idlog = $logD['log_tf_id'];
-
-                    // Update log_tf: kredit_id dari Excel, balance_id dari newNoRef
-                    $this->db->query("
-                        UPDATE log_tf 
-                        SET 
-                            log_tf_debit_id = ?, 
-                            log_tf_balance_id = ? 
-                        WHERE log_tf_id = ?
-                    ", [$idD, $newNoRef, $idlog]);
-                }
-                echo "Debit Noref: {$row['debit_kas_noref']}, Nominal: {$row['debit_value']}<br>";
-                echo "LOG ID: {$logD['log_tf_id']}, LOG NOTE: {$logD['log_tf_note']}<br><hr>";
-
-                $counter++;
-            }
-        } catch (Exception $e) {
-            echo "Terjadi kesalahan: " . $e->getMessage();
-        }
     }
 }

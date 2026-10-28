@@ -49,61 +49,19 @@ class Lesson_set extends CI_Controller
   public function add_glob()
   {
     if ($_POST == TRUE) {
-      $lessonCode    = sanitizeStrict($_POST['lesson_code']);
-      $lessonName    = sanitizeStrict($_POST['lesson_name']);
-      $lessonTeacher = sanitizeStrict($_POST['lesson_teacher']);
-      $lessonMajors  = isset($_POST['lesson_majors_id']) ? sanitizeStrict($_POST['lesson_majors_id']) : '0';
-
-      $cpt = count($lessonName);
-
-      $added = 0;
-      $skipped = 0;
+      $lessonCode    = $_POST['lesson_code'];
+      $lessonName    = $_POST['lesson_name'];
+      $lessonTeacher = $_POST['lesson_teacher'];
+      $cpt = count($_POST['lesson_name']);
       for ($i = 0; $i < $cpt; $i++) {
-
-        if (empty($lessonName[$i])) {
-          $skipped++;
-          continue;
-        }
-
-        $colWhere = [
-          'lesson_name' => $lessonName[$i],
-          'lesson_majors_id' => $lessonMajors[$i],
-          'lesson_teacher' => $lessonTeacher[$i],
-          'lesson_code' => $lessonCode[$i],
-        ];
-
-        if ($this->General_model->checkDataExists('lesson', $colWhere)) {
-          $skipped++;
-          continue;
-        }
-
         $params['lesson_code']      = $lessonCode[$i];
         $params['lesson_name']      = $lessonName[$i];
         $params['lesson_teacher']   = $lessonTeacher[$i];
-        $params['lesson_majors_id'] = $lessonMajors[$i];
 
-        $insert = $this->Lesson_model->add($params);
-        if (!$insert) {
-          $skipped++;
-          continue;
-        }
-        $added++;
+        $this->Lesson_model->add($params);
       }
-
-      if ($added > 1) {
-        $msg = "$added Mata Pelajaran berhasil ditambahkan";
-      } elseif ($added == 1) {
-        $msg = "1 Mata Pelajaran berhasil ditambahkan";
-      } else {
-        $msg = "Tidak ada yang ditambahkan";
-      }
-
-      if ($skipped > 0) {
-        $msg .= "<br>($skipped Mata Pelajaran dilewati)";
-      }
-
-      $this->session->set_flashdata('success', $msg);
     }
+    $this->session->set_flashdata('success', ' Tambah Mata Pelajaran Berhasil');
     redirect('manage/lesson');
   }
 
@@ -118,34 +76,11 @@ class Lesson_set extends CI_Controller
     if ($_POST and $this->form_validation->run() == TRUE) {
 
       if ($this->input->post('lesson_id')) {
-        $id = sanitizeStrict($this->input->post('lesson_id'));
-        $params['lesson_id'] = $id;
+        $params['lesson_id'] = $this->input->post('lesson_id');
       }
-
-      $lessonCode    = sanitizeStrict($this->input->post('lesson_code'));
-      $lessonName    = sanitizeStrict($this->input->post('lesson_name'));
-      $lessonTeacher = sanitizeStrict($this->input->post('lesson_teacher'));
-      $lessonMajors  = sanitizeStrict($this->input->post('lesson_majors_id'));
-
-      $colWhere = [
-        'lesson_code' => $lessonCode,
-        'lesson_name' => $lessonName,
-        'lesson_teacher' => $lessonTeacher,
-        'lesson_majors_id' => $lessonMajors
-      ];
-      if (!empty($id)) {
-        $colWhere['lesson_id !='] = $id;
-      }
-      if ($this->General_model->checkDataExists("lesson", $colWhere)) {
-        $this->session->set_flashdata('failed', 'Data Mata Pelajaran sudah ada');
-        $redirectUrl = ($id) ? "manage/lesson/edit/$id" : "manage/lesson?m=" . $lessonMajors;
-        redirect($redirectUrl);
-      }
-
-      $params['lesson_name'] = $lessonName;
-      $params['lesson_teacher'] = $lessonTeacher;
-      $params['lesson_code'] = $lessonCode;
-      // $params['lesson_majors_id'] = $lessonMajors;
+      $params['lesson_name'] = $this->input->post('lesson_name');
+      $params['lesson_teacher'] = $this->input->post('lesson_teacher');
+      $params['lesson_code'] = $this->input->post('lesson_code');
       $status = $this->Lesson_model->add($params);
 
 
@@ -233,16 +168,23 @@ class Lesson_set extends CI_Controller
 
         $path = FCPATH . 'uploads/xls_tmp/';
         $pathFile = $path . $file;
+        $realPath = realpath($pathFile);
+        $realBase = realpath($path);
+        if ($realPath === FALSE || $realBase === FALSE || strpos($realPath, $realBase) !== 0) {
+          $this->session->set_flashdata('failed', 'File import pelajaran tidak valid');
+          redirect('manage/lesson');
+        }
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $spreadsheet = $reader->load($pathFile);
+        $reader->setReadDataOnly(TRUE);
+        $spreadsheet = $reader->load($realPath);
         $sheet = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
         $numrow = 1;
         foreach ($sheet as $row) {
 
-          $lesson_code            = $row['A'];
-          $lesson_name            = $row['B'];
-          $lesson_teacher         = $row['C'];
+          $lesson_code            = trim((string) $row['A']);
+          $lesson_name            = trim((string) $row['B']);
+          $lesson_teacher         = trim((string) $row['C']);
 
           if ($numrow > 2) {
             if (empty($lesson_code) or empty($lesson_name) or empty($lesson_teacher)) {
@@ -259,7 +201,7 @@ class Lesson_set extends CI_Controller
           $numrow++;
         }
 
-        unlink($pathFile);
+        unlink($realPath);
 
         $this->session->set_flashdata('success', 'Import Pelajaran Berhasil');
       }
@@ -269,9 +211,13 @@ class Lesson_set extends CI_Controller
 
   private function getTeacherId($nip)
   {
-    $empl = $this->db->query("SELECT employee_id FROM employee WHERE employee_nip = '$nip'")->row_array();
+    $empl = $this->db
+      ->select('employee_id')
+      ->where('employee_nip', $nip)
+      ->get('employee')
+      ->row_array();
 
-    return $empl['employee_id'];
+    return isset($empl['employee_id']) ? $empl['employee_id'] : NULL;
   }
 
   public function download()
@@ -291,12 +237,17 @@ class Lesson_set extends CI_Controller
 
     /* create directory if not exist */
     if (!is_dir($config['upload_path'])) {
-      mkdir($config['upload_path'], 0777, TRUE);
+      mkdir($config['upload_path'], 0755, TRUE);
     }
 
-    $config['allowed_types'] = 'xls|xlsx|csv';
+    $config['allowed_types'] = 'xlsx';
     $config['max_size'] = '10240';
+    $fileName = preg_replace("/[^A-Za-z0-9_.-]/", "_", (string) $fileName);
     $config['file_name'] = $fileName;
+    $config["file_ext_tolower"] = TRUE;
+    $config["remove_spaces"] = TRUE;
+    $config["detect_mime"] = TRUE;
+    $config["mod_mime_fix"] = TRUE;
     $this->upload->initialize($config);
 
     if (!$this->upload->do_upload($name)) {

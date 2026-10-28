@@ -108,18 +108,7 @@ if (isset($information)) {
 		}
 	}
 
-	$("#information_img").change(function(e) {
-		if (this.files && this.files[0]) {
-			var file = this.files[0];
-			// Batasi ukuran file max 2MB untuk menghindari Nginx 413 Request Entity Too Large
-			var maxSize = 2 * 1024 * 1024; // 2 MB
-			if (file.size > maxSize) {
-				alert('Ukuran file gambar terlalu besar! Maksimal 2 MB.');
-				$(this).val('');
-				$('#target').removeAttr('src');
-				return false;
-			}
-		}
+	$("#information_img").change(function() {
 		readURL(this);
 	});
 </script>

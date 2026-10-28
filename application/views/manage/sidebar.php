@@ -15,7 +15,7 @@
           <p><?php echo ucfirst($this->session->userdata('ufullname')); ?></p>
           <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
         </div>
-
+        <div style="margin-top: 80px"></div>
         <div class="col-8">
 
           <?php
@@ -25,9 +25,17 @@
           $paket = $sett['paket'];
 
           ?>
+          <form>
+            <select class="form-control" name="package" id="package" onchange="pilih_paket()">
+              <?php foreach ($packages as $package) : ?>
+                <option value="<?php echo $package['package_id'] ?>" <?= ($package['package_id'] == $paket) ? 'selected' : '' ?>><?php echo 'DEMO PAKET ' . $package['package_name'] ?></option>
+              <?php endforeach ?>
+            </select>
+          </form>
         </div>
       </div>
 
+      <div style="margin-top: 20px"></div>
       <!-- Navmenu -->
       <ul class="sidebar-menu" data-widget="tree">
         <li class="header" style="margin-top: 0px; margin-bottom: 10px;">MENU</li>
@@ -274,8 +282,8 @@
         <!-- Menu Add-Ons -->
         <?php if ($this->session->userdata('uroleid') == 3) { ?>
           <li>
-            <a href="<?php echo site_url('manage/package'); ?>">
-              <i class="fa fa-star"></i> <span>Setting Modul Paket</span>
+            <a href="<?php echo site_url('manage/registrasi'); ?>">
+              <i class="fa fa-users"></i> <span>Data Demonstran</span>
               <span class="pull-right-container"></span>
             </a>
           </li>
