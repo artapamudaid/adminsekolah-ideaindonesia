@@ -756,7 +756,7 @@ class Banking_set extends CI_Controller
     $this->load->view('banking/banking_date_xls', $data);
   }
 
-  private function get_akun(Int $id = null)
+  private function get_akun(?int $id = null)
   {
     $code = $this->db->query("SELECT account_code FROM account WHERE account_id = '$id'")->row_array();
 

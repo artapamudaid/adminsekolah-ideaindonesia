@@ -226,7 +226,7 @@ class Worksheet_set extends CI_Controller
     }
   }
 
-  public function alokasi(Int $id = null)
+  public function alokasi(?int $id = null)
   {
 
 
@@ -378,7 +378,7 @@ class Worksheet_set extends CI_Controller
     redirect('manage/worksheet');
   }
 
-  private function status_worksheet(Int $id = null)
+  private function status_worksheet(?int $id = null)
   {
     $check_status =  $this->db->query("SELECT worksheet_status
                                         FROM worksheet

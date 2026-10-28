@@ -1,5 +1,5 @@
 <?php
-function pembulatan(Float $number = null)
+function pembulatan(?float $number = null)
 {
 
     $round = ceil($number * 10) / 10;
