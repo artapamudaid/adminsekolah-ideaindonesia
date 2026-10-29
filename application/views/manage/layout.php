@@ -1,3 +1,54 @@
+<?php
+// MOD - 24082026- Reference demo-epesantren - implement caching
+$umajorsid = $this->session->userdata('umajorsid');
+$this->load->driver('cache', array('adapter' => 'file', 'backup' => 'file'));
+$cache_name = 'v_transaksi_tertunda_cache_opt_' . $umajorsid;
+$notifTrx = $this->cache->get($cache_name);
+
+if ($notifTrx === FALSE) {
+  $this->db->select('bl.bulan_noref AS noref, s.student_full_name AS nama, s.student_nis AS nis, py.period_period_id AS idPeriod, bl.bulan_bill AS penerimaan');
+  $this->db->from('bulan bl');
+  $this->db->join('student s', 's.student_id = bl.student_student_id');
+  $this->db->join('payment py', 'py.payment_id = bl.payment_payment_id');
+  $this->db->where('bl.bulan_status', 1);
+  $this->db->where('bl.bulan_bill > ', 0);
+  $this->db->where('bl.bulan_noref IS NOT NULL', NULL, FALSE);
+  $this->db->where('NOT EXISTS (SELECT 1 FROM kas ks WHERE ks.kas_noref = bl.bulan_noref)', NULL, FALSE);
+  $this->db->where('NOT EXISTS (SELECT 1 FROM jurnal_umum ju WHERE ju.noref = bl.bulan_noref)', NULL, FALSE);
+
+  if ($umajorsid != 0) {
+    $this->db->where('s.majors_majors_id', $umajorsid);
+  }
+
+  $query1 = $this->db->get_compiled_select();
+
+  $this->db->select('bp.bebas_pay_noref AS noref, s.student_full_name AS nama, s.student_nis AS nis, py.period_period_id AS idPeriod, bp.bebas_pay_bill AS penerimaan');
+  $this->db->from('bebas_pay bp');
+  $this->db->join('bebas b', 'b.bebas_id = bp.bebas_bebas_id');
+  $this->db->join('student s', 's.student_id = b.student_student_id');
+  $this->db->join('payment py', 'py.payment_id = b.payment_payment_id');
+  $this->db->where('bp.bebas_pay_noref IS NOT NULL', NULL, FALSE);
+  $this->db->where('NOT EXISTS (SELECT 1 FROM kas ks WHERE ks.kas_noref = bp.bebas_pay_noref)', NULL, FALSE);
+  $this->db->where('NOT EXISTS (SELECT 1 FROM jurnal_umum ju WHERE ju.noref = bp.bebas_pay_noref)', NULL, FALSE);
+
+  if ($umajorsid != 0) {
+    $this->db->where('s.majors_majors_id', $umajorsid);
+  }
+
+  $query2 = $this->db->get_compiled_select();
+
+  $this->db->select('noref, nama, nis, idPeriod, SUM(penerimaan) AS totalTransaksi');
+  $this->db->from("($query1 UNION ALL $query2) AS vtt");
+  $this->db->group_by(array('nama', 'nis', 'idPeriod'));
+
+  $notifTrx = $this->db->get()->result_array();
+
+  // Cache for 5 minutes (300 seconds)
+  $this->cache->save($cache_name, $notifTrx, 300);
+}
+
+$totalNotif = count($notifTrx);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -53,6 +104,44 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
   <script type="text/javascript" src="https://emn178.github.io/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+
+  <style>
+    .navbar-actions #app-suspend-info {
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar-actions #app-suspend-info > a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FFF7ED;
+      border: 1px solid #FFEDD5;
+      color: #EA580C;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .navbar-actions #app-suspend-info > a:hover {
+      background: #FFEDD5;
+      color: #C2410C;
+    }
+    .navbar-actions #app-suspend-info .dropdown-menu {
+      top: 100%;
+      right: 0;
+      left: auto;
+      min-width: 260px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 
 
@@ -112,14 +201,24 @@
 
         <!-- Right Header Actions -->
         <div class="navbar-actions">
-          <?php
-          $notifTrx     = $this->db->query(
-            "SELECT vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi
-             FROM v_transaksi_tertunda vtt 
-             GROUP BY vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod"
-          )->result_array();
-          $totalNotif = count($notifTrx);
-          ?>
+          <!-- Language Switcher Dropdown -->
+          <div class="dropdown">
+            <button class="navbar-action-btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Ubah Bahasa / Language">
+              <i class="fa fa-globe"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right" style="min-width: 140px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); padding: 8px 0; border: 1px solid #E2E8F0;">
+              <li>
+                <a href="<?php echo site_url('manage/change_language/id') ?>" style="padding: 8px 16px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                  <span style="background: #FFF7ED; color: #EA580C; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">ID</span> Indonesia
+                </a>
+              </li>
+              <li>
+                <a href="<?php echo site_url('manage/change_language/en') ?>" style="padding: 8px 16px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                  <span style="background: #F1F5F9; color: #475569; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">EN</span> English
+                </a>
+              </li>
+            </ul>
+          </div>
 
           <!-- Fullscreen Toggle Button -->
           <button class="navbar-action-btn hidden-xs" type="button" onclick="toggleFullScreen()" title="Layar Penuh">
@@ -328,6 +427,7 @@
     <script src="<?php echo media_url() ?>js/adminlte.min.js"></script>
     <!-- Notyfy JS -->
     <script src="<?php echo media_url() ?>js/jquery.toast.js"></script>
+    <script src="<?php echo media_url() ?>js/loadingoverlay.min.js"></script>
 
     <!-- select2 -->
     <link href="<?php echo media_url() ?>select2_css/select2.min.css" rel="stylesheet" />
@@ -349,6 +449,11 @@
         format: "yyyy-mm-dd",
         autoclose: true,
         todayHighlight: true
+      });
+
+      $('#multidate').datepicker({
+        multidate: true,
+        format: "yyyy-mm-dd"
       });
     </script>
 
@@ -483,12 +588,112 @@
     </script>
 
     <script>
+      function toastNotifikasi(status, message, title) {
+        let loaderBg;
+
+        switch (status) {
+          case 'success':
+            loaderBg = '#28a745';
+            break;
+          case 'error':
+            loaderBg = '#dc3545';
+            break;
+          case 'warning':
+            loaderBg = '#ffc107';
+            break;
+          case 'info':
+            loaderBg = '#17a2b8';
+            break;
+          default:
+            loaderBg = '#9EC600';
+        }
+
+        $.toast({
+          heading: title,
+          text: message,
+          icon: status,
+          loader: true,
+          loaderBg: loaderBg,
+          position: 'top-right',
+          hideAfter: 3500,
+          stack: 6,
+        });
+      }
+
+      function handleAjaxError(jqXHR, textStatus) {
+        // console.log("Error details:", jqXHR, textStatus, errorThrown);
+        if (jqXHR.status === 0) {
+          toastNotifikasi("error", 'Tidak ada koneksi. Periksa jaringan Anda.!', 'Error');
+        } else if (jqXHR.status == 404) {
+          toastNotifikasi("error", 'Halaman yang diminta tidak ditemukan.!', 'Error');
+        } else if (jqXHR.status == 500) {
+          toastNotifikasi("error", 'Kesalahan server internal.!', 'Error');
+        } else if (textStatus === "parsererror") {
+          toastNotifikasi("error", 'Kesalahan parsing JSON.!', 'Error');
+        } else if (textStatus === "timeout") {
+          toastNotifikasi("error", 'Waktu request habis.!', 'Error');
+        } else if (textStatus === "abort") {
+          toastNotifikasi("error", 'Request dibatalkan.!', 'Error');
+        } else {
+          toastNotifikasi("error", 'Kesalahan tidak diketahui: ' + jqXHR.responseText, 'Error');
+        }
+      }
+
+      function loadingOverlay() {
+        var loadingOverlayCustom = $("<div>", {
+          "css": {
+            "display": "flex",
+            "flex-direction": "column",
+            "text-align": "center",
+          },
+          "html": `
+						<div>
+						<i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i>
+						<span class="sr-only">Loading...</span>
+						</div>
+						<div style="font-size:16px; margin-top:5px">
+						<span>Mohon Tunggu...</span>
+						</div>
+						`,
+        });
+
+        $.LoadingOverlay("show", {
+          image: "",
+          custom: loadingOverlayCustom
+        });
+      }
+    </script>
+
+    <script>
       $(function() {
+        let suspend_show = <?= isset($this->suspend_info['show']) ? json_encode($this->suspend_info['show']) : false; ?>;
+        let suspend_location = <?= isset($this->suspend_info['location']) ? json_encode($this->suspend_info['location']) : '"content-wrapper"'; ?>;
+        if (suspend_show) {
+          let suspendUI = <?= isset($this->suspend_info['ui']) ? json_encode($this->suspend_info['ui']) : '""'; ?>;
+          if (suspend_location === 'navbar') {
+            if ($(".navbar-actions").length) {
+              $(".navbar-actions").prepend(suspendUI);
+            } else if ($(".navbar-custom-menu .navbar-nav").length) {
+              $(".navbar-custom-menu .navbar-nav").prepend(suspendUI);
+            }
+          } else {
+            if ($(".content-wrapper section.content").length) {
+              $(".content-wrapper section.content").first().prepend(suspendUI);
+            } else {
+              $(".content-wrapper").prepend(suspendUI);
+            }
+          }
+        }
+
         // Password reminder
         let pwd_reminder_show = <?= isset($this->password_reminder_info['show']) ? json_encode($this->password_reminder_info['show']) : 'false'; ?>;
         if (pwd_reminder_show) {
           let pwdReminderUI = <?= isset($this->password_reminder_info['ui']) ? json_encode($this->password_reminder_info['ui']) : '""'; ?>;
-          $(".content-wrapper").prepend(pwdReminderUI);
+          if ($(".content-wrapper section.content").length) {
+            $(".content-wrapper section.content").first().prepend(pwdReminderUI);
+          } else {
+            $(".content-wrapper").prepend(pwdReminderUI);
+          }
         }
       });
     </script>
