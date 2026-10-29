@@ -34,29 +34,9 @@ media/js
 media/select2_css
 media/select2_js
 
-
-application/config/arc.php
-application/config/config.php
-application/config/constants.php
-application/config/database.php
-application/config/doctypes.php
-application/config/email.php
-application/config/foreign_chars.php
-application/config/hooks.php
-application/config/index.html
-application/config/memcaches.php
-application/config/migration.php
-application/config/profiler.php
-application/config/smileys.php
-
-application/controllers/*
 application/core/
-application/hooks/
-application/language/
 #application/libraries/
 application/logs/
-application/models/
-application/modulesOld/
 application/third_party/
 
 assets/dist
