@@ -2,6 +2,7 @@
 $user_image    = $this->session->userdata('user_image');
 $user_fullname = $this->session->userdata('ufullname');
 $role_id       = $this->session->userdata('uroleid');
+$role_name     = $this->session->userdata('urolename');
 $paket         = 3;
 
 $menus_by_parent = array(0 => array(), 1 => array());
@@ -69,13 +70,13 @@ if ($role_id !== null) {
     }
 }
 
-// Reusable menu renderer
-$render_menu_section = function($status, $header_title, $header_style) use ($menus_by_parent, $active_ids, $build_url) {
+// Reusable menu renderer (Spark Admin Style)
+$render_menu_section = function($status, $header_title) use ($menus_by_parent, $active_ids, $build_url) {
     if (empty($menus_by_parent[$status][0])) {
         return;
     }
     ?>
-    <li class="header" style="<?php echo $header_style; ?>"><?php echo $header_title; ?></li>
+    <li class="header"><?php echo $header_title; ?></li>
     <?php
     foreach ($menus_by_parent[$status][0] as $main) {
         $main_id          = $main->menu_id;
@@ -86,7 +87,7 @@ $render_menu_section = function($status, $header_title, $header_style) use ($men
         $main_target      = $main_is_external ? ' target="_blank" rel="noopener noreferrer"' : '';
 
         if ($has_sub) { ?>
-            <li class="treeview <?php echo $main_active; ?>" style="margin-top: -10px; margin-bottom: -10px;">
+            <li class="treeview <?php echo $main_active; ?>">
                 <a href="<?php echo $main_url; ?>">
                     <i class="<?php echo $main->menu_icon; ?>"></i> <span><?php echo $main->menu_nama; ?></span>
                     <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
@@ -101,9 +102,9 @@ $render_menu_section = function($status, $header_title, $header_style) use ($men
                         $sub_target      = $sub_is_external ? ' target="_blank" rel="noopener noreferrer"' : '';
 
                         if ($has_child) { ?>
-                            <li class="treeview <?php echo $sub_active; ?>" style="margin-top: -5px; margin-bottom: 0px;">
+                            <li class="treeview <?php echo $sub_active; ?>">
                                 <a href="<?php echo $sub_url; ?>">
-                                    <i class="<?php echo $sub->menu_icon; ?>"></i> <?php echo $sub->menu_nama; ?>
+                                    <i class="<?php echo $sub->menu_icon; ?>"></i> <span><?php echo $sub->menu_nama; ?></span>
                                     <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
                                 </a>
                                 <ul class="treeview-menu">
@@ -113,18 +114,18 @@ $render_menu_section = function($status, $header_title, $header_style) use ($men
                                         $child_is_external = (strpos($child->menu_link, 'http://') === 0 || strpos($child->menu_link, 'https://') === 0);
                                         $child_target      = $child_is_external ? ' target="_blank" rel="noopener noreferrer"' : '';
                                     ?>
-                                        <li class="<?php echo $child_active; ?>" style="margin-top: -5px; margin-bottom: -5px;">
+                                        <li class="<?php echo $child_active; ?>">
                                             <a href="<?php echo $child_url; ?>"<?php echo $child_target; ?>>
-                                                <i class="<?php echo $child->menu_icon; ?>"></i> <?php echo $child->menu_nama; ?>
+                                                <i class="<?php echo $child->menu_icon; ?>"></i> <span><?php echo $child->menu_nama; ?></span>
                                             </a>
                                         </li>
                                     <?php } ?>
                                 </ul>
                             </li>
                         <?php } else { ?>
-                            <li class="<?php echo $sub_active; ?>" style="margin-top: -5px; margin-bottom: 0px;">
+                            <li class="<?php echo $sub_active; ?>">
                                 <a href="<?php echo $sub_url; ?>"<?php echo $sub_target; ?>>
-                                    <i class="<?php echo $sub->menu_icon; ?>"></i> <?php echo $sub->menu_nama; ?>
+                                    <i class="<?php echo $sub->menu_icon; ?>"></i> <span><?php echo $sub->menu_nama; ?></span>
                                 </a>
                             </li>
                         <?php }
@@ -132,7 +133,7 @@ $render_menu_section = function($status, $header_title, $header_style) use ($men
                 </ul>
             </li>
         <?php } else { ?>
-            <li class="<?php echo $main_active; ?>" style="margin-top: -10px; margin-bottom: -10px;">
+            <li class="<?php echo $main_active; ?>">
                 <a href="<?php echo $main_url; ?>"<?php echo $main_target; ?>>
                     <i class="<?php echo $main->menu_icon; ?>"></i> <span><?php echo $main->menu_nama; ?></span>
                     <span class="pull-right-container"></span>
@@ -146,30 +147,15 @@ $render_menu_section = function($status, $header_title, $header_style) use ($men
   <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
     <section class="sidebar">
-      <!-- Sidebar user panel -->
-      <div class="user-panel">
-        <div class="pull-left image">
-          <?php if (!empty($user_image)) { ?>
-            <img src="<?php echo upload_url('users/' . $user_image); ?>" class="img-responsive">
-          <?php } else { ?>
-            <img src="<?php echo media_url('img/user.png'); ?>" class="img-responsive">
-          <?php } ?>
-        </div>
-        <div class="pull-left info">
-          <p><?php echo ucfirst($user_fullname); ?></p>
-          <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
-        </div>
-      </div>
 
-      <div style="margin-top: 20px"></div>
-      <!-- Navmenu -->
+      <!-- Navmenu (Spark Admin Starts Directly with Menu) -->
       <ul class="sidebar-menu" data-widget="tree">
         <?php
         // Render Menu Utama (status 0)
-        $render_menu_section(0, 'MENU', 'margin-top: 0px; margin-bottom: 10px;');
+        $render_menu_section(0, 'MENU');
 
         // Render Menu Add-Ons (status 1)
-        $render_menu_section(1, 'ADD-ONS', 'margin-top: 10px; margin-bottom: 10px;');
+        $render_menu_section(1, 'ADD-ONS');
         ?>
 
         <?php if ($role_id == 3) { ?>
@@ -180,14 +166,28 @@ $render_menu_section = function($status, $header_title, $header_style) use ($men
             </a>
           </li>
         <?php } ?>
-        <li>
-          <a href="<?php echo site_url('manage/auth/logout'); ?>">
-            <i class="fa fa-sign-out"></i> <span>Logout</span>
-            <span class="pull-right-container"></span>
-          </a>
-        </li>
       </ul>
       <!-- Navmenu -->
+
     </section>
     <!-- /.sidebar -->
+
+    <!-- Sidebar User Profile Card (Sticky Bottom Docked) -->
+    <div class="sidebar-profile-card">
+      <div class="sidebar-avatar-wrapper">
+        <?php if (!empty($user_image)) { ?>
+          <img src="<?php echo upload_url('users/' . $user_image); ?>" class="sidebar-avatar-img" alt="User Avatar">
+        <?php } else { ?>
+          <img src="<?php echo media_url('img/user.png'); ?>" class="sidebar-avatar-img" alt="User Avatar">
+        <?php } ?>
+        <span class="avatar-status-dot"></span>
+      </div>
+      <div class="sidebar-profile-info">
+        <p class="sidebar-profile-name"><?php echo ucfirst($user_fullname); ?></p>
+        <span class="sidebar-profile-role"><?php echo !empty($role_name) ? ucfirst($role_name) : 'Administrator'; ?></span>
+      </div>
+      <a href="<?php echo site_url('manage/auth/logout?location=' . htmlspecialchars($_SERVER['REQUEST_URI'])); ?>" class="sidebar-profile-logout" title="Logout">
+        <i class="fa fa-sign-out"></i>
+      </a>
+    </div>
   </aside>

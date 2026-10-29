@@ -12,12 +12,16 @@ $setting_name     = $this->Setting_model->get(array('id' => 1));
     <title>Admin Sekolah | Login</title>
     <link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
 
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
     <style>
     body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
       background-color: #f8f9fa;
     }
@@ -169,8 +173,6 @@ $setting_name     = $this->Setting_model->get(array('id' => 1));
 
                         
                             <button type="submit" class="btn btn-light w-100 mb-3" >Login</button>
-
-                            <label>Belum Punya Akun? </label> &nbsp;&nbsp;<a href="<?php echo site_url('registrasi') ?>" style="font-weight:bold; color: #fff;"> Daftar Di Sini</a>
 
                         <?php echo form_close(); ?>
                         <div class="other-links">

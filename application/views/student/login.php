@@ -12,10 +12,14 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
   <title>AdminSekolah | Login</title>
   <link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>" />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
   <style>
     body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
       background-color: #f8f9fa;
     }

@@ -120,7 +120,7 @@
         </li>
         <?php } ?>
         <li>
-          <a href="<?php echo site_url('manage/auth/logout_pengganti_db_baru'); ?>">
+          <a href="<?php echo site_url('manage/auth/logout'); ?>">
             <i class="fa fa-sign-out"></i> <span>Logout</span>
             <span class="pull-right-container"></span>
           </a>

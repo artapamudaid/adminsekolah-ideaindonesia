@@ -16,11 +16,15 @@
   <link rel="stylesheet" href="<?php echo media_url() ?>css/AdminLTE.min.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>css/style.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>css/load-font-googleapis.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- AdminLTE Skins. Choose a skin from the css/skins
    folder instead of downloading all of them to reduce the load. -->
   <!-- Notyfy JS - Notification -->
   <link rel="stylesheet" href="<?php echo media_url() ?>css/jquery.toast.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>css/_all-skins.min.css">
+  <link rel="stylesheet" href="<?php echo media_url() ?>css/skin-orange.css?v=<?php echo file_exists(FCPATH . 'media/css/skin-orange.css') ? filemtime(FCPATH . 'media/css/skin-orange.css') : '1.0'; ?>">
   <!-- Date Picker -->
   <link rel="stylesheet" href="<?php echo media_url() ?>css/bootstrap-datepicker.min.css">
   <!-- Daterange picker -->
@@ -48,103 +52,114 @@
   <script type="text/javascript" src="https://emn178.github.io/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
 </head>
 
-<body class="hold-transition skin-blue fixed sidebar-mini" <?php echo isset($ngapp) ? $ngapp : null; ?>>
+<body class="hold-transition skin-orange fixed sidebar-mini" <?php echo isset($ngapp) ? $ngapp : null; ?>>
   <div class="wrapper">
 
     <header class="main-header">
-      <!-- Logo -->
-      <a href="<?php site_url('guru') ?>" class="logo">
-        <!-- mini logo for sidebar mini 50x50 pixels -->
-        <?php if (!empty(logo())) { ?>
-          <span class="logo-mini"><img src="<?php echo upload_url('school/' . logo()) ?>" style="height: 40px; margin-top: 5px; margin-left:5px;" class="pull-left"></span>
-        <?php } else { ?>
-          <span class="logo-mini"><img src="<?php echo media_url('img/logo.svg') ?>" style="height: 40px; margin-top: 5px; margin-left:5px;" class="pull-left"></span>
-        <?php } ?>
-        <?php if (!empty(logo())) { ?>
-          <!-- logo for regular state and mobile devices -->
-          <span class="logo-lg pull-left"><img src="<?php echo upload_url('school/' . logo()) ?>" style="height: 40px; margin-top: 5px;" class="pull-left"><b>&nbsp;<?php echo $this->config->item('app_name') ?></b></span>
-        <?php } else { ?>
-          <span class="logo-lg pull-left"><img src="<?php echo media_url('img/logo.svg') ?>" style="height: 40px; margin-top: 5px;" class="pull-left"><b>&nbsp;<?php echo $this->config->item('app_name') ?></b></span>
-        <?php } ?>
+      <!-- Logo: Clean Modern Style -->
+      <a href="<?php echo site_url('guru') ?>" class="logo">
+        <span class="logo-lg">
+          <div class="brand-wrapper">
+            <span class="brand-name"><?php echo $this->config->item('app_name') ?></span>
+          </div>
+        </span>
       </a>
 
-      <!-- Header Navbar: style can be found in header.less -->
-      <nav class="navbar navbar-static-top">
-        <!-- Sidebar toggle button-->
-        <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
-          <span class="sr-only">Toggle navigation</span>
-        </a>
-        <?php
-        $schoolName = "SELECT setting_value as name FROM `setting` WHERE setting_name = 'setting_school'";
-        $resultName = $this->db->query($schoolName)->row();
-        ?>
-        <?php
-        $schoolAddress = "SELECT setting_value as address FROM `setting` WHERE setting_name = 'setting_address'";
-        $resultAddress = $this->db->query($schoolAddress)->row();
-        ?>
-        <?php
-        $schoolDistrict = "SELECT setting_value as district FROM `setting` WHERE setting_name = 'setting_district'";
-        $resultDistrict = $this->db->query($schoolDistrict)->row();
-        ?>
-        <?php
-        $schoolCity = "SELECT setting_value as city FROM `setting` WHERE setting_name = 'setting_city'";
-        $resultCity = $this->db->query($schoolCity)->row();
-        ?>
-        <?php
-        $schoolPhone = "SELECT setting_value as phone FROM `setting` WHERE setting_name = 'setting_phone'";
-        $resultPhone = $this->db->query($schoolPhone)->row();
-        ?>
-        <span class="logo-lg pull-left">
-          <!--&nbsp&nbsp&nbsp&nbsp-->
-          <font size="2" color="white">
-            <b>Admin <?php echo $resultName->name; ?></b>
-          </font><br>
-          <font size="1" color="white"><?php echo $resultAddress->address . ' ' . $resultDistrict->district . ' - ' . $resultCity->city . ', Telp. ' . $resultPhone->phone ?>
-            <!--Jl. Cendrawasih EE 17 Ngasem - Kediri, Telp. 08123585833-->
-          </font>
-        </span>
-        <div class="navbar-custom-menu">
-          <ul class="nav navbar-nav">
-            <!-- Messages: style can be found in dropdown.less-->
+      <!-- Header Navbar: Modern Clean Header -->
+      <nav class="navbar navbar-static-top navbar-custom-spark">
+        <div class="navbar-left-wrapper">
+          <!-- Sidebar Toggle Button (Squircle Modern Style) -->
+          <a href="#" class="sidebar-toggle-btn" data-toggle="push-menu" role="button" title="Buka/Tutup Menu">
+            <i class="fa fa-bars"></i>
+          </a>
 
+          <?php
+          $schoolName = "SELECT setting_value as name FROM `setting` WHERE setting_name = 'setting_school'";
+          $resultName = $this->db->query($schoolName)->row();
+          ?>
+          <?php
+          $schoolAddress = "SELECT setting_value as address FROM `setting` WHERE setting_name = 'setting_address'";
+          $resultAddress = $this->db->query($schoolAddress)->row();
+          ?>
+          <?php
+          $schoolDistrict = "SELECT setting_value as district FROM `setting` WHERE setting_name = 'setting_district'";
+          $resultDistrict = $this->db->query($schoolDistrict)->row();
+          ?>
+          <?php
+          $schoolCity = "SELECT setting_value as city FROM `setting` WHERE setting_name = 'setting_city'";
+          $resultCity = $this->db->query($schoolCity)->row();
+          ?>
+          <?php
+          $schoolPhone = "SELECT setting_value as phone FROM `setting` WHERE setting_name = 'setting_phone'";
+          $resultPhone = $this->db->query($schoolPhone)->row();
+          ?>
 
-            <!-- User Account: style can be found in dropdown.less -->
-            <li class="dropdown user user-menu">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          <!-- School Information Container -->
+          <div class="header-school-info">
+            <span class="header-school-name"><?php echo $resultName->name; ?></span>
+            <span class="header-school-meta">
+              <span><i class="fa fa-map-marker text-orange"></i> <?php echo $resultAddress->address . ' ' . $resultDistrict->district . ' - ' . $resultCity->city; ?></span>
+              <span class="meta-separator hidden-xs">•</span>
+              <span class="hidden-xs"><i class="fa fa-phone text-orange"></i> <?php echo $resultPhone->phone; ?></span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Right Header Actions -->
+        <div class="navbar-actions">
+          <!-- Fullscreen Toggle Button -->
+          <button class="navbar-action-btn hidden-xs" type="button" onclick="toggleFullScreen()" title="Layar Penuh">
+            <i class="fa fa-arrows-alt"></i>
+          </button>
+
+          <!-- User Profile Dropdown Pill -->
+          <div class="dropdown">
+            <button class="navbar-profile-btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <div class="navbar-avatar-wrapper">
                 <?php if ($this->session->userdata('employees_img') != null) { ?>
-                  <img src="<?php echo upload_url() . '/student/' . $this->session->userdata('employees_img'); ?>" class="user-image">
+                  <img src="<?php echo upload_url() . '/student/' . $this->session->userdata('employees_img'); ?>" class="navbar-profile-img" alt="Avatar">
                 <?php } else { ?>
-                  <img src="<?php echo media_url() ?>img/user.png" class="user-image">
+                  <img src="<?php echo media_url() ?>img/user.png" class="navbar-profile-img" alt="Avatar">
                 <?php } ?>
-                <span class="hidden-xs"><?php echo ucfirst($this->session->userdata('ufullname_guru')); ?></span>
-              </a>
-              <ul class="dropdown-menu">
-                <!-- User image -->
-                <li class="user-header">
+                <span class="navbar-online-dot"></span>
+              </div>
+              <div class="navbar-user-text hidden-xs">
+                <span class="navbar-profile-name"><?php echo ucfirst($this->session->userdata('ufullname_guru')); ?></span>
+                <span class="navbar-profile-role">Guru / Pengajar</span>
+              </div>
+              <i class="fa fa-angle-down navbar-profile-caret"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right dropdown-menu-profile-spark">
+              <li class="profile-dropdown-header">
+                <div class="profile-header-card">
                   <?php if ($this->session->userdata('employees_img') != null) { ?>
-                    <img src="<?php echo upload_url() . '/student/' . $this->session->userdata('employees_img'); ?>" class="img-circle">
+                    <img src="<?php echo upload_url() . '/student/' . $this->session->userdata('employees_img'); ?>" class="profile-card-img" alt="Avatar">
                   <?php } else { ?>
-                    <img src="<?php echo media_url() ?>img/user.png" class="img-circle">
+                    <img src="<?php echo media_url() ?>img/user.png" class="profile-card-img" alt="Avatar">
                   <?php } ?>
-
-                  <p>
-                    <?php echo ucfirst($this->session->userdata('ufullname_guru')); ?>
-                    <small><?php echo ucfirst($this->session->userdata('unip_guru')); ?></small>
-                    <small><?php echo $this->session->userdata('uemail'); ?></small>
-                  </p>
-                </li>
-                <!-- Menu Footer-->
-                <li class="user-footer">
-                  <div class="pull-left">
-                    <a href="<?php echo site_url('guru/profile') ?>" class="btn btn-default btn-flat">Profile</a>
+                  <div class="profile-header-details">
+                    <div class="profile-dropdown-name"><?php echo ucfirst($this->session->userdata('ufullname_guru')); ?></div>
+                    <span class="profile-dropdown-role-badge">Guru</span>
+                    <div class="profile-dropdown-email">NIP: <?php echo $this->session->userdata('unip_guru'); ?></div>
                   </div>
-                  <div class="pull-right">
-                    <a href="<?php echo site_url('guru/auth/logout?location=' . htmlspecialchars($_SERVER['REQUEST_URI'])) ?>" class="btn btn-default btn-flat">Sign out</a>
-                  </div>
-                </li>
-              </ul>
-            </li>
-          </ul>
+                </div>
+              </li>
+              <li class="profile-menu-section-title">Menu Pengguna</li>
+              <li>
+                <a href="<?php echo site_url('guru/profile') ?>" class="profile-dropdown-item">
+                  <div class="item-icon-box"><i class="fa fa-user text-orange"></i></div>
+                  <span>Profil Guru</span>
+                </a>
+              </li>
+              <li class="profile-dropdown-divider"></li>
+              <li>
+                <a href="<?php echo site_url('guru/auth/logout?location=' . htmlspecialchars($_SERVER['REQUEST_URI'])) ?>" class="profile-dropdown-logout">
+                  <div class="item-icon-box logout-icon-box"><i class="fa fa-sign-out"></i></div>
+                  <span>Keluar Sistem</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </nav>
     </header>
@@ -309,6 +324,18 @@
           s[1] += new Array(prec - s[1].length + 1).join('0');
         }
         return s.join(dec);
+      }
+    </script>
+
+    <script>
+      function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(function(err) {});
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        }
       }
     </script>
 </body>

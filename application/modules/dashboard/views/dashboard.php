@@ -2,7 +2,7 @@
 $styleBoxSubscriptionHistory = '';
 if ($showTableSubsHistory) {
     $styleBoxSubscriptionHistory = 'style="';
-    $styleBoxSubscriptionHistory .= 'height: 565px;';
+    $styleBoxSubscriptionHistory .= 'min-height: 565px;';
     $styleBoxSubscriptionHistory .= '"';
 }
 ?>
@@ -171,22 +171,34 @@ if ($showTableSubsHistory) {
                         <h3 class="box-title"><?= $this->lang->line('dash_subscription_history') ?: 'Riwayat Langganan'; ?></h3>
                     </div>
                     <div class="box-body">
-                        <div class="small-box bg-primary">
-                            <div class="inner">
-                                <h3><?= html_escape($packageName) . ' - ' . html_escape($durationStr); ?></h3>
-                                <p><?= $this->lang->line('dash_nearest_bill') ?: 'Tagihan Terdekat' ?>: <?= html_escape($nearestBillDate); ?> (<?= (int)$daysLeft; ?> <?= $this->lang->line('dash_days_left') ?: 'hari tersisa' ?>)</p>
+                        <div class="subscription-hero-card">
+                            <div class="subs-hero-content">
+                                <div class="subs-badge">
+                                    <span class="subs-badge-dot"></span>
+                                    <span><?= $this->lang->line('dash_active_package') ?: 'Paket Aktif'; ?></span>
+                                </div>
+                                <h3 class="subs-title"><?= html_escape($packageName) . ' — ' . html_escape($durationStr); ?></h3>
+                                <div class="subs-meta">
+                                    <span class="subs-meta-item">
+                                        <i class="fa fa-calendar-check-o"></i>
+                                        <span><?= $this->lang->line('dash_nearest_bill') ?: 'Tagihan Terdekat' ?>: <strong><?= html_escape($nearestBillDate); ?></strong></span>
+                                    </span>
+                                    <span class="subs-badge-pill"><i class="fa fa-clock-o"></i> <?= (int)$daysLeft; ?> <?= $this->lang->line('dash_days_left') ?: 'hari tersisa' ?></span>
+                                </div>
                             </div>
-                            <div class="icon">
+                            <div class="subs-hero-action">
+                                <a href="<?= $whatsappUrl ?>" target="_blank" class="subs-btn-extend">
+                                    <i class="fa fa-whatsapp"></i> <?= $this->lang->line('dash_extend') ?: 'Perpanjang' ?>
+                                </a>
+                            </div>
+                            <div class="subs-hero-bg-icon">
                                 <i class="fa fa-calendar"></i>
-                            </div>
-                            <div class="small-box-footer" style="padding: 5px 10px; background: rgba(0,0,0,0.1); text-align: right;">
-                                <a href="<?= $whatsappUrl ?>" target="_blank" class="btn btn-default btn-xs" style="color: #333; font-weight: bold;"><?= $this->lang->line('dash_extend') ?: 'Perpanjang' ?></a>
                             </div>
                         </div>
 
                         <?php if ($showTableSubsHistory): ?>
                             <!-- Riwayat Langganan -->
-                            <div class="nav-tabs-custom">
+                            <div class="nav-tabs-custom subs-tabs-custom">
                                 <ul class="nav nav-tabs" id="subscription_tabs">
                                     <li class="active"><a href="#sub_tab_all" data-status="all" data-toggle="tab"><?= $this->lang->line('dash_all') ?: 'Semua' ?></a></li>
                                     <li><a href="#sub_tab_pending" data-status="pending" data-toggle="tab"><?= $this->lang->line('dash_pending') ?: 'Pending' ?></a></li>
@@ -196,7 +208,7 @@ if ($showTableSubsHistory) {
                                 <div class="tab-content">
                                     <div class="tab-pane active" id="subscription_tab_content">
                                         <div class="table-responsive">
-                                            <table class="table table-striped table-condensed" id="subscription_history_table">
+                                            <table class="table table-hover" id="subscription_history_table" style="margin-bottom: 0;">
                                                 <thead>
                                                     <tr>
                                                         <th><?= $this->lang->line('dash_invoice') ?: 'Faktur' ?></th>
@@ -215,25 +227,31 @@ if ($showTableSubsHistory) {
                                                         ['invoice' => 'INV-2024-001', 'status' => 'batal', 'date' => '15 Agu 2024 14:20', 'desc' => 'Admin Sekolah - NEW - MENENGAH - 12 Bulan', 'total' => 'Rp 4.500.000', 'link' => '#']
                                                     ];
                                                     foreach ($dummy_history as $h):
-                                                        $badge_class = 'default';
-                                                        if ($h['status'] == 'lunas') $badge_class = 'success';
-                                                        elseif ($h['status'] == 'pending') $badge_class = 'warning';
-                                                        elseif ($h['status'] == 'batal') $badge_class = 'danger';
                                                     ?>
                                                         <tr data-status="<?= html_escape($h['status']) ?>">
-                                                            <td><strong><?= html_escape($h['invoice']) ?></strong></td>
-                                                            <td><span class="label label-<?= $badge_class ?>"><?= ucfirst(html_escape($h['status'])) ?></span></td>
-                                                            <td><?= html_escape($h['date']) ?></td>
-                                                            <td><?= html_escape($h['desc']) ?></td>
-                                                            <td><?= html_escape($h['total']) ?></td>
+                                                            <td><strong style="color: #1E293B; letter-spacing: 0.3px;"><?= html_escape($h['invoice']) ?></strong></td>
+                                                            <td>
+                                                                <?php if ($h['status'] == 'lunas'): ?>
+                                                                    <span class="label-status-lunas"><i class="fa fa-check-circle"></i> <?= ucfirst(html_escape($h['status'])) ?></span>
+                                                                <?php elseif ($h['status'] == 'pending'): ?>
+                                                                    <span class="label-status-pending"><i class="fa fa-clock-o"></i> <?= ucfirst(html_escape($h['status'])) ?></span>
+                                                                <?php elseif ($h['status'] == 'batal'): ?>
+                                                                    <span class="label-status-batal"><i class="fa fa-times-circle"></i> <?= ucfirst(html_escape($h['status'])) ?></span>
+                                                                <?php else: ?>
+                                                                    <span class="label label-default"><?= ucfirst(html_escape($h['status'])) ?></span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                            <td style="color: #475569; font-size: 13px;"><?= html_escape($h['date']) ?></td>
+                                                            <td style="color: #334155; font-size: 13px;"><?= html_escape($h['desc']) ?></td>
+                                                            <td><strong style="color: #0F172A;"><?= html_escape($h['total']) ?></strong></td>
                                                             <td style="white-space: nowrap;">
                                                                 <?php if ($h['status'] == 'pending'): ?>
-                                                                    <a href="<?= html_escape($h['link']) ?>" target="_blank" class="btn btn-xs btn-success" style="margin-bottom:2px;"><i class="fa fa-external-link"></i> <?= $this->lang->line('dash_open_link') ?: 'Buka Link' ?></a>
-                                                                    <button type="button" class="btn btn-xs btn-danger" onclick="alert('Batalkan transaksi?')"><i class="fa fa-times"></i> <?= $this->lang->line('dash_cancel') ?: 'Batalkan' ?></button>
+                                                                    <a href="<?= html_escape($h['link']) ?>" target="_blank" class="btn btn-action-pay"><i class="fa fa-external-link"></i> <?= $this->lang->line('dash_open_link') ?: 'Buka Link' ?></a>
+                                                                    <button type="button" class="btn btn-action-cancel" onclick="alert('Batalkan transaksi?')"><i class="fa fa-times"></i> <?= $this->lang->line('dash_cancel') ?: 'Batalkan' ?></button>
                                                                 <?php elseif ($h['status'] == 'lunas'): ?>
-                                                                    <a href="<?= html_escape($h['link']) ?>" target="_blank" class="btn btn-xs btn-default"><i class="fa fa-print"></i> Kwitansi</a>
+                                                                    <a href="<?= html_escape($h['link']) ?>" target="_blank" class="btn btn-action-receipt"><i class="fa fa-print"></i> Kwitansi</a>
                                                                 <?php else: ?>
-                                                                    <span class="text-muted">-</span>
+                                                                    <span class="text-muted" style="color: #94A3B8;">-</span>
                                                                 <?php endif; ?>
                                                             </td>
                                                         </tr>

@@ -11,6 +11,9 @@ $setting_logo     = $this->Setting_model->get(array('id' => 6));
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Sekolah | Login</title>
 	<link rel="icon" type="image/png" href="<?php echo media_url('ico/favicon.ico') ?>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="<?php echo base_url() ?>b-asset/css/iofrm-style.css">
@@ -20,6 +23,13 @@ $setting_logo     = $this->Setting_model->get(array('id' => 6));
     <link href="<?php echo media_url() ?>css/font-awesome.min.css" rel="stylesheet" />
 
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+    <style>
+      body, .form-body, input, button {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+      }
+    </style>
+</head>
 
 <body>
     <div class="form-body">

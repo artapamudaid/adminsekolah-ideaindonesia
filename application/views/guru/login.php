@@ -14,8 +14,8 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="<?php echo media_url() ?>auth/auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="<?php echo media_url() ?>auth/auth.css?v=<?php echo file_exists(FCPATH . 'media/auth/auth.css') ? filemtime(FCPATH . 'media/auth/auth.css') : '1.0'; ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 
@@ -74,7 +74,7 @@ $setting_name = $this->Setting_model->get(['id' => 1]);
                     <div class="form-header">
                         <img
                             class="brand-logo"
-                            src="<?php echo media_url('img/as-landscape.png') ?>"
+                            src="<?php echo media_url('img/idea-landscape.png') ?>"
                             alt="logo" />
                         <div class="form-eyebrow">Selamat Datang</div>
                         <div class="form-title"><?= $setting_name['setting_value'] ?? 'AdminSekolah' ?></div>

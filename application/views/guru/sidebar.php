@@ -2,23 +2,8 @@
 <aside class="main-sidebar">
   <!-- sidebar: style can be found in sidebar.less -->
   <section class="sidebar">
-    <!-- Sidebar user panel (optional) -->
-    <div class="user-panel">
-      <div class="pull-left image">
-        <?php if (!empty(logo())) { ?>
-          <img src="<?php echo upload_url('school/' . logo()) ?>" class="img-circle" alt="Logo" style="height:45px;" />
-        <?php } else { ?>
-          <img src="<?php echo media_url('img/logo.png') ?>" class="img-circle" alt="Logo" style="height:45px;" />
-        <?php } ?>
-      </div>
-      <div class="pull-left info">
-        <p>Guru</p>
-        <!-- Status -->
-        <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
-      </div>
-    </div>
 
-    <!-- Sidebar Menu -->
+    <!-- Sidebar Menu (Spark Admin Starts Directly with Menu) -->
     <ul class="sidebar-menu" data-widget="tree">
       <li class="header">MENU GURU</li>
 
@@ -38,20 +23,6 @@
         <a href="<?php echo site_url('guru/nilai'); ?>">
           <i class="fa fa-file-o"></i> <span>Penilaian</span>
         </a>
-      </li>
-
-      <li class="treeview">
-        <a href="#">
-          <i class="fa fa-users"></i> <span>Kebiasaan Anak Hebat</span>
-          <span class="pull-right-container">
-            <i class="fa fa-angle-left pull-right"></i>
-          </span>
-        </a>
-        <ul class="treeview-menu">
-          <li class="">
-            <a href="<?php echo site_url('guru/presensi_kebiasaan'); ?>"><i class="fa fa-circle-o"></i> Presensi Kebiasaan Anak</a>
-          </li>
-        </ul>
       </li>
 
       <li class="<?php echo ($this->uri->segment(2) == 'report_jurnal') ? 'active' : '' ?>">
@@ -103,4 +74,23 @@
     <!-- /.sidebar-menu -->
   </section>
   <!-- /.sidebar -->
+
+  <!-- Sidebar User Profile Card (Sticky Bottom Docked) -->
+  <div class="sidebar-profile-card">
+    <div class="sidebar-avatar-wrapper">
+      <?php if ($this->session->userdata('employees_img') != null) { ?>
+        <img src="<?php echo upload_url() . '/student/' . $this->session->userdata('employees_img'); ?>" class="sidebar-avatar-img" alt="User Avatar">
+      <?php } else { ?>
+        <img src="<?php echo media_url('img/user.png'); ?>" class="sidebar-avatar-img" alt="User Avatar">
+      <?php } ?>
+      <span class="avatar-status-dot"></span>
+    </div>
+    <div class="sidebar-profile-info">
+      <p class="sidebar-profile-name"><?php echo ucfirst($this->session->userdata('ufullname_guru')); ?></p>
+      <span class="sidebar-profile-role"><?php echo ($this->session->userdata('uiswali_guru') == 1) ? 'Wali Kelas' : 'Guru / Pengajar'; ?></span>
+    </div>
+    <a href="<?php echo site_url('guru/auth/logout?location=' . htmlspecialchars($_SERVER['REQUEST_URI'])); ?>" class="sidebar-profile-logout" title="Logout">
+      <i class="fa fa-sign-out"></i>
+    </a>
+  </div>
 </aside>

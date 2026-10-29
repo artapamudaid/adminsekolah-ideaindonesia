@@ -16,12 +16,15 @@
   <link rel="stylesheet" href="<?php echo media_url() ?>css/AdminLTE.min.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>css/style.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>css/load-font-googleapis.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- AdminLTE Skins. Choose a skin from the css/skins
    folder instead of downloading all of them to reduce the load. -->
   <!-- Notyfy JS - Notification -->
   <link rel="stylesheet" href="<?php echo media_url() ?>css/jquery.toast.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>css/_all-skins.min.css">
-  <link rel="stylesheet" href="<?php echo media_url() ?>css/skin-orange.css">
+  <link rel="stylesheet" href="<?php echo media_url() ?>css/skin-orange.css?v=<?php echo file_exists(FCPATH . 'media/css/skin-orange.css') ? filemtime(FCPATH . 'media/css/skin-orange.css') : '1.0'; ?>">
   <!-- Date Picker -->
   <link rel="stylesheet" href="<?php echo media_url() ?>css/bootstrap-datepicker.min.css">
   <!-- Daterange picker -->
@@ -30,7 +33,9 @@
   <link rel="stylesheet" href="<?php echo media_url() ?>DataTables/css/jquery.dataTables.css">
 
   <link href="<?php echo base_url('/media/js/fullcalendar/fullcalendar.css'); ?>" rel="stylesheet">
+  <!-- Chat widget disabled
   <link rel="stylesheet" href="<?= base_url('/assets/chat/css/style.css') ?>">
+  -->
 
   <script src="<?php echo media_url() ?>js/jquery.min.js"></script>
   <script src="<?php echo media_url() ?>js/dateFormat.js"></script>
@@ -50,231 +55,172 @@
   <script type="text/javascript" src="https://emn178.github.io/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
 </head>
 
-<style>
-  .dropdown-notif {
-    position: relative;
-    display: inline-block;
-  }
 
-  .dropdown-menu-notif {
-    display: none;
-    position: absolute;
-    top: 40px;
-    right: 0;
-    width: 300px;
-    max-height: 300px;
-    overflow-y: auto;
-    background: white;
-    border: 1px solid #ccc;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    padding: 10px;
-    list-style: none;
-  }
-
-  .dropdown-menu-notif.active {
-    display: block;
-  }
-
-  .notification-header {
-    font-weight: bold;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    text-align: center;
-    background-color: #f8f8f8;
-  }
-
-  .notification-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-  }
-
-  .notification-item:last-child {
-    border-bottom: none;
-  }
-
-  .bell-icon {
-    position: relative;
-    cursor: pointer;
-  }
-
-  .notification-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: red;
-    color: white;
-    font-size: 10px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: none;
-  }
-
-  .has-notification .notification-badge {
-    display: block;
-  }
-
-  .notification-link {
-    text-decoration: none;
-    color: blue;
-    font-size: 12px;
-  }
-
-  .notification-bell {
-    position: relative;
-    display: inline-block;
-    font-size: 30px;
-    /* Ukuran ikon */
-  }
-
-  .badge-2 {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background-color: red;
-    /* Warna latar belakang badge */
-    color: white;
-    /* Warna teks badge */
-    border-radius: 50%;
-    /* Membuat badge bulat */
-    padding: 5px 10px;
-    /* Jarak di dalam badge */
-    font-size: 12px;
-    /* Ukuran teks di dalam badge */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-width: 10px;
-    /* Lebar minimum */
-  }
-</style>
 
 <body class="hold-transition skin-orange fixed sidebar-mini" <?php echo isset($ngapp) ? $ngapp : null; ?>>
   <div class="wrapper">
 
     <header class="main-header">
-      <!-- Logo -->
-      <a href="<?php site_url('manage') ?>" class="logo">
-        <!-- mini logo for sidebar mini 50x50 pixels -->
-        <?php if (!empty(logo())) { ?>
-          <span class="logo-mini"><img src="<?php echo upload_url('school/' . logo()) ?>" style="height: 40px; margin-top: 5px; margin-left:5px;" class="pull-left"></span>
-        <?php } else { ?>
-          <span class="logo-mini"><img src="<?php echo media_url('img/logo.svg') ?>" style="height: 40px; margin-top: 5px; margin-left:5px;" class="pull-left"></span>
-        <?php } ?>
-        <?php if (!empty(logo())) { ?>
-          <!-- logo for regular state and mobile devices -->
-          <span class="logo-lg pull-left"><img src="<?php echo upload_url('school/' . logo()) ?>" style="height: 40px; margin-top: 5px;" class="pull-left"><b>&nbsp;<?php echo $this->config->item('app_name') ?></b></span>
-        <?php } else { ?>
-          <span class="logo-lg pull-left"><img src="<?php echo media_url('img/logo.svg') ?>" style="height: 40px; margin-top: 5px;" class="pull-left"><b>&nbsp;<?php echo $this->config->item('app_name') ?></b></span>
-        <?php } ?>
+      <!-- Logo: Clean Modern Style (No PRO badge) -->
+      <a href="<?php echo site_url('manage') ?>" class="logo">
+        <span class="logo-lg">
+          <div class="brand-wrapper">
+            <span class="brand-name"><?php echo $this->config->item('app_name') ?></span>
+          </div>
+        </span>
       </a>
 
-      <!-- Header Navbar: style can be found in header.less -->
-      <nav class="navbar navbar-static-top">
-        <!-- Sidebar toggle button-->
-        <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
-          <span class="sr-only">Toggle navigation</span>
-        </a>
-        <?php
-        $schoolName = "SELECT setting_value as name FROM `setting` WHERE setting_name = 'setting_school'";
-        $resultName = $this->db->query($schoolName)->row();
-        ?>
-        <?php
-        $schoolAddress = "SELECT setting_value as address FROM `setting` WHERE setting_name = 'setting_address'";
-        $resultAddress = $this->db->query($schoolAddress)->row();
-        ?>
-        <?php
-        $schoolDistrict = "SELECT setting_value as district FROM `setting` WHERE setting_name = 'setting_district'";
-        $resultDistrict = $this->db->query($schoolDistrict)->row();
-        ?>
-        <?php
-        $schoolCity = "SELECT setting_value as city FROM `setting` WHERE setting_name = 'setting_city'";
-        $resultCity = $this->db->query($schoolCity)->row();
-        ?>
-        <?php
-        $schoolPhone = "SELECT setting_value as phone FROM `setting` WHERE setting_name = 'setting_phone'";
-        $resultPhone = $this->db->query($schoolPhone)->row();
-        ?>
-        <span class="logo-lg pull-left">
-          <!--&nbsp&nbsp&nbsp&nbsp-->
-          <font size="2" color="white">
-            <b>Admin <?php echo $resultName->name; ?></b>
-          </font><br>
-          <font size="1" color="white"><?php echo $resultAddress->address . ' ' . $resultDistrict->district . ' - ' . $resultCity->city . ', Telp. ' . $resultPhone->phone ?>
-            <!--Jl. Cendrawasih EE 17 Ngasem - Kediri, Telp. 08123585833-->
-          </font>
-        </span>
-        <div class="navbar-custom-menu">
-          <ul class="nav navbar-nav">
-            <!-- Messages: style can be found in dropdown.less-->
-            <?php
-            $notifTrx     = $this->db->query(
-              "SELECT vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi
-                                    FROM v_transaksi_tertunda vtt 
-                                    GROUP BY vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod"
-            )->result_array();
-            $totalNotif = count($notifTrx);
-            ?>
-            <li class="dropdown dropdown-notif user user-menu">
-              <a href="#" class="dropdown-toggle bell-icon has-notification" data-toggle="dropdown">
-                <i class="fa fa-bell" aria-hidden="true"></i>
+      <!-- Header Navbar: Modern Clean Header -->
+      <nav class="navbar navbar-static-top navbar-custom-spark">
+        <div class="navbar-left-wrapper">
+          <!-- Sidebar Toggle Button (Squircle Modern Style) -->
+          <a href="#" class="sidebar-toggle-btn" data-toggle="push-menu" role="button" title="Buka/Tutup Menu">
+            <i class="fa fa-bars"></i>
+          </a>
+
+          <?php
+          $schoolName = "SELECT setting_value as name FROM `setting` WHERE setting_name = 'setting_school'";
+          $resultName = $this->db->query($schoolName)->row();
+          ?>
+          <?php
+          $schoolAddress = "SELECT setting_value as address FROM `setting` WHERE setting_name = 'setting_address'";
+          $resultAddress = $this->db->query($schoolAddress)->row();
+          ?>
+          <?php
+          $schoolDistrict = "SELECT setting_value as district FROM `setting` WHERE setting_name = 'setting_district'";
+          $resultDistrict = $this->db->query($schoolDistrict)->row();
+          ?>
+          <?php
+          $schoolCity = "SELECT setting_value as city FROM `setting` WHERE setting_name = 'setting_city'";
+          $resultCity = $this->db->query($schoolCity)->row();
+          ?>
+          <?php
+          $schoolPhone = "SELECT setting_value as phone FROM `setting` WHERE setting_name = 'setting_phone'";
+          $resultPhone = $this->db->query($schoolPhone)->row();
+          ?>
+
+          <!-- School Information Container -->
+          <div class="header-school-info">
+            <span class="header-school-name"><?php echo $resultName->name; ?></span>
+            <span class="header-school-meta">
+              <span><i class="fa fa-map-marker text-orange"></i> <?php echo $resultAddress->address . ' ' . $resultDistrict->district . ' - ' . $resultCity->city; ?></span>
+              <span class="meta-separator hidden-xs">•</span>
+              <span class="hidden-xs"><i class="fa fa-phone text-orange"></i> <?php echo $resultPhone->phone; ?></span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Right Header Actions -->
+        <div class="navbar-actions">
+          <?php
+          $notifTrx     = $this->db->query(
+            "SELECT vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod, SUM(vtt.penerimaan) AS totalTransaksi
+             FROM v_transaksi_tertunda vtt 
+             GROUP BY vtt.noref, vtt.nama, vtt.nis, vtt.idPeriod"
+          )->result_array();
+          $totalNotif = count($notifTrx);
+          ?>
+
+          <!-- Fullscreen Toggle Button -->
+          <button class="navbar-action-btn hidden-xs" type="button" onclick="toggleFullScreen()" title="Layar Penuh">
+            <i class="fa fa-arrows-alt"></i>
+          </button>
+
+          <!-- Notification Bell Dropdown -->
+          <div class="dropdown">
+            <button class="navbar-action-btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notifikasi Transaksi">
+              <i class="fa fa-bell-o"></i>
+              <?php if ($totalNotif > 0) { ?>
+                <span class="navbar-action-badge"><?php echo $totalNotif; ?></span>
+              <?php } ?>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right dropdown-menu-notification-spark">
+              <div class="notification-spark-header">
+                <div class="notif-header-title">
+                  <i class="fa fa-bell-o text-orange"></i>
+                  <span>Pembayaran Belum Disimpan</span>
+                </div>
+                <span class="notif-header-badge"><?php echo $totalNotif; ?> Baru</span>
+              </div>
+              <div class="notification-spark-body">
                 <?php if ($totalNotif > 0) { ?>
-                  <div class="badge-2"><?php echo $totalNotif; ?></div>
-                <?php } ?>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-notif" id="notificationDropdown">
-                <li class="notification-header">Pembayaran Belum Tersimpan</li>
-                <?php foreach ($notifTrx as $nTrx) { ?>
-                  <li class="notification-item">
-                    <span><?php echo $nTrx['nama'] ?></span>
-                    <a href="<?php echo base_url('manage/payout?n=') . $nTrx['idPeriod'] . '&r=' . $nTrx['nis'] ?>" class="notification-link">Detail</a>
-                  </li>
-                <?php } ?>
-              </ul>
-            </li>
-
-
-            <!-- User Account: style can be found in dropdown.less -->
-            <li class="dropdown user user-menu">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <?php if ($this->session->userdata('user_image') != null) { ?>
-                  <img src="<?php echo upload_url() . '/users/' . $this->session->userdata('user_image'); ?>" class="user-image">
-                <?php } else { ?>
-                  <img src="<?php echo media_url() ?>img/user.png" class="user-image">
-                <?php } ?>
-                <span class="hidden-xs"><?php echo ucfirst($this->session->userdata('ufullname')); ?></span>
-              </a>
-              <ul class="dropdown-menu">
-                <!-- User image -->
-                <li class="user-header">
-                  <?php if ($this->session->userdata('user_image') != null) { ?>
-                    <img src="<?php echo upload_url() . '/users/' . $this->session->userdata('user_image'); ?>" class="img-circle">
-                  <?php } else { ?>
-                    <img src="<?php echo media_url() ?>img/user.png" class="img-circle">
+                  <?php foreach ($notifTrx as $nTrx) { ?>
+                    <a href="<?php echo base_url('manage/payout?n=') . $nTrx['idPeriod'] . '&r=' . $nTrx['nis'] ?>" class="notification-spark-item">
+                      <div class="notif-item-icon">
+                        <i class="fa fa-credit-card"></i>
+                      </div>
+                      <div class="notif-item-info">
+                        <div class="notif-item-name"><?php echo $nTrx['nama'] ?></div>
+                        <div class="notif-item-meta">
+                          <span class="nis-label">NIS: <?php echo $nTrx['nis'] ?></span>
+                          <span class="amount-label">Rp <?php echo number_format($nTrx['totalTransaksi'], 0, ',', '.'); ?></span>
+                        </div>
+                      </div>
+                    </a>
                   <?php } ?>
+                <?php } else { ?>
+                  <div class="notif-empty-state">
+                    <i class="fa fa-check-circle-o notif-empty-icon"></i>
+                    <span>Semua transaksi telah tersimpan</span>
+                  </div>
+                <?php } ?>
+              </div>
+              <?php if ($totalNotif > 0) { ?>
+                <div class="notification-spark-footer">
+                  <a href="<?php echo site_url('manage/payout') ?>">Buka Menu Pembayaran <i class="fa fa-arrow-right"></i></a>
+                </div>
+              <?php } ?>
+            </div>
+          </div>
 
-                  <p>
-                    <?php echo ucfirst($this->session->userdata('ufullname')); ?>
-                    <small><?php echo ucfirst($this->session->userdata('urolename')); ?></small>
-                    <small><?php echo $this->session->userdata('uemail'); ?></small>
-                  </p>
-                </li>
-                <!-- Menu Footer-->
-                <li class="user-footer">
-                  <div class="pull-left">
-                    <a href="<?php echo site_url('manage/profile') ?>" class="btn btn-default btn-flat">Profile</a>
+          <!-- User Profile Dropdown Pill -->
+          <div class="dropdown">
+            <button class="navbar-profile-btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <div class="navbar-avatar-wrapper">
+                <?php if ($this->session->userdata('user_image') != null) { ?>
+                  <img src="<?php echo upload_url() . '/users/' . $this->session->userdata('user_image'); ?>" class="navbar-profile-img" alt="Avatar">
+                <?php } else { ?>
+                  <img src="<?php echo media_url() ?>img/user.png" class="navbar-profile-img" alt="Avatar">
+                <?php } ?>
+                <span class="navbar-online-dot"></span>
+              </div>
+              <div class="navbar-user-text hidden-xs">
+                <span class="navbar-profile-name"><?php echo ucfirst($this->session->userdata('ufullname')); ?></span>
+                <span class="navbar-profile-role"><?php echo ucfirst($this->session->userdata('urolename')); ?></span>
+              </div>
+              <i class="fa fa-angle-down navbar-profile-caret"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right dropdown-menu-profile-spark">
+              <li class="profile-dropdown-header">
+                <div class="profile-header-card">
+                  <?php if ($this->session->userdata('user_image') != null) { ?>
+                    <img src="<?php echo upload_url() . '/users/' . $this->session->userdata('user_image'); ?>" class="profile-card-img" alt="Avatar">
+                  <?php } else { ?>
+                    <img src="<?php echo media_url() ?>img/user.png" class="profile-card-img" alt="Avatar">
+                  <?php } ?>
+                  <div class="profile-header-details">
+                    <div class="profile-dropdown-name"><?php echo ucfirst($this->session->userdata('ufullname')); ?></div>
+                    <span class="profile-dropdown-role-badge"><?php echo ucfirst($this->session->userdata('urolename')); ?></span>
+                    <div class="profile-dropdown-email"><?php echo $this->session->userdata('uemail'); ?></div>
                   </div>
-                  <div class="pull-right">
-                    <a href="<?php echo site_url('manage/auth/logout_pengganti_db_baru?location=' . htmlspecialchars($_SERVER['REQUEST_URI'])) ?>" class="btn btn-default btn-flat">Sign out</a>
-                  </div>
-                </li>
-              </ul>
-            </li>
-          </ul>
+                </div>
+              </li>
+              <li class="profile-menu-section-title">Menu Pengguna</li>
+              <li>
+                <a href="<?php echo site_url('manage/profile') ?>" class="profile-dropdown-item">
+                  <div class="item-icon-box"><i class="fa fa-user text-orange"></i></div>
+                  <span>Profil Saya</span>
+                </a>
+              </li>
+              <li class="profile-dropdown-divider"></li>
+              <li>
+                <a href="<?php echo site_url('manage/auth/logout?location=' . htmlspecialchars($_SERVER['REQUEST_URI'])) ?>" class="profile-dropdown-logout">
+                  <div class="item-icon-box logout-icon-box"><i class="fa fa-sign-out"></i></div>
+                  <span>Keluar Sistem</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </nav>
     </header>
@@ -291,6 +237,7 @@
     <!-- Content Wrapper. Contains page content -->
 
 
+    <?php /* Chat Bubble & Widget Disabled
     <div class="widget-button" id="widget-toggle">
       💬
       <div class="notif-badge" id="notif-badge">0</div>
@@ -345,6 +292,7 @@
 
       </div>
     </div>
+    */ ?>
 
     <!-- /.content-wrapper -->
     <footer class="main-footer">
@@ -545,12 +493,25 @@
       });
     </script>
 
+    <?php /* Chat Pusher & scripts disabled
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3" preload="auto"></audio>
 
-    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
     <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@2.12.1/dist/index.min.js"></script>
     <script src="<?= base_url('assets/chat/js/script.js?v=' . filemtime(FCPATH . 'assets/chat/js/script.js')) ?>"></script>
+    */ ?>
+
+    <script>
+      function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(function(err) {});
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        }
+      }
+    </script>
 
 </body>
 
