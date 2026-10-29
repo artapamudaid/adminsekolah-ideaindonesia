@@ -141,9 +141,6 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 </div>
 
 <style>
-/* ==========================================================================
-   Modern Presence Kiosk Styles (Plus Jakarta Sans & Spark Admin Aesthetic)
-   ========================================================================== */
 .presence-content {
     max-width: 980px !important;
     width: 100% !important;

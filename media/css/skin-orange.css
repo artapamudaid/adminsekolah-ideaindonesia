@@ -1,13 +1,3 @@
-/*
- ========================================================================
-   SPARK ADMIN STYLE (ORANGE GRADIENT EDITION)
-   Exact visual match for https://pro.sparkadmin.web.id/ in Vibrant Orange
-   Font: Plus Jakarta Sans
-   Sidebar: 280px, Visible Orange Gradient Scrollbar, Warm Ambient Charcoal
-   Top Navbar: 65px, Pure White, Sleek Rounded Controls & Spark Dropdowns
- ========================================================================
-*/
-
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -59,11 +49,11 @@ body.skin-orange,
   letter-spacing: -0.012em;
 }
 
-.skin-orange h1, 
-.skin-orange h2, 
-.skin-orange h3, 
-.skin-orange h4, 
-.skin-orange h5, 
+.skin-orange h1,
+.skin-orange h2,
+.skin-orange h3,
+.skin-orange h4,
+.skin-orange h5,
 .skin-orange h6 {
   font-family: var(--bs-body-font-family) !important;
   font-weight: 700 !important;
@@ -75,19 +65,23 @@ body.skin-orange,
    Sidebar Width Responsive Layout (280px Width)
    ========================================================================== */
 @media (min-width: 768px) {
+
   /* Logo top-left width */
   .skin-orange .main-header .logo {
     width: var(--sidebar-width) !important;
   }
+
   /* Top navbar offset */
   .skin-orange .main-header .navbar {
     margin-left: var(--sidebar-width) !important;
   }
+
   /* Main sidebar width */
   .skin-orange .main-sidebar,
   .skin-orange .left-side {
     width: var(--sidebar-width) !important;
   }
+
   /* Main content offset */
   .skin-orange .content-wrapper,
   .skin-orange .right-side,
@@ -107,11 +101,11 @@ body.skin-orange,
     text-align: center !important;
   }
 
-  .skin-orange.sidebar-collapse .main-header .logo > .logo-lg {
+  .skin-orange.sidebar-collapse .main-header .logo>.logo-lg {
     display: none !important;
   }
 
-  .skin-orange.sidebar-collapse .main-header .logo > .logo-mini {
+  .skin-orange.sidebar-collapse .main-header .logo>.logo-mini {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -123,7 +117,7 @@ body.skin-orange,
     color: #FF7A18 !important;
   }
 
-  .skin-orange.sidebar-collapse .main-header .logo > .logo-mini .brand-logo-img {
+  .skin-orange.sidebar-collapse .main-header .logo>.logo-mini .brand-logo-img {
     width: 32px !important;
     height: 32px !important;
     margin: 0 auto !important;
@@ -163,13 +157,13 @@ body.skin-orange,
     width: 50px !important;
   }
 
-  .skin-orange.sidebar-collapse .sidebar-menu > li {
+  .skin-orange.sidebar-collapse .sidebar-menu>li {
     width: 50px !important;
     margin: 2px 0 !important;
     position: relative !important;
   }
 
-  .skin-orange.sidebar-collapse .sidebar-menu > li > a {
+  .skin-orange.sidebar-collapse .sidebar-menu>li>a {
     width: 50px !important;
     padding: 12px 0 !important;
     margin: 0 !important;
@@ -181,20 +175,20 @@ body.skin-orange,
     gap: 0 !important;
   }
 
-  .skin-orange.sidebar-collapse .sidebar-menu > li > a > i {
+  .skin-orange.sidebar-collapse .sidebar-menu>li>a>i {
     width: 100% !important;
     margin: 0 !important;
     text-align: center !important;
     font-size: 16px !important;
   }
 
-  .skin-orange.sidebar-collapse .sidebar-menu > li > a > span,
-  .skin-orange.sidebar-collapse .sidebar-menu > li > a > .pull-right-container,
+  .skin-orange.sidebar-collapse .sidebar-menu>li>a>span,
+  .skin-orange.sidebar-collapse .sidebar-menu>li>a>.pull-right-container,
   .skin-orange.sidebar-collapse .sidebar-menu li.header {
     display: none !important;
   }
 
-  .skin-orange.sidebar-collapse .sidebar-menu > li.active > a::before {
+  .skin-orange.sidebar-collapse .sidebar-menu>li.active>a::before {
     left: 0 !important;
     top: 15% !important;
     height: 70% !important;
@@ -203,7 +197,7 @@ body.skin-orange,
   }
 
   /* Mini Hover Flyout Menu */
-  .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span:not(.pull-right) {
+  .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>a>span:not(.pull-right) {
     display: block !important;
     position: absolute !important;
     width: 220px !important;
@@ -221,7 +215,7 @@ body.skin-orange,
     z-index: 1000 !important;
   }
 
-  .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
+  .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>.treeview-menu {
     display: block !important;
     position: absolute !important;
     width: 220px !important;
@@ -239,7 +233,7 @@ body.skin-orange,
     z-index: 1000 !important;
   }
 
-  .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu > li > a {
+  .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>.treeview-menu>li>a {
     padding: 8px 12px 8px 16px !important;
     display: flex !important;
     align-items: center !important;
@@ -248,7 +242,7 @@ body.skin-orange,
     border-radius: 6px !important;
   }
 
-  .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu > li:hover > a {
+  .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>.treeview-menu>li:hover>a {
     color: #FFFFFF !important;
     background: rgba(255, 107, 0, 0.16) !important;
   }
@@ -285,16 +279,20 @@ body.skin-orange,
     height: auto !important;
     max-height: none !important;
   }
+
   .skin-orange .main-header .logo {
     width: 100% !important;
     height: var(--navbar-height) !important;
   }
+
   .skin-orange .main-header .navbar-custom-spark {
     padding: 0 12px !important;
   }
+
   .skin-orange .header-school-card {
     padding: 4px 8px !important;
   }
+
   .skin-orange .school-name-text {
     max-width: 140px !important;
     font-size: 12px !important;
@@ -312,7 +310,7 @@ body.skin-orange,
   background: transparent;
 }
 
-.skin-orange .content-header > h1 {
+.skin-orange .content-header>h1 {
   font-size: 24px;
   font-weight: 800;
   color: var(--text-main);
@@ -320,7 +318,7 @@ body.skin-orange,
   letter-spacing: -0.025em;
 }
 
-.skin-orange .content-header > .breadcrumb {
+.skin-orange .content-header>.breadcrumb {
   background: transparent;
   padding: 0;
   font-size: 12.5px;
@@ -328,11 +326,11 @@ body.skin-orange,
   right: 30px;
 }
 
-.skin-orange .content-header > .breadcrumb > li > a {
+.skin-orange .content-header>.breadcrumb>li>a {
   color: var(--text-muted);
 }
 
-.skin-orange .content-header > .breadcrumb > li.active {
+.skin-orange .content-header>.breadcrumb>li.active {
   color: var(--brand-orange);
   font-weight: 700;
 }
@@ -1064,7 +1062,7 @@ body.skin-orange,
   flex-grow: 1;
 }
 
-.skin-orange .sidebar-menu > li.header {
+.skin-orange .sidebar-menu>li.header {
   color: var(--text-sidebar-title) !important;
   background: transparent !important;
   font-size: 11px !important;
@@ -1080,12 +1078,12 @@ body.skin-orange,
 /* -------------------------------------------------------------------------
    Sidebar Menu Items (Level 1)
    ------------------------------------------------------------------------- */
-.skin-orange .sidebar-menu > li {
+.skin-orange .sidebar-menu>li {
   margin-bottom: 4px;
   position: relative;
 }
 
-.skin-orange .sidebar-menu > li > a {
+.skin-orange .sidebar-menu>li>a {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
@@ -1102,7 +1100,7 @@ body.skin-orange,
 }
 
 /* Orange Accent on Icons */
-.skin-orange .sidebar-menu > li > a > i {
+.skin-orange .sidebar-menu>li>a>i {
   width: 20px !important;
   font-size: 15px !important;
   text-align: center !important;
@@ -1111,7 +1109,7 @@ body.skin-orange,
   transition: color 0.2s ease, transform 0.2s ease !important;
 }
 
-.skin-orange .sidebar-menu > li > a > span {
+.skin-orange .sidebar-menu>li>a>span {
   flex-grow: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -1119,51 +1117,51 @@ body.skin-orange,
 }
 
 /* Dropdown Caret */
-.skin-orange .sidebar-menu > li > a .pull-right-container {
+.skin-orange .sidebar-menu>li>a .pull-right-container {
   position: static !important;
   margin-left: auto !important;
   line-height: 1 !important;
 }
 
-.skin-orange .sidebar-menu > li > a .pull-right-container i {
+.skin-orange .sidebar-menu>li>a .pull-right-container i {
   font-size: 11px !important;
   color: #8B949E !important;
   transition: transform 0.25s ease, color 0.2s ease !important;
 }
 
-.skin-orange .sidebar-menu > li.menu-open > a .pull-right-container i {
+.skin-orange .sidebar-menu>li.menu-open>a .pull-right-container i {
   transform: rotate(-90deg) !important;
   color: #FFFFFF !important;
 }
 
 /* Hover State with Soft Orange Gradient */
-.skin-orange .sidebar-menu > li:hover > a,
-.skin-orange .sidebar-menu > li > a:hover {
+.skin-orange .sidebar-menu>li:hover>a,
+.skin-orange .sidebar-menu>li>a:hover {
   background: var(--brand-orange-gradient-soft) !important;
   color: #FFFFFF !important;
 }
 
-.skin-orange .sidebar-menu > li:hover > a > i,
-.skin-orange .sidebar-menu > li > a:hover > i {
+.skin-orange .sidebar-menu>li:hover>a>i,
+.skin-orange .sidebar-menu>li>a:hover>i {
   color: #FFFFFF !important;
   transform: scale(1.1);
 }
 
 /* ACTIVE MAIN ITEM: VIBRANT ORANGE GRADIENT PILL */
-.skin-orange .sidebar-menu > li.active > a {
+.skin-orange .sidebar-menu>li.active>a {
   background: var(--brand-orange-gradient) !important;
   color: #FFFFFF !important;
   font-weight: 700 !important;
   box-shadow: 0 4px 18px rgba(255, 107, 0, 0.45) !important;
 }
 
-.skin-orange .sidebar-menu > li.active > a > i {
+.skin-orange .sidebar-menu>li.active>a>i {
   color: #FFFFFF !important;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.6) !important;
 }
 
 /* Glowing Indicator Pill on Left Edge */
-.skin-orange .sidebar-menu > li.active > a::before {
+.skin-orange .sidebar-menu>li.active>a::before {
   content: '' !important;
   position: absolute !important;
   left: -6px !important;
@@ -1178,7 +1176,7 @@ body.skin-orange,
 /* -------------------------------------------------------------------------
    Sidebar Submenus (Level 2 & Level 3 Treeview)
    ------------------------------------------------------------------------- */
-.skin-orange .sidebar-menu > li > .treeview-menu {
+.skin-orange .sidebar-menu>li>.treeview-menu {
   background: transparent !important;
   margin: 3px 0 6px 20px !important;
   padding: 4px 0 4px 12px !important;
@@ -1186,12 +1184,12 @@ body.skin-orange,
   list-style: none !important;
 }
 
-.skin-orange .sidebar-menu .treeview-menu > li {
+.skin-orange .sidebar-menu .treeview-menu>li {
   margin-bottom: 2px !important;
   position: relative !important;
 }
 
-.skin-orange .sidebar-menu .treeview-menu > li > a {
+.skin-orange .sidebar-menu .treeview-menu>li>a {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
@@ -1206,7 +1204,7 @@ body.skin-orange,
 }
 
 /* Submenu Orange Bullet Dot */
-.skin-orange .sidebar-menu .treeview-menu > li > a::before {
+.skin-orange .sidebar-menu .treeview-menu>li>a::before {
   content: '' !important;
   position: absolute !important;
   left: 6px !important;
@@ -1219,29 +1217,29 @@ body.skin-orange,
   transition: all 0.2s ease !important;
 }
 
-.skin-orange .sidebar-menu .treeview-menu > li:hover > a {
+.skin-orange .sidebar-menu .treeview-menu>li:hover>a {
   color: #FFFFFF !important;
   background: rgba(255, 107, 0, 0.12) !important;
 }
 
-.skin-orange .sidebar-menu .treeview-menu > li:hover > a::before {
+.skin-orange .sidebar-menu .treeview-menu>li:hover>a::before {
   background-color: #FFA566 !important;
   box-shadow: 0 0 8px #FFA566 !important;
 }
 
 /* Active Submenu Item (Orange Soft Gradient) */
-.skin-orange .sidebar-menu .treeview-menu > li.active > a {
+.skin-orange .sidebar-menu .treeview-menu>li.active>a {
   color: #FFB37C !important;
   background: linear-gradient(90deg, rgba(255, 107, 0, 0.24) 0%, rgba(255, 107, 0, 0.06) 100%) !important;
   font-weight: 700 !important;
 }
 
-.skin-orange .sidebar-menu .treeview-menu > li.active > a::before {
+.skin-orange .sidebar-menu .treeview-menu>li.active>a::before {
   background-color: #FF6B00 !important;
   box-shadow: 0 0 10px #FF6B00 !important;
 }
 
-.skin-orange .sidebar-menu .treeview-menu > li.active > a > i {
+.skin-orange .sidebar-menu .treeview-menu>li.active>a>i {
   color: #FF8533;
 }
 
@@ -1464,19 +1462,19 @@ body.skin-orange,
 }
 
 /* Pagination */
-.skin-orange .pagination > .active > a,
-.skin-orange .pagination > .active > a:focus,
-.skin-orange .pagination > .active > a:hover,
-.skin-orange .pagination > .active > span,
-.skin-orange .pagination > .active > span:focus,
-.skin-orange .pagination > .active > span:hover {
+.skin-orange .pagination>.active>a,
+.skin-orange .pagination>.active>a:focus,
+.skin-orange .pagination>.active>a:hover,
+.skin-orange .pagination>.active>span,
+.skin-orange .pagination>.active>span:focus,
+.skin-orange .pagination>.active>span:hover {
   background: var(--brand-orange-gradient) !important;
   border-color: var(--brand-orange) !important;
   color: #FFFFFF !important;
   border-radius: var(--radius-sm) !important;
 }
 
-.skin-orange .pagination > li > a {
+.skin-orange .pagination>li>a {
   border-radius: var(--radius-sm) !important;
   margin: 0 2px !important;
   color: var(--text-muted) !important;
@@ -1489,18 +1487,18 @@ body.skin-orange,
   border: 1px solid var(--card-border) !important;
 }
 
-.skin-orange .nav-tabs-custom > .nav-tabs > li.active {
+.skin-orange .nav-tabs-custom>.nav-tabs>li.active {
   border-top-color: var(--brand-orange) !important;
   border-top-width: 3px !important;
 }
 
-.skin-orange .nav-tabs-custom > .nav-tabs > li.active > a {
+.skin-orange .nav-tabs-custom>.nav-tabs>li.active>a {
   font-weight: 700 !important;
   color: var(--brand-orange) !important;
 }
 
 /* Tables */
-.skin-orange .table > thead > tr > th {
+.skin-orange .table>thead>tr>th {
   border-bottom: 2px solid #E2E8F0 !important;
   color: var(--text-main) !important;
   font-weight: 700 !important;
@@ -1508,12 +1506,12 @@ body.skin-orange,
   background-color: #F8FAFC !important;
 }
 
-.skin-orange .table > tbody > tr > td {
+.skin-orange .table>tbody>tr>td {
   border-top: 1px solid #F1F5F9 !important;
   vertical-align: middle !important;
 }
 
-.skin-orange .table-striped > tbody > tr:nth-of-type(odd) {
+.skin-orange .table-striped>tbody>tr:nth-of-type(odd) {
   background-color: #FAFBFD !important;
 }
 
@@ -1522,6 +1520,7 @@ body.skin-orange,
   background: rgba(255, 107, 0, 0.22) !important;
   color: #C2410C !important;
 }
+
 ::-moz-selection {
   background: rgba(255, 107, 0, 0.22) !important;
   color: #C2410C !important;
@@ -1689,18 +1688,18 @@ body.skin-orange,
   margin-top: 10px;
 }
 
-.skin-orange .subs-tabs-custom > .nav-tabs {
+.skin-orange .subs-tabs-custom>.nav-tabs {
   border-bottom: 2px solid #E2E8F0 !important;
   margin-bottom: 16px;
   background: transparent !important;
 }
 
-.skin-orange .subs-tabs-custom > .nav-tabs > li {
+.skin-orange .subs-tabs-custom>.nav-tabs>li {
   border-top: none !important;
   margin-bottom: -2px;
 }
 
-.skin-orange .subs-tabs-custom > .nav-tabs > li > a {
+.skin-orange .subs-tabs-custom>.nav-tabs>li>a {
   border: none !important;
   border-bottom: 2px solid transparent !important;
   background: transparent !important;
@@ -1712,14 +1711,14 @@ body.skin-orange,
   border-radius: 0 !important;
 }
 
-.skin-orange .subs-tabs-custom > .nav-tabs > li.active > a,
-.skin-orange .subs-tabs-custom > .nav-tabs > li > a:hover {
+.skin-orange .subs-tabs-custom>.nav-tabs>li.active>a,
+.skin-orange .subs-tabs-custom>.nav-tabs>li>a:hover {
   color: var(--brand-orange) !important;
   border-bottom: 2px solid var(--brand-orange) !important;
   background: transparent !important;
 }
 
-.skin-orange .subs-tabs-custom > .tab-content {
+.skin-orange .subs-tabs-custom>.tab-content {
   padding: 0 !important;
   background: transparent !important;
 }
@@ -1836,4 +1835,3 @@ body.skin-orange,
 #file-preview-modal {
   display: none !important;
 }
-

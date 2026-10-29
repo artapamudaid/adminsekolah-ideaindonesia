@@ -38,7 +38,7 @@ if (!empty($jadwal)) {
     <!-- Main Content -->
     <section class="content">
 
-        <!-- 1. Hero Greeting Banner (Spark Admin Orange Aesthetic) -->
+        <!-- 1. Hero Greeting Banner  -->
         <div class="guru-hero-banner">
             <div class="guru-hero-content">
                 <div class="guru-hero-badge">
@@ -274,14 +274,9 @@ if (!empty($jadwal)) {
 </div>
 
 <style>
-/* ==========================================================================
-   Guru Dashboard Modern Theme (Spark Admin Orange Style)
-   ========================================================================== */
 .guru-dashboard-wrapper {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
-
-/* 1. Hero Greeting Banner */
 .guru-hero-banner {
     position: relative;
     overflow: hidden;
