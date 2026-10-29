@@ -180,7 +180,6 @@ if ($showTableSubsHistory) {
                                 <h3 class="subs-title"><?= html_escape($packageName) . ' — ' . html_escape($durationStr); ?></h3>
                                 <div class="subs-meta">
                                     <span class="subs-meta-item">
-                                        <i class="fa fa-calendar-check-o"></i>
                                         <span><?= $this->lang->line('dash_nearest_bill') ?: 'Tagihan Terdekat' ?>: <strong><?= html_escape($nearestBillDate); ?></strong></span>
                                     </span>
                                     <span class="subs-badge-pill"><i class="fa fa-clock-o"></i> <?= (int)$daysLeft; ?> <?= $this->lang->line('dash_days_left') ?: 'hari tersisa' ?></span>
