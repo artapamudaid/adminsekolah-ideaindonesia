@@ -435,6 +435,35 @@ $totalNotif = count($notifTrx);
 
     <script>
       $('.s2').select2();
+
+      // Use native smooth hardware-accelerated scrollbar for .sidebar
+      // and prevent AdminLTE SlimScroll from hijacking it and jumping to 100% on drag
+      $(function() {
+        if ($.fn.slimScroll) {
+          var originalSlimScroll = $.fn.slimScroll;
+          $.fn.slimScroll = function(options) {
+            if (this.is('.sidebar') || this.hasClass('sidebar')) {
+              // Destroy slimScroll if attached to keep native smooth scrollbar
+              if (this.parent().hasClass('slimScrollDiv')) {
+                originalSlimScroll.call(this, { destroy: true });
+              }
+              this.css({
+                'height': 'calc(100vh - 65px - 68px)',
+                'max-height': 'calc(100vh - 65px - 68px)',
+                'overflow-y': 'auto',
+                'overflow-x': 'hidden'
+              });
+              return this;
+            }
+            return originalSlimScroll.apply(this, arguments);
+          };
+
+          // Destroy any already attached slimScroll on sidebar
+          if ($('.sidebar').length) {
+            $('.sidebar').slimScroll({ destroy: true });
+          }
+        }
+      });
     </script>
 
     <script>

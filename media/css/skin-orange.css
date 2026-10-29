@@ -968,19 +968,18 @@ body.skin-orange,
 /* SIDEBAR CONTAINER & VISIBLE ORANGE GRADIENT SCROLLBAR */
 .skin-orange .sidebar {
   padding: 10px 0 16px 0;
-  display: flex;
-  flex-direction: column;
+  display: block !important;
   height: calc(100vh - var(--navbar-height) - 68px) !important;
   max-height: calc(100vh - var(--navbar-height) - 68px) !important;
-  overflow-y: scroll !important; /* Always visible scrollbar */
+  overflow-y: auto !important;
   overflow-x: hidden !important;
   scrollbar-width: thin !important;
-  scrollbar-color: #FF7A18 rgba(255, 255, 255, 0.06) !important;
+  scrollbar-color: #FF7A18 rgba(0, 0, 0, 0.3) !important;
 }
 
-/* WebKit Scrollbar Styling (Vibrant Orange Gradient Thumb) */
+/* WebKit Scrollbar Styling (Always Visible Vibrant Orange Thumb) */
 .skin-orange .sidebar::-webkit-scrollbar {
-  width: 7px !important;
+  width: 8px !important;
   display: block !important;
 }
 
@@ -994,11 +993,65 @@ body.skin-orange,
   background: linear-gradient(180deg, #FF8533 0%, #EA580C 100%) !important;
   border-radius: 10px !important;
   box-shadow: 0 0 10px rgba(255, 107, 0, 0.6) !important;
+  cursor: grab !important;
 }
 
-.skin-orange .sidebar::-webkit-scrollbar-thumb:hover {
+.skin-orange .sidebar::-webkit-scrollbar-thumb:hover,
+.skin-orange .sidebar::-webkit-scrollbar-thumb:active {
   background: linear-gradient(180deg, #FFA05C 0%, #FF6B00 100%) !important;
-  box-shadow: 0 0 14px rgba(255, 107, 0, 0.8) !important;
+  box-shadow: 0 0 16px rgba(255, 107, 0, 0.95) !important;
+  cursor: grabbing !important;
+}
+
+/* -------------------------------------------------------------------------
+   SlimScroll Permanent Orange Bar (Prevents Disappearing on Hover)
+   ------------------------------------------------------------------------- */
+.skin-orange .slimScrollBar {
+  display: block !important;
+  opacity: 0.9 !important;
+  visibility: visible !important;
+  background: linear-gradient(180deg, #FF8533 0%, #EA580C 100%) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.6) !important;
+  width: 8px !important;
+  right: 2px !important;
+  z-index: 9999 !important;
+  cursor: grab !important;
+  pointer-events: auto !important;
+  transition: opacity 0.2s ease, width 0.2s ease, background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.skin-orange .slimScrollBar:hover,
+.skin-orange .slimScrollBar:active {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: linear-gradient(180deg, #FFA05C 0%, #FF6B00 100%) !important;
+  box-shadow: 0 0 16px rgba(255, 107, 0, 0.95) !important;
+  width: 9px !important;
+  cursor: grabbing !important;
+}
+
+.skin-orange .slimScrollRail {
+  display: block !important;
+  opacity: 0.35 !important;
+  visibility: visible !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border-radius: 10px !important;
+  width: 8px !important;
+  right: 2px !important;
+  z-index: 9990 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.skin-orange .slimScrollRail:hover {
+  opacity: 0.55 !important;
+  background: rgba(255, 107, 0, 0.25) !important;
+}
+
+.skin-orange .slimScrollDiv {
+  overflow: visible !important;
 }
 
 /* -------------------------------------------------------------------------
