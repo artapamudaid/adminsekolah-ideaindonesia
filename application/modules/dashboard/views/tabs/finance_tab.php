@@ -97,7 +97,7 @@
                     $active_m = !empty($ikhtisar_month) ? (int)$ikhtisar_month : (int)date('n');
                     $active_y = !empty($ikhtisar_year)  ? (int)$ikhtisar_year  : (int)date('Y');
                     ?>
-                    <select id="filter_bulan_ikhtisar" class="form-control input-sm" style="width:auto; display:inline-block; font-size:11px; height:28px; padding:2px 8px;">
+                    <select id="filter_bulan_ikhtisar" class="form-control input-sm" style="width:auto; display:inline-block; font-size:12px; font-weight:600; height:32px; padding:4px 12px; color:#1e293b; background:#fff; border:1px solid #cbd5e1; border-radius:6px;">
                         <?php foreach ($bulan_opsi as $bo): ?>
                             <option value="<?= $bo['m'] ?>" data-year="<?= $bo['y'] ?>" <?= ($bo['m'] == $active_m && $bo['y'] == $active_y) ? 'selected' : '' ?>>
                                 <?= $nama_bulan[$bo['m']] . ' ' . $bo['y'] ?>
@@ -185,7 +185,7 @@
                     <?= sprintf($this->lang->line('dash_cash_flow_title'), 6) ?>
                 </h3>
                 <div class="box-tools pull-right">
-                    <select id="filter_arus_kas_bulan" class="form-control input-sm" style="width:auto; display:inline-block; font-size:12px; height:28px; padding:2px 8px;">
+                    <select id="filter_arus_kas_bulan" class="form-control input-sm" style="width:auto; display:inline-block; font-size:12px; font-weight:600; height:32px; padding:4px 12px; color:#1e293b; background:#fff; border:1px solid #cbd5e1; border-radius:6px;">
                         <option value="3"><?= sprintf($this->lang->line('dash_x_months'), 3) ?></option>
                         <option value="6" selected><?= sprintf($this->lang->line('dash_x_months'), 6) ?></option>
                         <option value="9"><?= sprintf($this->lang->line('dash_x_months'), 9) ?></option>
