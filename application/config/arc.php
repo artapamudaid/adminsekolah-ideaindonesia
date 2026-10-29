@@ -19,7 +19,7 @@ $config['media_url'] = '-';
 |
 */
 $config['app_name'] = 'ADMIN SEKOLAH';
-$config['version'] = 'V.1.0';
+$config['version'] = 'On-Premise';
 $config['created'] = 'Copyright © 2018-'.date('Y').' <a target="_blank" href="https://www.indoweb.id">indoweb.id</a>. All rights reserved.';
 
 /*
