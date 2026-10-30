@@ -11,14 +11,40 @@ class Payment_model extends CI_Model
 
     function cari_tagihan($id_periode)
     {
+        $cache_key = 'payment_cari_tagihan_' . md5($id_periode) . '_' . get_cache_version('payment');
+        try {
+            if (!isset($this->cache)) {
+                $this->load->driver('cache', array('adapter' => 'file'));
+            }
+            if (isset($this->cache)) {
+                $cached = $this->cache->get($cache_key);
+                if ($cached !== FALSE) {
+                    return $cached;
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache read error in Payment_model::cari_tagihan: ' . $e->getMessage());
+        }
+
         $query = "SELECT * FROM `payment` JOIN period ON payment.period_period_id = period.period_id JOIN pos ON payment.pos_pos_id = pos.pos_id WHERE payment.payment_type = 'BULAN' AND payment.period_period_id = '$id_periode'";
         $q = $this->db->query($query);
+        $data = NULL;
         if ($q->num_rows() > 0) {
+            $data = array();
             foreach ($q->result_array() as $row) {
                 $data[] = $row;
             }
-            return $data;
         }
+
+        try {
+            if (isset($this->cache)) {
+                $this->cache->save($cache_key, $data, CACHE_TTL);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache write error in Payment_model::cari_tagihan: ' . $e->getMessage());
+        }
+
+        return $data;
     }
 
     function get_tagihan($id_periode, $id_majors)
@@ -232,6 +258,11 @@ class Payment_model extends CI_Model
     {
         $this->db->where('payment_id', $id);
         $this->db->delete('payment');
+        bump_cache_version('payment');
+    }
+
+    public function invalidate_cache()
+    {
         bump_cache_version('payment');
     }
 }
