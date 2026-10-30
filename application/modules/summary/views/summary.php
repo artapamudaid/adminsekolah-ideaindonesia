@@ -1,136 +1,31 @@
-<!-- FullCalendar Stylesheet & Fallback -->
-<link rel="stylesheet" href="<?php echo base_url('media/js/fullcalendar/fullcalendar.css'); ?>">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.min.css">
-
 <style>
-  /* FullCalendar Complete Modern Styling */
+  /* FullCalendar Clean Theme Styling */
   #calendar {
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 100%;
     margin: 0 auto;
-    font-family: inherit;
-  }
-  #calendar .fc-header {
-    width: 100% !important;
-    margin-bottom: 16px !important;
-    float: none !important;
-    display: table !important;
-  }
-  #calendar .fc-header td {
-    vertical-align: middle !important;
-    padding: 0 !important;
-  }
-  #calendar .fc-header-title {
-    display: inline-block !important;
-    vertical-align: middle !important;
   }
   #calendar .fc-header-title h2 {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: #1e293b !important;
-    margin: 0 !important;
-    letter-spacing: -0.3px !important;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
   }
   #calendar .fc-button {
-    background: #f1f5f9 !important;
-    color: #334155 !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 8px !important;
-    padding: 6px 14px !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    height: auto !important;
-    margin: 0 2px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-  }
-  #calendar .fc-button:hover, #calendar .fc-button.fc-state-hover {
-    background: #2575FC !important;
-    color: #ffffff !important;
-    border-color: #2575FC !important;
-  }
-  #calendar .fc-button.fc-state-active {
-    background: #2575FC !important;
-    color: #ffffff !important;
-    border-color: #2575FC !important;
-  }
-  #calendar .fc-content table {
-    width: 100% !important;
-    border-collapse: separate !important;
-    border-spacing: 0 !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    overflow: hidden !important;
-    table-layout: fixed !important;
-  }
-  #calendar .fc-day-header {
-    background: #f8fafc !important;
-    color: #475569 !important;
-    font-weight: 700 !important;
-    font-size: 12px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    padding: 10px 0 !important;
-    text-align: center !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-    border-right: 1px solid #f1f5f9 !important;
-  }
-  #calendar .fc-day-header:last-child {
-    border-right: none !important;
-  }
-  #calendar td.fc-day {
-    border-right: 1px solid #f1f5f9 !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    background: #ffffff !important;
-    height: 75px !important;
-    vertical-align: top !important;
-    transition: background 0.15s ease !important;
-    cursor: pointer !important;
-  }
-  #calendar td.fc-day:hover {
-    background: #f8fafc !important;
-  }
-  #calendar .fc-day-number {
-    padding: 6px 8px !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    color: #334155 !important;
-    text-align: right !important;
-    display: block !important;
-    float: right !important;
-  }
-  #calendar .fc-other-month .fc-day-number {
-    color: #cbd5e1 !important;
-  }
-  #calendar .fc-today {
-    background: #eff6ff !important;
-  }
-  #calendar .fc-today .fc-day-number {
-    color: #2575FC !important;
-    font-weight: 700 !important;
+    border-radius: 6px;
+    font-weight: 600;
   }
   #calendar .fc-event {
-    background: #2575FC !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 3px 6px !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
+    background-color: #2575FC !important;
+    border-color: #1a5ac9 !important;
+    border-radius: 4px;
+    padding: 2px 4px;
     color: #ffffff !important;
-    margin: 2px 4px !important;
-    cursor: pointer !important;
-    display: block !important;
-    box-shadow: 0 2px 4px rgba(37,117,252,0.2) !important;
+    font-size: 11px;
+    font-weight: 600;
   }
-  #calendar .fc-text-arrow {
-    font-size: 16px !important;
-    font-family: monospace !important;
-    line-height: 1 !important;
+  #calendar .fc-state-highlight {
+    background-color: #eff6ff !important;
+    color: #2575FC !important;
+    font-weight: bold;
   }
 
   /* Modern Summary & Analytic Dashboard Styles */
@@ -958,31 +853,25 @@
 </div>
 
 <script type="text/javascript">
-  function setupFullCalendar() {
-    if (typeof $.fn.fullCalendar === 'undefined') {
-      $.getScript("https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.min.js", function() {
-        startCalendar();
-      });
-    } else {
-      startCalendar();
-    }
+  function renderCalendarIcons() {
+    $('.fc-button-prev').html('<i class="fa fa-chevron-left"></i>');
+    $('.fc-button-next').html('<i class="fa fa-chevron-right"></i>');
+    $('.fc-button-prevYear').html('<i class="fa fa-angle-double-left"></i>');
+    $('.fc-button-nextYear').html('<i class="fa fa-angle-double-right"></i>');
+    $('.fc-button-today').text('Hari Ini');
   }
 
-  function startCalendar() {
+  $(document).ready(function() {
     $('#calendar').fullCalendar({
       header: {
         left: 'prev,next today',
         center: 'title',
-        right: 'prevYear,nextYear'
-      },
-      buttonText: {
-        prev: '<i class="fa fa-chevron-left"></i>',
-        next: '<i class="fa fa-chevron-right"></i>',
-        prevYear: '<i class="fa fa-angle-double-left"></i>',
-        nextYear: '<i class="fa fa-angle-double-right"></i>',
-        today: 'Hari Ini'
+        right: 'prevYear,nextYear',
       },
       events: "<?php echo site_url('manage/summary/get'); ?>",
+      viewDisplay: function(view) {
+        renderCalendarIcons();
+      },
       dayClick: function(date, jsEvent, view) {
         var tanggal = date.getDate();
         var bulan = date.getMonth() + 1;
@@ -1004,14 +893,7 @@
       }
     });
 
-    // Fix render size if parent card had animation
-    setTimeout(function() {
-      $('#calendar').fullCalendar('render');
-    }, 250);
-  }
-
-  $(document).ready(function() {
-    setupFullCalendar();
+    renderCalendarIcons();
 
     $("#inputDesc").on('change keyup focus input propertychange', function() {
       var desc = $("#inputDesc").val();
