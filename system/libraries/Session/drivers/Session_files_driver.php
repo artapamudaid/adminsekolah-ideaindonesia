@@ -1,4 +1,4 @@
-<?php
+11<?php
 
 /**
  * CodeIgniter
@@ -181,7 +181,7 @@ class CI_Session_files_driver extends CI_Session_driver implements SessionHandle
 			$this->_session_id = $session_id;
 
 			if ($this->_file_new) {
-				chmod($this->_file_path . $session_id, 0600);
+				chmod($this->_file_path . $session_id, 0666);
 				$this->_fingerprint = md5('');
 				return '';
 			}
