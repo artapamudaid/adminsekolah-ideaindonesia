@@ -31,7 +31,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
         <div class="kiosk-cam-card">
             <div class="cam-header">
                 <span class="cam-badge-live"><i class="fa fa-circle text-danger"></i> LIVE KAMERA</span>
-                <span class="cam-tip">Arahkan wajah ke dalam frame</span>
+                <span class="cam-tip">Posisikan wajah di dalam frame</span>
             </div>
             <div class="cam-view-wrapper">
                 <video id="webcam_video" autoplay playsinline muted></video>
@@ -141,7 +141,6 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 </div>
 
 <style>
-
 .presence-content {
     max-width: 980px !important;
     width: 100% !important;
@@ -259,34 +258,30 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 18px;
+    padding: 12px 18px;
     background: #1E293B;
-    border-bottom: 1px solid #334155;
+    color: #FFFFFF;
 }
 
 .cam-badge-live {
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.5px;
-    color: #F8FAFC;
-    background: rgba(239, 68, 68, 0.2);
-    padding: 3px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(239, 68, 68, 0.4);
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
 }
 
 .cam-tip {
-    font-size: 11.5px;
+    font-size: 11px;
     color: #94A3B8;
 }
 
 .cam-view-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 4/3;
+    min-height: 320px;
+    height: 100%;
     background: #020617;
     overflow: hidden;
     display: flex;
@@ -298,7 +293,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1); /* Mirror camera feed */
+    transform: scaleX(-1); /* Mirror view for natural interaction */
 }
 
 .face-guide-frame {
@@ -316,7 +311,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     width: 215px;
     height: 275px;
     border-radius: 140px;
-    box-shadow: 0 0 0 9999px rgba(10, 15, 29, 0.65), inset 0 0 24px rgba(255, 122, 24, 0.15);
+    box-shadow: 0 0 0 9999px rgba(10, 15, 29, 0.65), inset 0 0 24px rgba(37, 117, 252, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -328,15 +323,15 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     position: absolute;
     inset: -6px;
     border-radius: 146px;
-    border: 2px solid rgba(255, 122, 24, 0.45);
+    border: 2px solid rgba(37, 117, 252, 0.45);
     animation: auraPulse 2.8s ease-in-out infinite;
     pointer-events: none;
 }
 
 @keyframes auraPulse {
-    0% { transform: scale(0.985); opacity: 0.3; box-shadow: 0 0 0 0 rgba(255, 122, 24, 0.4); }
-    50% { transform: scale(1.015); opacity: 0.9; box-shadow: 0 0 22px rgba(255, 122, 24, 0.45); }
-    100% { transform: scale(0.985); opacity: 0.3; box-shadow: 0 0 0 0 rgba(255, 122, 24, 0.4); }
+    0% { transform: scale(0.985); opacity: 0.3; box-shadow: 0 0 0 0 rgba(37, 117, 252, 0.4); }
+    50% { transform: scale(1.015); opacity: 0.9; box-shadow: 0 0 22px rgba(37, 117, 252, 0.45); }
+    100% { transform: scale(0.985); opacity: 0.3; box-shadow: 0 0 0 0 rgba(37, 117, 252, 0.4); }
 }
 
 /* Inner Segmented Dotted Ring */
@@ -353,9 +348,9 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     position: absolute;
     width: 26px;
     height: 26px;
-    border: 3px solid #FF7A18;
+    border: 3px solid #2575FC;
     box-sizing: border-box;
-    filter: drop-shadow(0 0 6px rgba(255, 122, 24, 0.7));
+    filter: drop-shadow(0 0 6px rgba(37, 117, 252, 0.7));
 }
 
 .corner-tl { top: -4px; left: 18px; border-right: none; border-bottom: none; border-top-left-radius: 12px; }
@@ -366,7 +361,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 /* Crosshair Markers */
 .face-crosshair {
     position: absolute;
-    background: rgba(255, 122, 24, 0.7);
+    background: rgba(37, 117, 252, 0.7);
     pointer-events: none;
     border-radius: 1px;
 }
@@ -380,8 +375,8 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     position: absolute;
     width: 90%;
     height: 3px;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 122, 24, 0.3) 15%, #FFFFFF 50%, rgba(255, 122, 24, 0.3) 85%, transparent 100%);
-    box-shadow: 0 0 14px rgba(255, 122, 24, 0.95), 0 0 28px rgba(234, 88, 12, 0.6);
+    background: linear-gradient(90deg, transparent 0%, rgba(37, 117, 252, 0.3) 15%, #FFFFFF 50%, rgba(37, 117, 252, 0.3) 85%, transparent 100%);
+    box-shadow: 0 0 14px rgba(37, 117, 252, 0.95), 0 0 28px rgba(37, 117, 252, 0.6);
     border-radius: 2px;
     animation: laserScan 2.4s ease-in-out infinite alternate;
 }
@@ -410,7 +405,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     z-index: 10;
 }
 
-/* Column 2: Scanner Card */
+/* Column 2: RFID Scanner Card */
 .kiosk-scanner-card {
     background: #FFFFFF;
     border-radius: 18px;
@@ -422,51 +417,55 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     justify-content: center;
     align-items: center;
     min-height: 380px;
-    text-align: center;
     position: relative;
+    text-align: center;
 }
 
 /* Tap Ready State */
+.tap-ready-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
 .rfid-tap-art {
     position: relative;
-    width: 140px;
-    height: 140px;
-    margin: 0 auto 20px;
+    width: 110px;
+    height: 110px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .rfid-center-icon {
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #FF7A18 0%, #EA580C 100%);
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #3B82F6 0%, #2575FC 50%, #1A56C4 100%);
+    color: #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #FFFFFF;
-    font-size: 34px;
-    position: relative;
-    z-index: 4;
-    box-shadow: 0 8px 20px rgba(234, 88, 12, 0.35);
+    font-size: 30px;
+    box-shadow: 0 8px 20px rgba(37, 117, 252, 0.35);
+    z-index: 2;
 }
 
 .rfid-wave {
     position: absolute;
     border-radius: 50%;
-    border: 2px solid #FF7A18;
-    opacity: 0;
-    animation: wavePulse 2.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    border: 2px solid rgba(37, 117, 252, 0.3);
+    animation: wavePulse 2.5s infinite;
 }
 
-.wave-1 { width: 95px; height: 95px; animation-delay: 0s; }
-.wave-2 { width: 120px; height: 120px; animation-delay: 0.7s; }
-.wave-3 { width: 145px; height: 145px; animation-delay: 1.4s; }
+.wave-1 { width: 85px; height: 85px; animation-delay: 0s; }
+.wave-2 { width: 105px; height: 105px; animation-delay: 0.6s; }
+.wave-3 { width: 125px; height: 125px; animation-delay: 1.2s; }
 
 @keyframes wavePulse {
-    0% { transform: scale(0.6); opacity: 0.8; }
-    50% { opacity: 0.4; }
+    0% { transform: scale(0.85); opacity: 0.8; }
     100% { transform: scale(1.3); opacity: 0; }
 }
 
@@ -475,191 +474,148 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     font-weight: 800;
     color: #0F172A;
     margin: 0 0 8px 0;
+    letter-spacing: -0.015em;
 }
 
 .tap-sub-title {
     font-size: 13.5px;
     color: #64748B;
-    line-height: 1.5;
     margin: 0 0 18px 0;
     max-width: 320px;
+    line-height: 1.45;
 }
 
 .tap-security-pill {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #DBEAFE;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #FFF7ED;
-    border: 1px solid #FFEDD5;
-    color: #C2410C;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 20px;
 }
 
-/* Loading State */
+/* Loading Zone */
 .tap-loading-zone {
-    padding: 40px 20px;
+    text-align: center;
 }
 
 .kiosk-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid #FED7AA;
-    border-top-color: #EA580C;
+    width: 48px;
+    height: 48px;
+    border: 4px solid #F1F5F9;
+    border-top-color: #2575FC;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-    margin: 0 auto 18px;
+    margin: 0 auto 16px;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.tap-loading-zone h4 {
-    font-size: 18px;
-    font-weight: 800;
-    color: #0F172A;
-    margin: 0 0 6px 0;
-}
-
-.tap-loading-zone p {
-    font-size: 13px;
-    color: #64748B;
-    margin: 0;
-}
-
-/* Result Card */
+/* Result Zone */
 .tap-result-zone {
     width: 100%;
-    animation: fadeInScale 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: zoomIn 0.3s ease;
 }
 
-@keyframes fadeInScale {
-    from { opacity: 0; transform: scale(0.95); }
+@keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.92); }
     to { opacity: 1; transform: scale(1); }
 }
 
 .result-header {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 16px;
 }
 
 .badge-absen-type {
-    font-size: 13px;
-    font-weight: 800;
-    padding: 6px 16px;
+    padding: 5px 14px;
     border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #FFFFFF;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .badge-absen-type.DATANG {
-    background: #DCFCE7;
-    color: #15803D;
+    background: #16A34A;
 }
 
 .badge-absen-type.PULANG {
-    background: #E0E7FF;
-    color: #4338CA;
+    background: #0284C7;
 }
 
 .badge-absen-status {
+    padding: 5px 14px;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 700;
-    background: #FEF3C7;
-    color: #B45309;
-    padding: 5px 12px;
-    border-radius: 20px;
+    background: #F1F5F9;
+    color: #334155;
+    border: 1px solid #E2E8F0;
 }
 
 .result-photos-duo {
     display: flex;
     justify-content: center;
     gap: 16px;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
 }
 
 .photo-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+    text-align: center;
 }
 
 .photo-title {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     color: #64748B;
     text-transform: uppercase;
+    margin-bottom: 5px;
 }
 
-.photo-box img {
+.photo-box img, #res-master-photo-area img {
     width: 90px;
     height: 90px;
-    border-radius: 14px;
+    border-radius: 12px;
     object-fit: cover;
-    border: 3px solid #FFFFFF;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-}
-
-.photo-box span[data-letters] {
-    width: 90px;
-    height: 90px;
-    border-radius: 14px;
-    background: #EA580C;
-    color: #FFF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 800;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-}
-
-.photo-box span[data-letters]:before {
-    content: attr(data-letters);
-}
-
-.result-details {
-    background: #F8FAFC;
-    border-radius: 14px;
-    padding: 14px 18px;
-    border: 1px solid #E2E8F0;
+    border: 2px solid #2575FC;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
 .res-nama {
     font-size: 18px;
     font-weight: 800;
     color: #0F172A;
-    margin: 0 0 4px 0;
+    margin: 0 0 3px 0;
 }
 
 .res-meta {
     font-size: 12.5px;
     color: #64748B;
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
 }
 
 .res-pesan-box {
-    background: #FFFFFF;
+    background: #F8FAFC;
     border: 1px solid #E2E8F0;
-    border-radius: 10px;
-    padding: 8px 12px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #EA580C;
-    margin-bottom: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: #1E293B;
+    font-weight: 600;
+    margin-bottom: 6px;
 }
 
 .res-time {
-    font-size: 11.5px;
-    font-weight: 600;
-    color: #94A3B8;
+    font-size: 12px;
+    font-weight: 700;
+    color: #2575FC;
 }
 
 /* Error Banner */
@@ -732,14 +688,14 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #FFF7ED;
-    color: #EA580C;
+    background: #EFF6FF;
+    color: #2575FC;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 26px;
     margin: 0 auto 16px;
-    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.2);
+    box-shadow: 0 4px 14px rgba(37, 117, 252, 0.2);
 }
 
 .lock-title {
@@ -774,8 +730,8 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 }
 
 .pin-field:focus {
-    border-color: #EA580C;
-    box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.15);
+    border-color: #2575FC;
+    box-shadow: 0 0 0 4px rgba(37, 117, 252, 0.15);
 }
 
 .pin-hint {
@@ -797,7 +753,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 
 .btn-unlock-submit {
     width: 100%;
-    background: linear-gradient(135deg, #FF7A18 0%, #EA580C 100%);
+    background: linear-gradient(135deg, #3B82F6 0%, #2575FC 50%, #1A56C4 100%);
     color: #FFFFFF;
     font-size: 14px;
     font-weight: 700;
@@ -805,7 +761,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     border-radius: 10px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+    box-shadow: 0 4px 14px rgba(37, 117, 252, 0.3);
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -815,7 +771,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 
 .btn-unlock-submit:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.4);
+    box-shadow: 0 6px 18px rgba(37, 117, 252, 0.4);
 }
 </style>
 

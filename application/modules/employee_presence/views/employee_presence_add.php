@@ -8,7 +8,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     <!-- Top Operator Bar -->
     <div class="kiosk-top-bar">
         <div class="bar-left">
-            <span class="kiosk-badge-status"><span class="badge-dot pulse-green"></span> Presensi Aktif</span>
+            <span class="kiosk-badge-status"><span class="badge-dot pulse-green"></span> Presensi Pegawai Aktif</span>
             <span class="kiosk-gps-status" id="gps-status-badge"><i class="fa fa-map-marker"></i> Mendeteksi Lokasi...</span>
         </div>
         <div class="bar-right">
@@ -311,7 +311,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     width: 215px;
     height: 275px;
     border-radius: 140px;
-    box-shadow: 0 0 0 9999px rgba(10, 15, 29, 0.65), inset 0 0 24px rgba(255, 122, 24, 0.15);
+    box-shadow: 0 0 0 9999px rgba(10, 15, 29, 0.65), inset 0 0 24px rgba(37, 117, 252, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -323,15 +323,15 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     position: absolute;
     inset: -6px;
     border-radius: 146px;
-    border: 2px solid rgba(255, 122, 24, 0.45);
+    border: 2px solid rgba(37, 117, 252, 0.45);
     animation: auraPulse 2.8s ease-in-out infinite;
     pointer-events: none;
 }
 
 @keyframes auraPulse {
-    0% { transform: scale(0.985); opacity: 0.3; box-shadow: 0 0 0 0 rgba(255, 122, 24, 0.4); }
-    50% { transform: scale(1.015); opacity: 0.9; box-shadow: 0 0 22px rgba(255, 122, 24, 0.45); }
-    100% { transform: scale(0.985); opacity: 0.3; box-shadow: 0 0 0 0 rgba(255, 122, 24, 0.4); }
+    0% { transform: scale(0.985); opacity: 0.3; box-shadow: 0 0 0 0 rgba(37, 117, 252, 0.4); }
+    50% { transform: scale(1.015); opacity: 0.9; box-shadow: 0 0 22px rgba(37, 117, 252, 0.45); }
+    100% { transform: scale(0.985); opacity: 0.3; box-shadow: 0 0 0 0 rgba(37, 117, 252, 0.4); }
 }
 
 /* Inner Segmented Dotted Ring */
@@ -348,9 +348,9 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     position: absolute;
     width: 26px;
     height: 26px;
-    border: 3px solid #FF7A18;
+    border: 3px solid #2575FC;
     box-sizing: border-box;
-    filter: drop-shadow(0 0 6px rgba(255, 122, 24, 0.7));
+    filter: drop-shadow(0 0 6px rgba(37, 117, 252, 0.7));
 }
 
 .corner-tl { top: -4px; left: 18px; border-right: none; border-bottom: none; border-top-left-radius: 12px; }
@@ -361,7 +361,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 /* Crosshair Markers */
 .face-crosshair {
     position: absolute;
-    background: rgba(255, 122, 24, 0.7);
+    background: rgba(37, 117, 252, 0.7);
     pointer-events: none;
     border-radius: 1px;
 }
@@ -375,8 +375,8 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     position: absolute;
     width: 90%;
     height: 3px;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 122, 24, 0.3) 15%, #FFFFFF 50%, rgba(255, 122, 24, 0.3) 85%, transparent 100%);
-    box-shadow: 0 0 14px rgba(255, 122, 24, 0.95), 0 0 28px rgba(234, 88, 12, 0.6);
+    background: linear-gradient(90deg, transparent 0%, rgba(37, 117, 252, 0.3) 15%, #FFFFFF 50%, rgba(37, 117, 252, 0.3) 85%, transparent 100%);
+    box-shadow: 0 0 14px rgba(37, 117, 252, 0.95), 0 0 28px rgba(37, 117, 252, 0.6);
     border-radius: 2px;
     animation: laserScan 2.4s ease-in-out infinite alternate;
 }
@@ -443,20 +443,20 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     width: 68px;
     height: 68px;
     border-radius: 18px;
-    background: linear-gradient(135deg, #FF7A18 0%, #EA580C 100%);
+    background: linear-gradient(135deg, #3B82F6 0%, #2575FC 50%, #1A56C4 100%);
     color: #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 30px;
-    box-shadow: 0 8px 20px rgba(234, 88, 12, 0.35);
+    box-shadow: 0 8px 20px rgba(37, 117, 252, 0.35);
     z-index: 2;
 }
 
 .rfid-wave {
     position: absolute;
     border-radius: 50%;
-    border: 2px solid rgba(234, 88, 12, 0.3);
+    border: 2px solid rgba(37, 117, 252, 0.3);
     animation: wavePulse 2.5s infinite;
 }
 
@@ -486,9 +486,9 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 }
 
 .tap-security-pill {
-    background: #FFF7ED;
-    color: #C2410C;
-    border: 1px solid #FFEDD5;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #DBEAFE;
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 11.5px;
@@ -507,7 +507,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     width: 48px;
     height: 48px;
     border: 4px solid #F1F5F9;
-    border-top-color: #EA580C;
+    border-top-color: #2575FC;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     margin: 0 auto 16px;
@@ -584,7 +584,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     height: 90px;
     border-radius: 12px;
     object-fit: cover;
-    border: 2px solid #EA580C;
+    border: 2px solid #2575FC;
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
@@ -615,7 +615,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 .res-time {
     font-size: 12px;
     font-weight: 700;
-    color: #EA580C;
+    color: #2575FC;
 }
 
 /* Error Banner */
@@ -688,14 +688,14 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #FFF7ED;
-    color: #EA580C;
+    background: #EFF6FF;
+    color: #2575FC;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 26px;
     margin: 0 auto 16px;
-    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.2);
+    box-shadow: 0 4px 14px rgba(37, 117, 252, 0.2);
 }
 
 .lock-title {
@@ -730,8 +730,8 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 }
 
 .pin-field:focus {
-    border-color: #EA580C;
-    box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.15);
+    border-color: #2575FC;
+    box-shadow: 0 0 0 4px rgba(37, 117, 252, 0.15);
 }
 
 .pin-hint {
@@ -753,7 +753,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 
 .btn-unlock-submit {
     width: 100%;
-    background: linear-gradient(135deg, #FF7A18 0%, #EA580C 100%);
+    background: linear-gradient(135deg, #3B82F6 0%, #2575FC 50%, #1A56C4 100%);
     color: #FFFFFF;
     font-size: 14px;
     font-weight: 700;
@@ -761,7 +761,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
     border-radius: 10px;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+    box-shadow: 0 4px 14px rgba(37, 117, 252, 0.3);
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -771,7 +771,7 @@ $is_unlocked = isset($kiosk_unlocked) ? $kiosk_unlocked : false;
 
 .btn-unlock-submit:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.4);
+    box-shadow: 0 6px 18px rgba(37, 117, 252, 0.4);
 }
 </style>
 
