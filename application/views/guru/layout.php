@@ -24,7 +24,7 @@
   <!-- Notyfy JS - Notification -->
   <link rel="stylesheet" href="<?php echo media_url() ?>css/jquery.toast.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>css/_all-skins.min.css">
-  <link rel="stylesheet" href="<?php echo media_url() ?>css/skin-orange.css?v=<?php echo file_exists(FCPATH . 'media/css/skin-orange.css') ? filemtime(FCPATH . 'media/css/skin-orange.css') : '1.0'; ?>">
+  <link rel="stylesheet" href="<?php echo media_url() ?>css/skin-blue.css?v=<?php echo file_exists(FCPATH . 'media/css/skin-blue.css') ? filemtime(FCPATH . 'media/css/skin-blue.css') : '1.0'; ?>">
   <!-- Date Picker -->
   <link rel="stylesheet" href="<?php echo media_url() ?>css/bootstrap-datepicker.min.css">
   <!-- Daterange picker -->
@@ -52,7 +52,7 @@
   <script type="text/javascript" src="https://emn178.github.io/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
 </head>
 
-<body class="hold-transition skin-orange fixed sidebar-mini" <?php echo isset($ngapp) ? $ngapp : null; ?>>
+<body class="hold-transition skin-blue fixed sidebar-mini" <?php echo isset($ngapp) ? $ngapp : null; ?>>
   <div class="wrapper">
 
     <header class="main-header">

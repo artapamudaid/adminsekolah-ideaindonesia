@@ -6,24 +6,34 @@
   --bs-body-bg: #F4F6F8;
   --bs-body-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Rich Orange Gradient Colors */
-  --brand-orange-gradient: linear-gradient(135deg, #FF7A18 0%, #EA580C 100%);
-  --brand-orange-gradient-hover: linear-gradient(135deg, #FF8D36 0%, #F97316 100%);
-  --brand-orange-gradient-soft: linear-gradient(90deg, rgba(255, 107, 0, 0.24) 0%, rgba(255, 107, 0, 0.05) 100%);
-  --brand-orange: #FF6B00;
-  --brand-orange-hover: #FF7D1A;
-  --brand-orange-light: #FF9B54;
-  --brand-orange-glow: 0 0 16px rgba(255, 107, 0, 0.45);
+  /* Modern Blue (#2575FC) Theme Variables */
+  --brand-blue-gradient: linear-gradient(135deg, #3B82F6 0%, #2575FC 50%, #1A56C4 100%);
+  --brand-blue-gradient-hover: linear-gradient(135deg, #60A5FA 0%, #1D4ED8 100%);
+  --brand-blue-gradient-soft: linear-gradient(90deg, rgba(37, 117, 252, 0.24) 0%, rgba(37, 117, 252, 0.05) 100%);
+  --brand-blue: #2575FC;
+  --brand-blue-hover: #1A62E8;
+  --brand-blue-light: #60A5FA;
+  --brand-blue-glow: 0 0 16px rgba(37, 117, 252, 0.45);
 
-  /* Deep Charcoal-Orange Ambient Backgrounds */
-  --sidebar-ambient-bg: linear-gradient(180deg, #17110E 0%, #1A1310 40%, #120D0C 100%);
-  --sidebar-border-orange: rgba(255, 107, 0, 0.2);
+  /* Backward Compatibility Aliases */
+  --brand-orange-gradient: linear-gradient(135deg, #3B82F6 0%, #2575FC 50%, #1A56C4 100%);
+  --brand-orange-gradient-hover: linear-gradient(135deg, #60A5FA 0%, #1D4ED8 100%);
+  --brand-orange-gradient-soft: linear-gradient(90deg, rgba(37, 117, 252, 0.24) 0%, rgba(37, 117, 252, 0.05) 100%);
+  --brand-orange: #2575FC;
+  --brand-orange-hover: #1A62E8;
+  --brand-orange-light: #60A5FA;
+  --brand-orange-glow: 0 0 16px rgba(37, 117, 252, 0.45);
+
+  /* Deep Charcoal-Blue Ambient Backgrounds */
+  --sidebar-ambient-bg: linear-gradient(180deg, #0A0F1D 0%, #0F172A 40%, #070B16 100%);
+  --sidebar-border-blue: rgba(37, 117, 252, 0.2);
+  --sidebar-border-orange: rgba(37, 117, 252, 0.2);
 
   /* Text Colors */
   --text-main: #0F172A;
   --text-muted: #64748B;
-  --text-sidebar-title: #FF9E59;
-  --text-sidebar-muted: #C8D2DC;
+  --text-sidebar-title: #93C5FD;
+  --text-sidebar-muted: #94A3B8;
   --text-sidebar-light: #FFFFFF;
 
   /* Cards & Radii */
@@ -114,7 +124,7 @@ body.skin-orange,
     margin: 0 !important;
     padding: 0 !important;
     font-size: 18px !important;
-    color: #FF7A18 !important;
+    color: #3B82F6 !important;
   }
 
   .skin-orange.sidebar-collapse .main-header .logo>.logo-mini .brand-logo-img {
@@ -210,7 +220,7 @@ body.skin-orange,
     font-size: 13px !important;
     border-top-right-radius: 10px !important;
     box-shadow: 6px 4px 18px rgba(0, 0, 0, 0.45) !important;
-    border: 1px solid rgba(255, 107, 0, 0.35) !important;
+    border: 1px solid rgba(37, 117, 252, 0.35) !important;
     border-left: none !important;
     z-index: 1000 !important;
   }
@@ -227,7 +237,7 @@ body.skin-orange,
     border-bottom-right-radius: 10px !important;
     border-bottom-left-radius: 10px !important;
     box-shadow: 6px 8px 22px rgba(0, 0, 0, 0.5) !important;
-    border: 1px solid rgba(255, 107, 0, 0.35) !important;
+    border: 1px solid rgba(37, 117, 252, 0.35) !important;
     border-top: none !important;
     border-left: none !important;
     z-index: 1000 !important;
@@ -244,7 +254,7 @@ body.skin-orange,
 
   .skin-orange.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>.treeview-menu>li:hover>a {
     color: #FFFFFF !important;
-    background: rgba(255, 107, 0, 0.16) !important;
+    background: rgba(37, 117, 252, 0.16) !important;
   }
 
   /* Collapsed Sticky Profile Card */
@@ -346,7 +356,7 @@ body.skin-orange,
 }
 
 .skin-orange .main-header .logo {
-  background: linear-gradient(180deg, #17110E 0%, #1A1310 100%) !important;
+  background: linear-gradient(180deg, #0A0F1D 0%, #0F172A 100%) !important;
   color: #FFFFFF !important;
   border-bottom: 1px solid var(--sidebar-border-orange) !important;
   border-right: 1.5px solid var(--sidebar-border-orange) !important;
@@ -384,7 +394,7 @@ body.skin-orange,
   object-fit: contain !important;
   background: rgba(255, 255, 255, 0.08) !important;
   padding: 2px !important;
-  border: 1.5px solid rgba(255, 107, 0, 0.4) !important;
+  border: 1.5px solid rgba(37, 117, 252, 0.4) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
 }
 
@@ -399,7 +409,7 @@ body.skin-orange,
   justify-content: center !important;
   color: #FFFFFF !important;
   font-size: 15px !important;
-  box-shadow: 0 2px 8px rgba(255, 107, 0, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(37, 117, 252, 0.4) !important;
 }
 
 .skin-orange .brand-name {
@@ -414,7 +424,7 @@ body.skin-orange,
 }
 
 .skin-orange .brand-icon-fallback {
-  color: #FF7A18 !important;
+  color: #3B82F6 !important;
   font-size: 18px !important;
 }
 
@@ -468,11 +478,11 @@ body.skin-orange,
 }
 
 .skin-orange .sidebar-toggle-btn:hover {
-  background-color: #FFF7ED !important;
-  border-color: rgba(255, 107, 0, 0.4) !important;
-  color: #FF6B00 !important;
+  background-color: #EFF6FF !important;
+  border-color: rgba(37, 117, 252, 0.4) !important;
+  color: #2575FC !important;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 107, 0, 0.15) !important;
+  box-shadow: 0 2px 8px rgba(37, 117, 252, 0.15) !important;
 }
 
 /* School Info Container (Clean & Professional) */
@@ -514,7 +524,7 @@ body.skin-orange,
 }
 
 .skin-orange .text-orange {
-  color: #FF6B00 !important;
+  color: #2575FC !important;
 }
 
 /* ==========================================================================
@@ -549,11 +559,11 @@ body.skin-orange,
 }
 
 .skin-orange .navbar-action-btn:hover {
-  background-color: #FFF7ED !important;
-  border-color: rgba(255, 107, 0, 0.4) !important;
-  color: #FF6B00 !important;
+  background-color: #EFF6FF !important;
+  border-color: rgba(37, 117, 252, 0.4) !important;
+  color: #2575FC !important;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 107, 0, 0.15) !important;
+  box-shadow: 0 2px 8px rgba(37, 117, 252, 0.15) !important;
 }
 
 .skin-orange .navbar-action-btn.dropdown-toggle::after {
@@ -576,7 +586,7 @@ body.skin-orange,
   align-items: center !important;
   justify-content: center !important;
   padding: 0 4px !important;
-  box-shadow: 0 0 8px rgba(255, 107, 0, 0.5) !important;
+  box-shadow: 0 0 8px rgba(37, 117, 252, 0.5) !important;
 }
 
 /* Notification Dropdown Card (Spark Admin Style) */
@@ -637,7 +647,7 @@ body.skin-orange,
 }
 
 .skin-orange .notification-spark-item:hover {
-  background-color: #FFF7ED !important;
+  background-color: #EFF6FF !important;
 }
 
 .skin-orange .notif-item-icon {
@@ -645,8 +655,8 @@ body.skin-orange,
   height: 36px !important;
   min-width: 36px !important;
   border-radius: 10px !important;
-  background: rgba(255, 107, 0, 0.1) !important;
-  color: #FF6B00 !important;
+  background: rgba(37, 117, 252, 0.1) !important;
+  color: #2575FC !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -681,7 +691,7 @@ body.skin-orange,
 
 .skin-orange .amount-label {
   font-weight: 700 !important;
-  color: #EA580C !important;
+  color: #1D4ED8 !important;
 }
 
 .skin-orange .notif-empty-state {
@@ -710,7 +720,7 @@ body.skin-orange,
 .skin-orange .notification-spark-footer a {
   font-size: 12px !important;
   font-weight: 700 !important;
-  color: #FF6B00 !important;
+  color: #2575FC !important;
   text-decoration: none !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -718,7 +728,7 @@ body.skin-orange,
 }
 
 .skin-orange .notification-spark-footer a:hover {
-  color: #EA580C !important;
+  color: #1D4ED8 !important;
 }
 
 /* ==========================================================================
@@ -740,8 +750,8 @@ body.skin-orange,
 
 .skin-orange .navbar-profile-btn:hover {
   background-color: #FFFFFF !important;
-  border-color: rgba(255, 107, 0, 0.4) !important;
-  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.15) !important;
+  border-color: rgba(37, 117, 252, 0.4) !important;
+  box-shadow: 0 4px 14px rgba(37, 117, 252, 0.15) !important;
   transform: translateY(-1px);
 }
 
@@ -756,7 +766,7 @@ body.skin-orange,
   height: 32px !important;
   border-radius: 50% !important;
   object-fit: cover !important;
-  border: 1.5px solid rgba(255, 107, 0, 0.4) !important;
+  border: 1.5px solid rgba(37, 117, 252, 0.4) !important;
   display: block !important;
 }
 
@@ -787,7 +797,7 @@ body.skin-orange,
 .skin-orange .navbar-profile-role {
   font-size: 10px !important;
   font-weight: 600 !important;
-  color: #EA580C !important;
+  color: #1D4ED8 !important;
 }
 
 .skin-orange .navbar-profile-caret {
@@ -799,7 +809,7 @@ body.skin-orange,
 
 .skin-orange .dropdown.open .navbar-profile-caret {
   transform: rotate(180deg) !important;
-  color: #FF6B00 !important;
+  color: #2575FC !important;
 }
 
 /* Profile Dropdown Menu (Floating Card) */
@@ -832,7 +842,7 @@ body.skin-orange,
   height: 44px !important;
   border-radius: 12px !important;
   object-fit: cover !important;
-  border: 2px solid rgba(255, 107, 0, 0.3) !important;
+  border: 2px solid rgba(37, 117, 252, 0.3) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -856,9 +866,9 @@ body.skin-orange,
   display: inline-block !important;
   font-size: 10px !important;
   font-weight: 700 !important;
-  color: #EA580C !important;
-  background: #FFF7ED !important;
-  border: 1px solid rgba(255, 107, 0, 0.25) !important;
+  color: #1D4ED8 !important;
+  background: #EFF6FF !important;
+  border: 1px solid rgba(37, 117, 252, 0.25) !important;
   border-radius: 50rem !important;
   padding: 1px 7px !important;
   margin-bottom: 3px !important;
@@ -895,8 +905,8 @@ body.skin-orange,
 }
 
 .skin-orange .profile-dropdown-item:hover {
-  background-color: #FFF7ED !important;
-  color: #FF6B00 !important;
+  background-color: #EFF6FF !important;
+  color: #2575FC !important;
 }
 
 .skin-orange .item-icon-box {
@@ -913,8 +923,8 @@ body.skin-orange,
 }
 
 .skin-orange .profile-dropdown-item:hover .item-icon-box {
-  background: rgba(255, 107, 0, 0.15) !important;
-  color: #FF6B00 !important;
+  background: rgba(37, 117, 252, 0.15) !important;
+  color: #2575FC !important;
 }
 
 .skin-orange .profile-dropdown-divider {
@@ -953,7 +963,7 @@ body.skin-orange,
 .skin-orange .left-side {
   background: var(--sidebar-ambient-bg) !important;
   border-right: 1.5px solid var(--sidebar-border-orange) !important;
-  box-shadow: 4px 0 25px rgba(255, 107, 0, 0.05);
+  box-shadow: 4px 0 25px rgba(37, 117, 252, 0.05);
   padding-top: var(--navbar-height) !important;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: fixed !important;
@@ -972,7 +982,7 @@ body.skin-orange,
   overflow-y: auto !important;
   overflow-x: hidden !important;
   scrollbar-width: thin !important;
-  scrollbar-color: #FF7A18 rgba(0, 0, 0, 0.3) !important;
+  scrollbar-color: #3B82F6 rgba(0, 0, 0, 0.3) !important;
 }
 
 /* WebKit Scrollbar Styling (Always Visible Vibrant Orange Thumb) */
@@ -988,16 +998,16 @@ body.skin-orange,
 }
 
 .skin-orange .sidebar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #FF8533 0%, #EA580C 100%) !important;
+  background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%) !important;
   border-radius: 10px !important;
-  box-shadow: 0 0 10px rgba(255, 107, 0, 0.6) !important;
+  box-shadow: 0 0 10px rgba(37, 117, 252, 0.6) !important;
   cursor: grab !important;
 }
 
 .skin-orange .sidebar::-webkit-scrollbar-thumb:hover,
 .skin-orange .sidebar::-webkit-scrollbar-thumb:active {
-  background: linear-gradient(180deg, #FFA05C 0%, #FF6B00 100%) !important;
-  box-shadow: 0 0 16px rgba(255, 107, 0, 0.95) !important;
+  background: linear-gradient(180deg, #60A5FA 0%, #2575FC 100%) !important;
+  box-shadow: 0 0 16px rgba(37, 117, 252, 0.95) !important;
   cursor: grabbing !important;
 }
 
@@ -1008,9 +1018,9 @@ body.skin-orange,
   display: block !important;
   opacity: 0.9 !important;
   visibility: visible !important;
-  background: linear-gradient(180deg, #FF8533 0%, #EA580C 100%) !important;
+  background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%) !important;
   border-radius: 10px !important;
-  box-shadow: 0 0 10px rgba(255, 107, 0, 0.6) !important;
+  box-shadow: 0 0 10px rgba(37, 117, 252, 0.6) !important;
   width: 8px !important;
   right: 2px !important;
   z-index: 9999 !important;
@@ -1024,8 +1034,8 @@ body.skin-orange,
   display: block !important;
   opacity: 1 !important;
   visibility: visible !important;
-  background: linear-gradient(180deg, #FFA05C 0%, #FF6B00 100%) !important;
-  box-shadow: 0 0 16px rgba(255, 107, 0, 0.95) !important;
+  background: linear-gradient(180deg, #60A5FA 0%, #2575FC 100%) !important;
+  box-shadow: 0 0 16px rgba(37, 117, 252, 0.95) !important;
   width: 9px !important;
   cursor: grabbing !important;
 }
@@ -1045,7 +1055,7 @@ body.skin-orange,
 
 .skin-orange .slimScrollRail:hover {
   opacity: 0.55 !important;
-  background: rgba(255, 107, 0, 0.25) !important;
+  background: rgba(37, 117, 252, 0.25) !important;
 }
 
 .skin-orange .slimScrollDiv {
@@ -1072,7 +1082,7 @@ body.skin-orange,
   padding: 20px 14px 8px 14px !important;
   margin: 0 !important;
   border: none !important;
-  text-shadow: 0 0 12px rgba(255, 107, 0, 0.3);
+  text-shadow: 0 0 12px rgba(37, 117, 252, 0.3);
 }
 
 /* -------------------------------------------------------------------------
@@ -1152,7 +1162,7 @@ body.skin-orange,
   background: var(--brand-orange-gradient) !important;
   color: #FFFFFF !important;
   font-weight: 700 !important;
-  box-shadow: 0 4px 18px rgba(255, 107, 0, 0.45) !important;
+  box-shadow: 0 4px 18px rgba(37, 117, 252, 0.45) !important;
 }
 
 .skin-orange .sidebar-menu>li.active>a>i {
@@ -1168,9 +1178,9 @@ body.skin-orange,
   top: 10% !important;
   height: 80% !important;
   width: 4px !important;
-  background: linear-gradient(180deg, #FFB077 0%, #FF6B00 100%) !important;
+  background: linear-gradient(180deg, #93C5FD 0%, #2575FC 100%) !important;
   border-radius: 0 4px 4px 0 !important;
-  box-shadow: 0 0 12px #FF6B00 !important;
+  box-shadow: 0 0 12px #2575FC !important;
 }
 
 /* -------------------------------------------------------------------------
@@ -1180,7 +1190,7 @@ body.skin-orange,
   background: transparent !important;
   margin: 3px 0 6px 20px !important;
   padding: 4px 0 4px 12px !important;
-  border-left: 2px solid rgba(255, 107, 0, 0.3) !important;
+  border-left: 2px solid rgba(37, 117, 252, 0.3) !important;
   list-style: none !important;
 }
 
@@ -1213,13 +1223,13 @@ body.skin-orange,
   width: 6px !important;
   height: 6px !important;
   border-radius: 50% !important;
-  background-color: rgba(255, 107, 0, 0.5) !important;
+  background-color: rgba(37, 117, 252, 0.5) !important;
   transition: all 0.2s ease !important;
 }
 
 .skin-orange .sidebar-menu .treeview-menu>li:hover>a {
   color: #FFFFFF !important;
-  background: rgba(255, 107, 0, 0.12) !important;
+  background: rgba(37, 117, 252, 0.12) !important;
 }
 
 .skin-orange .sidebar-menu .treeview-menu>li:hover>a::before {
@@ -1230,17 +1240,17 @@ body.skin-orange,
 /* Active Submenu Item (Orange Soft Gradient) */
 .skin-orange .sidebar-menu .treeview-menu>li.active>a {
   color: #FFB37C !important;
-  background: linear-gradient(90deg, rgba(255, 107, 0, 0.24) 0%, rgba(255, 107, 0, 0.06) 100%) !important;
+  background: linear-gradient(90deg, rgba(37, 117, 252, 0.24) 0%, rgba(37, 117, 252, 0.06) 100%) !important;
   font-weight: 700 !important;
 }
 
 .skin-orange .sidebar-menu .treeview-menu>li.active>a::before {
-  background-color: #FF6B00 !important;
-  box-shadow: 0 0 10px #FF6B00 !important;
+  background-color: #2575FC !important;
+  box-shadow: 0 0 10px #2575FC !important;
 }
 
 .skin-orange .sidebar-menu .treeview-menu>li.active>a>i {
-  color: #FF8533;
+  color: #3B82F6;
 }
 
 /* Level 3 Deep Submenus */
@@ -1248,7 +1258,7 @@ body.skin-orange,
   background: transparent !important;
   margin: 2px 0 4px 14px !important;
   padding-left: 10px !important;
-  border-left: 1.5px dashed rgba(255, 107, 0, 0.25) !important;
+  border-left: 1.5px dashed rgba(37, 117, 252, 0.25) !important;
 }
 
 /* -------------------------------------------------------------------------
@@ -1279,7 +1289,7 @@ body.skin-orange,
 
 .skin-orange .sidebar-profile-card:hover {
   background: linear-gradient(180deg, #221712 0%, #160F0D 100%) !important;
-  border-top-color: rgba(255, 107, 0, 0.5) !important;
+  border-top-color: rgba(37, 117, 252, 0.5) !important;
 }
 
 .skin-orange .sidebar-avatar-wrapper {
@@ -1304,7 +1314,7 @@ body.skin-orange,
   border-radius: 10px !important;
   object-fit: cover !important;
   background-color: #1A202C !important;
-  border: 1.5px solid rgba(255, 107, 0, 0.3) !important;
+  border: 1.5px solid rgba(37, 117, 252, 0.3) !important;
   display: block !important;
 }
 
@@ -1432,7 +1442,7 @@ body.skin-orange,
 .skin-orange #filter_bulan_ikhtisar:focus,
 .skin-orange #filter_arus_kas_bulan:focus {
   border-color: var(--brand-orange) !important;
-  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15) !important;
 }
 
 .skin-orange .box-title {
@@ -1457,7 +1467,7 @@ body.skin-orange,
   font-size: 13px !important;
   border-radius: var(--radius-sm) !important;
   padding: 8px 18px !important;
-  box-shadow: 0 3px 10px rgba(255, 107, 0, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(37, 117, 252, 0.3) !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
@@ -1468,7 +1478,7 @@ body.skin-orange,
   background: var(--brand-orange-gradient-hover) !important;
   border: none !important;
   color: #FFFFFF !important;
-  box-shadow: 0 5px 16px rgba(255, 107, 0, 0.45) !important;
+  box-shadow: 0 5px 16px rgba(37, 117, 252, 0.45) !important;
   transform: translateY(-1px);
 }
 
@@ -1509,7 +1519,7 @@ body.skin-orange,
 .skin-orange .form-control:focus {
   border-color: var(--brand-orange) !important;
   outline: 0 !important;
-  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.18) !important;
+  box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.18) !important;
 }
 
 /* Badges & Labels */
@@ -1578,12 +1588,12 @@ body.skin-orange,
 
 /* Global Selection Accent */
 ::selection {
-  background: rgba(255, 107, 0, 0.22) !important;
+  background: rgba(37, 117, 252, 0.22) !important;
   color: #C2410C !important;
 }
 
 ::-moz-selection {
-  background: rgba(255, 107, 0, 0.22) !important;
+  background: rgba(37, 117, 252, 0.22) !important;
   color: #C2410C !important;
 }
 
@@ -1610,7 +1620,7 @@ body.skin-orange,
 .subscription-hero-card {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #FF7A18 0%, #EA580C 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   border-radius: var(--radius-lg);
   padding: 24px 28px;
   color: #FFFFFF;
@@ -1709,7 +1719,7 @@ body.skin-orange,
   align-items: center;
   gap: 8px;
   background: #FFFFFF !important;
-  color: #EA580C !important;
+  color: #1D4ED8 !important;
   font-weight: 700 !important;
   font-size: 13.5px !important;
   padding: 11px 22px !important;
@@ -1721,7 +1731,7 @@ body.skin-orange,
 }
 
 .subscription-hero-card .subs-btn-extend:hover {
-  background: #FFF7ED !important;
+  background: #EFF6FF !important;
   color: #C2410C !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22) !important;

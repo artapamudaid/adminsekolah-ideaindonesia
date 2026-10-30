@@ -1,9 +1,9 @@
 :root {
-  --primary-bright: #E77831;
-  --primary-dark: #cb5e1b;
-  --primary-pale: #fdf5ef;
-  --primary-mid: #fedbc5;
-  --glass-border: rgba(231, 120, 49, 0.18);
+  --primary-bright: #2575FC;
+  --primary-dark: #1A56C4;
+  --primary-pale: #EFF6FF;
+  --primary-mid: #BFDBFE;
+  --glass-border: rgba(37, 117, 252, 0.18);
   --text-primary: #181c1f;
   --text-muted: rgba(24, 28, 31, 0.55);
   --cream: #faf7f5;
@@ -35,9 +35,9 @@ body {
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(ellipse 80% 80% at 20% 10%, #fee6d7 0%, transparent 60%),
-    radial-gradient(ellipse 60% 60% at 80% 90%, #fde0cb 0%, transparent 60%),
-    linear-gradient(160deg, #fff5ed 0%, #fef8f4 50%, #ffffff 100%);
+    radial-gradient(ellipse 80% 80% at 20% 10%, #DBEAFE 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 90%, #BFDBFE 0%, transparent 60%),
+    linear-gradient(160deg, #EFF6FF 0%, #F8FAFC 50%, #ffffff 100%);
   overflow: hidden;
 }
 
@@ -46,10 +46,10 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(231, 120, 49, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(231, 120, 49, 0.05) 1px, transparent 1px),
-    linear-gradient(rgba(231, 120, 49, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(231, 120, 49, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(37, 117, 252, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 117, 252, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(37, 117, 252, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 117, 252, 0.025) 1px, transparent 1px);
   background-size:
     80px 80px,
     80px 80px,
@@ -77,7 +77,7 @@ body {
   left: -120px;
   background: radial-gradient(
     circle,
-    rgba(231, 120, 49, 0.15) 0%,
+    rgba(37, 117, 252, 0.15) 0%,
     transparent 70%
   );
   animation: floatOrb 10s ease-in-out infinite;
@@ -90,7 +90,7 @@ body {
   right: -80px;
   background: radial-gradient(
     circle,
-    rgba(203, 94, 27, 0.12) 0%,
+    rgba(26, 86, 196, 0.12) 0%,
     transparent 70%
   );
   animation: floatOrb 14s ease-in-out infinite reverse;
@@ -175,7 +175,7 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(231, 120, 49, 0.3);
+  background: rgba(37, 117, 252, 0.3);
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -212,7 +212,7 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   box-shadow:
-    0 6px 32px rgba(231, 120, 49, 0.08),
+    0 6px 32px rgba(37, 117, 252, 0.08),
     0 2px 8px rgba(0, 0, 0, 0.05);
   animation: fadeUp 0.55s cubic-bezier(0.22, 0.68, 0, 1.2) both;
   overflow: hidden;
@@ -317,13 +317,13 @@ body {
   background: var(--primary-mid);
   color: var(--primary-dark);
   outline: 1px solid var(--primary-dark);
-  box-shadow: 0 1px 5px rgba(231, 120, 49, 0.15);
+  box-shadow: 0 1px 5px rgba(37, 117, 252, 0.15);
 }
 
 .tab-link.active {
   background: var(--primary-bright);
   color: var(--white);
-  box-shadow: 0 1px 5px rgba(231, 120, 49, 0.15);
+  box-shadow: 0 1px 5px rgba(37, 117, 252, 0.15);
 }
 
 /* ── INPUTS ── */
@@ -379,7 +379,7 @@ input::placeholder {
 
 input:focus {
   border-color: var(--primary-bright);
-  box-shadow: 0 0 0 3px rgba(231, 120, 49, 0.15);
+  box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15);
   background: var(--white);
 }
 
@@ -435,7 +435,7 @@ textarea {
 select:focus,
 textarea:focus {
   border-color: var(--primary-bright);
-  box-shadow: 0 0 0 3px rgba(231, 120, 49, 0.15);
+  box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15);
   background-color: var(--white);
 }
 
@@ -461,7 +461,7 @@ textarea:focus {
   background: var(--primary-bright);
   color: var(--white);
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(231, 120, 49, 0.35);
+  box-shadow: 0 4px 14px rgba(37, 117, 252, 0.35);
   transition:
     transform 0.2s,
     box-shadow 0.2s;
@@ -470,7 +470,7 @@ textarea:focus {
 
 .bubble:hover {
   transform: scale(1.1) translateY(-2px);
-  box-shadow: 0 8px 22px rgba(231, 120, 49, 0.45);
+  box-shadow: 0 8px 22px rgba(37, 117, 252, 0.45);
   color: var(--white);
   text-decoration: none;
 }
@@ -574,12 +574,12 @@ textarea:focus {
   transition:
     transform 0.15s,
     box-shadow 0.15s;
-  box-shadow: 0 4px 16px rgba(231, 120, 49, 0.28);
+  box-shadow: 0 4px 16px rgba(37, 117, 252, 0.28);
 }
 
 .btn-submit:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(231, 120, 49, 0.38);
+  box-shadow: 0 6px 22px rgba(37, 117, 252, 0.38);
 }
 
 .btn-submit:active {
@@ -710,7 +710,7 @@ textarea:focus {
 
 .pin-input:focus {
   border-color: var(--primary-bright);
-  box-shadow: 0 0 0 3px rgba(231, 120, 49, 0.15);
+  box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15);
   background: var(--white);
 }
 
@@ -719,7 +719,7 @@ textarea:focus {
   text-align: center;
   padding: 1rem;
   background: var(--primary-pale);
-  border: 1px dashed rgba(231, 120, 49, 0.4);
+  border: 1px dashed rgba(37, 117, 252, 0.4);
   border-radius: 12px;
   margin-bottom: 1rem;
   font-size: 0.78rem;
@@ -774,7 +774,7 @@ textarea:focus {
   text-align: center;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  box-shadow: 0 4px 20px rgba(231, 120, 49, 0.25);
+  box-shadow: 0 4px 20px rgba(37, 117, 252, 0.25);
 }
 
 .presence-navbar img {
@@ -874,7 +874,7 @@ textarea:focus {
   text-align: center;
   margin-bottom: 1rem;
   font-size: 0.88rem;
-  box-shadow: 0 4px 16px rgba(231, 120, 49, 0.25);
+  box-shadow: 0 4px 16px rgba(37, 117, 252, 0.25);
 }
 
 .attendance-info.show {
@@ -913,7 +913,7 @@ textarea:focus {
   border: 1px solid var(--glass-border);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(231, 120, 49, 0.08);
+  box-shadow: 0 4px 20px rgba(37, 117, 252, 0.08);
   margin-bottom: 1rem;
 }
 

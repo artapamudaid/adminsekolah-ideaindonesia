@@ -1,142 +1,1912 @@
-/*
- * Skin: Blue
- * ----------
- */
-.skin-blue .main-header .navbar {
-  background-color: #3c8dbc;
+/* ==========================================================================
+   Modern Blue (#2575FC) Theme for IDEA Indonesia
+   Support both .skin-blue and .skin-orange selectors
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --sidebar-width: 280px;
+  --navbar-height: 65px;
+  --bs-body-bg: #F4F6F8;
+  --bs-body-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Modern Blue (#2575FC) Theme Variables */
+  --brand-blue-gradient: linear-gradient(135deg, #3B82F6 0%, #2575FC 50%, #1A56C4 100%);
+  --brand-blue-gradient-hover: linear-gradient(135deg, #60A5FA 0%, #1D4ED8 100%);
+  --brand-blue-gradient-soft: linear-gradient(90deg, rgba(37, 117, 252, 0.24) 0%, rgba(37, 117, 252, 0.05) 100%);
+  --brand-blue: #2575FC;
+  --brand-blue-hover: #1A62E8;
+  --brand-blue-light: #60A5FA;
+  --brand-blue-glow: 0 0 16px rgba(37, 117, 252, 0.45);
+
+  /* Backward Compatibility Aliases */
+  --brand-orange-gradient: linear-gradient(135deg, #3B82F6 0%, #2575FC 50%, #1A56C4 100%);
+  --brand-orange-gradient-hover: linear-gradient(135deg, #60A5FA 0%, #1D4ED8 100%);
+  --brand-orange-gradient-soft: linear-gradient(90deg, rgba(37, 117, 252, 0.24) 0%, rgba(37, 117, 252, 0.05) 100%);
+  --brand-orange: #2575FC;
+  --brand-orange-hover: #1A62E8;
+  --brand-orange-light: #60A5FA;
+  --brand-orange-glow: 0 0 16px rgba(37, 117, 252, 0.45);
+
+  /* Deep Charcoal-Blue Ambient Backgrounds */
+  --sidebar-ambient-bg: linear-gradient(180deg, #0A0F1D 0%, #0F172A 40%, #070B16 100%);
+  --sidebar-border-blue: rgba(37, 117, 252, 0.2);
+  --sidebar-border-orange: rgba(37, 117, 252, 0.2);
+
+  /* Text Colors */
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --text-sidebar-title: #93C5FD;
+  --text-sidebar-muted: #94A3B8;
+  --text-sidebar-light: #FFFFFF;
+
+  /* Cards & Radii */
+  --card-bg: #FFFFFF;
+  --card-border: #EBEFF2;
+  --radius-xl: 18px;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
 }
-.skin-blue .main-header .navbar .nav > li > a {
-  color: #ffffff;
+
+/* ==========================================================================
+   Base Overrides & Typography
+   ========================================================================== */
+body.skin-blue,
+.skin-blue .wrapper {
+  background-color: var(--bs-body-bg) !important;
+  font-family: var(--bs-body-font-family) !important;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.012em;
 }
-.skin-blue .main-header .navbar .nav > li > a:hover,
-.skin-blue .main-header .navbar .nav > li > a:active,
-.skin-blue .main-header .navbar .nav > li > a:focus,
-.skin-blue .main-header .navbar .nav .open > a,
-.skin-blue .main-header .navbar .nav .open > a:hover,
-.skin-blue .main-header .navbar .nav .open > a:focus,
-.skin-blue .main-header .navbar .nav > .active > a {
-  background: rgba(0, 0, 0, 0.1);
-  color: #f6f6f6;
+
+.skin-blue h1,
+.skin-blue h2,
+.skin-blue h3,
+.skin-blue h4,
+.skin-blue h5,
+.skin-blue h6 {
+  font-family: var(--bs-body-font-family) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--text-main) !important;
 }
-.skin-blue .main-header .navbar .sidebar-toggle {
-  color: #ffffff;
+
+/* ==========================================================================
+   Sidebar Width Responsive Layout (280px Width)
+   ========================================================================== */
+@media (min-width: 768px) {
+
+  /* Logo top-left width */
+  .skin-blue .main-header .logo {
+    width: var(--sidebar-width) !important;
+  }
+
+  /* Top navbar offset */
+  .skin-blue .main-header .navbar {
+    margin-left: var(--sidebar-width) !important;
+  }
+
+  /* Main sidebar width */
+  .skin-blue .main-sidebar,
+  .skin-blue .left-side {
+    width: var(--sidebar-width) !important;
+  }
+
+  /* Main content offset */
+  .skin-blue .content-wrapper,
+  .skin-blue .right-side,
+  .skin-blue .main-footer {
+    margin-left: var(--sidebar-width) !important;
+  }
+
+  /* ========================================================================
+     When Collapsed (Mini-Sidebar: 50px Width - Clean & Bug-Free)
+     ======================================================================== */
+  .skin-blue.sidebar-collapse .main-header .logo {
+    width: 50px !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .skin-blue.sidebar-collapse .main-header .logo>.logo-lg {
+    display: none !important;
+  }
+
+  .skin-blue.sidebar-collapse .main-header .logo>.logo-mini {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 50px !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 18px !important;
+    color: #3B82F6 !important;
+  }
+
+  .skin-blue.sidebar-collapse .main-header .logo>.logo-mini .brand-logo-img {
+    width: 32px !important;
+    height: 32px !important;
+    margin: 0 auto !important;
+  }
+
+  .skin-blue.sidebar-collapse .main-header .navbar {
+    margin-left: 50px !important;
+  }
+
+  .skin-blue.sidebar-collapse .main-sidebar,
+  .skin-blue.sidebar-collapse .left-side {
+    width: 50px !important;
+    overflow: visible !important;
+    z-index: 850 !important;
+  }
+
+  .skin-blue.sidebar-collapse .content-wrapper,
+  .skin-blue.sidebar-collapse .right-side,
+  .skin-blue.sidebar-collapse .main-footer {
+    margin-left: 50px !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar {
+    width: 50px !important;
+    overflow: visible !important;
+    padding: 10px 0 !important;
+  }
+
+  .skin-blue.sidebar-collapse .slimScrollDiv {
+    overflow: visible !important;
+    width: 50px !important;
+  }
+
+  /* Centered Mini Menu Icons */
+  .skin-blue.sidebar-collapse .sidebar-menu {
+    padding: 0 !important;
+    width: 50px !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar-menu>li {
+    width: 50px !important;
+    margin: 2px 0 !important;
+    position: relative !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar-menu>li>a {
+    width: 50px !important;
+    padding: 12px 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 0 !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar-menu>li>a>i {
+    width: 100% !important;
+    margin: 0 !important;
+    text-align: center !important;
+    font-size: 16px !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar-menu>li>a>span,
+  .skin-blue.sidebar-collapse .sidebar-menu>li>a>.pull-right-container,
+  .skin-blue.sidebar-collapse .sidebar-menu li.header {
+    display: none !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar-menu>li.active>a::before {
+    left: 0 !important;
+    top: 15% !important;
+    height: 70% !important;
+    width: 3px !important;
+    border-radius: 0 3px 3px 0 !important;
+  }
+
+  /* Mini Hover Flyout Menu */
+  .skin-blue.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>a>span:not(.pull-right) {
+    display: block !important;
+    position: absolute !important;
+    width: 220px !important;
+    left: 50px !important;
+    top: 0 !important;
+    padding: 12px 16px !important;
+    background: #1C1410 !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    border-top-right-radius: 10px !important;
+    box-shadow: 6px 4px 18px rgba(0, 0, 0, 0.45) !important;
+    border: 1px solid rgba(37, 117, 252, 0.35) !important;
+    border-left: none !important;
+    z-index: 1000 !important;
+  }
+
+  .skin-blue.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>.treeview-menu {
+    display: block !important;
+    position: absolute !important;
+    width: 220px !important;
+    left: 50px !important;
+    top: 44px !important;
+    background: #140E0C !important;
+    padding: 6px 8px !important;
+    margin: 0 !important;
+    border-bottom-right-radius: 10px !important;
+    border-bottom-left-radius: 10px !important;
+    box-shadow: 6px 8px 22px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(37, 117, 252, 0.35) !important;
+    border-top: none !important;
+    border-left: none !important;
+    z-index: 1000 !important;
+  }
+
+  .skin-blue.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>.treeview-menu>li>a {
+    padding: 8px 12px 8px 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 12.5px !important;
+    color: #CBD5E1 !important;
+    border-radius: 6px !important;
+  }
+
+  .skin-blue.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>.treeview-menu>li:hover>a {
+    color: #FFFFFF !important;
+    background: rgba(37, 117, 252, 0.16) !important;
+  }
+
+  /* Collapsed Sticky Profile Card */
+  .skin-blue.sidebar-collapse .sidebar-profile-card {
+    width: 50px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    right: auto !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar-profile-card .sidebar-avatar-wrapper {
+    margin: 0 auto !important;
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar-profile-card .sidebar-avatar-img {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 9px !important;
+    margin: 0 auto !important;
+  }
+
+  .skin-blue.sidebar-collapse .sidebar-profile-card .sidebar-profile-info,
+  .skin-blue.sidebar-collapse .sidebar-profile-card .sidebar-profile-logout {
+    display: none !important;
+  }
 }
-.skin-blue .main-header .navbar .sidebar-toggle:hover {
-  color: #f6f6f6;
-  background: rgba(0, 0, 0, 0.1);
-}
-.skin-blue .main-header .navbar .sidebar-toggle {
-  color: #fff;
-}
-.skin-blue .main-header .navbar .sidebar-toggle:hover {
-  background-color: #367fa9;
-}
+
 @media (max-width: 767px) {
-  .skin-blue .main-header .navbar .dropdown-menu li.divider {
-    background-color: rgba(255, 255, 255, 0.1);
+  .skin-blue .main-header {
+    height: auto !important;
+    max-height: none !important;
   }
-  .skin-blue .main-header .navbar .dropdown-menu li a {
-    color: #fff;
+
+  .skin-blue .main-header .logo {
+    width: 100% !important;
+    height: var(--navbar-height) !important;
   }
-  .skin-blue .main-header .navbar .dropdown-menu li a:hover {
-    background: #367fa9;
+
+  .skin-blue .main-header .navbar-custom-spark {
+    padding: 0 12px !important;
+  }
+
+  .skin-blue .header-school-card {
+    padding: 4px 8px !important;
+  }
+
+  .skin-blue .school-name-text {
+    max-width: 140px !important;
+    font-size: 12px !important;
   }
 }
-.skin-blue .main-header .logo {
-  background-color: #367fa9;
-  color: #ffffff;
-  border-bottom: 0 solid transparent;
+
+/* Content Canvas */
+.skin-blue .content-wrapper {
+  background-color: var(--bs-body-bg) !important;
+  min-height: 100vh;
 }
-.skin-blue .main-header .logo:hover {
-  background-color: #357ca5;
-}
-.skin-blue .main-header li.user-header {
-  background-color: #3c8dbc;
-}
+
 .skin-blue .content-header {
+  padding: 24px 30px 12px 30px;
   background: transparent;
 }
-.skin-blue .wrapper,
+
+.skin-blue .content-header>h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.025em;
+}
+
+.skin-blue .content-header>.breadcrumb {
+  background: transparent;
+  padding: 0;
+  font-size: 12.5px;
+  top: 26px;
+  right: 30px;
+}
+
+.skin-blue .content-header>.breadcrumb>li>a {
+  color: var(--text-muted);
+}
+
+.skin-blue .content-header>.breadcrumb>li.active {
+  color: var(--brand-orange);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Header: Brand Logo Top-Left (Matches 280px Dark Sidebar - Spark Admin Style)
+   ========================================================================== */
+.skin-blue .main-header {
+  height: var(--navbar-height) !important;
+  max-height: var(--navbar-height) !important;
+  z-index: 1030;
+  background-color: #FFFFFF !important;
+}
+
+.skin-blue .main-header .logo {
+  background: linear-gradient(180deg, #0A0F1D 0%, #0F172A 100%) !important;
+  color: #FFFFFF !important;
+  border-bottom: 1px solid var(--sidebar-border-orange) !important;
+  border-right: 1.5px solid var(--sidebar-border-orange) !important;
+  font-family: var(--bs-body-font-family);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  height: var(--navbar-height) !important;
+  line-height: var(--navbar-height) !important;
+  padding: 0 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.skin-blue .main-header .logo:hover {
+  background: linear-gradient(180deg, #1D1512 0%, #201713 100%) !important;
+  color: #FFFFFF !important;
+}
+
+.skin-blue .brand-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.skin-blue .brand-logo-img {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  border-radius: 9px !important;
+  object-fit: contain !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  padding: 2px !important;
+  border: 1.5px solid rgba(37, 117, 252, 0.4) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+.skin-blue .brand-logo-placeholder {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  border-radius: 9px !important;
+  background: var(--brand-orange-gradient) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #FFFFFF !important;
+  font-size: 15px !important;
+  box-shadow: 0 2px 8px rgba(37, 117, 252, 0.4) !important;
+}
+
+.skin-blue .brand-name {
+  font-family: var(--bs-body-font-family) !important;
+  font-weight: 800 !important;
+  font-size: 15px !important;
+  color: #FFFFFF !important;
+  letter-spacing: -0.015em !important;
+  text-overflow: ellipsis !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+.skin-blue .brand-icon-fallback {
+  color: #3B82F6 !important;
+  font-size: 18px !important;
+}
+
+/* ==========================================================================
+   Header: Pure White Top Navbar (Modern Clean Style)
+   ========================================================================== */
+.skin-blue .main-header .navbar-custom-spark {
+  background-color: #FFFFFF !important;
+  border-bottom: 1px solid #ECEEF1 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  height: var(--navbar-height) !important;
+  min-height: var(--navbar-height) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 20px !important;
+}
+
+/* Hide default AdminLTE floating float elements */
+.skin-blue .main-header .navbar-custom-spark::before,
+.skin-blue .main-header .navbar-custom-spark::after {
+  display: none !important;
+}
+
+/* Navbar Left Section */
+.skin-blue .navbar-left-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+/* Modern Sidebar Toggle Button */
+.skin-blue .sidebar-toggle-btn {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  border-radius: 10px !important;
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #475569 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 15px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.skin-blue .sidebar-toggle-btn:hover {
+  background-color: #EFF6FF !important;
+  border-color: rgba(37, 117, 252, 0.4) !important;
+  color: #2575FC !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(37, 117, 252, 0.15) !important;
+}
+
+/* School Info Container (Clean & Professional) */
+.skin-blue .header-school-info {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.skin-blue .header-school-name {
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #0F172A !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.25 !important;
+  margin-bottom: 2px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.skin-blue .header-school-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  color: #64748B !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.skin-blue .header-school-meta .meta-separator {
+  color: #CBD5E1 !important;
+}
+
+.skin-blue .text-orange {
+  color: #2575FC !important;
+}
+
+/* ==========================================================================
+   Navbar Right Actions Group
+   ========================================================================== */
+.skin-blue .navbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Action Button (Fullscreen, Notifications, etc.) */
+.skin-blue .navbar-action-btn {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  border-radius: 10px !important;
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #475569 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14.5px !important;
+  cursor: pointer !important;
+  position: relative !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding: 0 !important;
+  outline: none !important;
+}
+
+.skin-blue .navbar-action-btn:hover {
+  background-color: #EFF6FF !important;
+  border-color: rgba(37, 117, 252, 0.4) !important;
+  color: #2575FC !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(37, 117, 252, 0.15) !important;
+}
+
+.skin-blue .navbar-action-btn.dropdown-toggle::after {
+  display: none !important;
+}
+
+/* Notification Badge Dot */
+.skin-blue .navbar-action-badge {
+  position: absolute !important;
+  top: -3px !important;
+  right: -3px !important;
+  background: var(--brand-orange-gradient) !important;
+  color: #FFFFFF !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  border-radius: 50rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 4px !important;
+  box-shadow: 0 0 8px rgba(37, 117, 252, 0.5) !important;
+}
+
+/* Notification Dropdown Card (Spark Admin Style) */
+.skin-blue .dropdown-menu-notification-spark {
+  width: 340px !important;
+  border-radius: 16px !important;
+  border: 1px solid #ECEEF1 !important;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.1) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  margin-top: 10px !important;
+  right: 0 !important;
+  left: auto !important;
+  background: #FFFFFF !important;
+}
+
+.skin-blue .notification-spark-header {
+  background: #FAFBFD !important;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid #F1F5F9 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.skin-blue .notif-header-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #0F172A !important;
+}
+
+.skin-blue .notif-header-badge {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  background: var(--brand-orange-gradient) !important;
+  color: #FFFFFF !important;
+  padding: 2px 8px !important;
+  border-radius: 50rem !important;
+}
+
+.skin-blue .notification-spark-body {
+  max-height: 280px !important;
+  overflow-y: auto !important;
+}
+
+.skin-blue .notification-spark-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 18px !important;
+  border-bottom: 1px solid #F8FAFC !important;
+  text-decoration: none !important;
+  color: #1E293B !important;
+  transition: background 0.2s ease !important;
+}
+
+.skin-blue .notification-spark-item:hover {
+  background-color: #EFF6FF !important;
+}
+
+.skin-blue .notif-item-icon {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  background: rgba(37, 117, 252, 0.1) !important;
+  color: #2575FC !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px !important;
+}
+
+.skin-blue .notif-item-info {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.skin-blue .notif-item-name {
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  color: #0F172A !important;
+  margin-bottom: 2px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.skin-blue .notif-item-meta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 11.5px !important;
+}
+
+.skin-blue .nis-label {
+  color: #64748B !important;
+}
+
+.skin-blue .amount-label {
+  font-weight: 700 !important;
+  color: #1D4ED8 !important;
+}
+
+.skin-blue .notif-empty-state {
+  padding: 24px 18px !important;
+  text-align: center !important;
+  color: #94A3B8 !important;
+  font-size: 12.5px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.skin-blue .notif-empty-icon {
+  font-size: 24px !important;
+  color: #22C55E !important;
+}
+
+.skin-blue .notification-spark-footer {
+  padding: 10px 18px !important;
+  background: #FAFBFD !important;
+  border-top: 1px solid #F1F5F9 !important;
+  text-align: center !important;
+}
+
+.skin-blue .notification-spark-footer a {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #2575FC !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.skin-blue .notification-spark-footer a:hover {
+  color: #1D4ED8 !important;
+}
+
+/* ==========================================================================
+   User Profile Pill Button (Spark Admin Exact Pill)
+   ========================================================================== */
+.skin-blue .navbar-profile-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 50rem !important;
+  padding: 4px 12px 4px 4px !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  outline: none !important;
+}
+
+.skin-blue .navbar-profile-btn:hover {
+  background-color: #FFFFFF !important;
+  border-color: rgba(37, 117, 252, 0.4) !important;
+  box-shadow: 0 4px 14px rgba(37, 117, 252, 0.15) !important;
+  transform: translateY(-1px);
+}
+
+.skin-blue .navbar-avatar-wrapper {
+  position: relative !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.skin-blue .navbar-profile-img {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 1.5px solid rgba(37, 117, 252, 0.4) !important;
+  display: block !important;
+}
+
+.skin-blue .navbar-online-dot {
+  position: absolute !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  width: 9px !important;
+  height: 9px !important;
+  border-radius: 50% !important;
+  background-color: #22C55E !important;
+  border: 1.5px solid #FFFFFF !important;
+}
+
+.skin-blue .navbar-user-text {
+  display: flex !important;
+  flex-direction: column !important;
+  text-align: left !important;
+  line-height: 1.2 !important;
+}
+
+.skin-blue .navbar-profile-name {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #0F172A !important;
+}
+
+.skin-blue .navbar-profile-role {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: #1D4ED8 !important;
+}
+
+.skin-blue .navbar-profile-caret {
+  font-size: 11px !important;
+  color: #94A3B8 !important;
+  margin-left: 2px !important;
+  transition: transform 0.2s ease !important;
+}
+
+.skin-blue .dropdown.open .navbar-profile-caret {
+  transform: rotate(180deg) !important;
+  color: #2575FC !important;
+}
+
+/* Profile Dropdown Menu (Floating Card) */
+.skin-blue .dropdown-menu-profile-spark {
+  min-width: 250px !important;
+  border-radius: 16px !important;
+  border: 1px solid #ECEEF1 !important;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.1) !important;
+  padding: 12px !important;
+  margin-top: 10px !important;
+  right: 0 !important;
+  left: auto !important;
+  background: #FFFFFF !important;
+}
+
+.skin-blue .profile-dropdown-header {
+  padding: 4px 6px 12px 6px !important;
+  border-bottom: 1px solid #F1F5F9 !important;
+  margin-bottom: 8px !important;
+}
+
+.skin-blue .profile-header-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.skin-blue .profile-card-img {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  object-fit: cover !important;
+  border: 2px solid rgba(37, 117, 252, 0.3) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.skin-blue .profile-header-details {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.skin-blue .profile-dropdown-name {
+  font-weight: 800 !important;
+  color: #0F172A !important;
+  font-size: 13.5px !important;
+  line-height: 1.25 !important;
+  margin-bottom: 2px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.skin-blue .profile-dropdown-role-badge {
+  display: inline-block !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #1D4ED8 !important;
+  background: #EFF6FF !important;
+  border: 1px solid rgba(37, 117, 252, 0.25) !important;
+  border-radius: 50rem !important;
+  padding: 1px 7px !important;
+  margin-bottom: 3px !important;
+}
+
+.skin-blue .profile-dropdown-email {
+  color: #64748B !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.skin-blue .profile-menu-section-title {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #94A3B8 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 6px 10px 4px 10px !important;
+}
+
+.skin-blue .profile-dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.skin-blue .profile-dropdown-item:hover {
+  background-color: #EFF6FF !important;
+  color: #2575FC !important;
+}
+
+.skin-blue .item-icon-box {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+  background: #F1F5F9 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 13px !important;
+  color: #475569 !important;
+  transition: all 0.2s ease !important;
+}
+
+.skin-blue .profile-dropdown-item:hover .item-icon-box {
+  background: rgba(37, 117, 252, 0.15) !important;
+  color: #2575FC !important;
+}
+
+.skin-blue .profile-dropdown-divider {
+  margin: 6px 0 !important;
+  border-top: 1px solid #F1F5F9 !important;
+}
+
+.skin-blue .profile-dropdown-logout {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+  color: #EF4444 !important;
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.skin-blue .profile-dropdown-logout:hover {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #DC2626 !important;
+}
+
+.skin-blue .logout-icon-box {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #EF4444 !important;
+}
+
+/* ==========================================================================
+   Sidebar: Warm Charcoal-Orange Ambient with Visible Orange Scrollbar
+   ========================================================================== */
 .skin-blue .main-sidebar,
 .skin-blue .left-side {
-  background-color: #222d32;
+  background: var(--sidebar-ambient-bg) !important;
+  border-right: 1.5px solid var(--sidebar-border-orange) !important;
+  box-shadow: 4px 0 25px rgba(37, 117, 252, 0.05);
+  padding-top: var(--navbar-height) !important;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: fixed !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  height: 100vh !important;
 }
-.skin-blue .user-panel > .info,
-.skin-blue .user-panel > .info > a {
-  color: #fff;
+
+/* SIDEBAR CONTAINER & VISIBLE ORANGE GRADIENT SCROLLBAR */
+.skin-blue .sidebar {
+  padding: 10px 0 16px 0;
+  display: block !important;
+  height: calc(100vh - var(--navbar-height) - 68px) !important;
+  max-height: calc(100vh - var(--navbar-height) - 68px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #3B82F6 rgba(0, 0, 0, 0.3) !important;
 }
-.skin-blue .sidebar-menu > li.header {
-  color: #4b646f;
-  background: #1a2226;
+
+/* WebKit Scrollbar Styling (Always Visible Vibrant Orange Thumb) */
+.skin-blue .sidebar::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
 }
-.skin-blue .sidebar-menu > li > a {
-  border-left: 3px solid transparent;
+
+.skin-blue .sidebar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-radius: 10px !important;
+  margin: 6px 0 !important;
 }
-.skin-blue .sidebar-menu > li:hover > a,
-.skin-blue .sidebar-menu > li.active > a,
-.skin-blue .sidebar-menu > li.menu-open > a {
-  color: #ffffff;
-  background: #1e282c;
+
+.skin-blue .sidebar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 10px rgba(37, 117, 252, 0.6) !important;
+  cursor: grab !important;
 }
-.skin-blue .sidebar-menu > li.active > a {
-  border-left-color: #3c8dbc;
+
+.skin-blue .sidebar::-webkit-scrollbar-thumb:hover,
+.skin-blue .sidebar::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #60A5FA 0%, #2575FC 100%) !important;
+  box-shadow: 0 0 16px rgba(37, 117, 252, 0.95) !important;
+  cursor: grabbing !important;
 }
-.skin-blue .sidebar-menu > li > .treeview-menu {
-  margin: 0 1px;
-  background: #2c3b41;
+
+/* -------------------------------------------------------------------------
+   SlimScroll Permanent Orange Bar (Prevents Disappearing on Hover)
+   ------------------------------------------------------------------------- */
+.skin-blue .slimScrollBar {
+  display: block !important;
+  opacity: 0.9 !important;
+  visibility: visible !important;
+  background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 10px rgba(37, 117, 252, 0.6) !important;
+  width: 8px !important;
+  right: 2px !important;
+  z-index: 9999 !important;
+  cursor: grab !important;
+  pointer-events: auto !important;
+  transition: opacity 0.2s ease, width 0.2s ease, background 0.2s ease, box-shadow 0.2s ease !important;
 }
-.skin-blue .sidebar a {
-  color: #b8c7ce;
+
+.skin-blue .slimScrollBar:hover,
+.skin-blue .slimScrollBar:active {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: linear-gradient(180deg, #60A5FA 0%, #2575FC 100%) !important;
+  box-shadow: 0 0 16px rgba(37, 117, 252, 0.95) !important;
+  width: 9px !important;
+  cursor: grabbing !important;
 }
-.skin-blue .sidebar a:hover {
-  text-decoration: none;
+
+.skin-blue .slimScrollRail {
+  display: block !important;
+  opacity: 0.35 !important;
+  visibility: visible !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border-radius: 10px !important;
+  width: 8px !important;
+  right: 2px !important;
+  z-index: 9990 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
 }
-.skin-blue .sidebar-menu .treeview-menu > li > a {
-  color: #8aa4af;
+
+.skin-blue .slimScrollRail:hover {
+  opacity: 0.55 !important;
+  background: rgba(37, 117, 252, 0.25) !important;
 }
-.skin-blue .sidebar-menu .treeview-menu > li.active > a,
-.skin-blue .sidebar-menu .treeview-menu > li > a:hover {
-  color: #ffffff;
+
+.skin-blue .slimScrollDiv {
+  overflow: visible !important;
 }
-.skin-blue .sidebar-form {
-  border-radius: 3px;
-  border: 1px solid #374850;
-  margin: 10px 10px;
+
+/* -------------------------------------------------------------------------
+   Sidebar Menu Groups (Warm Glowing Orange Section Headers)
+   ------------------------------------------------------------------------- */
+.skin-blue .sidebar-menu {
+  list-style: none;
+  padding: 0 10px;
+  margin: 0;
+  flex-grow: 1;
 }
-.skin-blue .sidebar-form input[type="text"],
-.skin-blue .sidebar-form .btn {
-  box-shadow: none;
-  background-color: #374850;
-  border: 1px solid transparent;
-  height: 35px;
+
+.skin-blue .sidebar-menu>li.header {
+  color: var(--text-sidebar-title) !important;
+  background: transparent !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  padding: 20px 14px 8px 14px !important;
+  margin: 0 !important;
+  border: none !important;
+  text-shadow: 0 0 12px rgba(37, 117, 252, 0.3);
 }
-.skin-blue .sidebar-form input[type="text"] {
-  color: #666;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 2px;
+
+/* -------------------------------------------------------------------------
+   Sidebar Menu Items (Level 1)
+   ------------------------------------------------------------------------- */
+.skin-blue .sidebar-menu>li {
+  margin-bottom: 4px;
+  position: relative;
 }
-.skin-blue .sidebar-form input[type="text"]:focus,
-.skin-blue .sidebar-form input[type="text"]:focus + .input-group-btn .btn {
-  background-color: #fff;
-  color: #666;
+
+.skin-blue .sidebar-menu>li>a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 14px !important;
+  margin: 0 2px !important;
+  color: var(--text-sidebar-muted) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius-md) !important;
+  border-left: none !important;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
 }
-.skin-blue .sidebar-form input[type="text"]:focus + .input-group-btn .btn {
-  border-left-color: #fff;
+
+/* Orange Accent on Icons */
+.skin-blue .sidebar-menu>li>a>i {
+  width: 20px !important;
+  font-size: 15px !important;
+  text-align: center !important;
+  color: var(--brand-orange-light) !important;
+  flex-shrink: 0 !important;
+  transition: color 0.2s ease, transform 0.2s ease !important;
 }
-.skin-blue .sidebar-form .btn {
-  color: #999;
-  border-top-left-radius: 0;
-  border-top-right-radius: 2px;
-  border-bottom-right-radius: 2px;
-  border-bottom-left-radius: 0;
+
+.skin-blue .sidebar-menu>li>a>span {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.skin-blue.layout-top-nav .main-header > .logo {
-  background-color: #3c8dbc;
-  color: #ffffff;
-  border-bottom: 0 solid transparent;
+
+/* Dropdown Caret */
+.skin-blue .sidebar-menu>li>a .pull-right-container {
+  position: static !important;
+  margin-left: auto !important;
+  line-height: 1 !important;
 }
-.skin-blue.layout-top-nav .main-header > .logo:hover {
-  background-color: #3b8ab8;
+
+.skin-blue .sidebar-menu>li>a .pull-right-container i {
+  font-size: 11px !important;
+  color: #8B949E !important;
+  transition: transform 0.25s ease, color 0.2s ease !important;
+}
+
+.skin-blue .sidebar-menu>li.menu-open>a .pull-right-container i {
+  transform: rotate(-90deg) !important;
+  color: #FFFFFF !important;
+}
+
+/* Hover State with Soft Orange Gradient */
+.skin-blue .sidebar-menu>li:hover>a,
+.skin-blue .sidebar-menu>li>a:hover {
+  background: var(--brand-orange-gradient-soft) !important;
+  color: #FFFFFF !important;
+}
+
+.skin-blue .sidebar-menu>li:hover>a>i,
+.skin-blue .sidebar-menu>li>a:hover>i {
+  color: #FFFFFF !important;
+  transform: scale(1.1);
+}
+
+/* ACTIVE MAIN ITEM: VIBRANT ORANGE GRADIENT PILL */
+.skin-blue .sidebar-menu>li.active>a {
+  background: var(--brand-orange-gradient) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 18px rgba(37, 117, 252, 0.45) !important;
+}
+
+.skin-blue .sidebar-menu>li.active>a>i {
+  color: #FFFFFF !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Glowing Indicator Pill on Left Edge */
+.skin-blue .sidebar-menu>li.active>a::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -6px !important;
+  top: 10% !important;
+  height: 80% !important;
+  width: 4px !important;
+  background: linear-gradient(180deg, #93C5FD 0%, #2575FC 100%) !important;
+  border-radius: 0 4px 4px 0 !important;
+  box-shadow: 0 0 12px #2575FC !important;
+}
+
+/* -------------------------------------------------------------------------
+   Sidebar Submenus (Level 2 & Level 3 Treeview)
+   ------------------------------------------------------------------------- */
+.skin-blue .sidebar-menu>li>.treeview-menu {
+  background: transparent !important;
+  margin: 3px 0 6px 20px !important;
+  padding: 4px 0 4px 12px !important;
+  border-left: 2px solid rgba(37, 117, 252, 0.3) !important;
+  list-style: none !important;
+}
+
+.skin-blue .sidebar-menu .treeview-menu>li {
+  margin-bottom: 2px !important;
+  position: relative !important;
+}
+
+.skin-blue .sidebar-menu .treeview-menu>li>a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 12px 8px 22px !important;
+  color: var(--text-sidebar-muted) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius-sm) !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+}
+
+/* Submenu Orange Bullet Dot */
+.skin-blue .sidebar-menu .treeview-menu>li>a::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background-color: rgba(37, 117, 252, 0.5) !important;
+  transition: all 0.2s ease !important;
+}
+
+.skin-blue .sidebar-menu .treeview-menu>li:hover>a {
+  color: #FFFFFF !important;
+  background: rgba(37, 117, 252, 0.12) !important;
+}
+
+.skin-blue .sidebar-menu .treeview-menu>li:hover>a::before {
+  background-color: #FFA566 !important;
+  box-shadow: 0 0 8px #FFA566 !important;
+}
+
+/* Active Submenu Item (Orange Soft Gradient) */
+.skin-blue .sidebar-menu .treeview-menu>li.active>a {
+  color: #FFB37C !important;
+  background: linear-gradient(90deg, rgba(37, 117, 252, 0.24) 0%, rgba(37, 117, 252, 0.06) 100%) !important;
+  font-weight: 700 !important;
+}
+
+.skin-blue .sidebar-menu .treeview-menu>li.active>a::before {
+  background-color: #2575FC !important;
+  box-shadow: 0 0 10px #2575FC !important;
+}
+
+.skin-blue .sidebar-menu .treeview-menu>li.active>a>i {
+  color: #3B82F6;
+}
+
+/* Level 3 Deep Submenus */
+.skin-blue .sidebar-menu .treeview-menu .treeview-menu {
+  background: transparent !important;
+  margin: 2px 0 4px 14px !important;
+  padding-left: 10px !important;
+  border-left: 1.5px dashed rgba(37, 117, 252, 0.25) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Sidebar Profile Card (Sticky Bottom Docked)
+   ------------------------------------------------------------------------- */
+.skin-blue .sidebar-profile-card {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: 68px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  background: linear-gradient(180deg, #1C1410 0%, #130E0C 100%) !important;
+  border-top: 1px solid var(--sidebar-border-orange) !important;
+  border-right: 1.5px solid var(--sidebar-border-orange) !important;
+  border-left: none !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  z-index: 860 !important;
+}
+
+.skin-blue .sidebar-profile-card:hover {
+  background: linear-gradient(180deg, #221712 0%, #160F0D 100%) !important;
+  border-top-color: rgba(37, 117, 252, 0.5) !important;
+}
+
+.skin-blue .sidebar-avatar-wrapper {
+  position: relative !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  flex-shrink: 0 !important;
+}
+
+/* STRICT IMAGE SIZING: NEVER BECOMES BIG */
+.skin-blue .sidebar-avatar-img,
+.skin-blue .user-panel img,
+.skin-blue .sidebar-profile-card img {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  border-radius: 10px !important;
+  object-fit: cover !important;
+  background-color: #1A202C !important;
+  border: 1.5px solid rgba(37, 117, 252, 0.3) !important;
+  display: block !important;
+}
+
+.skin-blue .avatar-status-dot {
+  position: absolute !important;
+  bottom: -2px !important;
+  right: -2px !important;
+  width: 10px !important;
+  height: 10px !important;
+  background-color: #10B981 !important;
+  border: 2px solid #16110E !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.9) !important;
+}
+
+.skin-blue .sidebar-profile-info {
+  flex-grow: 1 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.skin-blue .sidebar-profile-name {
+  color: var(--text-sidebar-light) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  letter-spacing: -0.01em;
+}
+
+.skin-blue .sidebar-profile-role {
+  color: #FFA666 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.skin-blue .sidebar-profile-logout {
+  color: #FFA666 !important;
+  font-size: 14px !important;
+  padding: 6px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  margin-left: auto !important;
+}
+
+.skin-blue .sidebar-profile-logout:hover {
+  color: #EF4444 !important;
+  background: rgba(239, 68, 68, 0.15) !important;
+}
+
+/* ==========================================================================
+   Spark Admin Cards & Components (Boxes, Tables, Buttons, Forms)
+   ========================================================================== */
+/* Modern White Card / Box */
+.skin-blue .box {
+  background: #FFFFFF !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border-top-width: 1px !important;
+  margin-bottom: 24px;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.skin-blue .box:hover {
+  box-shadow: var(--shadow-md) !important;
+}
+
+.skin-blue .box.box-primary {
+  border-top-color: var(--brand-orange) !important;
+  border-top-width: 3px !important;
+}
+
+.skin-blue .box-header {
+  border-bottom: 1px solid #F1F5F9 !important;
+  padding: 16px 24px !important;
+  position: relative !important;
+  min-height: 56px !important;
+}
+
+.skin-blue .box-header.with-border {
+  border-bottom: 1px solid #F1F5F9 !important;
+}
+
+.skin-blue .box-header > .box-tools {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  right: 20px !important;
+  position: absolute !important;
+}
+
+.skin-blue .box-header .box-tools select,
+.skin-blue #filter_bulan_ikhtisar,
+.skin-blue #filter_arus_kas_bulan {
+  height: 32px !important;
+  line-height: 1.4 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #1E293B !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  padding: 4px 12px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  outline: none !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  transition: all 0.2s ease !important;
+}
+
+.skin-blue .box-header .box-tools select:hover,
+.skin-blue #filter_bulan_ikhtisar:hover,
+.skin-blue #filter_arus_kas_bulan:hover {
+  border-color: #94A3B8 !important;
+}
+
+.skin-blue .box-header .box-tools select:focus,
+.skin-blue #filter_bulan_ikhtisar:focus,
+.skin-blue #filter_arus_kas_bulan:focus {
+  border-color: var(--brand-orange) !important;
+  box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15) !important;
+}
+
+.skin-blue .box-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  letter-spacing: -0.015em !important;
+  line-height: 24px !important;
+  margin: 0 !important;
+}
+
+.skin-blue .box-body {
+  padding: 24px !important;
+}
+
+/* Modern Primary Button (Vibrant Orange Gradient) */
+.skin-blue .btn-primary {
+  background: var(--brand-orange-gradient) !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 18px !important;
+  box-shadow: 0 3px 10px rgba(37, 117, 252, 0.3) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.skin-blue .btn-primary:hover,
+.skin-blue .btn-primary:active,
+.skin-blue .btn-primary:focus,
+.skin-blue .btn-primary.active {
+  background: var(--brand-orange-gradient-hover) !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 5px 16px rgba(37, 117, 252, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+.skin-blue .btn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+/* Reset sizes for small & extra-small buttons in skin-orange */
+.skin-blue .btn.btn-xs,
+.skin-blue .btn-primary.btn-xs {
+  padding: 1px 5px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  border-radius: 3px !important;
+}
+
+.skin-blue .btn.btn-sm,
+.skin-blue .btn-primary.btn-sm {
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  border-radius: 3px !important;
+}
+
+/* Modern Form Controls */
+.skin-blue .form-control {
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid #CBD5E1 !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  color: var(--text-main) !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.skin-blue .form-control:focus {
+  border-color: var(--brand-orange) !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.18) !important;
+}
+
+/* Badges & Labels */
+.skin-blue .label-primary,
+.skin-blue .badge-primary {
+  background: var(--brand-orange-gradient) !important;
+  color: #FFFFFF !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 700 !important;
+  padding: 3px 9px !important;
+}
+
+/* Pagination */
+.skin-blue .pagination>.active>a,
+.skin-blue .pagination>.active>a:focus,
+.skin-blue .pagination>.active>a:hover,
+.skin-blue .pagination>.active>span,
+.skin-blue .pagination>.active>span:focus,
+.skin-blue .pagination>.active>span:hover {
+  background: var(--brand-orange-gradient) !important;
+  border-color: var(--brand-orange) !important;
+  color: #FFFFFF !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.skin-blue .pagination>li>a {
+  border-radius: var(--radius-sm) !important;
+  margin: 0 2px !important;
+  color: var(--text-muted) !important;
+}
+
+/* Tabs */
+.skin-blue .nav-tabs-custom {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+.skin-blue .nav-tabs-custom>.nav-tabs>li.active {
+  border-top-color: var(--brand-orange) !important;
+  border-top-width: 3px !important;
+}
+
+.skin-blue .nav-tabs-custom>.nav-tabs>li.active>a {
+  font-weight: 700 !important;
+  color: var(--brand-orange) !important;
+}
+
+/* Tables */
+.skin-blue .table>thead>tr>th {
+  border-bottom: 2px solid #E2E8F0 !important;
+  color: var(--text-main) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  background-color: #F8FAFC !important;
+}
+
+.skin-blue .table>tbody>tr>td {
+  border-top: 1px solid #F1F5F9 !important;
+  vertical-align: middle !important;
+}
+
+.skin-blue .table-striped>tbody>tr:nth-of-type(odd) {
+  background-color: #FAFBFD !important;
+}
+
+/* Global Selection Accent */
+::selection {
+  background: rgba(37, 117, 252, 0.22) !important;
+  color: #C2410C !important;
+}
+
+::-moz-selection {
+  background: rgba(37, 117, 252, 0.22) !important;
+  color: #C2410C !important;
+}
+
+/* Theme-Wide Primary Overrides (Prevent AdminLTE Default Blue) */
+.skin-blue .bg-primary {
+  background: var(--brand-orange-gradient) !important;
+  color: #FFFFFF !important;
+}
+
+.skin-blue .text-primary {
+  color: var(--brand-orange) !important;
+}
+
+.skin-blue .small-box.bg-primary {
+  background: var(--brand-orange-gradient) !important;
+  color: #FFFFFF !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.35) !important;
+}
+
+/* ==========================================================================
+   Subscription Hero Card (Spark Admin Orange Aesthetic)
+   ========================================================================== */
+.subscription-hero-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  color: #FFFFFF;
+  box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.35), 0 4px 10px rgba(234, 88, 12, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.subscription-hero-card .subs-hero-content {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 320px;
+}
+
+.subscription-hero-card .subs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.subscription-hero-card .subs-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ADE80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.9);
+}
+
+.subscription-hero-card .subs-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #FFFFFF !important;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.subscription-hero-card .subs-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.subscription-hero-card .subs-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.subscription-hero-card .subs-meta-item strong {
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.subscription-hero-card .subs-badge-pill {
+  background: rgba(0, 0, 0, 0.2);
+  color: #FFFFFF;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.subscription-hero-card .subs-hero-action {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.subscription-hero-card .subs-btn-extend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF !important;
+  color: #1D4ED8 !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  padding: 11px 22px !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-decoration: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+}
+
+.subscription-hero-card .subs-btn-extend:hover {
+  background: #EFF6FF !important;
+  color: #C2410C !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22) !important;
+}
+
+.subscription-hero-card .subs-hero-bg-icon {
+  position: absolute;
+  right: -10px;
+  bottom: -25px;
+  font-size: 120px;
+  color: rgba(255, 255, 255, 0.12);
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(-8deg);
+  line-height: 1;
+}
+
+/* ==========================================================================
+   Subscription Tabs & Modern Table
+   ========================================================================== */
+.skin-blue .subs-tabs-custom {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin-top: 10px;
+}
+
+.skin-blue .subs-tabs-custom>.nav-tabs {
+  border-bottom: 2px solid #E2E8F0 !important;
+  margin-bottom: 16px;
+  background: transparent !important;
+}
+
+.skin-blue .subs-tabs-custom>.nav-tabs>li {
+  border-top: none !important;
+  margin-bottom: -2px;
+}
+
+.skin-blue .subs-tabs-custom>.nav-tabs>li>a {
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  padding: 8px 18px !important;
+  transition: all 0.2s ease !important;
+  border-radius: 0 !important;
+}
+
+.skin-blue .subs-tabs-custom>.nav-tabs>li.active>a,
+.skin-blue .subs-tabs-custom>.nav-tabs>li>a:hover {
+  color: var(--brand-orange) !important;
+  border-bottom: 2px solid var(--brand-orange) !important;
+  background: transparent !important;
+}
+
+.skin-blue .subs-tabs-custom>.tab-content {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Soft Readable Status Badges */
+.skin-blue .label-status-pending {
+  background: #FEF3C7 !important;
+  color: #D97706 !important;
+  border: 1px solid #FDE68A !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.skin-blue .label-status-lunas {
+  background: #DCFCE7 !important;
+  color: #16A34A !important;
+  border: 1px solid #BBF7D0 !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.skin-blue .label-status-batal {
+  background: #FEE2E2 !important;
+  color: #DC2626 !important;
+  border: 1px solid #FECACA !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Modern Action Buttons */
+.skin-blue .btn-action-pay {
+  background: #10B981 !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+  padding: 5px 12px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25) !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none !important;
+}
+
+.skin-blue .btn-action-pay:hover {
+  background: #059669 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+.skin-blue .btn-action-cancel {
+  background: #EF4444 !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+  padding: 5px 12px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25) !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.skin-blue .btn-action-cancel:hover {
+  background: #DC2626 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+.skin-blue .btn-action-receipt {
+  background: #F1F5F9 !important;
+  color: #475569 !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+  padding: 5px 12px !important;
+  border-radius: 6px !important;
+  border: 1px solid #E2E8F0 !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none !important;
+}
+
+.skin-blue .btn-action-receipt:hover {
+  background: #E2E8F0 !important;
+  color: #1E293B !important;
+}
+
+/* Disabled Bubble Chat Widget */
+.widget-button,
+#widget-toggle,
+.widget-container,
+#widget-container,
+#file-preview-modal {
+  display: none !important;
 }

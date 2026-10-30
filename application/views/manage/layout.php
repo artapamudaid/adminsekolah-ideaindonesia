@@ -75,7 +75,7 @@ $totalNotif = count($notifTrx);
   <!-- Notyfy JS - Notification -->
   <link rel="stylesheet" href="<?php echo media_url() ?>css/jquery.toast.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>css/_all-skins.min.css">
-  <link rel="stylesheet" href="<?php echo media_url() ?>css/skin-orange.css?v=<?php echo file_exists(FCPATH . 'media/css/skin-orange.css') ? filemtime(FCPATH . 'media/css/skin-orange.css') : '1.0'; ?>">
+  <link rel="stylesheet" href="<?php echo media_url() ?>css/skin-blue.css?v=<?php echo file_exists(FCPATH . 'media/css/skin-blue.css') ? filemtime(FCPATH . 'media/css/skin-blue.css') : '1.0'; ?>">
   <!-- Date Picker -->
   <link rel="stylesheet" href="<?php echo media_url() ?>css/bootstrap-datepicker.min.css">
   <!-- Daterange picker -->
@@ -117,9 +117,9 @@ $totalNotif = count($notifTrx);
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #FFF7ED;
-      border: 1px solid #FFEDD5;
-      color: #EA580C;
+      background: #EFF6FF;
+      border: 1px solid #DBEAFE;
+      color: #2575FC;
       font-size: 12px;
       font-weight: 700;
       padding: 7px 12px;
@@ -128,8 +128,8 @@ $totalNotif = count($notifTrx);
       transition: all 0.2s ease;
     }
     .navbar-actions #app-suspend-info > a:hover {
-      background: #FFEDD5;
-      color: #C2410C;
+      background: #DBEAFE;
+      color: #1D4ED8;
     }
     .navbar-actions #app-suspend-info .dropdown-menu {
       top: 100%;
@@ -146,7 +146,7 @@ $totalNotif = count($notifTrx);
 
 
 
-<body class="hold-transition skin-orange fixed sidebar-mini" <?php echo isset($ngapp) ? $ngapp : null; ?>>
+<body class="hold-transition skin-blue fixed sidebar-mini" <?php echo isset($ngapp) ? $ngapp : null; ?>>
   <div class="wrapper">
 
     <header class="main-header">
@@ -209,7 +209,7 @@ $totalNotif = count($notifTrx);
             <ul class="dropdown-menu dropdown-menu-right" style="min-width: 140px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); padding: 8px 0; border: 1px solid #E2E8F0;">
               <li>
                 <a href="<?php echo site_url('manage/change_language/id') ?>" style="padding: 8px 16px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px;">
-                  <span style="background: #FFF7ED; color: #EA580C; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">ID</span> Indonesia
+                  <span style="background: #EFF6FF; color: #2575FC; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">ID</span> Indonesia
                 </a>
               </li>
               <li>
