@@ -45,6 +45,7 @@ class Holiday_set extends CI_Controller
 		$config['total_rows'] = count($this->Holiday_model->get($paramsPage));
 		$this->pagination->initialize($config);
 
+		$data['offset'] = (int) $offset;
 		$data['title'] = 'Hari Libur';
 		$data['main'] = 'holiday/holiday_list';
 		$this->load->view('manage/layout', $data);

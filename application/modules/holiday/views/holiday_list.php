@@ -20,20 +20,24 @@
                     <!-- /.box-header -->
                     <div class="box-body table-responsive">
                         <table class="table table-hover">
-                            <tr>
-                                <th>No</th>
-                                <th>Tanggal</th>
-                                <th>Aksi</th>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">No</th>
+                                    <th style="width: 150px;">Tanggal</th>
+                                    <th>Keterangan</th>
+                                    <th style="width: 80px;">Aksi</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 <?php
                                 if (!empty($holiday)) {
-                                    $i = 1;
+                                    $i = (isset($offset) && $offset !== NULL && (int)$offset > 0) ? (int)$offset + 1 : ((int)$this->uri->segment(4) > 0 ? (int)$this->uri->segment(4) + 1 : 1);
                                     foreach ($holiday as $row) :
                                 ?>
                                         <tr>
                                             <td><?php echo $i; ?></td>
-                                            <td><?php echo $row['date']; ?></td>
+                                            <td><?php echo isset($row['date']) ? pretty_date($row['date'], 'd F Y', false) : '-'; ?></td>
+                                            <td><?php echo !empty($row['info']) ? htmlspecialchars($row['info']) : '-'; ?></td>
                                             <td>
                                                 <a href="#delModal<?php echo $row['id']; ?>" data-toggle="modal" class="btn btn-xs btn-danger"><i class="fa fa-trash" data-toggle="tooltip" title="Hapus"></i></a>
                                             </td>
@@ -68,7 +72,7 @@
                                 } else {
                                     ?>
                                     <tr id="row">
-                                        <td colspan="3" align="center">Data Kosong</td>
+                                        <td colspan="4" align="center">Data Kosong</td>
                                     </tr>
                                 <?php } ?>
                             </tbody>
