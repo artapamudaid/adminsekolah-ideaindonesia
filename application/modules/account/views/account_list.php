@@ -44,6 +44,28 @@ if (!function_exists('calc_grandgrandchild_code')) {
 }
 ?>
 <script type="text/javascript" src="<?php echo media_url('js/jquery-migrate-3.0.0.min.js') ?>"></script>
+<style>
+    .btn-trigger-multi-add {
+        padding: 1px 5px !important;
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+        border-radius: 3px !important;
+        height: 22px !important;
+        background: #2563eb !important;
+        background-color: #2563eb !important;
+        border-color: #1d4ed8 !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+    }
+    .btn-trigger-multi-add:hover,
+    .btn-trigger-multi-add:focus,
+    .btn-trigger-multi-add:active {
+        background: #1d4ed8 !important;
+        background-color: #1d4ed8 !important;
+        border-color: #1e40af !important;
+        color: #ffffff !important;
+    }
+</style>
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
@@ -98,23 +120,26 @@ if (!function_exists('calc_grandgrandchild_code')) {
                                 <?php } ?>
                             </div>
                             <div class="col-md-6" style="margin-top: 10px;">
-                                <?php
-                                if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all'):
-                                ?>
-                                    <div class="pull-right">
-                                        <?php if ($is_super): ?>
-                                            <button type="button" id="btn-show-multi-delete" class="btn btn-danger">
-                                                <i class="fa fa-trash"></i>&nbsp; Hapus Data Terpilih
-                                            </button>
-                                        <?php endif; ?>
-                                        <a href="<?= site_url('manage/account/import_account?m=' . $s['m']) ?>" class="btn btn-info">
-                                            <i class="fa fa-upload"></i>&nbsp;
-                                            Upload Akun Biaya
-                                        </a>
-                                    </div>
-                                <?php
-                                endif;
-                                ?>
+                                <div class="pull-right">
+                                    <?php if ($is_super && isset($s['m']) && !empty($s['m']) && $s['m'] != 'all'): ?>
+                                        <button type="button" id="btn-show-multi-delete" class="btn btn-danger" style="margin-right: 5px;">
+                                            <i class="fa fa-trash"></i>&nbsp; Hapus Data Terpilih
+                                        </button>
+                                    <?php endif; ?>
+
+                                    <?php
+                                    $current_m = '';
+                                    if ($majors_id != '0') {
+                                        $current_m = $majors_id;
+                                    } elseif (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
+                                        $current_m = $s['m'];
+                                    }
+                                    $importUrl = site_url('manage/account/import_account' . ($current_m ? '?m=' . $current_m : ''));
+                                    ?>
+                                    <a href="<?= $importUrl ?>" class="btn btn-info" id="btn-go-import" style="font-weight: 600;">
+                                        <i class="fa fa-upload"></i>&nbsp; Import Akun Biaya
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -187,6 +212,15 @@ if (!function_exists('calc_grandgrandchild_code')) {
                                                 data-next-code="<?php echo $next_sub_code ?>"
                                                 data-majors-id="<?php echo $main->account_majors_id ?>"
                                                 title="Tambah Sub Akun"><i class="fa fa-plus"></i></button>
+                                            <button type="button" class="btn btn-primary btn-xs btn-trigger-multi-add"
+                                                data-level="1"
+                                                data-parent-id="<?php echo $main->account_id ?>"
+                                                data-parent-code="<?php echo $main->account_code ?>"
+                                                data-parent-desc="<?php echo htmlspecialchars($main->account_description) ?>"
+                                                data-next-code="<?php echo $next_sub_code ?>"
+                                                data-majors-id="<?php echo $main->account_majors_id ?>"
+                                                data-unit-name="<?php echo htmlspecialchars($main->account_majors_id != '0' ? $main->majors_short_name : '') ?>"
+                                                title="Tambah Banyak Sub Akun (Multi Insert)"><i class="fa fa-list"></i></button>
                                         </td>
                                     </tr>
 
@@ -228,6 +262,15 @@ if (!function_exists('calc_grandgrandchild_code')) {
                                                     data-majors-id="<?php echo $sub->account_majors_id ?>"
                                                     data-unit-name="<?php echo htmlspecialchars($unitShortName) ?>"
                                                     title="Tambah Sub Akun"><i class="fa fa-plus"></i></button>
+                                                <button type="button" class="btn btn-primary btn-xs btn-trigger-multi-add"
+                                                    data-level="2"
+                                                    data-parent-id="<?php echo $sub->account_id ?>"
+                                                    data-parent-code="<?php echo $sub->account_code ?>"
+                                                    data-parent-desc="<?php echo htmlspecialchars($sub->account_description) ?>"
+                                                    data-next-code="<?php echo $next_child_code ?>"
+                                                    data-majors-id="<?php echo $sub->account_majors_id ?>"
+                                                    data-unit-name="<?php echo htmlspecialchars($unitShortName) ?>"
+                                                    title="Tambah Banyak Sub Akun (Multi Insert)"><i class="fa fa-list"></i></button>
                                                 <button type="button" class="btn btn-warning btn-xs btn-trigger-edit"
                                                     data-id="<?php echo $sub->account_id ?>"
                                                     data-code="<?php echo $sub->account_code ?>"
@@ -286,6 +329,15 @@ if (!function_exists('calc_grandgrandchild_code')) {
                                                         data-next-code="<?php echo $next_grandchild_code ?>"
                                                         data-majors-id="<?php echo $child->account_majors_id ?>"
                                                         title="Tambah Sub Akun"><i class="fa fa-plus"></i></button>
+                                                    <button type="button" class="btn btn-primary btn-xs btn-trigger-multi-add"
+                                                        data-level="3"
+                                                        data-parent-id="<?php echo $child->account_id ?>"
+                                                        data-parent-code="<?php echo $child->account_code ?>"
+                                                        data-parent-desc="<?php echo htmlspecialchars($child->account_description) ?>"
+                                                        data-next-code="<?php echo $next_grandchild_code ?>"
+                                                        data-majors-id="<?php echo $child->account_majors_id ?>"
+                                                        data-unit-name="<?php echo htmlspecialchars($child->account_majors_id != '0' ? $child->majors_short_name : '') ?>"
+                                                        title="Tambah Banyak Sub Akun (Multi Insert)"><i class="fa fa-list"></i></button>
                                                     <button type="button" class="btn btn-warning btn-xs btn-trigger-edit"
                                                         data-id="<?php echo $child->account_id ?>"
                                                         data-code="<?php echo $child->account_code ?>"
@@ -356,6 +408,15 @@ if (!function_exists('calc_grandgrandchild_code')) {
                                                             data-next-code="<?php echo $next_grandgrandchild_code ?>"
                                                             data-majors-id="<?php echo $grandchild->account_majors_id ?>"
                                                             title="Tambah Sub Akun"><i class="fa fa-plus"></i></button>
+                                                        <button type="button" class="btn btn-primary btn-xs btn-trigger-multi-add"
+                                                            data-level="4"
+                                                            data-parent-id="<?php echo $grandchild->account_id ?>"
+                                                            data-parent-code="<?php echo $grandchild->account_code ?>"
+                                                            data-parent-desc="<?php echo htmlspecialchars($grandchild->account_description) ?>"
+                                                            data-next-code="<?php echo $next_grandgrandchild_code ?>"
+                                                            data-majors-id="<?php echo $grandchild->account_majors_id ?>"
+                                                            data-unit-name="<?php echo htmlspecialchars($grandchild->account_majors_id != '0' ? $grandchild->majors_short_name : '') ?>"
+                                                            title="Tambah Banyak Sub Akun (Multi Insert)"><i class="fa fa-list"></i></button>
                                                         <button type="button" class="btn btn-warning btn-xs btn-trigger-edit"
                                                             data-id="<?php echo $grandchild->account_id ?>"
                                                             data-code="<?php echo $grandchild->account_code ?>"
@@ -559,6 +620,85 @@ if (!function_exists('calc_grandgrandchild_code')) {
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary btn-next" style="display: none;">Selanjutnya</button>
                     <button type="submit" class="btn btn-success btn-simpan">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 1.1 Modal Tambah Banyak Sub Akun (Multi Insert Child) -->
+<div class="modal fade" id="modal-multi-add-account" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 8px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: none;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%) !important; color: #ffffff !important; border-top-left-radius: 8px; border-top-right-radius: 8px; padding: 15px 20px;">
+                <button type="button" class="close" data-dismiss="modal" style="color: #ffffff !important; opacity: 0.95; text-shadow: none; font-size: 26px; margin-top: -3px; font-weight: 300;">&times;</button>
+                <h4 class="modal-title" style="color: #ffffff !important; font-weight: 700; margin: 0; font-size: 18px; letter-spacing: 0.3px;">
+                    <i class="fa fa-list-ol" style="color: #ffffff !important; margin-right: 6px;"></i> Tambah Banyak Sub Akun (Multi Insert)
+                </h4>
+            </div>
+            <form id="form-multi-add-account" method="post" action="<?php echo site_url('manage/account/add_multi_child'); ?>">
+                <input type="hidden" name="parent_id" id="multi_parent_id">
+                <input type="hidden" name="parent_code" id="multi_parent_code">
+                <input type="hidden" name="parent_level" id="multi_parent_level">
+                <input type="hidden" name="account_majors_id" id="multi_majors_id">
+
+                <div class="modal-body" style="padding: 18px 22px;">
+                    <div class="alert alert-info" style="margin-bottom: 14px; padding: 12px 16px; border-radius: 6px; background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a;">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Akun Induk:</strong> <span id="multi_parent_info" class="label label-primary" style="font-size: 13px; font-weight: 600; padding: 3px 8px; background-color: #2563eb;">-</span>
+                            </div>
+                            <div class="col-sm-3">
+                                <strong>Tingkat:</strong> <span id="multi_level_info" class="text-bold" style="color: #1e40af;">-</span>
+                            </div>
+                            <div class="col-sm-3">
+                                <strong>Unit:</strong> <span id="multi_unit_info" class="text-bold" style="color: #1e40af;">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="well well-sm" style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; margin-bottom: 14px; border-radius: 6px;">
+                        <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+                            <div class="col-sm-7" style="margin-bottom: 5px;">
+                                <label style="font-size: 12px; margin-bottom: 4px; color: #334155; font-weight: 600; display: block;">Terapkan Kategori ke Semua Baris:</label>
+                                <div style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <select id="multi_default_category" class="form-control" style="width: 170px; height: 36px !important; line-height: 1.4 !important; font-size: 13px !important; padding: 6px 12px !important; border-radius: 4px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #1e293b; box-shadow: none;">
+                                        <option value="2">Keuangan</option>
+                                        <option value="1">Pembayaran</option>
+                                    </select>
+                                    <button type="button" id="btn-apply-category-all" class="btn btn-default" style="height: 36px; padding: 6px 14px; font-size: 13px; border-radius: 4px; font-weight: 600; border: 1px solid #cbd5e1; background-color: #ffffff;">
+                                        <i class="fa fa-check text-success"></i> Terapkan
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm-5 text-right" style="margin-bottom: 5px;">
+                                <button type="button" id="btn-multi-add-row" class="btn btn-success" style="height: 36px; padding: 6px 12px; font-weight: 600; border-radius: 4px;"><i class="fa fa-plus"></i> Tambah 1 Baris</button>
+                                <button type="button" id="btn-multi-add-5-rows" class="btn btn-info" style="height: 36px; padding: 6px 12px; font-weight: 600; border-radius: 4px;"><i class="fa fa-plus-circle"></i> Tambah 5 Baris</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 380px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        <table class="table table-bordered table-striped" id="table-multi-child" style="margin-bottom: 0;">
+                            <thead>
+                                <tr style="background-color: #f1f5f9; color: #1e293b; font-size: 13px;">
+                                    <th width="45" class="text-center" style="vertical-align: middle;">No</th>
+                                    <th width="150" style="vertical-align: middle;">Kode Akun (Auto)</th>
+                                    <th style="vertical-align: middle;">Keterangan / Nama Akun <span class="text-danger">*</span></th>
+                                    <th width="180" style="vertical-align: middle; min-width: 170px;">Kategori</th>
+                                    <th width="50" class="text-center" style="vertical-align: middle;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="multi-child-tbody">
+                                <!-- Dynamic rows inserted by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <small class="text-muted" style="display: block; margin-top: 6px;"><i class="fa fa-info-circle"></i> Baris yang nama akunnya dibiarkan kosong akan otomatis diabaikan saat disimpan.</small>
+                </div>
+                <div class="modal-footer" style="background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-close"></i> Batal</button>
+                    <button type="submit" class="btn btn-primary" id="btn-multi-submit" style="font-weight: bold;"><i class="fa fa-save"></i> Simpan Semua Sub Akun</button>
                 </div>
             </form>
         </div>
@@ -853,6 +993,174 @@ if (!function_exists('calc_grandgrandchild_code')) {
             $('#delete_delCode').val(code);
 
             $('#modal-delete-account').modal('show');
+        });
+
+        // Tombol Import Akun Biaya: otomatis bawa unit yang sedang dipilih di dropdown jika ada
+        $('#btn-go-import').on('click', function(e) {
+            var $mSelect = $('#m');
+            if ($mSelect.length > 0) {
+                var selectedM = $mSelect.val();
+                if (selectedM && selectedM !== 'all') {
+                    $(this).attr('href', '<?= site_url("manage/account/import_account") ?>?m=' + encodeURIComponent(selectedM));
+                }
+            }
+        });
+
+        // ----------------------------------------------------
+        // MULTI INSERT CHILD HANDLERS
+        // ----------------------------------------------------
+        var $multiModal = $('#modal-multi-add-account');
+        var multiBaseCode = '';
+        var multiLevel = 1;
+        var multiMajorsId = '';
+
+        function calculateCode(baseCode, level, index) {
+            if (!baseCode) return '';
+            index = parseInt(index, 10) || 0;
+
+            if (level === 1) {
+                // Header -> Sub 1: Kelipatan 100
+                var p = baseCode.split('-');
+                if (p.length < 2) return baseCode;
+                var baseNum = parseInt(p[1], 10) || 0;
+                return p[0] + '-' + (baseNum + index * 100);
+            } else if (level === 2) {
+                // Sub 1 -> Sub 2: Kelipatan 1
+                var p = baseCode.split('-');
+                if (p.length < 2) return baseCode;
+                var baseNum = parseInt(p[1], 10) || 0;
+                return p[0] + '-' + (baseNum + index * 1);
+            } else {
+                // Sub 2 -> Sub 3 atau Sub 3 -> Sub 4: Suffix dot dua digit
+                var lastDot = baseCode.lastIndexOf('.');
+                if (lastDot === -1) {
+                    var suffix = String(1 + index).padStart(2, '0');
+                    return baseCode + '.' + suffix;
+                }
+                var prefix = baseCode.substring(0, lastDot);
+                var baseSuffix = parseInt(baseCode.substring(lastDot + 1), 10) || 1;
+                var nextSuffix = String(baseSuffix + index).padStart(2, '0');
+                return prefix + '.' + nextSuffix;
+            }
+        }
+
+        function reindexMultiRows() {
+            $('#multi-child-tbody tr').each(function(idx) {
+                $(this).find('.row-num').text(idx + 1);
+                var newCode = calculateCode(multiBaseCode, multiLevel, idx);
+                $(this).find('.input-code').val(newCode);
+            });
+        }
+
+        function addMultiChildRow(catVal) {
+            var idx = $('#multi-child-tbody tr').length;
+            var initialCat = catVal || $('#multi_default_category').val() || '2';
+            var autoCode = calculateCode(multiBaseCode, multiLevel, idx);
+
+            var rowHtml = '<tr>' +
+                '<td class="text-center row-num" style="vertical-align: middle; font-weight: bold; color: #64748b;">' + (idx + 1) + '</td>' +
+                '<td style="vertical-align: middle;"><input type="text" name="account_code[]" class="form-control input-code" value="' + autoCode + '" readonly style="height: 36px !important; background:#f8fafc; font-weight:bold; font-size: 13px; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 4px;"></td>' +
+                '<td style="vertical-align: middle;"><input type="text" name="account_description[]" class="form-control input-desc" placeholder="Contoh: Biaya Konsumsi, Kas Kecil, dll." style="height: 36px !important; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>' +
+                '<td style="vertical-align: middle;">' +
+                    '<select name="account_category[]" class="form-control select-cat" style="height: 36px !important; min-width: 160px; width: 100%; font-size: 13px !important; padding: 6px 12px !important; line-height: 1.4 !important; border-radius: 4px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #1e293b; box-shadow: none;">' +
+                        '<option value="2"' + (initialCat === '2' ? ' selected' : '') + '>Keuangan</option>' +
+                        '<option value="1"' + (initialCat === '1' ? ' selected' : '') + '>Pembayaran</option>' +
+                    '</select>' +
+                '</td>' +
+                '<td class="text-center" style="vertical-align: middle;">' +
+                    '<button type="button" class="btn btn-danger btn-sm btn-remove-multi-row" title="Hapus Baris" style="border-radius: 4px; padding: 5px 10px;"><i class="fa fa-trash"></i></button>' +
+                '</td>' +
+            '</tr>';
+
+            var $row = $(rowHtml);
+            $('#multi-child-tbody').append($row);
+            return $row;
+        }
+
+        $(document).on('click', '.btn-trigger-multi-add', function() {
+            var level = parseInt($(this).data('level'), 10) || 1;
+            var parentId = $(this).data('parent-id');
+            var parentCode = $(this).data('parent-code');
+            var parentDesc = $(this).data('parent-desc');
+            var nextCode = $(this).data('next-code') || '';
+            var majorsId = $(this).data('majors-id') || '';
+            var unitName = $(this).data('unit-name') || 'Semua Unit';
+
+            var levelMap = {
+                1: 'Akun Utama (Header)',
+                2: 'Sub Akun 1',
+                3: 'Sub Akun 2',
+                4: 'Sub Akun 3'
+            };
+
+            multiBaseCode = nextCode;
+            multiLevel = level;
+            multiMajorsId = majorsId;
+
+            $('#multi_parent_id').val(parentId);
+            $('#multi_parent_code').val(parentCode);
+            $('#multi_parent_level').val(level);
+            $('#multi_majors_id').val(majorsId || '<?php echo isset($s["m"]) ? $s["m"] : ""; ?>');
+
+            $('#multi_parent_info').text(parentCode + ' - ' + parentDesc);
+            $('#multi_level_info').text(levelMap[level] || 'Level ' + level);
+            $('#multi_unit_info').text(unitName || 'Semua Unit');
+
+            $('#multi-child-tbody').empty();
+            // Buat 3 baris awal
+            for (var i = 0; i < 3; i++) {
+                addMultiChildRow();
+            }
+
+            $multiModal.modal('show');
+            setTimeout(function() {
+                $('#multi-child-tbody tr:first .input-desc').focus();
+            }, 500);
+        });
+
+        $('#btn-multi-add-row').on('click', function() {
+            var $newRow = addMultiChildRow();
+            $newRow.find('.input-desc').focus();
+        });
+
+        $('#btn-multi-add-5-rows').on('click', function() {
+            for (var i = 0; i < 5; i++) {
+                addMultiChildRow();
+            }
+        });
+
+        $(document).on('click', '.btn-remove-multi-row', function() {
+            if ($('#multi-child-tbody tr').length <= 1) {
+                $(this).closest('tr').find('.input-desc').val('');
+                return;
+            }
+            $(this).closest('tr').remove();
+            reindexMultiRows();
+        });
+
+        $('#btn-apply-category-all').on('click', function() {
+            var selectedCat = $('#multi_default_category').val();
+            $('#multi-child-tbody .select-cat').val(selectedCat);
+        });
+
+        $('#form-multi-add-account').on('submit', function(e) {
+            var filledCount = 0;
+            $('#multi-child-tbody .input-desc').each(function() {
+                if ($(this).val().trim() !== '') {
+                    filledCount++;
+                }
+            });
+
+            if (filledCount === 0) {
+                e.preventDefault();
+                if (typeof toastNotifikasi === 'function') {
+                    toastNotifikasi('error', 'Isi minimal satu nama/keterangan sub akun.', 'Gagal');
+                } else {
+                    alert('Isi minimal satu nama/keterangan sub akun.');
+                }
+                $('#multi-child-tbody tr:first .input-desc').focus();
+                return false;
+            }
         });
 
         <?php if ($is_super): ?>

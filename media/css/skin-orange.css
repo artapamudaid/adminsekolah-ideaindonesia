@@ -1478,6 +1478,23 @@ body.skin-orange,
   transition: all 0.2s ease;
 }
 
+/* Reset sizes for small & extra-small buttons in skin-orange */
+.skin-orange .btn.btn-xs,
+.skin-orange .btn-primary.btn-xs {
+  padding: 1px 5px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  border-radius: 3px !important;
+}
+
+.skin-orange .btn.btn-sm,
+.skin-orange .btn-primary.btn-sm {
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  border-radius: 3px !important;
+}
+
 /* Modern Form Controls */
 .skin-orange .form-control {
   border-radius: var(--radius-sm) !important;

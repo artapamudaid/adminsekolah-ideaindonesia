@@ -332,19 +332,19 @@ class Account_set extends CI_Controller
     public function import_account()
     {
         $s = $this->input->get('m');
+        $user_majors = $this->session->userdata('umajorsid');
 
-        if (empty($s) || $s == 'all') {
-            $this->session->set_flashdata('failed', 'Majors ID is required');
-            redirect('manage/account');
+        if (empty($s) && $user_majors != '0') {
+            $s = $user_majors;
         }
 
         $redirectUrl = site_url("manage/account");
-        if (isset($s)) {
+        if (!empty($s) && $s != 'all') {
             $redirectUrl .= "?m=$s";
         }
 
-        $data['s'] = $s;
-
+        $data['majors'] = $this->Student_model->get_majors();
+        $data['s'] = (!empty($s) && $s != 'all') ? $s : '';
         $data['title'] = 'Import Akun Biaya';
         $data['main'] = 'account/account_import';
         $data['redirect_url'] = $redirectUrl;
@@ -356,23 +356,21 @@ class Account_set extends CI_Controller
         $s = $this->input->get('m');
 
         if (empty($s) || $s == 'all') {
-            $this->session->set_flashdata('failed', 'Majors ID is required');
+            $this->session->set_flashdata('failed', 'Pilih Unit Sekolah terlebih dahulu.');
             redirect('manage/account/import_account?m=' . $s);
         }
 
         $majors_id = sanitizeStrict($s);
         $colWhere = ['majors_id' => $majors_id];
         if (!$this->General_model->checkDataExists('majors', $colWhere)) {
-            $this->session->set_flashdata('failed', 'Majors ID not found');
+            $this->session->set_flashdata('failed', 'Unit Sekolah tidak ditemukan.');
             redirect('manage/account/import_account');
         }
 
         $majors   = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$majors_id'")->row_array();
+        $unitName = $majors['majors_short_name'];
 
-        $fileName = 'Template-Import-Akun-Biaya';
-        $fileName .= '-' . $majors['majors_short_name'];
-        // $fileName .= '-'.date('Ymd-His');
-        $heightColumnHeader = 25;
+        $fileName = 'Template-Import-Akun-' . $unitName;
 
         $spreadsheet = new Spreadsheet();
         $spreadsheet->getProperties()
@@ -380,442 +378,220 @@ class Account_set extends CI_Controller
             ->setLastModifiedBy("Indoweb")
             ->setTitle($fileName)
             ->setSubject($fileName)
-            ->setDescription(
-                $fileName . ", Dibuat dengan PhpSpreadsheet oleh Indoweb."
-            )
-            ->setKeywords("office 2007 openxml php codeigniter indoweb")
+            ->setDescription("Template Import Akun Biaya untuk " . $unitName . ", Dibuat dengan PhpSpreadsheet.")
             ->setCategory("file Excel");
 
-        // SECTION: Style Definitions
-        $bold_center_black = [
-            'font' => [
-                'bold' => true,
-                'color' => [
-                    'rgb' => Color::COLOR_BLACK
-                ]
-            ],
-            'aligment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER
-            ]
-        ];
-        $style_center = [
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER
-            ]
-        ];
-        $style_center_v = [
-            'alignment' => [
-                'vertical' => Alignment::VERTICAL_CENTER
-            ]
-        ];
-        $style_col = [
-            'font' => ['bold' => true],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER,
-                'wrap' => true
-            ],
-            'borders' => [
-                'top' => ['borderStyle'  => Border::BORDER_THIN],
-                'right' => ['borderStyle'  => Border::BORDER_THIN],
-                'bottom' => ['borderStyle'  => Border::BORDER_THIN],
-                'left' => ['borderStyle'  => Border::BORDER_THIN]
-            ]
+        // Style definitions
+        $styleHeaderBanner = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1E293B']]
         ];
 
-        $style_row = [
-            'alignment' => [
-                'vertical' => Alignment::VERTICAL_CENTER
-            ],
-            'borders' => [
-                'top' => ['borderStyle'  => Border::BORDER_THIN],
-                'right' => ['borderStyle'  => Border::BORDER_THIN],
-                'bottom' => ['borderStyle'  => Border::BORDER_THIN],
-                'left' => ['borderStyle'  => Border::BORDER_THIN]
-            ]
+        $styleSubBanner = [
+            'font' => ['italic' => true, 'color' => ['rgb' => '334155'], 'size' => 10],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F1F5F9']]
         ];
-        $bg_yellow = [
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => [
-                    'rgb' => 'FFFF00'
-                ]
-            ],
-        ];
-        $bg_green = [
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => [
-                    'rgb' => '00B050'
-                ]
-            ],
-            'font' => [
-                'bold' => true,
-                'color' => [
-                    'rgb' => Color::COLOR_WHITE
-                ]
-            ],
-        ];
-        $bg_red = [
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => [
-                    'rgb' => 'FF0000'
-                ]
-            ],
-            'font' => [
-                'bold' => true,
-                'color' => [
-                    'rgb' => Color::COLOR_WHITE
-                ]
-            ],
-        ];
-        $bg_white_dark = [
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => [
-                    'rgb' => 'D9D9D9'
-                ]
-            ],
-        ];
-        // !SECTION: end Style Definitions
 
-        // SECTION: Sheet INPUT_DATA
-        $startRow = 3;
-        $endRow   = 53;
-
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('INPUT_DATA');
-        $sheetHeader = [
-            'REF_COA',
-            'PARENT_ID',
-            'PARENT_CODE',
-            'PARENT_DESCRIPTION',
-            'PARENT_TYPE',
-            'CATEGORY_NAME',
-            'CATEGORY_ID',
-            'ACCOUNT_DESCRIPTION'
+        $styleColHeader = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '0F172A']]],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2563EB']]
         ];
-        $sheetSubHeader = [
-            'Pilih data dari MASTER_COA',
-            'Jangan diubah',
-            'Jangan diubah',
-            'Jangan diubah',
-            'Jangan diubah',
-            'Pilih data dari MASTER_CATEGORY',
-            'Jangan diubah',
-            'Masukkan deskripsi akun biaya'
+
+        $styleColHint = [
+            'font' => ['italic' => true, 'color' => ['rgb' => '854D0E'], 'size' => 9],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'CBD5E1']]],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FEF3C7']]
         ];
-        $colSheet = 'A';
-        $subHeaderBgGreen = [0, 5, 7];
-        $subHeaderBgRed = [1, 2, 3, 4, 6];
 
-        foreach ($sheetHeader as $key => $value) {
-            $sheet->setCellValue($colSheet . '1', $value);
-            $sheet->getStyle($colSheet . '1')
-                ->applyFromArray($style_col)
-                ->applyFromArray($bg_yellow);
-            $sheet->getColumnDimension($colSheet)->setAutoSize(true);
+        $styleExampleRow = [
+            'font' => ['italic' => true, 'color' => ['rgb' => '475569'], 'size' => 10],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'CBD5E1']]],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F8FAFC']]
+        ];
 
-            if (in_array($key, $subHeaderBgGreen)) {
-                $sheet->setCellValue($colSheet . '2', $sheetSubHeader[$key]);
-                $sheet->getStyle($colSheet . '2')
-                    ->applyFromArray($style_center)
-                    ->applyFromArray($style_row)
-                    ->applyFromArray($bg_green);
+        $styleDataRow = [
+            'font' => ['size' => 10],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'E2E8F0']]]
+        ];
+
+        // ==========================================
+        // SHEET 1: DATA_AKUN (Format Sederhana 3 Kolom)
+        // ==========================================
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle('DATA_AKUN');
+
+        // Banner
+        $sheet1->mergeCells('A1:C1');
+        $sheet1->setCellValue('A1', 'TEMPLATE IMPORT AKUN BIAYA / COA - UNIT ' . strtoupper($unitName));
+        $sheet1->getStyle('A1:C1')->applyFromArray($styleHeaderBanner);
+        $sheet1->getRowDimension(1)->setRowHeight(32);
+
+        $sheet1->mergeCells('A2:C2');
+        $sheet1->setCellValue('A2', 'Petunjuk: Isi Kode Induk (lihat sheet DAFTAR_KODE_INDUK), Nama Akun, dan Kategori. Mendukung banyak anak akun sekaligus.');
+        $sheet1->getStyle('A2:C2')->applyFromArray($styleSubBanner);
+        $sheet1->getRowDimension(2)->setRowHeight(22);
+
+        // Header Kolom (Baris 3)
+        $sheet1->setCellValue('A3', 'KODE_INDUK');
+        $sheet1->setCellValue('B3', 'NAMA_AKUN');
+        $sheet1->setCellValue('C3', 'KATEGORI');
+        $sheet1->getStyle('A3:C3')->applyFromArray($styleColHeader);
+        $sheet1->getRowDimension(3)->setRowHeight(28);
+
+        // Subheader Hint (Baris 4)
+        $sheet1->setCellValue('A4', 'Wajib diisi (Contoh: 5-50100)');
+        $sheet1->setCellValue('B4', 'Wajib diisi (Nama / Keterangan Akun)');
+        $sheet1->setCellValue('C4', 'Pilih: Keuangan / Pembayaran');
+        $sheet1->getStyle('A4:C4')->applyFromArray($styleColHint);
+        $sheet1->getRowDimension(4)->setRowHeight(22);
+
+        // Baris Contoh (Baris 5: Pembayaran, Baris 6: Keuangan)
+        $sheet1->setCellValue('A5', '4-40100');
+        $sheet1->setCellValue('B5', 'Uang Gedung Siswa (Contoh)');
+        $sheet1->setCellValue('C5', 'Pembayaran');
+        $sheet1->getStyle('A5:C5')->applyFromArray($styleExampleRow);
+        $sheet1->getStyle('A5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet1->getStyle('C5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet1->getRowDimension(5)->setRowHeight(22);
+
+        $sheet1->setCellValue('A6', '5-50100');
+        $sheet1->setCellValue('B6', 'Biaya Listrik & Air (Contoh)');
+        $sheet1->setCellValue('C6', 'Keuangan');
+        $sheet1->getStyle('A6:C6')->applyFromArray($styleExampleRow);
+        $sheet1->getStyle('A6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet1->getStyle('C6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet1->getRowDimension(6)->setRowHeight(22);
+
+        // Dropdown validation & border untuk baris 5 s/d 100
+        for ($r = 5; $r <= 100; $r++) {
+            if ($r > 6) {
+                $sheet1->getStyle("A{$r}:C{$r}")->applyFromArray($styleDataRow);
+                $sheet1->getStyle("A{$r}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet1->getStyle("C{$r}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet1->getRowDimension($r)->setRowHeight(22);
             }
 
-            if (in_array($key, $subHeaderBgRed)) {
-                $sheet->setCellValue($colSheet . '2', $sheetSubHeader[$key]);
-                $sheet->getStyle($colSheet . '2')
-                    ->applyFromArray($style_center)
-                    ->applyFromArray($style_row)
-                    ->applyFromArray($bg_red);
-            }
-
-            $colSheet++;
+            // Dropdown di Kolom C
+            $validation = $sheet1->getCell("C$r")->getDataValidation();
+            $validation->setType(DataValidation::TYPE_LIST);
+            $validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
+            $validation->setAllowBlank(false);
+            $validation->setShowInputMessage(true);
+            $validation->setShowErrorMessage(true);
+            $validation->setShowDropDown(true);
+            $validation->setErrorTitle('Pilihan Kategori');
+            $validation->setError('Pilih Keuangan atau Pembayaran');
+            $validation->setPromptTitle('Pilih Kategori');
+            $validation->setPrompt('Pilih Keuangan atau Pembayaran');
+            $validation->setFormula1('"Keuangan,Pembayaran"');
         }
 
-        $sheet->getRowDimension(1)->setRowHeight($heightColumnHeader);
-        $sheet->freezePane('B3');
-        foreach (range('B', 'E') as $col) {
-            $sheet->getColumnDimension($col)->setVisible(false);
-        }
-        $sheet->getColumnDimension('G')->setVisible(false);
+        $sheet1->getColumnDimension('A')->setWidth(24);
+        $sheet1->getColumnDimension('B')->setWidth(50);
+        $sheet1->getColumnDimension('C')->setWidth(24);
+        $sheet1->freezePane('A5');
 
-        for ($i = $startRow; $i <= $endRow; $i++) {
-            $sheet->getStyle("A{$i}:H{$i}")->applyFromArray($style_row);
-        }
-        // !SECTION: end Sheet INPUT_DATA
-
-        // SECTION: Sheet MASTER_COA
+        // ==========================================
+        // SHEET 2: DAFTAR_KODE_INDUK (Referensi Lengkap)
+        // ==========================================
         $sheet2 = $spreadsheet->createSheet();
-        $sheet2->setTitle('MASTER_COA');
+        $sheet2->setTitle('DAFTAR_KODE_INDUK');
 
-        $sheet2Header = [
-            'ACCOUNT_ID',
-            'ACCOUNT_CODE',
-            'ACCOUNT_DESCRIPTION',
-            'ACCOUNT_DETAIL',
-            'ACCOUNT_TYPE'
-        ];
-        $colSheet2 = 'A';
-        foreach ($sheet2Header as $key => $value) {
-            $sheet2->setCellValue($colSheet2 . '1', $value);
-            $sheet2->getStyle($colSheet2 . '1')
-                ->applyFromArray($style_col)
-                ->applyFromArray($bg_yellow);
-            $sheet2->getColumnDimension($colSheet2)->setAutoSize(true);
+        $sheet2->mergeCells('A1:D1');
+        $sheet2->setCellValue('A1', 'DAFTAR REFERENSI KODE AKUN INDUK - UNIT ' . strtoupper($unitName));
+        $sheet2->getStyle('A1:D1')->applyFromArray($styleHeaderBanner);
+        $sheet2->getRowDimension(1)->setRowHeight(30);
 
-            $colSheet2++;
-        }
+        $sheet2->mergeCells('A2:D2');
+        $sheet2->setCellValue('A2', 'Salin (copy) Kode Akun di bawah ini lalu tempel (paste) ke kolom KODE_INDUK di sheet DATA_AKUN.');
+        $sheet2->getStyle('A2:D2')->applyFromArray($styleSubBanner);
+        $sheet2->getRowDimension(2)->setRowHeight(22);
 
-        $sheet2->getRowDimension(1)->setRowHeight($heightColumnHeader);
-        $sheet2->freezePane('C2');
+        $sheet2->setCellValue('A3', 'KODE AKUN');
+        $sheet2->setCellValue('B3', 'NAMA AKUN');
+        $sheet2->setCellValue('C3', 'TINGKAT AKUN');
+        $sheet2->setCellValue('D3', 'KATEGORI');
+        $sheet2->getStyle('A3:D3')->applyFromArray($styleColHeader);
+        $sheet2->getRowDimension(3)->setRowHeight(26);
 
-        $accounts = [];
+        // Ambil hierarki akun
         $defaultAccount = $this->Account_model->getDefaultAccount();
-        $majorsAccount = $this->Account_model->get([
-            'account_majors_id' => $majors_id,
-        ]);
-        $accounts = array_merge($defaultAccount, $majorsAccount);
+        $majorsAccount = $this->Account_model->get(['account_majors_id' => $majors_id]);
+        $allAccounts = array_merge($defaultAccount, $majorsAccount);
+        $sorted = $this->sortAccountsByParentChild($allAccounts);
 
-        $accounts = $this->sortAccountsByParentChild($accounts);
-
-        // NOTE: Bypass data dengan Sub Akun 4
-        $accounts = array_filter($accounts, function ($account) {
-            if ($account['type'] !== 'sub4') {
-                return true;
-            }
-            return false;
-        });
-
-        $rowSheet2 = 2;
-        $maxRowSheet2 = count($accounts) + 1;
-
-        foreach ($accounts as $key => $value) {
-            $sheet2->setCellValue('A' . $rowSheet2, $value['account_id']);
-            $sheet2->setCellValue('B' . $rowSheet2, $value['account_code']);
-            $sheet2->setCellValue('C' . $rowSheet2, $value['account_description']);
-            $detailAccount = $value['account_code'] . ' - ' . $value['account_description'];
-            $sheet2->setCellValue('D' . $rowSheet2, $detailAccount);
-            $typeAccount = strtoupper($value['type']);
-            $sheet2->setCellValue('E' . $rowSheet2, $typeAccount);
-
-            $sheet2->getStyle('A' . $rowSheet2)
-                ->applyFromArray($style_center_v)
-                ->applyFromArray($style_row);
-            $sheet2->getStyle('B' . $rowSheet2)
-                ->applyFromArray($style_center_v)
-                ->applyFromArray($style_row);
-            $sheet2->getStyle('C' . $rowSheet2)
-                ->applyFromArray($style_center_v)
-                ->applyFromArray($style_row);
-            $sheet2->getStyle('D' . $rowSheet2)
-                ->applyFromArray($style_center_v)
-                ->applyFromArray($style_row);
-            $sheet2->getStyle('E' . $rowSheet2)
-                ->applyFromArray($style_center_v)
-                ->applyFromArray($style_row);
-
-            if ($value['type'] == 'header') {
-                $sheet2->getStyle('A' . $rowSheet2 . ':E' . $rowSheet2)
-                    ->applyFromArray($bold_center_black)
-                    ->applyFromArray($bg_white_dark);
-            }
-
-            if (strpos($value['type'], 'sub') === 0) {
-                $level = (int) str_replace('sub', '', $value['type']);
-                $indentation = str_repeat('    ', $level); // 4 spasi per level
-                $sheet2->setCellValue('B' . $rowSheet2, $indentation . $value['account_code']);
-                $sheet2->setCellValue('C' . $rowSheet2, $indentation . $value['account_description']);
-                $sheet2->setCellValue('D' . $rowSheet2, $indentation . $detailAccount);
-
-                // if ($value['category'] == 'header') {
-                //     $sheet2->getStyle('B' . $rowSheet2 . ':D' . $rowSheet2)
-                //         ->applyFromArray($bold_center_black);
-                // }
-            }
-
-            $rowSheet2++;
-        }
-        // !SECTION: end Sheet MASTER_COA
-
-        // SECTION: Sheet MASTER_CATEGORY
-        $sheet3 = $spreadsheet->createSheet();
-        $sheet3->setTitle('MASTER_CATEGORY');
-        $sheet3Header = [
-            'ID',
-            'NAME',
-        ];
-        $colSheet3 = 'A';
-        foreach ($sheet3Header as $key => $value) {
-            $sheet3->setCellValue($colSheet3 . '1', $value);
-            $sheet3->getStyle($colSheet3 . '1')
-                ->applyFromArray($style_col)
-                ->applyFromArray($bg_yellow);
-            $sheet3->getColumnDimension($colSheet3)->setAutoSize(true);
-
-            $colSheet3++;
-        }
-        $sheet3->getRowDimension(1)->setRowHeight($heightColumnHeader);
-
-        $sheet3Data = [
-            ['id' => 1, 'name' => 'PEMBAYARAN'],
-            ['id' => 2, 'name' => 'KEUANGAN'],
+        $r2 = 4;
+        $levelLabels = [
+            'header' => 'Akun Utama (Header)',
+            'sub1'   => 'Sub Akun 1',
+            'sub2'   => 'Sub Akun 2',
+            'sub3'   => 'Sub Akun 3',
+            'sub4'   => 'Sub Akun 4 (Maksimal)'
         ];
 
-        $rowSheet3 = 2;
-        foreach ($sheet3Data as $key => $value) {
-            $sheet3->setCellValue('A' . $rowSheet3, $value['id']);
-            $sheet3->setCellValue('B' . $rowSheet3, $value['name']);
+        foreach ($sorted as $acc) {
+            // Sub 4 tidak bisa jadi induk
+            if ($acc['type'] === 'sub4') {
+                continue;
+            }
 
-            $sheet3->getStyle('A' . $rowSheet3)
-                ->applyFromArray($style_center_v)
-                ->applyFromArray($style_row);
-            $sheet3->getStyle('B' . $rowSheet3)
-                ->applyFromArray($style_center_v)
-                ->applyFromArray($style_row);
+            $catLabel = ($acc['account_category'] == '1') ? 'Pembayaran' : (($acc['account_category'] == '2') ? 'Keuangan' : '-');
+            $levelLabel = isset($levelLabels[$acc['type']]) ? $levelLabels[$acc['type']] : ucfirst($acc['type']);
 
-            $rowSheet3++;
+            $indent = '';
+            if (strpos($acc['type'], 'sub') === 0) {
+                $lvlNum = (int) str_replace('sub', '', $acc['type']);
+                $indent = str_repeat('   ', $lvlNum);
+            }
+
+            $sheet2->setCellValue('A' . $r2, $acc['account_code']);
+            $sheet2->setCellValue('B' . $r2, $indent . $acc['account_description']);
+            $sheet2->setCellValue('C' . $r2, $levelLabel);
+            $sheet2->setCellValue('D' . $r2, $catLabel);
+
+            $sheet2->getStyle("A{$r2}:D{$r2}")->applyFromArray($styleDataRow);
+            $sheet2->getStyle('A' . $r2)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet2->getStyle('C' . $r2)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet2->getStyle('D' . $r2)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+            if ($acc['type'] === 'header') {
+                $sheet2->getStyle("A{$r2}:D{$r2}")->getFont()->setBold(true);
+                $sheet2->getStyle("A{$r2}:D{$r2}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('E2E8F0');
+            }
+
+            $sheet2->getRowDimension($r2)->setRowHeight(20);
+            $r2++;
         }
-        $maxRowSheet3 = count($sheet3Data) + 1;
-        // !SECTION: end Sheet MASTER_CATEGORY
 
-        // SECTION: Input Rumus
-        $coaRangeDetail = "'MASTER_COA'!\$D\$2:\$D\$$maxRowSheet2";
-        $catName = "'MASTER_CATEGORY'!\$B\$2:\$B\$$maxRowSheet3";
-        for ($row = $startRow; $row <= $endRow; $row++) {
-            $dv1 = $sheet->getCell("A$row")->getDataValidation();
-            $dv1->setType(DataValidation::TYPE_LIST);
-            $dv1->setErrorStyle(DataValidation::STYLE_STOP);
-            $dv1->setAllowBlank(false);
-            $dv1->setShowInputMessage(true);
-            $dv1->setShowErrorMessage(true);
-            $dv1->setShowDropDown(true);
-
-            $dv1->setErrorTitle("Input Tidak Valid");
-            $dv1->setError("Silakan pilih data dari MASTER_COA");
-            $dv1->setPromptTitle("Pilih REF_COA");
-            $dv1->setPrompt("Pilih Account Code dari MASTER_COA");
-            $dv1->setFormula1($coaRangeDetail);
-
-            $dv2 = $sheet->getCell("F$row")->getDataValidation();
-            $dv2->setType(DataValidation::TYPE_LIST);
-            $dv2->setErrorStyle(DataValidation::STYLE_STOP);
-            $dv2->setAllowBlank(false);
-            $dv2->setShowInputMessage(true);
-            $dv2->setShowErrorMessage(true);
-            $dv2->setShowDropDown(true);
-
-            $dv2->setErrorTitle("Input Tidak Valid");
-            $dv2->setError("Silakan pilih data dari MASTER_CATEGORY");
-            $dv2->setPromptTitle("Pilih CATEGORY_NAME");
-            $dv2->setPrompt("Pilih Name dari MASTER_CATEGORY");
-            $dv2->setFormula1($catName);
-
-            // NOTE: INDEX+MATCH
-            $sheet->setCellValue(
-                "B$row",
-                '=IFERROR(INDEX(' .
-                    "'MASTER_COA'!\$A\$2:\$A\$" . $maxRowSheet2 . ',' .
-                    'MATCH(A' . $row . ',' .
-                    "'MASTER_COA'!\$D\$2:\$D\$" . $maxRowSheet2 . ',0)),"")'
-            );
-
-            $sheet->setCellValue(
-                "C$row",
-                '=IFERROR(INDEX(' .
-                    "'MASTER_COA'!\$B\$2:\$B\$" . $maxRowSheet2 . ',' .
-                    'MATCH(A' . $row . ',' .
-                    "'MASTER_COA'!\$D\$2:\$D\$" . $maxRowSheet2 . ',0)),"")'
-            );
-
-            $sheet->setCellValue(
-                "D$row",
-                '=IFERROR(INDEX(' .
-                    "'MASTER_COA'!\$C\$2:\$C\$" . $maxRowSheet2 . ',' .
-                    'MATCH(A' . $row . ',' .
-                    "'MASTER_COA'!\$D\$2:\$D\$" . $maxRowSheet2 . ',0)),"")'
-            );
-
-            $sheet->setCellValue(
-                "E$row",
-                '=IFERROR(INDEX(' .
-                    "'MASTER_COA'!\$E\$2:\$E\$" . $maxRowSheet2 . ',' .
-                    'MATCH(A' . $row . ',' .
-                    "'MASTER_COA'!\$D\$2:\$D\$" . $maxRowSheet2 . ',0)),"")'
-            );
-
-            $sheet->setCellValue(
-                "G$row",
-                '=IFERROR(INDEX(' .
-                    "'MASTER_CATEGORY'!\$A\$2:\$A\$" . $maxRowSheet3 . ',' .
-                    'MATCH(F' . $row . ',' .
-                    "'MASTER_CATEGORY'!\$B\$2:\$B\$" . $maxRowSheet3 . ',0)),"")'
-            );
-
-            // NOTE: XLOOKUP
-            /*
-            $sheet->setCellValue(
-                "B$row",
-                '=XLOOKUP(A' . $row . ',' .
-                    "'MASTER_COA'!\$D\$2:\$D\$" . $maxRowSheet2 . ',' .
-                    "'MASTER_COA'!\$A\$2:\$A\$" . $maxRowSheet2 . ',"")'
-            );
-
-            $sheet->setCellValue(
-                "C$row",
-                '=XLOOKUP(A' . $row . ',' .
-                    "'MASTER_COA'!\$D\$2:\$D\$" . $maxRowSheet2 . ',' .
-                    "'MASTER_COA'!\$B\$2:\$B\$" . $maxRowSheet2 . ',"")'
-            );
-
-            $sheet->setCellValue(
-                "D$row",
-                '=XLOOKUP(A' . $row . ',' .
-                    "'MASTER_COA'!\$D\$2:\$D\$" . $maxRowSheet2 . ',' .
-                    "'MASTER_COA'!\$C\$2:\$C\$" . $maxRowSheet2 . ',"")'
-            );
-
-            $sheet->setCellValue(
-                "E$row",
-                '=XLOOKUP(A' . $row . ',' .
-                    "'MASTER_COA'!\$D\$2:\$D\$" . $maxRowSheet2 . ',' .
-                    "'MASTER_COA'!\$E\$2:\$E\$" . $maxRowSheet2 . ',"")'
-            );
-
-            $sheet->setCellValue(
-                "G$row",
-                '=XLOOKUP(F' . $row . ',' .
-                    "'MASTER_CATEGORY'!\$B\$2:\$B\$" . $maxRowSheet3 . ',' .
-                    "'MASTER_CATEGORY'!\$A\$2:\$A\$" . $maxRowSheet3 . ',"")'
-            );
-            */
-        }
-        // !SECTION: end Input Rumus
-
-        $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
-        $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_A4);
+        $sheet2->getColumnDimension('A')->setWidth(20);
+        $sheet2->getColumnDimension('B')->setWidth(50);
+        $sheet2->getColumnDimension('C')->setWidth(26);
+        $sheet2->getColumnDimension('D')->setWidth(18);
+        $sheet2->freezePane('A4');
 
         $spreadsheet->setActiveSheetIndex(0);
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename=' . $fileName . '.xlsx');
+        header('Content-Disposition: attachment; filename="' . $fileName . '.xlsx"');
         header('Cache-Control: max-age=0');
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save('php://output');
+        exit;
     }
 
     public function do_import()
     {
-
         $s = $this->input->get('m');
 
         if (empty($s) || $s == 'all') {
-            $this->session->set_flashdata('failed', 'Majors ID is required');
+            $this->session->set_flashdata('failed', 'Pilih Unit Sekolah terlebih dahulu.');
             redirect('manage/account/import_account?m=' . $s);
         }
 
@@ -836,175 +612,413 @@ class Account_set extends CI_Controller
         }
 
         $upload_data = $this->upload->data();
-        $fileName = $upload_data['file_name'];
         $fullPath = $upload_data['full_path'];
 
         try {
-            $reader = IOFactory::createReader('Xlsx');
+            $reader = IOFactory::createReaderForFile($fullPath);
             $spreadsheet = $reader->load($fullPath);
-            $sheetData = $spreadsheet
-                ->getSheetByName('INPUT_DATA')
-                ->toArray();
 
-            // SECTION: Filter data - ambil hanya baris yang punya isi (tidak kosong)
-            $dataRows = [];
-
-            for ($i = 2; $i < count($sheetData); $i++) {
-                $row = $sheetData[$i];
-
-                // NOTE: Cek apakah baris ini kosong (semua cell kosong)
-                $isEmpty = true;
-                foreach ($row as $cell) {
-                    if (!empty(trim((string) $cell))) {
-                        $isEmpty = false;
-                        break;
-                    }
-                }
-
-                // NOTE: Jika baris tidak kosong, tambahkan ke dataRows
-                if (!$isEmpty) {
-                    $dataRows[] = $row;
-                }
+            // Deteksi sheet: utamakan DATA_AKUN, lalu INPUT_DATA, lalu sheet index 0
+            $sheet = $spreadsheet->getSheetByName('DATA_AKUN');
+            if (!$sheet) {
+                $sheet = $spreadsheet->getSheetByName('INPUT_DATA');
             }
-            // !SECTION: end Filter data
+            if (!$sheet) {
+                $sheet = $spreadsheet->getSheet(0);
+            }
 
-            // SECTION: Process data
-            if (count($dataRows) === 0) {
-                $this->session->set_flashdata('failed', 'Tidak ada data untuk diimport');
-                unlink($fullPath);
+            $rawRows = $sheet->toArray();
+
+            // Kumpulkan baris yang valid
+            $rowsToProcess = [];
+            foreach ($rawRows as $rowIdx => $row) {
+                $colA = isset($row[0]) ? trim((string)$row[0]) : '';
+                $colB = isset($row[1]) ? trim((string)$row[1]) : '';
+                $colC = isset($row[2]) ? trim((string)$row[2]) : '';
+
+                // Dukungan jika file menggunakan format lama (8 kolom, di mana Account Description di kolom H / index 7)
+                if (count($row) >= 8 && empty($colC) && !empty($row[7])) {
+                    $colA = isset($row[2]) ? trim((string)$row[2]) : $colA; // PARENT_CODE
+                    $colB = trim((string)$row[7]); // ACCOUNT_DESCRIPTION
+                    $colC = isset($row[5]) ? trim((string)$row[5]) : 'Keuangan'; // CATEGORY_NAME
+                }
+
+                // Abaikan header, petunjuk, dan baris kosong
+                if (empty($colA) || empty($colB)) {
+                    continue;
+                }
+                if (stripos($colA, 'KODE') !== FALSE || stripos($colA, 'TEMPLATE') !== FALSE || stripos($colA, 'Petunjuk') !== FALSE || stripos($colA, 'Wajib') !== FALSE) {
+                    continue;
+                }
+                // Abaikan baris contoh bawaan template
+                if (stripos($colB, '(Contoh)') !== FALSE) {
+                    continue;
+                }
+
+                $rowsToProcess[] = [
+                    'row_num'             => $rowIdx + 1,
+                    'parent_code'         => $colA,
+                    'account_description' => $colB,
+                    'category'            => $colC
+                ];
+            }
+
+            if (empty($rowsToProcess)) {
+                $this->session->set_flashdata('failed', 'Tidak ada data akun yang valid untuk diimport. Pastikan Kode Induk dan Nama Akun sudah terisi.');
+                if (file_exists($fullPath)) unlink($fullPath);
                 redirect('manage/account/import_account?m=' . $majors_id);
+                return;
             }
 
-            $dataInsert = [];
-            $generatedCodes = [];
+            // Load existing accounts untuk unit ini + default accounts
+            $defaultAccount = $this->Account_model->getDefaultAccount();
+            $majorsAccount = $this->Account_model->get(['account_majors_id' => $majors_id]);
+            $allAccounts = array_merge($defaultAccount, $majorsAccount);
+            $sortedAccounts = $this->sortAccountsByParentChild($allAccounts);
 
-            foreach ($dataRows as $key => $row) {
-                $parentID = trim($row[1]);
-                $parentCode = trim($row[2]);
-                $parentType = trim($row[4]);
-                $categoryID = trim($row[6]);
-                $accountDesc = trim($row[7]);
+            // Bangun peta memori untuk pencarian parent & penomoran cepat
+            $accountMapByCode = [];
+            $childrenByParentId = [];
 
-                if (empty($parentID) || empty($categoryID) || empty($accountDesc)) {
-                    $this->session->set_flashdata('failed', 'Data tidak lengkap pada baris ' . ($key + 1));
-                    unlink($fullPath);
-                    redirect('manage/account/import_account?m=' . $majors_id);
-                }
-
-                $newCode = $this->generateCoa($parentID, $parentCode, $parentType, $generatedCodes);
-
-                $dataInsert[] = [
-                    "parent_code" => $parentCode,
-                    "parent_type" => $parentType,
-                    "account_code" => $newCode,
-                    "account_description" => $accountDesc,
-                    "account_note" => $parentID,
-                    "account_category" => $categoryID,
-                    "account_majors_id" => $majors_id,
+            foreach ($sortedAccounts as $acc) {
+                $c = trim($acc['account_code']);
+                $accountMapByCode[$c] = [
+                    'account_id'          => $acc['account_id'],
+                    'account_code'        => $c,
+                    'account_description' => $acc['account_description'],
+                    'type'                => strtoupper($acc['type']),
+                    'account_note'        => $acc['account_note'],
+                    'account_category'    => $acc['account_category'],
+                    'account_majors_id'   => $acc['account_majors_id']
                 ];
 
-                if (!isset($generatedCodes[$parentID])) {
-                    $generatedCodes[$parentID] = [];
+                $pId = $acc['account_note'];
+                if (!isset($childrenByParentId[$pId])) {
+                    $childrenByParentId[$pId] = [];
                 }
-                $generatedCodes[$parentID][] = $newCode;
+                $childrenByParentId[$pId][] = $c;
             }
 
-            // !SECTION: end Process data
+            $majors = $this->db->get_where('majors', ['majors_id' => $majors_id])->row_array();
+            $unitName = $majors ? $majors['majors_short_name'] : '';
+
+            $this->db->trans_begin();
+
             $added = 0;
             $skipped = 0;
 
-            $testParams = [];
-            foreach ($dataInsert as $row) {
-                $accountCode = $row['account_code'];
-                $accountKet = $row['account_description'];
-                $accountNote = $row['account_note'];
-                $accountCat = $row['account_category'];
-                $accountMajorsId = $row['account_majors_id'];
+            foreach ($rowsToProcess as $item) {
+                $parentCode  = $item['parent_code'];
+                $accountDesc = $item['account_description'];
+                $catInput    = $item['category'];
 
+                // Normalisasi kategori
+                if (stripos($catInput, 'bayar') !== FALSE || $catInput === '1') {
+                    $categoryId = 1;
+                } else {
+                    $categoryId = 2; // Default Keuangan
+                }
+
+                // Cek keberadaan parent (baik yang ada dari awal, maupun baru dibuat di baris sebelumnya!)
+                if (!isset($accountMapByCode[$parentCode])) {
+                    $skipped++;
+                    continue;
+                }
+
+                $parent = $accountMapByCode[$parentCode];
+                $parentId = $parent['account_id'];
+                $parentType = $parent['type'];
+
+                if ($parentType === 'SUB4') {
+                    $skipped++;
+                    continue;
+                }
+
+                if (!isset($childrenByParentId[$parentId])) {
+                    $childrenByParentId[$parentId] = [];
+                }
+
+                // Generate kode anak baru secara otomatis
+                $newCode = $this->_generate_next_code($parentId, $parentCode, $parentType, $childrenByParentId[$parentId]);
+                $childrenByParentId[$parentId][] = $newCode;
+
+                // Format nama akun sesuai konvensi
+                if (substr($newCode, 0, 3) == '5-5' && $categoryId != 0 && !empty($unitName)) {
+                    $akun = 'Biaya ' . $accountDesc . ' ' . $unitName;
+                } elseif (!empty($unitName)) {
+                    $akun = $accountDesc . ' ' . $unitName;
+                } else {
+                    $akun = $accountDesc;
+                }
+
+                // Cek duplikasi
                 $colWhere = [
-                    "account_description" => $accountKet,
-                    "account_note" => $accountNote,
-                    "account_category" => $accountCat,
-                    "account_majors_id" => $accountMajorsId,
+                    'account_description' => $akun,
+                    'account_note'        => $parentId,
+                    'account_majors_id'   => $majors_id
                 ];
-
                 if ($this->General_model->checkDataExists('account', $colWhere)) {
                     $skipped++;
                     continue;
                 }
 
-                $majors   = $this->db->query("SELECT majors_short_name FROM majors WHERE majors_id = '$accountMajorsId'")->row_array();
+                $insertData = [
+                    'account_code'        => $newCode,
+                    'account_description' => $akun,
+                    'account_note'        => $parentId,
+                    'account_category'    => $categoryId,
+                    'account_majors_id'   => $majors_id,
+                    'account_status'      => 1
+                ];
+                $this->db->insert('account', $insertData);
+                $newAccountId = $this->db->insert_id();
 
-                if (substr($accountCode, 0, 3) == '5-5' && $accountCat != 0) {
-                    $akun = 'Biaya ' . $accountKet . ' ' . $majors['majors_short_name'];
-                } else {
-                    $akun = $accountKet . ' ' . $majors['majors_short_name'];
-                }
+                // Update parent status menjadi 0 (punya anak)
+                $this->db->where('account_id', $parentId)->update('account', ['account_status' => 0]);
 
-                $params['account_code'] = $accountCode;
-                $params['account_description'] = $akun;
-                $params['account_note'] = $accountNote;
-                $params['account_category'] = $accountCat;
-                $params['account_majors_id'] = $accountMajorsId;
+                // Integrasi POS & Payment jika Pembayaran
+                if ($categoryId == 1) {
+                    $piutangId = $this->akun_piutang($majors_id);
+                    if ($piutangId) {
+                        $this->db->insert('pos', [
+                            'pos_name'           => $accountDesc,
+                            'pos_description'    => $accountDesc,
+                            'account_account_id' => $newAccountId,
+                            'piutang_account_id' => $piutangId
+                        ]);
+                        $posId = $this->db->insert_id();
 
-                $testParams[] = $params;
+                        $period = $this->db->get_where('period', ['period_status' => '1'])->row_array();
+                        $periodId = $period ? $period['period_id'] : 1;
 
-                $account_id = $this->Account_model->add($params);
-                $this->db->query("UPDATE account SET account_status = 0 WHERE account_id = '$accountNote'");
-
-                if ($accountCat == '1') {
-                    $akun_piutang = $this->akun_piutang($accountMajorsId);
-
-                    if (isset($akun_piutang)) {
-                        $check_account = $this->db->get_where('pos', array('account_account_id', $account_id))->num_rows();
-
-                        if ($check_account == 0) {
-                            $insert_pos = $this->db->query("INSERT INTO pos(pos_name, pos_description, account_account_id, piutang_account_id) VALUES ('$accountKet','$accountKet','$account_id','$akun_piutang')");
-
-                            if ($insert_pos) {
-                                $pos_id = $this->db->insert_id();
-                                $period = $this->db->query("SELECT period_id as id FROM period WHERE period_status = '1'")->row_array();
-                                $payment = array(
-                                    'payment_type' => 'BULAN',
-                                    'payment_mode' => 'TETAP',
-                                    'payment_is_batch' => '0',
-                                    'period_period_id' => $period['id'],
-                                    'pos_pos_id' => $pos_id
-                                );
-                                $this->db->insert('payment', $payment);
-                            }
-                        }
+                        $this->db->insert('payment', [
+                            'payment_type'     => 'BULAN',
+                            'payment_mode'     => 'TETAP',
+                            'payment_is_batch' => '0',
+                            'period_period_id' => $periodId,
+                            'pos_pos_id'       => $posId
+                        ]);
                     }
                 }
 
-                $this->Logs_model->add(
-                    array(
-                        'log_date' => date('Y-m-d H:i:s'),
-                        'user_id' => $this->session->userdata('user_id'),
-                        'log_module' => 'Akun Biaya',
-                        'log_action' => "Import Akun Biaya $akun",
-                        'log_info' => 'ID:null;Title:' . $params['account_code'] . " " . $akun
-                    )
-                );
+                $this->Logs_model->add([
+                    'log_date'   => date('Y-m-d H:i:s'),
+                    'user_id'    => $this->session->userdata('uid'),
+                    'log_module' => 'Akun Biaya',
+                    'log_action' => "Import Akun Biaya $akun",
+                    'log_info'   => "ID:$newAccountId;Code:$newCode;Title:$akun"
+                ]);
+
+                // Daftarkan akun baru ke peta memori agar baris berikutnya di Excel bisa langsung memakainya sebagai parent!
+                $nextTypeMap = ['HEADER' => 'SUB1', 'SUB1' => 'SUB2', 'SUB2' => 'SUB3', 'SUB3' => 'SUB4'];
+                $childType = isset($nextTypeMap[$parentType]) ? $nextTypeMap[$parentType] : 'SUB4';
+
+                $accountMapByCode[$newCode] = [
+                    'account_id'          => $newAccountId,
+                    'account_code'        => $newCode,
+                    'account_description' => $akun,
+                    'type'                => $childType,
+                    'account_note'        => $parentId,
+                    'account_category'    => $categoryId,
+                    'account_majors_id'   => $majors_id
+                ];
+                $childrenByParentId[$newAccountId] = [];
 
                 $added++;
             }
 
-            $message = 'Import berhasil: ' . $added . ' data ditambahkan';
-            if ($skipped > 0) {
-                $message .= ', ' . $skipped . ' data dilewati.';
-            }
-            $this->session->set_flashdata('success', $message);
+            if ($this->db->trans_status() === FALSE) {
+                $this->db->trans_rollback();
+                $this->session->set_flashdata('failed', 'Terjadi kesalahan database saat mengimport akun.');
+            } else {
+                $this->db->trans_commit();
+                bump_cache_version('account');
 
-            unlink($fullPath);
+                $msg = "Import berhasil: <strong>$added</strong> akun berhasil ditambahkan.";
+                if ($skipped > 0) {
+                    $msg .= " ($skipped data dilewati karena sudah ada atau kode induk tidak ditemukan).";
+                }
+                $this->session->set_flashdata('success', $msg);
+            }
+
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
             redirect('manage/account/?m=' . $majors_id);
         } catch (Exception $e) {
-            $this->session->set_flashdata('failed', 'Error: ' . $e->getMessage());
+            $this->session->set_flashdata('failed', 'Error saat membaca file: ' . $e->getMessage());
             if (file_exists($fullPath)) {
                 unlink($fullPath);
             }
             redirect('manage/account/import_account?m=' . $majors_id);
         }
+    }
+
+    public function add_multi_child()
+    {
+        if ($_POST) {
+            $parentId        = $this->input->post('parent_id');
+            $parentCode      = $this->input->post('parent_code');
+            $parentLevel     = (int) $this->input->post('parent_level');
+            $accountMajorsId = $this->input->post('account_majors_id');
+            $descriptions    = $this->input->post('account_description');
+            $categories      = $this->input->post('account_category');
+            $customCodes     = $this->input->post('account_code');
+
+            if (empty($parentId) || empty($descriptions) || !is_array($descriptions)) {
+                $this->session->set_flashdata('failed', 'Tidak ada data sub akun yang dikirim.');
+                redirect('manage/account/?m=' . $accountMajorsId);
+                return;
+            }
+
+            // Validasi keberadaan parent
+            $parent = $this->db->get_where('account', ['account_id' => $parentId])->row_array();
+            if (!$parent) {
+                $this->session->set_flashdata('failed', 'Akun induk tidak ditemukan.');
+                redirect('manage/account/?m=' . $accountMajorsId);
+                return;
+            }
+
+            $majors = $this->db->get_where('majors', ['majors_id' => $accountMajorsId])->row_array();
+            $unitName = $majors ? $majors['majors_short_name'] : '';
+
+            $this->db->trans_begin();
+
+            $insertedCount = 0;
+            $generatedCodes = [];
+
+            // Ambil semua child yang sudah ada di bawah parent ini agar penomoran akurat
+            $existingChildren = $this->db->get_where('account', ['account_note' => $parentId])->result_array();
+            foreach ($existingChildren as $c) {
+                $generatedCodes[] = $c['account_code'];
+            }
+
+            // Tentukan tipe parent untuk generator
+            $parentTypeMap = [1 => 'HEADER', 2 => 'SUB1', 3 => 'SUB2', 4 => 'SUB3'];
+            $parentType = isset($parentTypeMap[$parentLevel]) ? $parentTypeMap[$parentLevel] : 'SUB1';
+
+            foreach ($descriptions as $idx => $desc) {
+                $desc = trim($desc);
+                if (empty($desc)) {
+                    continue; // Skip baris kosong
+                }
+
+                $cat = isset($categories[$idx]) && !empty($categories[$idx]) ? $categories[$idx] : '2';
+                $code = isset($customCodes[$idx]) ? trim($customCodes[$idx]) : '';
+
+                // Jika kode kosong atau sudah dipakai di database/batch saat ini, generate otomatis
+                if (empty($code) || in_array($code, $generatedCodes) || $this->db->get_where('account', ['account_code' => $code])->num_rows() > 0) {
+                    $code = $this->_generate_next_code($parentId, $parentCode, $parentType, $generatedCodes);
+                }
+
+                $generatedCodes[] = $code;
+
+                // Format nama akun sesuai konvensi unit
+                if (substr($code, 0, 3) == '5-5' && $cat != 0 && !empty($unitName)) {
+                    $akun = 'Biaya ' . $desc . ' ' . $unitName;
+                } elseif (!empty($unitName)) {
+                    $akun = $desc . ' ' . $unitName;
+                } else {
+                    $akun = $desc;
+                }
+
+                $insertData = [
+                    'account_code'        => $code,
+                    'account_description' => $akun,
+                    'account_note'        => $parentId,
+                    'account_category'    => $cat,
+                    'account_majors_id'   => $accountMajorsId,
+                    'account_status'      => 1
+                ];
+
+                $this->db->insert('account', $insertData);
+                $newAccountId = $this->db->insert_id();
+
+                // Jika kategori Pembayaran (1), buat POS & Payment
+                if ($cat == '1') {
+                    $piutangId = $this->akun_piutang($accountMajorsId);
+                    if ($piutangId) {
+                        $this->db->insert('pos', [
+                            'pos_name'           => $desc,
+                            'pos_description'    => $desc,
+                            'account_account_id' => $newAccountId,
+                            'piutang_account_id' => $piutangId
+                        ]);
+                        $posId = $this->db->insert_id();
+
+                        $period = $this->db->get_where('period', ['period_status' => '1'])->row_array();
+                        $periodId = $period ? $period['period_id'] : 1;
+
+                        $this->db->insert('payment', [
+                            'payment_type'     => 'BULAN',
+                            'payment_mode'     => 'TETAP',
+                            'payment_is_batch' => '0',
+                            'period_period_id' => $periodId,
+                            'pos_pos_id'       => $posId
+                        ]);
+                    }
+                }
+
+                $this->Logs_model->add([
+                    'log_date'   => date('Y-m-d H:i:s'),
+                    'user_id'    => $this->session->userdata('uid'),
+                    'log_module' => 'Akun Biaya',
+                    'log_action' => 'Tambah Multi Child',
+                    'log_info'   => 'ID:' . $newAccountId . ';Code:' . $code . ';Title:' . $akun
+                ]);
+
+                $insertedCount++;
+            }
+
+            // Update parent status menjadi 0 (memiliki anak)
+            $this->db->where('account_id', $parentId)->update('account', ['account_status' => 0]);
+
+            if ($this->db->trans_status() === FALSE) {
+                $this->db->trans_rollback();
+                $this->session->set_flashdata('failed', 'Gagal menyimpan data sub akun. Terjadi kesalahan database.');
+            } else {
+                $this->db->trans_commit();
+                bump_cache_version('account');
+                $this->session->set_flashdata('success', "Berhasil menambahkan <strong>$insertedCount</strong> sub akun baru di bawah {$parent['account_code']} ({$parent['account_description']}).");
+            }
+
+            redirect('manage/account/?m=' . $accountMajorsId);
+        }
+    }
+
+    private function _generate_next_code($parentId, $parentCode, $parentType, &$generatedCodes)
+    {
+        $parts = explode('-', $parentCode, 2);
+        $prefix = isset($parts[0]) ? $parts[0] : '';
+        $parentSuffix = isset($parts[1]) ? $parts[1] : '';
+
+        if ($parentType === 'SUB2' || $parentType === 'SUB3' || $parentType === 'SUB4') {
+            $maxNum = 0;
+            foreach ($generatedCodes as $code) {
+                if (strpos($code, $parentCode . '.') !== 0) continue;
+                $frag = explode('.', $code);
+                $last = end($frag);
+                $val = intval($last);
+                if ($val > $maxNum) $maxNum = $val;
+            }
+            $next = $maxNum + 1;
+            return $parentCode . '.' . sprintf('%02d', $next);
+        }
+
+        // HEADER (Level 1 -> Sub 1) or SUB1 (Level 2 -> Sub 2)
+        $maxSuffix = 0;
+        foreach ($generatedCodes as $code) {
+            $p = explode('-', $code, 2);
+            if (!isset($p[1])) continue;
+            $val = intval($p[1]);
+            if ($val > $maxSuffix) $maxSuffix = $val;
+        }
+
+        $step = ($parentType === 'HEADER') ? 100 : 1;
+        $baseSuffix = intval($parentSuffix);
+        $newSuffix = ($maxSuffix == 0) ? ($baseSuffix + $step) : ($maxSuffix + $step);
+
+        return $prefix . '-' . $newSuffix;
     }
 
     private function sortAccountsByParentChild($accounts)
