@@ -39,10 +39,13 @@ class Summary_set extends CI_Controller
         $data['majors'] = $this->db->query("SELECT majors_id, majors_short_name FROM majors WHERE majors_status = 1")->result_array();
 
         $period = $this->db->query("SELECT period_id,period_start,period_end FROM period WHERE period_status = 1")->row_array();
-        $periodActive = $period['period_id'];
+        if (!$period) {
+            $period = $this->db->query("SELECT period_id,period_start,period_end FROM period ORDER BY period_id DESC LIMIT 1")->row_array();
+        }
+        $periodActive = $period ? $period['period_id'] : 1;
 
-        $periodStart = $period['period_start'];
-        $periodEnd   = $period['period_end'];
+        $periodStart = $period ? $period['period_start'] : date('Y');
+        $periodEnd   = $period ? $period['period_end'] : (date('Y') + 1);
 
         $dateStart = "$periodStart-07-01";
         $dateEnd  = "$periodEnd-06-30";
@@ -50,6 +53,9 @@ class Summary_set extends CI_Controller
         $mon = pretty_date(date('Y-m-d'), 'F', false);
 
         $month = $this->db->query("SELECT month_id FROM month WHERE month_name = '$mon'")->row_array();
+        if (!$month) {
+            $month = ['month_id' => (int)date('n')];
+        }
         $data['monthActive'] = $month['month_id'];
 
         $data['student']        = $this->db->query("SELECT student_status, majors_majors_id FROM student")->result_array();
@@ -58,29 +64,28 @@ class Summary_set extends CI_Controller
                                                     FROM banking WHERE banking_period_id = '$periodActive'")->result_array();
         $data['information']    = $this->Information_model->get(array('information_publish' => 1));
 
-
         $monDate    = date('Y-m-d');
         $monThree   = date('Y-m-d', strtotime('-3 months', strtotime($monDate)));
         $monDateThree = pretty_date($monThree, 'F', false);
 
         $monthThree = $this->db->query("SELECT month_id FROM month WHERE month_name = '$monDateThree'")->row_array();
-        $data['monThreeOndate'] = $monthThree['month_id'];
+        $data['monThreeOndate'] = $monthThree ? $monthThree['month_id'] : max(1, $month['month_id'] - 3);
 
-        $bSekarang =  $month['month_id'];
-        $bAwal = $month['month_id'] - 3;
-        $bAkhir = $month['month_id'] - 1;
+        $bSekarang = (int)$month['month_id'];
+        $bAwal = max(1, $bSekarang - 3);
+        $bAkhir = max(1, $bSekarang - 1);
 
         $tagihanBebas = $this->db->query("SELECT SUM(bebas_bill - bebas_total_pay) AS tagihan
                                             FROM bebas
                                             JOIN payment py ON py.payment_id = bebas.payment_payment_id
-                                            WHERE py.period_period_id = $periodActive;")->row();
+                                            WHERE py.period_period_id = $periodActive")->row();
 
         $tahunIni = $this->db->query(
             "SELECT SUM(bulan_bill) AS tagihan
                                         FROM bulan
                                         JOIN payment py ON py.payment_id = bulan.payment_payment_id 
                                         WHERE bulan_status = 0
-                                        AND py.period_period_id = $periodActive;"
+                                        AND py.period_period_id = $periodActive"
         )->row();
 
         $bulanIni = $this->db->query(
@@ -89,12 +94,19 @@ class Summary_set extends CI_Controller
                                         JOIN payment py ON py.payment_id = bulan.payment_payment_id 
                                         WHERE bulan_status = 0 
                                         AND month_month_id = $bSekarang
-                                        AND py.period_period_id = $periodActive;"
+                                        AND py.period_period_id = $periodActive"
         )->row();
 
         $groupedTagihan = [];
+        foreach ($data['majors'] as $m) {
+            $groupedTagihan[$m['majors_short_name']] = [
+                'kategori_a' => 0,
+                'kategori_b' => 0
+            ];
+        }
+
         $terlambat1 = $this->db->query(
-            "SELECT m.majors_short_name,SUM(bulan_bill) AS terlambat_a
+            "SELECT m.majors_short_name, SUM(bulan_bill) AS terlambat_a
                                         FROM bulan 
                                         JOIN payment py ON py.payment_id = bulan.payment_payment_id
                                         JOIN student s ON s.student_id = bulan.student_student_id
@@ -102,18 +114,19 @@ class Summary_set extends CI_Controller
                                         WHERE bulan_status = 0 
                                         AND month_month_id BETWEEN $bAwal AND $bAkhir
                                         AND py.period_period_id = $periodActive
-                                        GROUP BY m.majors_short_name;"
+                                        GROUP BY m.majors_short_name"
         )->result_array();
 
         foreach ($terlambat1 as $row) {
             $majors_name = $row['majors_short_name'];
-            if (!isset($groupedTagihan[$majors_name]['kategori_a'])) {
-                $groupedTagihan[$majors_name]['kategori_a'] += $row['terlambat_a'];
+            if (!isset($groupedTagihan[$majors_name])) {
+                $groupedTagihan[$majors_name] = ['kategori_a' => 0, 'kategori_b' => 0];
             }
+            $groupedTagihan[$majors_name]['kategori_a'] += (float)$row['terlambat_a'];
         }
 
         $terlambat2 = $this->db->query(
-            "SELECT m.majors_short_name,SUM(bulan_bill) AS terlambat_b
+            "SELECT m.majors_short_name, SUM(bulan_bill) AS terlambat_b
                                         FROM bulan 
                                         JOIN payment py ON py.payment_id = bulan.payment_payment_id
                                         JOIN student s ON s.student_id = bulan.student_student_id
@@ -121,21 +134,19 @@ class Summary_set extends CI_Controller
                                         WHERE bulan_status = 0 
                                         AND month_month_id < $bAwal
                                         AND py.period_period_id = $periodActive
-                                        GROUP BY m.majors_short_name;"
+                                        GROUP BY m.majors_short_name"
         )->result_array();
 
         foreach ($terlambat2 as $row) {
             $majors_name = $row['majors_short_name'];
-            if (!isset($groupedTagihan[$majors_name]['kategori_b'])) {
-                $groupedTagihan[$majors_name]['kategori_b'] += $row['terlambat_b'];
+            if (!isset($groupedTagihan[$majors_name])) {
+                $groupedTagihan[$majors_name] = ['kategori_a' => 0, 'kategori_b' => 0];
             }
+            $groupedTagihan[$majors_name]['kategori_b'] += (float)$row['terlambat_b'];
         }
 
-        // echo json_encode($groupedTagihan);
-        // exit;
-
-        $data['tagihan_tahun_ini'] =  $tahunIni->tagihan + $tagihanBebas->tagihan;
-        $data['tagihan_bulan_ini'] = $bulanIni->tagihan;
+        $data['tagihan_tahun_ini'] = (float)($tahunIni->tagihan ?? 0) + (float)($tagihanBebas->tagihan ?? 0);
+        $data['tagihan_bulan_ini'] = (float)($bulanIni->tagihan ?? 0);
         $data['groupTagihan'] = $groupedTagihan;
 
         $data['bulan'] = $this->db->query("SELECT bulan_noref, bulan_status, bulan_bill, month_month_id, majors_majors_id
@@ -143,67 +154,58 @@ class Summary_set extends CI_Controller
                                             LEFT JOIN student c ON a.student_student_id=c.student_id
                                             WHERE b.period_period_id='$periodActive'")->result_array();
 
-        // $data['topfive'] = $this->db->query("SELECT kas_noref, 
-        //                                             SUM(kas_debit) AS total_deb, 
-        //                                             kas_month_id, 
-        //                                             kas_majors_id, 
-        //                                             kas_input_date, 
-        //                                             kas_account_id , 
-        //                                             b.account_description,
-        //                                             c.majors_short_name
-        //                                     FROM kas a
-        //                                     LEFT JOIN account b ON a.kas_account_id=b.account_id
-        //                                     LEFT JOIN majors c ON a.kas_majors_id = c.majors_id
-        //                                     WHERE kas_period = '1' 
-        //                                     GROUP BY kas_account_id 
-        //                                     ORDER BY total_deb DESC
-        //                                     LIMIT 5;
-        //                                     ")->result_array();
-
         $data['topfive'] =  $this->db->query(
             "SELECT vpj.jenisBayar AS account_description, mj.majors_short_name, SUM(vpj.penerimaan) AS total_deb
                 FROM v_laporan_jurnal vpj
                 JOIN majors mj ON mj.majors_id =  vpj.idMajors
-                WHERE vpj.tanggal BETWEEN  '$dateStart' AND '$dateEnd' AND vpj.jenisTransaksi != 'Kredit'
+                WHERE vpj.tanggal BETWEEN '$dateStart' AND '$dateEnd' AND vpj.jenisTransaksi != 'Kredit'
                 GROUP BY vpj.jenisBayar ORDER BY total_deb DESC LIMIT 5"
         )->result_array();
 
         $data['total_banking_period'] = 0;
         foreach ($data['banking'] as $row) {
-            $data['total_banking_period'] += $row['banking_debit'] - $row['banking_kredit'];
+            $data['total_banking_period'] += ((float)($row['banking_debit'] ?? 0) - (float)($row['banking_kredit'] ?? 0));
         }
 
         $data['total_banking_month'] = 0;
+        $currentMonthStr = date('F');
         foreach ($data['banking'] as $row) {
             $date = date_create($row['banking_date']);
-            if (date_format($date, "F") == date('F')) {
-                $data['total_banking_month'] += $row['banking_debit'] - $row['banking_kredit'];
+            if ($date && date_format($date, "F") == $currentMonthStr) {
+                $data['total_banking_month'] += ((float)($row['banking_debit'] ?? 0) - (float)($row['banking_kredit'] ?? 0));
             }
         }
 
         $data['total_banking_today'] = 0;
+        $currentDateStr = date('Y-m-d');
         foreach ($data['banking'] as $row) {
-            if ($row['banking_date'] == date('Y-m-d')) {
-                $data['total_banking_today'] += $row['banking_debit'] - $row['banking_kredit'];
+            if ($row['banking_date'] == $currentDateStr) {
+                $data['total_banking_today'] += ((float)($row['banking_debit'] ?? 0) - (float)($row['banking_kredit'] ?? 0));
             }
         }
 
         $groupedKas = [];
+        foreach ($data['majors'] as $m) {
+            $groupedKas[$m['majors_short_name']] = [
+                'tahun' => 0,
+                'bulan' => 0
+            ];
+        }
 
         $data['kasTotal']          = $this->db->query(
-            "SELECT majors_short_name,jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
+            "SELECT majors_short_name, jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
                 FROM v_laporan_jurnal
                 JOIN majors ON majors.majors_id = v_laporan_jurnal.idMajors
-                WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd'
-                GROUP BY majors_short_name,jenisTransaksi"
+                WHERE tanggal BETWEEN '$dateStart' AND '$dateEnd'
+                GROUP BY majors_short_name, jenisTransaksi"
         )->result_array();
 
         $data['kasMonth']          = $this->db->query(
-            "SELECT majors_short_name,jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
+            "SELECT majors_short_name, jenisTransaksi, SUM(penerimaan) AS tDebit, SUM(pengeluaran) AS tKredit
                 FROM v_laporan_jurnal 
                 JOIN majors ON majors.majors_id = v_laporan_jurnal.idMajors
-                WHERE tanggal BETWEEN  '$dateStart' AND '$dateEnd' AND MONTH(tanggal) = MONTH(CURRENT_DATE())
-                GROUP BY jenisTransaksi"
+                WHERE tanggal BETWEEN '$dateStart' AND '$dateEnd' AND MONTH(tanggal) = MONTH(CURRENT_DATE())
+                GROUP BY majors_short_name, jenisTransaksi"
         )->result_array();
 
         $data['kasToday']          = $this->db->query(
@@ -218,25 +220,23 @@ class Summary_set extends CI_Controller
         $data['total_pay_period']       = 0;
         foreach ($data['kasTotal'] as $row) {
             $majors_name = $row['majors_short_name'];
+            $tDebit = (float)($row['tDebit'] ?? 0);
+            $tKredit = (float)($row['tKredit'] ?? 0);
             if ($row['jenisTransaksi'] == 'Bulan' || $row['jenisTransaksi'] == 'Bebas') {
-                $data['total_pay_period'] += $row['tDebit'];
-                $data['total_debit_period'] += $row['tDebit'];
+                $data['total_pay_period'] += $tDebit;
+                $data['total_debit_period'] += $tDebit;
             }
             if ($row['jenisTransaksi'] == 'Debit') {
-                $data['total_debit_period'] += $row['tDebit'];
+                $data['total_debit_period'] += $tDebit;
             }
             if ($row['jenisTransaksi'] == 'Kredit') {
-                $data['total_kredit_period'] += $row['tKredit'];
+                $data['total_kredit_period'] += $tKredit;
             }
 
-            // NOTE: Modified 11052026
-            // if (!isset($groupedKas[$majors_name]['tahun'])) {
-            //     $groupedKas[$majors_name]['tahun'] += $row['tDebit'];
-            // }
-            if (!isset($groupedKas[$majors_name]['tahun'])) {
-                $groupedKas[$majors_name]['tahun'] = 0;
+            if (!isset($groupedKas[$majors_name])) {
+                $groupedKas[$majors_name] = ['tahun' => 0, 'bulan' => 0];
             }
-            $groupedKas[$majors_name]['tahun'] += $row['tDebit'];
+            $groupedKas[$majors_name]['tahun'] += $tDebit;
         }
 
         $data['total_debit_month']      = 0;
@@ -244,20 +244,23 @@ class Summary_set extends CI_Controller
         $data['total_pay_month']        = 0;
         foreach ($data['kasMonth'] as $row) {
             $majors_name = $row['majors_short_name'];
+            $tDebit = (float)($row['tDebit'] ?? 0);
+            $tKredit = (float)($row['tKredit'] ?? 0);
             if ($row['jenisTransaksi'] == 'Bulan' || $row['jenisTransaksi'] == 'Bebas') {
-                $data['total_pay_month'] += $row['tDebit'];
-                $data['total_debit_month'] += $row['tDebit'];
+                $data['total_pay_month'] += $tDebit;
+                $data['total_debit_month'] += $tDebit;
             }
             if ($row['jenisTransaksi'] == 'Debit') {
-                $data['total_debit_month'] += $row['tDebit'];
+                $data['total_debit_month'] += $tDebit;
             }
             if ($row['jenisTransaksi'] == 'Kredit') {
-                $data['total_kredit_month'] += $row['tKredit'];
+                $data['total_kredit_month'] += $tKredit;
             }
 
-            if (!isset($groupedKas[$majors_name]['bulan'])) {
-                $groupedKas[$majors_name]['bulan'] += $row['tDebit'];
+            if (!isset($groupedKas[$majors_name])) {
+                $groupedKas[$majors_name] = ['tahun' => 0, 'bulan' => 0];
             }
+            $groupedKas[$majors_name]['bulan'] += $tDebit;
         }
 
         $data['kasUnit'] = $groupedKas;
@@ -266,15 +269,17 @@ class Summary_set extends CI_Controller
         $data['total_debit_today']      = 0;
         $data['total_kredit_today']     = 0;
         foreach ($data['kasToday'] as $row) {
+            $tDebit = (float)($row['tDebit'] ?? 0);
+            $tKredit = (float)($row['tKredit'] ?? 0);
             if ($row['jenisTransaksi'] == 'Bulan' || $row['jenisTransaksi'] == 'Bebas') {
-                $data['total_pay_today'] += $row['tDebit'];
-                $data['total_debit_today'] += $row['tDebit'];
+                $data['total_pay_today'] += $tDebit;
+                $data['total_debit_today'] += $tDebit;
             }
             if ($row['jenisTransaksi'] == 'Debit') {
-                $data['total_debit_month'] += $row['tDebit'];
+                $data['total_debit_today'] += $tDebit;
             }
             if ($row['jenisTransaksi'] == 'Kredit') {
-                $data['total_kredit_today'] += $row['tKredit'];
+                $data['total_kredit_today'] += $tKredit;
             }
         }
 

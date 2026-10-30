@@ -50,6 +50,194 @@ class Statistik_set extends CI_Controller
       $data['total_bebas'] += $row['bebas_pay_bill'];
     }
 
+    // Load Master Data
+    $data['period'] = $this->Period_model->get();
+    $data['month'] = $this->db->query("SELECT month_id, month_name FROM month ORDER BY month_id ASC")->result_array();
+    $data['majors'] = $this->db->query("SELECT majors_id, majors_short_name, majors_name FROM majors WHERE majors_status = 1 ORDER BY majors_id ASC")->result_array();
+
+    // Determine Active Period & Month
+    $periodAktifRow = $this->db->query("SELECT period_id, period_start, period_end FROM period WHERE period_status = 1 LIMIT 1")->row_array();
+    if (!$periodAktifRow) {
+      $periodAktifRow = $this->db->query("SELECT period_id, period_start, period_end FROM period ORDER BY period_id DESC LIMIT 1")->row_array();
+    }
+    $activePeriodId = $periodAktifRow ? (int)$periodAktifRow['period_id'] : 1;
+    $periodStartYear = $periodAktifRow ? $periodAktifRow['period_start'] : date('Y');
+    $periodEndYear   = $periodAktifRow ? $periodAktifRow['period_end'] : (date('Y') + 1);
+
+    $currentMonthName = pretty_date(date('Y-m-d'), 'F', false);
+    $activeMonthRow = $this->db->query("SELECT month_id FROM month WHERE month_name = '$currentMonthName' LIMIT 1")->row_array();
+    $activeMonthId = $activeMonthRow ? (int)$activeMonthRow['month_id'] : (int)date('n');
+
+    // Filter handling
+    $filterPeriodAkunting = $this->input->get('period_akunting', TRUE);
+    if (!$filterPeriodAkunting && $this->input->get('c', TRUE)) {
+      $filterPeriodAkunting = $this->input->get('c', TRUE);
+    }
+    $selectedPeriodAkunting = $filterPeriodAkunting ? (int)$filterPeriodAkunting : $activePeriodId;
+
+    $filterMonthJurnal = $this->input->get('month_jurnal', TRUE);
+    if (!$filterMonthJurnal && $this->input->get('m', TRUE)) {
+      $filterMonthJurnal = $this->input->get('m', TRUE);
+    }
+    $selectedMonthJurnal = $filterMonthJurnal ? (int)$filterMonthJurnal : $activeMonthId;
+
+    $filterPeriodJurnal = $this->input->get('period_jurnal', TRUE);
+    if (!$filterPeriodJurnal && $this->input->get('p', TRUE)) {
+      $filterPeriodJurnal = $this->input->get('p', TRUE);
+    }
+    $selectedPeriodJurnal = $filterPeriodJurnal ? (int)$filterPeriodJurnal : $activePeriodId;
+
+    $filterPeriodSiswa = $this->input->get('period_siswa', TRUE);
+    $selectedPeriodSiswa = $filterPeriodSiswa ? (int)$filterPeriodSiswa : $activePeriodId;
+
+    $data['selected_period_akunting'] = $selectedPeriodAkunting;
+    $data['selected_month_jurnal'] = $selectedMonthJurnal;
+    $data['selected_period_jurnal'] = $selectedPeriodJurnal;
+    $data['selected_period_siswa'] = $selectedPeriodSiswa;
+
+    // 1. Chart Tagihan Siswa Tiap Unit (Bar Chart)
+    $bSekarang = $activeMonthId;
+    $bAwal = max(1, $bSekarang - 3);
+    $bAkhir = max(1, $bSekarang - 1);
+
+    $chartTagihanLabels = [];
+    $chartTagihanA = [];
+    $chartTagihanB = [];
+    foreach ($data['majors'] as $m) {
+      $mId = (int)$m['majors_id'];
+      $chartTagihanLabels[] = $m['majors_short_name'];
+
+      $tA = $this->db->query("SELECT SUM(bulan_bill) AS tot FROM bulan 
+                              JOIN payment py ON py.payment_id = bulan.payment_payment_id 
+                              JOIN student s ON s.student_id = bulan.student_student_id 
+                              WHERE bulan_status = 0 AND s.majors_majors_id = $mId 
+                              AND py.period_period_id = $activePeriodId 
+                              AND month_month_id BETWEEN $bAwal AND $bAkhir")->row_array();
+
+      $tB = $this->db->query("SELECT SUM(bulan_bill) AS tot FROM bulan 
+                              JOIN payment py ON py.payment_id = bulan.payment_payment_id 
+                              JOIN student s ON s.student_id = bulan.student_student_id 
+                              WHERE bulan_status = 0 AND s.majors_majors_id = $mId 
+                              AND py.period_period_id = $activePeriodId 
+                              AND month_month_id < $bAwal")->row_array();
+
+      $chartTagihanA[] = (float)($tA['tot'] ?? 0);
+      $chartTagihanB[] = (float)($tB['tot'] ?? 0);
+    }
+    $data['chart_tagihan'] = [
+      'labels' => $chartTagihanLabels,
+      'kategori_a' => $chartTagihanA,
+      'kategori_b' => $chartTagihanB
+    ];
+
+    // 2. Chart Laporan Akunting (Line Chart Tren Penerimaan & Pengeluaran Bulanan)
+    $perAkuntingRow = $this->db->query("SELECT period_start, period_end FROM period WHERE period_id = $selectedPeriodAkunting")->row_array();
+    $pAkuntingStart = $perAkuntingRow ? $perAkuntingRow['period_start'] : $periodStartYear;
+    $pAkuntingEnd   = $perAkuntingRow ? $perAkuntingRow['period_end'] : $periodEndYear;
+
+    $chartAkuntingLabels = [];
+    $chartAkuntingDeb = [];
+    $chartAkuntingKred = [];
+    foreach ($data['month'] as $m) {
+      $chartAkuntingLabels[] = $m['month_name'];
+    }
+
+    $akuntingTrx = $this->db->query("SELECT MONTH(tanggal) as bln, SUM(penerimaan) as total_deb, SUM(pengeluaran) as total_kred 
+                                      FROM v_laporan_jurnal 
+                                      WHERE tanggal BETWEEN '$pAkuntingStart-07-01' AND '$pAkuntingEnd-06-30' 
+                                      GROUP BY MONTH(tanggal)")->result_array();
+    $trxByCalMonth = [];
+    foreach ($akuntingTrx as $at) {
+      $trxByCalMonth[(int)$at['bln']] = $at;
+    }
+
+    // Urutan bulan ajaran: Juli (7), Ags (8), Sep (9), Okt (10), Nov (11), Des (12), Jan (1), Feb (2), Mar (3), Apr (4), Mei (5), Jun (6)
+    $calendarMonthOrder = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6];
+    foreach ($calendarMonthOrder as $calM) {
+      $chartAkuntingDeb[] = (float)($trxByCalMonth[$calM]['total_deb'] ?? 0);
+      $chartAkuntingKred[] = (float)($trxByCalMonth[$calM]['total_kred'] ?? 0);
+    }
+    $data['chart_akunting'] = [
+      'labels' => $chartAkuntingLabels,
+      'penerimaan' => $chartAkuntingDeb,
+      'pengeluaran' => $chartAkuntingKred
+    ];
+
+    // 3. Chart Status Guru & Pegawai (Pie / Doughnut Chart)
+    $guruTetapRow = $this->db->query("SELECT COUNT(*) AS tot FROM employee WHERE employee_category = 1")->row_array();
+    $guruNonTetapRow = $this->db->query("SELECT COUNT(*) AS tot FROM employee WHERE employee_category != 1")->row_array();
+    $guruTetap = (int)($guruTetapRow['tot'] ?? 0);
+    $guruNonTetap = (int)($guruNonTetapRow['tot'] ?? 0);
+    $data['chart_guru_pegawai'] = [
+      'tetap' => $guruTetap,
+      'non_tetap' => $guruNonTetap,
+      'total' => $guruTetap + $guruNonTetap
+    ];
+
+    // 4. Chart Jurnal Keuangan (Bar Chart Penerimaan vs Pengeluaran vs Saldo)
+    $perJurnalRow = $this->db->query("SELECT period_start, period_end FROM period WHERE period_id = $selectedPeriodJurnal")->row_array();
+    $pJStart = $perJurnalRow ? $perJurnalRow['period_start'] : $periodStartYear;
+    $pJEnd   = $perJurnalRow ? $perJurnalRow['period_end'] : $periodEndYear;
+
+    $monthIdToCal = [1=>7, 2=>8, 3=>9, 4=>10, 5=>11, 6=>12, 7=>1, 8=>2, 9=>3, 10=>4, 11=>5, 12=>6];
+    $targetCalMonth = $monthIdToCal[$selectedMonthJurnal] ?? (int)date('n');
+
+    $jurnalBulan = $this->db->query("SELECT SUM(penerimaan) as deb, SUM(pengeluaran) as kred 
+                                      FROM v_laporan_jurnal 
+                                      WHERE tanggal BETWEEN '$pJStart-07-01' AND '$pJEnd-06-30' 
+                                      AND MONTH(tanggal) = $targetCalMonth")->row_array();
+    $jurnalTahun = $this->db->query("SELECT SUM(penerimaan) as deb, SUM(pengeluaran) as kred 
+                                      FROM v_laporan_jurnal 
+                                      WHERE tanggal BETWEEN '$pJStart-07-01' AND '$pJEnd-06-30'")->row_array();
+
+    $debBulan = (float)($jurnalBulan['deb'] ?? 0);
+    $kredBulan = (float)($jurnalBulan['kred'] ?? 0);
+    $saldoBulan = $debBulan - $kredBulan;
+
+    $debTahun = (float)($jurnalTahun['deb'] ?? 0);
+    $kredTahun = (float)($jurnalTahun['kred'] ?? 0);
+    $saldoTahun = $debTahun - $kredTahun;
+
+    $data['chart_jurnal'] = [
+      'bulan' => [$debBulan, $kredBulan, $saldoBulan],
+      'tahun' => [$debTahun, $kredTahun, $saldoTahun]
+    ];
+
+    // 5. Chart Laporan KAS Tiap Unit (Bar Chart)
+    $chartKasLabels = [];
+    $chartKasValues = [];
+    foreach ($data['majors'] as $m) {
+      $chartKasLabels[] = $m['majors_short_name'];
+      $mId = (int)$m['majors_id'];
+      $kasUnitRow = $this->db->query("SELECT SUM(penerimaan) AS deb 
+                                      FROM v_laporan_jurnal 
+                                      WHERE idMajors = $mId 
+                                      AND tanggal BETWEEN '$pJStart-07-01' AND '$pJEnd-06-30'")->row_array();
+      $chartKasValues[] = (float)($kasUnitRow['deb'] ?? 0);
+    }
+    $data['chart_kas_unit'] = [
+      'labels' => $chartKasLabels,
+      'values' => $chartKasValues
+    ];
+
+    // 6. Chart Jumlah Siswa Tiap Jenjang (Bar Chart Siswa Aktif vs Total Siswa)
+    $chartSiswaLabels = [];
+    $chartSiswaAktif = [];
+    $chartSiswaTotal = [];
+    foreach ($data['majors'] as $m) {
+      $chartSiswaLabels[] = $m['majors_short_name'];
+      $mId = (int)$m['majors_id'];
+      $aktifRow = $this->db->query("SELECT COUNT(*) AS tot FROM student WHERE majors_majors_id = $mId AND student_status = 1")->row_array();
+      $totalRow = $this->db->query("SELECT COUNT(*) AS tot FROM student WHERE majors_majors_id = $mId")->row_array();
+      $chartSiswaAktif[] = (int)($aktifRow['tot'] ?? 0);
+      $chartSiswaTotal[] = (int)($totalRow['tot'] ?? 0);
+    }
+    $data['chart_siswa'] = [
+      'labels' => $chartSiswaLabels,
+      'aktif' => $chartSiswaAktif,
+      'total' => $chartSiswaTotal
+    ];
+
     $this->load->library('form_validation');
     if ($this->input->post('add', TRUE)) {
       $this->form_validation->set_rules('date', 'Tanggal', 'required');
