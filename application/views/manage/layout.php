@@ -83,7 +83,8 @@ $totalNotif = count($notifTrx);
   <link rel="stylesheet" href="<?php echo media_url() ?>DataTables/css/dataTables.bootstrap.css">
   <link rel="stylesheet" href="<?php echo media_url() ?>DataTables/css/jquery.dataTables.css">
 
-  <link href="<?php echo base_url('/media/js/fullcalendar/fullcalendar.css'); ?>" rel="stylesheet">
+  <link rel="stylesheet" href="<?php echo media_url(); ?>css/fullcalendar.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.0.1/fullcalendar.min.css">
   <!-- Chat widget disabled
   <link rel="stylesheet" href="<?= base_url('/assets/chat/css/style.css') ?>">
   -->
