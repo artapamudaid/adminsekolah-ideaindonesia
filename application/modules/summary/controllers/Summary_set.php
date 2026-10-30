@@ -364,16 +364,20 @@ class Summary_set extends CI_Controller
     public function get()
     {
         $events = $this->Holiday_model->get();
-        foreach ($events as $i => $row) {
-            $data[$i] = array(
-                'id' => $row['id'],
-                'title' => strip_tags($row['info']),
-                'start' => $row['date'],
-                'end' => $row['date'],
-                'year' => $row['year'],
-                //'url' => event_url($row)
-            );
+        $data = array();
+        if (!empty($events)) {
+            foreach ($events as $row) {
+                $data[] = array(
+                    'id' => $row['id'],
+                    'title' => strip_tags($row['info']),
+                    'start' => $row['date'],
+                    'end' => $row['date'],
+                    'year' => $row['year'],
+                );
+            }
         }
-        echo json_encode($data, TRUE);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
     }
 }
