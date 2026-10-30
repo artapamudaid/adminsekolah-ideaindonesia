@@ -307,7 +307,7 @@ $totalNotif = count($notifTrx);
               <li class="profile-menu-section-title">Menu Pengguna</li>
               <li>
                 <a href="<?php echo site_url('manage/profile') ?>" class="profile-dropdown-item">
-                  <div class="item-icon-box"><i class="fa fa-user text-orange"></i></div>
+                  <div class="item-icon-box"><i class="fa fa-user" style="color: #2575FC;"></i></div>
                   <span>Profil Saya</span>
                 </a>
               </li>

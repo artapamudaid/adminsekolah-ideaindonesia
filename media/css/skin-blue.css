@@ -363,7 +363,7 @@ body.skin-blue,
   background: linear-gradient(180deg, #0A0F1D 0%, #0F172A 100%) !important;
   color: #FFFFFF !important;
   border-bottom: 1px solid var(--sidebar-border-orange) !important;
-  border-right: 1.5px solid var(--sidebar-border-orange) !important;
+  border-right: 1.5px solid rgba(37, 117, 252, 0.25) !important;
   font-family: var(--bs-body-font-family);
   font-weight: 700;
   font-size: 15px;
@@ -966,7 +966,7 @@ body.skin-blue,
 .skin-blue .main-sidebar,
 .skin-blue .left-side {
   background: var(--sidebar-ambient-bg) !important;
-  border-right: 1.5px solid var(--sidebar-border-orange) !important;
+  border-right: 1.5px solid rgba(37, 117, 252, 0.25) !important;
   box-shadow: 4px 0 25px rgba(37, 117, 252, 0.05);
   padding-top: var(--navbar-height) !important;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1237,13 +1237,13 @@ body.skin-blue,
 }
 
 .skin-blue .sidebar-menu .treeview-menu>li:hover>a::before {
-  background-color: #FFA566 !important;
-  box-shadow: 0 0 8px #FFA566 !important;
+  background-color: #2575FC !important;
+  box-shadow: 0 0 8px #2575FC !important;
 }
 
 /* Active Submenu Item (Orange Soft Gradient) */
 .skin-blue .sidebar-menu .treeview-menu>li.active>a {
-  color: #FFB37C !important;
+  color: #60A5FA !important;
   background: linear-gradient(90deg, rgba(37, 117, 252, 0.24) 0%, rgba(37, 117, 252, 0.06) 100%) !important;
   font-weight: 700 !important;
 }
@@ -1277,9 +1277,9 @@ body.skin-blue,
   height: 68px !important;
   margin: 0 !important;
   padding: 0 14px !important;
-  background: linear-gradient(180deg, #1C1410 0%, #130E0C 100%) !important;
-  border-top: 1px solid var(--sidebar-border-orange) !important;
-  border-right: 1.5px solid var(--sidebar-border-orange) !important;
+  background: linear-gradient(180deg, #0D1527 0%, #070B16 100%) !important;
+  border-top: 1px solid rgba(37, 117, 252, 0.25) !important;
+  border-right: 1.5px solid rgba(37, 117, 252, 0.25) !important;
   border-left: none !important;
   border-bottom: none !important;
   border-radius: 0 !important;
@@ -1292,7 +1292,7 @@ body.skin-blue,
 }
 
 .skin-blue .sidebar-profile-card:hover {
-  background: linear-gradient(180deg, #221712 0%, #160F0D 100%) !important;
+  background: linear-gradient(180deg, #101B33 0%, #090E1C 100%) !important;
   border-top-color: rgba(37, 117, 252, 0.5) !important;
 }
 
@@ -1329,7 +1329,7 @@ body.skin-blue,
   width: 10px !important;
   height: 10px !important;
   background-color: #10B981 !important;
-  border: 2px solid #16110E !important;
+  border: 2px solid #070B16 !important;
   border-radius: 50% !important;
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.9) !important;
 }
@@ -1352,7 +1352,7 @@ body.skin-blue,
 }
 
 .skin-blue .sidebar-profile-role {
-  color: #FFA666 !important;
+  color: #93C5FD !important;
   font-size: 11px !important;
   font-weight: 500 !important;
   display: block !important;
@@ -1362,17 +1362,24 @@ body.skin-blue,
 }
 
 .skin-blue .sidebar-profile-logout {
-  color: #FFA666 !important;
+  color: #EF4444 !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
   font-size: 14px !important;
-  padding: 6px !important;
+  padding: 6px 9px !important;
   border-radius: 8px !important;
   transition: all 0.2s ease !important;
   margin-left: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .skin-blue .sidebar-profile-logout:hover {
-  color: #EF4444 !important;
-  background: rgba(239, 68, 68, 0.15) !important;
+  color: #FFFFFF !important;
+  background: #DC2626 !important;
+  border-color: #DC2626 !important;
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.5) !important;
 }
 
 /* ==========================================================================

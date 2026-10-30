@@ -147,7 +147,7 @@
               <li class="profile-menu-section-title">Menu Pengguna</li>
               <li>
                 <a href="<?php echo site_url('guru/profile') ?>" class="profile-dropdown-item">
-                  <div class="item-icon-box"><i class="fa fa-user text-orange"></i></div>
+                  <div class="item-icon-box"><i class="fa fa-user" style="color: #2575FC;"></i></div>
                   <span>Profil Guru</span>
                 </a>
               </li>
