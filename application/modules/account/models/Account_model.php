@@ -142,4 +142,74 @@ class Account_model extends CI_Model
 
         return $all_ids;
     }
+
+    /**
+     * Mengambil seluruh data COA (Chart of Accounts) dalam 1 batch query
+     * dan menyusun indeks hierarki di memori PHP untuk menghindari nested query N+1 di view.
+     */
+    public function get_coa_tree_data($filter_majors = null)
+    {
+        // 1. Ambil semua akun + majors_short_name (1 query)
+        $this->db->select('account.*, majors.majors_id, majors.majors_short_name');
+        $this->db->from('account');
+        $this->db->join('majors', 'majors.majors_id = account.account_majors_id', 'left');
+        $this->db->order_by('account.account_code', 'ASC');
+        $all_accounts = $this->db->get()->result();
+
+        // 2. Ambil semua account_account_id dari tabel POS (1 query)
+        $pos_records = $this->db->select('account_account_id')->get('pos')->result_array();
+        $pos_account_map = array();
+        foreach ($pos_records as $pr) {
+            $pos_account_map[$pr['account_account_id']] = true;
+        }
+
+        // 3. Ambil periode aktif (1 query)
+        $periods = $this->db->get_where('period', array('period_status' => '1'))->result();
+
+        // 4. Ambil akun piutang (1 query)
+        $this->db->like('account_code', '1', 'after');
+        $this->db->like('account_description', 'Piutang');
+        $this->db->where('account_category', '2');
+        $piutangs = $this->db->get('account')->result();
+
+        $piutangs_by_majors = array();
+        foreach ($piutangs as $p) {
+            $piutangs_by_majors[$p->account_majors_id][] = $p;
+        }
+
+        // Hitung max account_code per parent dari SEMUA akun (unfiltered)
+        $max_code_by_parent = array();
+        foreach ($all_accounts as $acc) {
+            $pId = (!empty($acc->account_note)) ? (string)$acc->account_note : '0';
+            if (!isset($max_code_by_parent[$pId]) || strcmp($acc->account_code, $max_code_by_parent[$pId]) > 0) {
+                $max_code_by_parent[$pId] = $acc->account_code;
+            }
+        }
+
+        // Kelompokkan akun untuk tampilan hierarki
+        $main_accounts = array();
+        $accounts_by_parent = array();
+
+        foreach ($all_accounts as $acc) {
+            $pId = (!empty($acc->account_note)) ? (string)$acc->account_note : '0';
+
+            if ($pId === '0') {
+                $main_accounts[] = $acc;
+            } else {
+                if ($filter_majors === null || $acc->account_majors_id == $filter_majors) {
+                    $accounts_by_parent[$pId][] = $acc;
+                }
+            }
+        }
+
+        return array(
+            'main_accounts'      => $main_accounts,
+            'accounts_by_parent' => $accounts_by_parent,
+            'max_code_by_parent' => $max_code_by_parent,
+            'pos_account_map'    => $pos_account_map,
+            'periods'            => $periods,
+            'piutangs_all'       => $piutangs,
+            'piutangs_by_majors' => $piutangs_by_majors,
+        );
+    }
 }

@@ -33,15 +33,19 @@ class Account_set extends CI_Controller
 
         $data['s'] = $s;
 
-        $params = array();
-
-        if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
-            $params['account_majors_id'] = $s['m'];
-        } else if (isset($s['m']) && !empty($s['m']) && $s['m'] == 'all') {
-            //
+        $majors_id = $this->session->userdata('umajorsid');
+        $filter_majors = null;
+        if ($majors_id == 0) {
+            if (isset($s['m']) && !empty($s['m']) && $s['m'] != 'all') {
+                $filter_majors = $s['m'];
+            }
+        } else {
+            $filter_majors = $majors_id;
         }
 
-        $data['account'] = $this->Account_model->get($params);
+        // Ambil data hierarki COA dalam 1 batch query efisien (menghindari nested query N+1 di view)
+        $coa_data = $this->Account_model->get_coa_tree_data($filter_majors);
+        $data = array_merge($data, $coa_data);
 
         $config['base_url'] = site_url('manage/account/index');
         $config['suffix'] = '?' . http_build_query($_GET, '', "&");
@@ -50,12 +54,7 @@ class Account_set extends CI_Controller
 
         $data['title'] = 'Akun Biaya';
 
-        // Check uroleid for view routing
-        if ($this->session->userdata('uroleid') == 3) {
-            $data['main'] = 'account/account_list_super';
-        } else {
-            $data['main'] = 'account/account_list';
-        }
+        $data['main'] = 'account/account_list';
 
         $this->load->view('manage/layout', $data);
     }
