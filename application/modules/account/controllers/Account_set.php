@@ -267,6 +267,7 @@ class Account_set extends CI_Controller
             // Hapus data
             $this->db->where_in('account_id', $ids_to_delete);
             $this->db->delete('account');
+            bump_cache_version('account');
 
             // Log activity
             $this->load->model('logs/Logs_model');

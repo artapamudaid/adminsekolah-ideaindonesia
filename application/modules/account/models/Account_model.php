@@ -13,6 +13,21 @@ class Account_model extends CI_Model
     // Get account from database
     function get($params = array())
     {
+        $cache_key = get_session_cache_key('account', $params);
+        try {
+            if (!isset($this->cache)) {
+                $this->load->driver('cache', array('adapter' => 'file'));
+            }
+            if (isset($this->cache)) {
+                $cached = $this->cache->get($cache_key);
+                if ($cached !== FALSE) {
+                    return $cached;
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache read error in Account_model::get: ' . $e->getMessage());
+        }
+
         if (isset($params['id'])) {
             $this->db->where('account_id', $params['id']);
         }
@@ -53,10 +68,20 @@ class Account_model extends CI_Model
         $res = $this->db->get('account');
 
         if (isset($params['id'])) {
-            return $res->row_array();
+            $result = $res->row_array();
         } else {
-            return $res->result_array();
+            $result = $res->result_array();
         }
+
+        try {
+            if (isset($this->cache)) {
+                $this->cache->save($cache_key, $result, CACHE_TTL);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache write error in Account_model::get: ' . $e->getMessage());
+        }
+
+        return $result;
     }
 
     // Add and update to database
@@ -97,6 +122,7 @@ class Account_model extends CI_Model
         }
 
         $status = $this->db->affected_rows();
+        bump_cache_version('account');
         return ($status == 0) ? FALSE : $id;
     }
 
@@ -105,14 +131,46 @@ class Account_model extends CI_Model
     {
         $this->db->where('account_id', $id);
         $this->db->delete('account');
+        bump_cache_version('account');
+    }
+
+    // Helper to invalidate cache from external callers
+    public function invalidate_cache()
+    {
+        bump_cache_version('account');
     }
 
     public function getDefaultAccount()
     {
+        $cache_key = get_session_cache_key('account', array('scope' => 'default'));
+        try {
+            if (!isset($this->cache)) {
+                $this->load->driver('cache', array('adapter' => 'file'));
+            }
+            if (isset($this->cache)) {
+                $cached = $this->cache->get($cache_key);
+                if ($cached !== FALSE) {
+                    return $cached;
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache read error in Account_model::getDefaultAccount: ' . $e->getMessage());
+        }
+
         $this->db->where('account_majors_id', 0)
             ->order_by('account_id', 'asc');
         $res = $this->db->get('account');
-        return $res->result_array();
+        $result = $res->result_array();
+
+        try {
+            if (isset($this->cache)) {
+                $this->cache->save($cache_key, $result, CACHE_TTL);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache write error in Account_model::getDefaultAccount: ' . $e->getMessage());
+        }
+
+        return $result;
     }
 
     // Get all descendants IDs recursively
@@ -146,9 +204,25 @@ class Account_model extends CI_Model
     /**
      * Mengambil seluruh data COA (Chart of Accounts) dalam 1 batch query
      * dan menyusun indeks hierarki di memori PHP untuk menghindari nested query N+1 di view.
+     * Hasil disimpan di cache agar pemanggilan berulang sangat cepat.
      */
     public function get_coa_tree_data($filter_majors = null)
     {
+        $cache_key = get_session_cache_key('account', array('coa_tree_majors' => $filter_majors));
+        try {
+            if (!isset($this->cache)) {
+                $this->load->driver('cache', array('adapter' => 'file'));
+            }
+            if (isset($this->cache)) {
+                $cached = $this->cache->get($cache_key);
+                if ($cached !== FALSE) {
+                    return $cached;
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache read error in Account_model::get_coa_tree_data: ' . $e->getMessage());
+        }
+
         // 1. Ambil semua akun + majors_short_name (1 query)
         $this->db->select('account.*, majors.majors_id, majors.majors_short_name');
         $this->db->from('account');
@@ -202,7 +276,7 @@ class Account_model extends CI_Model
             }
         }
 
-        return array(
+        $result = array(
             'main_accounts'      => $main_accounts,
             'accounts_by_parent' => $accounts_by_parent,
             'max_code_by_parent' => $max_code_by_parent,
@@ -211,5 +285,15 @@ class Account_model extends CI_Model
             'piutangs_all'       => $piutangs,
             'piutangs_by_majors' => $piutangs_by_majors,
         );
+
+        try {
+            if (isset($this->cache)) {
+                $this->cache->save($cache_key, $result, CACHE_TTL);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Cache write error in Account_model::get_coa_tree_data: ' . $e->getMessage());
+        }
+
+        return $result;
     }
 }
